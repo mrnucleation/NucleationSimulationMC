@@ -1,0 +1,587 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 66.89    186.32   186.32 32778562     0.01     0.01  __interenergy_lj_electro_MOD_shift_ecalc_inter
+  8.31    209.47    23.15 32778562     0.00     0.00  __energycriteria_MOD_shift_energycriteria
+  5.90    225.89    16.42  5248977     0.00     0.00  __interenergy_lj_electro_MOD_mol_ecalc_inter
+  4.82    239.32    13.43  8194222     0.00     0.00  create_neietable_
+  2.45    246.15     6.83  5252849     0.00     0.00  __energycriteria_MOD_swapout_energycriteria
+  2.32    252.60     6.45  2395353     0.00     0.00  __interenergy_lj_electro_MOD_newmol_ecalc_inter
+  1.96    258.05     5.45  2174866     0.00     0.00  insert_newneietable_
+  1.31    261.70     3.66 16851416     0.00     0.00  __energycriteria_MOD_neighborupdate
+  0.73    263.72     2.02  8126923     0.00     0.00  ebias_insert_choosetarget_
+  0.63    265.48     1.76  8334009     0.00     0.00  avbmc_ebias_out_
+  0.54    266.98     1.50  8126799     0.00     0.00  __interenergy_lj_electro_MOD_quicknei_ecalc_inter
+  0.51    268.39     1.41  8194221     0.00     0.00  ebias_remove_chooseneighbor_
+  0.50    269.78     1.39 16668840     0.00     0.01  translation_
+  0.43    270.99     1.21  8333475     0.00     0.00  avbmc_ebias_in_
+  0.42    272.16     1.17  8194221     0.00     0.00  ebias_remove_choosetarget_
+  0.35    273.14     0.98 27313011     0.00     0.01  __e_interface_MOD_shift_energycalc
+  0.32    274.03     0.89 526644962     0.00     0.00  __indexingfunctions_MOD_get_moltype
+  0.26    274.76     0.73  5459839     0.00     0.01  rot_xz_
+  0.24    275.42     0.66  5460804     0.00     0.00  rot_yz_
+  0.18    275.92     0.50  5460084     0.00     0.01  rot_xy_
+  0.18    276.41     0.49 50000000     0.00     0.00  nhistadd_
+  0.17    276.87     0.46  8126923     0.00     0.00  ridgid_configgen_
+  0.13    277.23     0.37 302260686     0.00     0.00  grnd_
+  0.08    277.45     0.22 10369138     0.00     0.00  __umbrellafunctions_MOD_getbiasindex
+  0.05    277.60     0.15                             MAIN__
+  0.05    277.75     0.15  8126799     0.00     0.00  generate_unitsphere_
+  0.05    277.88     0.13 32773815     0.00     0.00  __indexingfunctions_MOD_get_molindex
+  0.04    278.00     0.12  2395353     0.00     0.00  __e_interface_MOD_swapin_energycalc
+  0.03    278.08     0.08  5248977     0.00     0.00  __e_interface_MOD_swapout_energycalc
+  0.03    278.15     0.07 16667484     0.00     0.00  avbmc_
+  0.02    278.21     0.06 17665309     0.00     0.00  __e_interface_MOD_update_subenergies
+  0.02    278.27     0.06 14678347     0.00     0.00  __umbrellafunctions_MOD_getnewbiasindex
+  0.02    278.33     0.06   406256     0.00     0.00  __energycriteria_MOD_neighborupdate_delete
+  0.02    278.38     0.05 16663676     0.00     0.00  rotation_
+  0.02    278.42     0.05                             debug_output_neighborlist_
+  0.01    278.45     0.03                             __improperanglefunctions_MOD_detailed_ecalc_improper
+  0.01    278.47     0.02        1    20.00    20.00  allocateumbrellabias_
+  0.01    278.49     0.02                             singleatom_translation_
+  0.00    278.50     0.01      502     0.02     0.02  trajoutput_
+  0.00    278.51     0.01        2     5.00     5.00  __bondstretchfunctions_MOD_detailed_ecalc_bondstretch
+  0.00    278.52     0.01                             __energycriteria_MOD_swapin_energycriteria
+  0.00    278.53     0.01                             ebias_insert_reverseprobtarget_
+  0.00    278.54     0.01                             ebias_remove_reverseprobtarget_
+  0.00    278.54     0.01        1     5.00     5.00  sgrnd_
+  0.00    278.54     0.00        6     0.00     0.00  __forcefieldfunctions_MOD_geomean_mixingfunc
+  0.00    278.54     0.00        6     0.00     0.00  __forcefieldfunctions_MOD_mean_mixingfunc
+  0.00    278.54     0.00        3     0.00     0.00  getnextatom_
+  0.00    278.54     0.00        2     0.00     0.00  __bendingfunctions_MOD_detailed_ecalc_bending
+  0.00    278.54     0.00        2     0.00     5.00  __e_interface_MOD_detailed_energycalc
+  0.00    278.54     0.00        2     0.00     0.00  __energycriteria_MOD_detailed_energycriteria
+  0.00    278.54     0.00        2     0.00     0.00  __interenergy_lj_electro_MOD_detailed_ecalc_inter
+  0.00    278.54     0.00        2     0.00     0.00  __intraenergy_lj_electro_MOD_detailed_ecalc_intranonbonded
+  0.00    278.54     0.00        2     0.00     0.00  __torsionalfunctions_MOD_detailed_ecalc_torsional
+  0.00    278.54     0.00        2     0.00     0.00  __units_MOD_findengunit
+  0.00    278.54     0.00        2     0.00     0.00  __units_MOD_findlengthunit
+  0.00    278.54     0.00        1     0.00     0.00  __units_MOD_findangularunit
+  0.00    278.54     0.00        1     0.00     0.00  allocate_common_variables_
+  0.00    278.54     0.00        1     0.00     0.00  allocatecoordinatearrays_
+  0.00    278.54     0.00        1     0.00     0.00  cbmc_createtopology_
+  0.00    278.54     0.00        1     0.00     0.00  cbmc_findpathways_
+  0.00    278.54     0.00        1     0.00     0.00  collapsen_
+  0.00    278.54     0.00        1     0.00     0.00  createjointarray_
+  0.00    278.54     0.00        1     0.00     0.00  determineregrowthtype_
+  0.00    278.54     0.00        1     0.00     0.00  gcd_calc_
+  0.00    278.54     0.00        1     0.00     0.00  initialtrajoutput_
+  0.00    278.54     0.00        1     0.00     0.00  n_histoutput_
+  0.00    278.54     0.00        1     0.00     0.00  output_vmd_final_
+  0.00    278.54     0.00        1     0.00     0.00  readforcefield_
+  0.00    278.54     0.00        1     0.00     0.00  readinitialconfiguration_
+  0.00    278.54     0.00        1     0.00     0.00  readinitialgasphase_
+  0.00    278.54     0.00        1     0.00    20.00  readparameters_
+  0.00    278.54     0.00        1     0.00     0.00  recentercoordinates_
+  0.00    278.54     0.00        1     0.00     0.00  single_n_histoutput_
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 0.00% of 278.54 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]    100.0    0.15  278.27                 MAIN__ [1]
+                1.39  128.69 16668840/16668840     translation_ [4]
+                0.73   42.89 5459839/5459839     rot_xz_ [5]
+                0.50   42.87 5460084/5460084     rot_xy_ [6]
+                1.76   39.63 8334009/8334009     avbmc_ebias_out_ [7]
+                1.21   16.41 8333475/8333475     avbmc_ebias_in_ [9]
+                0.66    0.77 5460804/5460804     rot_yz_ [20]
+                0.49    0.00 50000000/50000000     nhistadd_ [24]
+                0.07    0.04 16667484/16667484     avbmc_ [30]
+                0.05    0.02 16663676/16663676     rotation_ [31]
+                0.06    0.00 50000000/302260686     grnd_ [26]
+                0.00    0.02       1/1           readparameters_ [38]
+                0.01    0.00     502/502         trajoutput_ [40]
+                0.00    0.01       2/2           __e_interface_MOD_detailed_energycalc [44]
+                0.01    0.00       1/1           sgrnd_ [46]
+                0.00    0.00       1/8194222     create_neietable_ [12]
+                0.00    0.00       1/1           allocatecoordinatearrays_ [49]
+                0.00    0.00       1/1           readforcefield_ [59]
+                0.00    0.00       1/1           readinitialconfiguration_ [60]
+                0.00    0.00       1/1           createjointarray_ [53]
+                0.00    0.00       1/1           readinitialgasphase_ [61]
+                0.00    0.00       1/1           recentercoordinates_ [62]
+                0.00    0.00       1/1           initialtrajoutput_ [56]
+                0.00    0.00       1/1           determineregrowthtype_ [54]
+                0.00    0.00       1/1           cbmc_createtopology_ [50]
+                0.00    0.00       1/1           collapsen_ [52]
+                0.00    0.00       1/1           n_histoutput_ [57]
+                0.00    0.00       1/1           output_vmd_final_ [58]
+-----------------------------------------------
+                0.20   41.89 5461277/27313011     rot_xy_ [6]
+                0.20   41.91 5463328/27313011     rot_xz_ [5]
+                0.59  125.72 16388406/27313011     translation_ [4]
+[2]     75.6    0.98  209.52 27313011         __e_interface_MOD_shift_energycalc [2]
+              186.32    0.00 32778562/32778562     __interenergy_lj_electro_MOD_shift_ecalc_inter [3]
+               23.15    0.06 32778562/32778562     __energycriteria_MOD_shift_energycriteria [8]
+-----------------------------------------------
+              186.32    0.00 32778562/32778562     __e_interface_MOD_shift_energycalc [2]
+[3]     66.9  186.32    0.00 32778562         __interenergy_lj_electro_MOD_shift_ecalc_inter [3]
+-----------------------------------------------
+                1.39  128.69 16668840/16668840     MAIN__ [1]
+[4]     46.7    1.39  128.69 16668840         translation_ [4]
+                0.59  125.72 16388406/27313011     __e_interface_MOD_shift_energycalc [2]
+                1.79    0.41 8239608/16851416     __energycriteria_MOD_neighborupdate [17]
+                0.09    0.00 77810522/302260686     grnd_ [26]
+                0.07    0.00 16388406/32773815     __indexingfunctions_MOD_get_molindex [29]
+                0.03    0.00 8239608/17665309     __e_interface_MOD_update_subenergies [32]
+-----------------------------------------------
+                0.73   42.89 5459839/5459839     MAIN__ [1]
+[5]     15.7    0.73   42.89 5459839         rot_xz_ [5]
+                0.20   41.91 5463328/27313011     __e_interface_MOD_shift_energycalc [2]
+                0.59    0.14 2737539/16851416     __energycriteria_MOD_neighborupdate [17]
+                0.02    0.00 5463328/32773815     __indexingfunctions_MOD_get_molindex [29]
+                0.02    0.00 15016917/302260686     grnd_ [26]
+                0.01    0.00 2737539/17665309     __e_interface_MOD_update_subenergies [32]
+-----------------------------------------------
+                0.50   42.87 5460084/5460084     MAIN__ [1]
+[6]     15.6    0.50   42.87 5460084         rot_xy_ [6]
+                0.20   41.89 5461277/27313011     __e_interface_MOD_shift_energycalc [2]
+                0.59    0.14 2734937/16851416     __energycriteria_MOD_neighborupdate [17]
+                0.02    0.00 5461277/32773815     __indexingfunctions_MOD_get_molindex [29]
+                0.02    0.00 15013439/302260686     grnd_ [26]
+                0.01    0.00 2734937/17665309     __e_interface_MOD_update_subenergies [32]
+-----------------------------------------------
+                1.76   39.63 8334009/8334009     MAIN__ [1]
+[7]     14.9    1.76   39.63 8334009         avbmc_ebias_out_ [7]
+                0.08   16.42 5248977/5248977     __e_interface_MOD_swapout_energycalc [10]
+               13.43    0.00 8194221/8194222     create_neietable_ [12]
+                6.83    0.00 5252849/5252849     __energycriteria_MOD_swapout_energycriteria [13]
+                1.41    0.01 8194221/8194221     ebias_remove_chooseneighbor_ [21]
+                1.17    0.01 8194221/8194221     ebias_remove_choosetarget_ [22]
+                0.17    0.00 8194221/10369138     __umbrellafunctions_MOD_getbiasindex [27]
+                0.06    0.00  406256/406256      __energycriteria_MOD_neighborupdate_delete [34]
+                0.03    0.00 8194221/14678347     __umbrellafunctions_MOD_getnewbiasindex [33]
+                0.01    0.00 5248977/302260686     grnd_ [26]
+                0.00    0.00  406256/17665309     __e_interface_MOD_update_subenergies [32]
+-----------------------------------------------
+               23.15    0.06 32778562/32778562     __e_interface_MOD_shift_energycalc [2]
+[8]      8.3   23.15    0.06 32778562         __energycriteria_MOD_shift_energycriteria [8]
+                0.06    0.00 32778562/526644962     __indexingfunctions_MOD_get_moltype [23]
+-----------------------------------------------
+                1.21   16.41 8333475/8333475     MAIN__ [1]
+[9]      6.3    1.21   16.41 8333475         avbmc_ebias_in_ [9]
+                0.12    6.45 2395353/2395353     __e_interface_MOD_swapin_energycalc [14]
+                5.45    0.00 2174866/2174866     insert_newneietable_ [16]
+                2.02    0.01 8126923/8126923     ebias_insert_choosetarget_ [18]
+                1.50    0.00 8126799/8126799     __interenergy_lj_electro_MOD_quicknei_ecalc_inter [19]
+                0.46    0.03 8126923/8126923     ridgid_configgen_ [25]
+                0.15    0.02 8126799/8126799     generate_unitsphere_ [28]
+                0.09    0.02  406296/16851416     __energycriteria_MOD_neighborupdate [17]
+                0.05    0.00 2174866/10369138     __umbrellafunctions_MOD_getbiasindex [27]
+                0.03    0.00 6484126/14678347     __umbrellafunctions_MOD_getnewbiasindex [33]
+                0.01    0.00 10301789/302260686     grnd_ [26]
+                0.00    0.00  813933/17665309     __e_interface_MOD_update_subenergies [32]
+-----------------------------------------------
+                0.08   16.42 5248977/5248977     avbmc_ebias_out_ [7]
+[10]     5.9    0.08   16.42 5248977         __e_interface_MOD_swapout_energycalc [10]
+               16.42    0.00 5248977/5248977     __interenergy_lj_electro_MOD_mol_ecalc_inter [11]
+-----------------------------------------------
+               16.42    0.00 5248977/5248977     __e_interface_MOD_swapout_energycalc [10]
+[11]     5.9   16.42    0.00 5248977         __interenergy_lj_electro_MOD_mol_ecalc_inter [11]
+-----------------------------------------------
+                0.00    0.00       1/8194222     MAIN__ [1]
+               13.43    0.00 8194221/8194222     avbmc_ebias_out_ [7]
+[12]     4.8   13.43    0.00 8194222         create_neietable_ [12]
+-----------------------------------------------
+                6.83    0.00 5252849/5252849     avbmc_ebias_out_ [7]
+[13]     2.5    6.83    0.00 5252849         __energycriteria_MOD_swapout_energycriteria [13]
+-----------------------------------------------
+                0.12    6.45 2395353/2395353     avbmc_ebias_in_ [9]
+[14]     2.4    0.12    6.45 2395353         __e_interface_MOD_swapin_energycalc [14]
+                6.45    0.00 2395353/2395353     __interenergy_lj_electro_MOD_newmol_ecalc_inter [15]
+-----------------------------------------------
+                6.45    0.00 2395353/2395353     __e_interface_MOD_swapin_energycalc [14]
+[15]     2.3    6.45    0.00 2395353         __interenergy_lj_electro_MOD_newmol_ecalc_inter [15]
+-----------------------------------------------
+                5.45    0.00 2174866/2174866     avbmc_ebias_in_ [9]
+[16]     2.0    5.45    0.00 2174866         insert_newneietable_ [16]
+-----------------------------------------------
+                0.09    0.02  406296/16851416     avbmc_ebias_in_ [9]
+                0.59    0.14 2733036/16851416     rot_yz_ [20]
+                0.59    0.14 2734937/16851416     rot_xy_ [6]
+                0.59    0.14 2737539/16851416     rot_xz_ [5]
+                1.79    0.41 8239608/16851416     translation_ [4]
+[17]     1.6    3.66    0.83 16851416         __energycriteria_MOD_neighborupdate [17]
+                0.83    0.00 493866400/526644962     __indexingfunctions_MOD_get_moltype [23]
+-----------------------------------------------
+                2.02    0.01 8126923/8126923     avbmc_ebias_in_ [9]
+[18]     0.7    2.02    0.01 8126923         ebias_insert_choosetarget_ [18]
+                0.01    0.00 8126923/302260686     grnd_ [26]
+-----------------------------------------------
+                1.50    0.00 8126799/8126799     avbmc_ebias_in_ [9]
+[19]     0.5    1.50    0.00 8126799         __interenergy_lj_electro_MOD_quicknei_ecalc_inter [19]
+-----------------------------------------------
+                0.66    0.77 5460804/5460804     MAIN__ [1]
+[20]     0.5    0.66    0.77 5460804         rot_yz_ [20]
+                0.59    0.14 2733036/16851416     __energycriteria_MOD_neighborupdate [17]
+                0.02    0.00 5460804/32773815     __indexingfunctions_MOD_get_molindex [29]
+                0.01    0.00 9556453/302260686     grnd_ [26]
+                0.01    0.00 2733036/17665309     __e_interface_MOD_update_subenergies [32]
+-----------------------------------------------
+                1.41    0.01 8194221/8194221     avbmc_ebias_out_ [7]
+[21]     0.5    1.41    0.01 8194221         ebias_remove_chooseneighbor_ [21]
+                0.01    0.00 8194221/302260686     grnd_ [26]
+-----------------------------------------------
+                1.17    0.01 8194221/8194221     avbmc_ebias_out_ [7]
+[22]     0.4    1.17    0.01 8194221         ebias_remove_choosetarget_ [22]
+                0.01    0.00 8194221/302260686     grnd_ [26]
+-----------------------------------------------
+                0.06    0.00 32778562/526644962     __energycriteria_MOD_shift_energycriteria [8]
+                0.83    0.00 493866400/526644962     __energycriteria_MOD_neighborupdate [17]
+[23]     0.3    0.89    0.00 526644962         __indexingfunctions_MOD_get_moltype [23]
+-----------------------------------------------
+                0.49    0.00 50000000/50000000     MAIN__ [1]
+[24]     0.2    0.49    0.00 50000000         nhistadd_ [24]
+-----------------------------------------------
+                0.46    0.03 8126923/8126923     avbmc_ebias_in_ [9]
+[25]     0.2    0.46    0.03 8126923         ridgid_configgen_ [25]
+                0.03    0.00 24380769/302260686     grnd_ [26]
+-----------------------------------------------
+                0.01    0.00 5248977/302260686     avbmc_ebias_out_ [7]
+                0.01    0.00 8126923/302260686     ebias_insert_choosetarget_ [18]
+                0.01    0.00 8194221/302260686     ebias_remove_chooseneighbor_ [21]
+                0.01    0.00 8194221/302260686     ebias_remove_choosetarget_ [22]
+                0.01    0.00 9556453/302260686     rot_yz_ [20]
+                0.01    0.00 10301789/302260686     avbmc_ebias_in_ [9]
+                0.02    0.00 15013439/302260686     rot_xy_ [6]
+                0.02    0.00 15016917/302260686     rot_xz_ [5]
+                0.02    0.00 16390156/302260686     rotation_ [31]
+                0.02    0.00 20691316/302260686     generate_unitsphere_ [28]
+                0.03    0.00 24380769/302260686     ridgid_configgen_ [25]
+                0.04    0.00 33334983/302260686     avbmc_ [30]
+                0.06    0.00 50000000/302260686     MAIN__ [1]
+                0.09    0.00 77810522/302260686     translation_ [4]
+[26]     0.1    0.37    0.00 302260686         grnd_ [26]
+-----------------------------------------------
+                0.00    0.00      51/10369138     allocateumbrellabias_ [37]
+                0.05    0.00 2174866/10369138     avbmc_ebias_in_ [9]
+                0.17    0.00 8194221/10369138     avbmc_ebias_out_ [7]
+[27]     0.1    0.22    0.00 10369138         __umbrellafunctions_MOD_getbiasindex [27]
+-----------------------------------------------
+                0.15    0.02 8126799/8126799     avbmc_ebias_in_ [9]
+[28]     0.1    0.15    0.02 8126799         generate_unitsphere_ [28]
+                0.02    0.00 20691316/302260686     grnd_ [26]
+-----------------------------------------------
+                0.02    0.00 5460804/32773815     rot_yz_ [20]
+                0.02    0.00 5461277/32773815     rot_xy_ [6]
+                0.02    0.00 5463328/32773815     rot_xz_ [5]
+                0.07    0.00 16388406/32773815     translation_ [4]
+[29]     0.0    0.13    0.00 32773815         __indexingfunctions_MOD_get_molindex [29]
+-----------------------------------------------
+                0.07    0.04 16667484/16667484     MAIN__ [1]
+[30]     0.0    0.07    0.04 16667484         avbmc_ [30]
+                0.04    0.00 33334983/302260686     grnd_ [26]
+-----------------------------------------------
+                0.05    0.02 16663676/16663676     MAIN__ [1]
+[31]     0.0    0.05    0.02 16663676         rotation_ [31]
+                0.02    0.00 16390156/302260686     grnd_ [26]
+-----------------------------------------------
+                0.00    0.00  406256/17665309     avbmc_ebias_out_ [7]
+                0.00    0.00  813933/17665309     avbmc_ebias_in_ [9]
+                0.01    0.00 2733036/17665309     rot_yz_ [20]
+                0.01    0.00 2734937/17665309     rot_xy_ [6]
+                0.01    0.00 2737539/17665309     rot_xz_ [5]
+                0.03    0.00 8239608/17665309     translation_ [4]
+[32]     0.0    0.06    0.00 17665309         __e_interface_MOD_update_subenergies [32]
+-----------------------------------------------
+                0.03    0.00 6484126/14678347     avbmc_ebias_in_ [9]
+                0.03    0.00 8194221/14678347     avbmc_ebias_out_ [7]
+[33]     0.0    0.06    0.00 14678347         __umbrellafunctions_MOD_getnewbiasindex [33]
+-----------------------------------------------
+                0.06    0.00  406256/406256      avbmc_ebias_out_ [7]
+[34]     0.0    0.06    0.00  406256         __energycriteria_MOD_neighborupdate_delete [34]
+-----------------------------------------------
+                                                 <spontaneous>
+[35]     0.0    0.05    0.00                 debug_output_neighborlist_ [35]
+-----------------------------------------------
+                                                 <spontaneous>
+[36]     0.0    0.03    0.00                 __improperanglefunctions_MOD_detailed_ecalc_improper [36]
+-----------------------------------------------
+                0.02    0.00       1/1           readparameters_ [38]
+[37]     0.0    0.02    0.00       1         allocateumbrellabias_ [37]
+                0.00    0.00      51/10369138     __umbrellafunctions_MOD_getbiasindex [27]
+-----------------------------------------------
+                0.00    0.02       1/1           MAIN__ [1]
+[38]     0.0    0.00    0.02       1         readparameters_ [38]
+                0.02    0.00       1/1           allocateumbrellabias_ [37]
+                0.00    0.00       1/1           gcd_calc_ [55]
+                0.00    0.00       1/2           __units_MOD_findengunit [96]
+                0.00    0.00       1/2           __units_MOD_findlengthunit [97]
+-----------------------------------------------
+                                                 <spontaneous>
+[39]     0.0    0.02    0.00                 singleatom_translation_ [39]
+-----------------------------------------------
+                0.01    0.00     502/502         MAIN__ [1]
+[40]     0.0    0.01    0.00     502         trajoutput_ [40]
+-----------------------------------------------
+                                                 <spontaneous>
+[41]     0.0    0.01    0.00                 ebias_insert_reverseprobtarget_ [41]
+-----------------------------------------------
+                                                 <spontaneous>
+[42]     0.0    0.01    0.00                 ebias_remove_reverseprobtarget_ [42]
+-----------------------------------------------
+                0.01    0.00       2/2           __e_interface_MOD_detailed_energycalc [44]
+[43]     0.0    0.01    0.00       2         __bondstretchfunctions_MOD_detailed_ecalc_bondstretch [43]
+-----------------------------------------------
+                0.00    0.01       2/2           MAIN__ [1]
+[44]     0.0    0.00    0.01       2         __e_interface_MOD_detailed_energycalc [44]
+                0.01    0.00       2/2           __bondstretchfunctions_MOD_detailed_ecalc_bondstretch [43]
+                0.00    0.00       2/2           __interenergy_lj_electro_MOD_detailed_ecalc_inter [93]
+                0.00    0.00       2/2           __intraenergy_lj_electro_MOD_detailed_ecalc_intranonbonded [94]
+                0.00    0.00       2/2           __energycriteria_MOD_detailed_energycriteria [92]
+                0.00    0.00       2/2           __bendingfunctions_MOD_detailed_ecalc_bending [91]
+                0.00    0.00       2/2           __torsionalfunctions_MOD_detailed_ecalc_torsional [95]
+-----------------------------------------------
+                                                 <spontaneous>
+[45]     0.0    0.01    0.00                 __energycriteria_MOD_swapin_energycriteria [45]
+-----------------------------------------------
+                0.01    0.00       1/1           MAIN__ [1]
+[46]     0.0    0.01    0.00       1         sgrnd_ [46]
+-----------------------------------------------
+                0.00    0.00       3/3           cbmc_findpathways_ [51]
+[47]     0.0    0.00    0.00       3         getnextatom_ [47]
+-----------------------------------------------
+                0.00    0.00       1/1           readforcefield_ [59]
+[48]     0.0    0.00    0.00       1         allocate_common_variables_ [48]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[49]     0.0    0.00    0.00       1         allocatecoordinatearrays_ [49]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[50]     0.0    0.00    0.00       1         cbmc_createtopology_ [50]
+                0.00    0.00       1/1           cbmc_findpathways_ [51]
+-----------------------------------------------
+                0.00    0.00       1/1           cbmc_createtopology_ [50]
+[51]     0.0    0.00    0.00       1         cbmc_findpathways_ [51]
+                0.00    0.00       3/3           getnextatom_ [47]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[52]     0.0    0.00    0.00       1         collapsen_ [52]
+                0.00    0.00       1/1           single_n_histoutput_ [63]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[53]     0.0    0.00    0.00       1         createjointarray_ [53]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[54]     0.0    0.00    0.00       1         determineregrowthtype_ [54]
+-----------------------------------------------
+                0.00    0.00       1/1           readparameters_ [38]
+[55]     0.0    0.00    0.00       1         gcd_calc_ [55]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[56]     0.0    0.00    0.00       1         initialtrajoutput_ [56]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[57]     0.0    0.00    0.00       1         n_histoutput_ [57]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[58]     0.0    0.00    0.00       1         output_vmd_final_ [58]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[59]     0.0    0.00    0.00       1         readforcefield_ [59]
+                0.00    0.00       6/6           __forcefieldfunctions_MOD_geomean_mixingfunc [89]
+                0.00    0.00       6/6           __forcefieldfunctions_MOD_mean_mixingfunc [90]
+                0.00    0.00       1/1           allocate_common_variables_ [48]
+                0.00    0.00       1/2           __units_MOD_findengunit [96]
+                0.00    0.00       1/2           __units_MOD_findlengthunit [97]
+                0.00    0.00       1/1           __units_MOD_findangularunit [98]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[60]     0.0    0.00    0.00       1         readinitialconfiguration_ [60]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[61]     0.0    0.00    0.00       1         readinitialgasphase_ [61]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[62]     0.0    0.00    0.00       1         recentercoordinates_ [62]
+-----------------------------------------------
+                0.00    0.00       1/1           collapsen_ [52]
+[63]     0.0    0.00    0.00       1         single_n_histoutput_ [63]
+-----------------------------------------------
+                0.00    0.00       6/6           readforcefield_ [59]
+[89]     0.0    0.00    0.00       6         __forcefieldfunctions_MOD_geomean_mixingfunc [89]
+-----------------------------------------------
+                0.00    0.00       6/6           readforcefield_ [59]
+[90]     0.0    0.00    0.00       6         __forcefieldfunctions_MOD_mean_mixingfunc [90]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [44]
+[91]     0.0    0.00    0.00       2         __bendingfunctions_MOD_detailed_ecalc_bending [91]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [44]
+[92]     0.0    0.00    0.00       2         __energycriteria_MOD_detailed_energycriteria [92]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [44]
+[93]     0.0    0.00    0.00       2         __interenergy_lj_electro_MOD_detailed_ecalc_inter [93]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [44]
+[94]     0.0    0.00    0.00       2         __intraenergy_lj_electro_MOD_detailed_ecalc_intranonbonded [94]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [44]
+[95]     0.0    0.00    0.00       2         __torsionalfunctions_MOD_detailed_ecalc_torsional [95]
+-----------------------------------------------
+                0.00    0.00       1/2           readparameters_ [38]
+                0.00    0.00       1/2           readforcefield_ [59]
+[96]     0.0    0.00    0.00       2         __units_MOD_findengunit [96]
+-----------------------------------------------
+                0.00    0.00       1/2           readparameters_ [38]
+                0.00    0.00       1/2           readforcefield_ [59]
+[97]     0.0    0.00    0.00       2         __units_MOD_findlengthunit [97]
+-----------------------------------------------
+                0.00    0.00       1/1           readforcefield_ [59]
+[98]     0.0    0.00    0.00       1         __units_MOD_findangularunit [98]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+   [1] MAIN__                 [95] __torsionalfunctions_MOD_detailed_ecalc_torsional [28] generate_unitsphere_
+  [91] __bendingfunctions_MOD_detailed_ecalc_bending [27] __umbrellafunctions_MOD_getbiasindex [47] getnextatom_
+  [43] __bondstretchfunctions_MOD_detailed_ecalc_bondstretch [33] __umbrellafunctions_MOD_getnewbiasindex [26] grnd_
+  [44] __e_interface_MOD_detailed_energycalc [98] __units_MOD_findangularunit [56] initialtrajoutput_
+   [2] __e_interface_MOD_shift_energycalc [96] __units_MOD_findengunit [16] insert_newneietable_
+  [14] __e_interface_MOD_swapin_energycalc [97] __units_MOD_findlengthunit [57] n_histoutput_
+  [10] __e_interface_MOD_swapout_energycalc [48] allocate_common_variables_ [24] nhistadd_
+  [32] __e_interface_MOD_update_subenergies [49] allocatecoordinatearrays_ [58] output_vmd_final_
+  [92] __energycriteria_MOD_detailed_energycriteria [37] allocateumbrellabias_ [59] readforcefield_
+  [17] __energycriteria_MOD_neighborupdate [30] avbmc_    [60] readinitialconfiguration_
+  [34] __energycriteria_MOD_neighborupdate_delete [9] avbmc_ebias_in_ [61] readinitialgasphase_
+   [8] __energycriteria_MOD_shift_energycriteria [7] avbmc_ebias_out_ [38] readparameters_
+  [45] __energycriteria_MOD_swapin_energycriteria [50] cbmc_createtopology_ [62] recentercoordinates_
+  [13] __energycriteria_MOD_swapout_energycriteria [51] cbmc_findpathways_ [25] ridgid_configgen_
+  [89] __forcefieldfunctions_MOD_geomean_mixingfunc [52] collapsen_ [6] rot_xy_
+  [90] __forcefieldfunctions_MOD_mean_mixingfunc [12] create_neietable_ [5] rot_xz_
+  [36] __improperanglefunctions_MOD_detailed_ecalc_improper [53] createjointarray_ [20] rot_yz_
+  [29] __indexingfunctions_MOD_get_molindex [35] debug_output_neighborlist_ [31] rotation_
+  [23] __indexingfunctions_MOD_get_moltype [54] determineregrowthtype_ [46] sgrnd_
+  [93] __interenergy_lj_electro_MOD_detailed_ecalc_inter [18] ebias_insert_choosetarget_ [63] single_n_histoutput_
+  [11] __interenergy_lj_electro_MOD_mol_ecalc_inter [41] ebias_insert_reverseprobtarget_ [39] singleatom_translation_
+  [15] __interenergy_lj_electro_MOD_newmol_ecalc_inter [21] ebias_remove_chooseneighbor_ [40] trajoutput_
+  [19] __interenergy_lj_electro_MOD_quicknei_ecalc_inter [22] ebias_remove_choosetarget_ [4] translation_
+   [3] __interenergy_lj_electro_MOD_shift_ecalc_inter [42] ebias_remove_reverseprobtarget_
+  [94] __intraenergy_lj_electro_MOD_detailed_ecalc_intranonbonded [55] gcd_calc_
