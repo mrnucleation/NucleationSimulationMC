@@ -1,0 +1,45 @@
+ Lennard-Jones Energy:  0.000000000000000E+000
+ Eletrostatic Energy:  0.000000000000000E+000
+ Intra Lennard-Jones Energy:  0.000000000000000E+000
+ Intra Eletrostatic Energy:  0.000000000000000E+000
+ Stretch Energy:  0.000000000000000E+000
+ Bending Energy:  0.000000000000000E+000
+ Torsional Energy  0.000000000000000E+000
+ MPI threads:           2
+ Thread ID:           1
+ Random Seed:        4099
+ Number of Molecule Types:      1
+ Number of Initial Particles:           1
+ Number of Atoms per Molecule:           4
+ Number of Cycles:               5000000
+ Number of Moves per Cycle:                   100
+ Number of Cycle before WHAM adjustment:       50000
+ Criteria Type: Energy
+ Distance Criteria:   4.00000000000000     
+ Distance Criteria SQ:   16.0000000000000     
+ AVBMC Volume:   268.082573106329     
+ Energy Criteria:
+  -500.000000000000     
+ AVBMC E_Bias Alpha:
+  4.333333333333334E-004
+ Temperature:   300.000000000000     
+ Gas Phase Density:  5.999999999999999E-008
+ Initial Energy:  0.000000000000000E+000 kb        
+ ------------------------------------------------
+          Simulation Start!
+ ------------------------------------------------
+ Cycle # Particles Energy Acceptance Rates
+       4000      1          -0.0000        88.24       0.02
+       8000      1           0.0000        81.82       0.03
+      12000      1           0.0000        77.62       0.04
+      16000      1           0.0000        75.64       0.03
+      20000      1           0.0000        70.00       0.03
+      24000      1           0.0000        58.00       0.03
+      28000      1           0.0000        56.34       0.03
+      32000      1           0.0000        47.89       0.03
+      36000      1           0.0000        41.77       0.03
+      40000      1           0.0000        42.46       0.03
+      44000      1           0.0000        41.93       0.04
+      48000      1           0.0000        42.30       0.04
+ Halting for WHAM
+      52000      2       -2736.5282        63.32       0.58

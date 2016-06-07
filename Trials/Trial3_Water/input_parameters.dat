@@ -1,0 +1,31 @@
+-----------------------------------------------------
+             Simulation Parameters
+-----------------------------------------------------
+   RNG_Seed:=                     1024
+   Number_of_Cycles:=             2d4
+   Moves_Per_Cycles:=             1d2   
+   Number_of_Mol_Types:=          2
+   Min_Cluster_Size:=             1 1
+   Max_Cluster_Size:=             3 5
+   Temperature(K):=               230
+   Echo_To_Screen:=               .true.
+   Use_Umbrela_Bias:=             .false.
+   Number_Of_RosenTrials:=        4 4
+-----------------------------------------------------
+             Monte Carlo Move Parameters
+-----------------------------------------------------
+    r_min:=                       1.35d0
+    Gas_Phase_Density:=           6d-6  6d-6 
+-----------------------------------------------------
+             Output Parameters
+-----------------------------------------------------	
+	Screen_Output_Frequency:=       1000
+	Trajectory_Output_Frequency:=   1000
+	Output_Energy_Units:=           kb
+	Output_Distance_Units:=         ang
+-----------------------------------------------------
+             Cluster Parameters
+-----------------------------------------------------
+      Energy Criteria:
+      -260 -260
+      -260 -260      

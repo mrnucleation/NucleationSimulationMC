@@ -1,0 +1,43 @@
+#-----------------------------------------------------
+#             Simulation Parameters
+#-----------------------------------------------------
+   RNG_Seed:=                     1024
+   Number_of_Cycles:=             2d5
+   Moves_Per_Cycles:=             1d2
+   Number_of_Mol_Types:=          1
+   Min_Cluster_Size:=             1 
+   Max_Cluster_Size:=             30
+   Temperature(K):=               300
+   Echo_To_Screen:=               .true.
+   Use_Umbrela_Bias:=             .true.  fort.25
+   Number_Of_RosenTrials:=        4
+   AVBMC_Insertion_R:=            4.0d0
+   Softcut:=                      100.0d0   
+#-----------------------------------------------------
+#             Monte Carlo Move Parameters
+#-----------------------------------------------------
+    Gas_Phase_Density:=           6d-6
+#-----------------------------------------------------
+#             Output Parameters
+#-----------------------------------------------------	
+    Screen_Output_Frequency:=       1000
+    Trajectory_Output_Frequency:=   1500
+    Output_Energy_Units:=           kb
+    Output_Distance_Units:=         ang
+#-----------------------------------------------------
+#             Weighted Histogram Analysis Variables
+#-----------------------------------------------------
+   Use_WHAM:=                      .true.
+   Reference_Cluster:=              1
+   Cycles_Per_WHAM_Interval:=       40000
+   Tolereance:=                     1d-5
+   Max_Itterations:=                1000
+   Use_Wham_DG_Interval:=           5
+   Equilibration_Cycles:=           2000
+#-----------------------------------------------------
+#             Cluster Parameters
+#-----------------------------------------------------
+      Energy Criteria:
+      -500
+      E_Bias_Alpha:=                 
+      0.13d0

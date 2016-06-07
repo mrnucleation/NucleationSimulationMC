@@ -1,0 +1,580 @@
+!===========================================================================================
+      subroutine SingleAtom_Translation(E_T,acc_x,atmp_x,max_dist)
+      use SimParameters
+      use IndexingFunctions
+      use Coords
+      use Forcefield
+      use E_Interface
+      use EnergyCriteria
+      use DistanceCriteria      
+      use EnergyTables
+      use CBMC_Variables      
+      implicit none
+      
+      real(kind(0.0d0)),intent(inout) :: E_T,acc_x,atmp_x      
+      real(kind(0.0d0)), intent(in) :: max_dist
+
+      logical, parameter :: useIntra(1:4) = [.true., .true., .true., .true.]
+      
+      logical rejMove      
+      integer nType,nMol,nIndx,nMove, nAtom
+      real(kind(0.0d0)) :: grnd 
+      real(kind(0.0d0)) :: dx,dy,dz      
+      real(kind(0.0d0)) :: E_Diff,E_Inter, E_Intra
+      type (displacement) :: disp(1:1)
+      real(kind(0.0d0)) :: PairList(1:maxMol)
+      real(kind(0.0d0)) :: dETable(1:maxMol)
+      real(kind(0.0d0)) :: newBias, oldBias, biasDiff      
+
+      rejMove = .false.
+      atmp_x = atmp_x+1d0
+!     Randomly Select a Particle from the cluster and obtain its molecule type and index
+      nMove = floor(NTotal*grnd() + 1d0)
+
+      call Get_MolIndex(nMove, NPart, nType, nMol)
+      nIndx = MolArray(nType)%mol(nMol)%indx
+      if(regrowType(nType) .eq. 0) return
+      
+      nAtom = floor(nAtoms(nType)*grnd() + 1d0)
+      
+
+!     Generate a random translational displacement             
+      dx = max_dist * (2d0*grnd() - 1d0)
+      dy = max_dist * (2d0*grnd() - 1d0)
+      dz = max_dist * (2d0*grnd() - 1d0)
+
+!     Construct the Displacement Vectors for each atom in the molecule that was chosen.'
+      disp(1)%molType = int(nType,2)
+      disp(1)%molIndx = int(nMol,2)
+      disp(1)%atmIndx = int(nAtom,2)
+        
+      disp(1)%x_old => MolArray(nType)%mol(nMol)%x(nAtom)
+      disp(1)%y_old => MolArray(nType)%mol(nMol)%y(nAtom)
+      disp(1)%z_old => MolArray(nType)%mol(nMol)%z(nAtom)
+
+      disp(1)%x_new = disp(1)%x_old + dx
+      disp(1)%y_new = disp(1)%y_old + dy
+      disp(1)%z_new = disp(1)%z_old + dz
+
+
+      
+!     Calculate the Energy Associated with this move and ensure it conforms to
+!     the cluster criteria.
+      E_Inter = 0d0
+      E_Intra = 0d0
+      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:1), PairList, dETable, useIntra, rejMove)
+      if(rejMove) return
+      E_Diff = E_Inter + E_Intra
+
+!     Calculate Acceptance and determine if the move is accepted or not     
+      if(E_Diff .le. 0d0) then
+        disp(1)%x_old = disp(1)%x_new
+        disp(1)%y_old = disp(1)%y_new
+        disp(1)%z_old = disp(1)%z_new
+        E_T = E_T + E_Diff
+        ETable = ETable + dETable
+        acc_x = acc_x + 1d0
+        if(distCriteria) then
+          if(disp(1)%atmIndx .eq. 1) then
+            call NeighborUpdate_Distance(PairList,nIndx)        
+          endif
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+        call Create_NeiETable
+        call Update_SubEnergies
+      elseif(exp(-beta*E_Diff) .gt. grnd()) then
+        disp(1)%x_old = disp(1)%x_new
+        disp(1)%y_old = disp(1)%y_new
+        disp(1)%z_old = disp(1)%z_new
+        E_T = E_T + E_Diff
+        ETable = ETable + dETable
+        acc_x = acc_x + 1d0
+        if(distCriteria) then
+          if(disp(1)%atmIndx .eq. 1) then
+            call NeighborUpdate_Distance(PairList,nIndx)        
+          endif
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+!        call Create_NeiETable
+        call Update_SubEnergies        
+      endif
+
+      	  
+      end subroutine
+!===========================================================================================
+      subroutine Translation(E_T,acc_x,atmp_x,max_dist)
+      use SimParameters
+      use IndexingFunctions
+      use Coords
+      use Forcefield
+      use E_Interface
+      use EnergyCriteria
+      use DistanceCriteria      
+      use EnergyTables
+      implicit none
+      
+      real(kind(0.0d0)),intent(inout) :: E_T,acc_x,atmp_x      
+      real(kind(0.0d0)), intent(in) :: max_dist
+      
+      logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
+      
+      logical rejMove      
+      integer :: i,nType,nMol,nIndx,nMove
+      real(kind(0.0d0)) :: grnd 
+      real(kind(0.0d0)) :: dx,dy,dz      
+      real(kind(0.0d0)) :: E_Inter, E_Intra
+      type (displacement) :: disp(1:maxAtoms)
+      real(kind(0.0d0)) :: PairList(1:maxMol)
+      real(kind(0.0d0)) :: dETable(1:maxMol)
+      
+      if(NTotal .eq. 1) return
+      
+      rejMove = .false.
+      atmp_x = atmp_x + 1d0
+!     Randomly Select a Particle from the cluster and obtain its molecule type and index
+      nMove = floor(NTotal*grnd() + 1d0)
+
+      call Get_MolIndex(nMove, NPart, nType, nMol)
+      nIndx = MolArray(nType)%mol(nMol)%indx
+!     Generate a random translational displacement             
+      dx = max_dist * (2d0*grnd() - 1d0)
+      dy = max_dist * (2d0*grnd() - 1d0)
+      dz = max_dist * (2d0*grnd() - 1d0)
+
+!     Construct the Displacement Vectors for each atom in the molecule that was chosen.
+      do i=1,nAtoms(nType)
+        disp(i)%molType = int(nType,2)
+        disp(i)%molIndx = int(nMol,2)
+        disp(i)%atmIndx = int(i,2)
+        
+        disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
+        disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
+        disp(i)%z_old => MolArray(nType)%mol(nMol)%z(i)
+        
+        disp(i)%x_new = disp(i)%x_old + dx
+        disp(i)%y_new = disp(i)%y_old + dy
+        disp(i)%z_new = disp(i)%z_old + dz        
+      enddo
+      
+!     Calculate the Energy Associated with this move and ensure it conforms to
+!     the cluster criteria.
+      E_Inter = 0d0
+      E_Intra = 0d0
+      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+      if(rejMove) return
+      
+!     Calculate Acceptance and determine if the move is accepted or not     
+      if(E_Inter .le. 0d0) then
+        do i=1,nAtoms(nType)      
+          disp(i)%x_old = disp(i)%x_new
+          disp(i)%y_old = disp(i)%y_new
+          disp(i)%z_old = disp(i)%z_new
+        enddo
+        E_T = E_T + E_Inter
+        ETable = ETable + dETable
+        acc_x = acc_x+1d0
+        if(distCriteria) then
+          call NeighborUpdate_Distance(PairList,nIndx)        
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif    
+!        call Create_NeiETable
+        call Update_SubEnergies        
+      elseif(exp(-beta*E_Inter) .gt. grnd()) then
+        do i=1,nAtoms(nType)      
+          disp(i)%x_old = disp(i)%x_new
+          disp(i)%y_old = disp(i)%y_new
+          disp(i)%z_old = disp(i)%z_new
+        enddo
+        E_T = E_T + E_Inter
+        ETable = ETable + dETable
+        acc_x = acc_x+1d0
+        if(distCriteria) then
+          call NeighborUpdate_Distance(PairList, nIndx)        
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+!        call Create_NeiETable
+        call Update_SubEnergies        
+      endif
+
+      	  
+      end subroutine
+!===========================================================================================
+      subroutine Rotation(E_T,acc_x,atmp_x,max_rot)
+      use SimParameters    
+      implicit none
+      real(kind(0.0d0)) :: ran_num,grnd,acc_x,E_T
+      real(kind(0.0d0)) :: atmp_x,max_rot
+
+      if(NTotal .eq. 1) then
+!       acc_x=acc_x+1d0
+       return            
+      endif      
+      
+
+      ran_num = grnd()
+      if(ran_num .lt. 1d0/3d0) then
+         call Rot_xy(E_T, max_rot, acc_x,atmp_x)      
+      elseif(ran_num .lt. 2d0/3d0) then
+         call Rot_xz(E_T, max_rot, acc_x,atmp_x)  
+      else
+         call Rot_yz(E_T, max_rot, acc_x,atmp_x)  
+      endif      
+      
+      end subroutine   
+!=======================================================      
+      subroutine Rot_xy(E_T,max_rot,acc_x,atmp_x)
+      use SimParameters
+      use IndexingFunctions
+      use Coords
+      use Forcefield
+      use E_Interface
+      use EnergyCriteria
+      use DistanceCriteria      
+      use EnergyTables
+      implicit none
+
+      real(kind(0.0d0)), intent(inout) :: E_T,acc_x,atmp_x
+      real(kind(0.0d0)), intent(in) :: max_rot
+
+      logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
+      
+      logical :: rejMove      
+      integer :: i,nMove 
+      integer :: atmType,nMol,nType,nIndx
+      real(kind(0.0d0)) :: E_Inter, E_Intra
+      real(kind(0.0d0)) :: grnd   
+      real(kind(0.0d0)) :: c_term,s_term
+      real(kind(0.0d0)) :: x_scale, y_scale
+      real(kind(0.0d0)) :: xcm,ycm,angle
+      type (displacement) :: disp(1:maxAtoms)
+      real(kind(0.0d0)) :: PairList(1:maxMol)
+      real(kind(0.0d0)) :: dETable(1:maxMol)
+      
+!     Randomly Select a Particle from the cluster and obtain its molecule type and index
+      nMove = floor(NTotal*grnd() + 1d0)
+      call Get_MolIndex(nMove, NPart, nType, nMol)
+      if(nAtoms(nType) .eq. 1) then
+        return
+      endif
+      atmp_x = atmp_x+1d0
+      nIndx = MolArray(nType)%mol(nMol)%indx
+
+!     Set the Displacement Array 
+      do i=1,nAtoms(nType)
+        disp(i)%molType = int(nType,2)
+        disp(i)%molIndx = int(nMol,2)
+        disp(i)%atmIndx = int(i,2)
+        
+        disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
+        disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
+        disp(i)%z_old => MolArray(nType)%mol(nMol)%z(i)
+      enddo
+      
+!     Uniformly choose a random rotational displacement ranging from -max_rot to +max_rot
+      angle = max_rot*(2d0*grnd()-1d0)
+      c_term=dcos(angle)
+      s_term=dsin(angle)
+
+!     Determine the center of mass which will act as the pivot point for the rotational motion. 
+      xcm=0d0
+      ycm=0d0
+      do i=1,nAtoms(nType)
+        atmType = atomArray(nType,i)
+        xcm = xcm + atomData(atmType)%mass*disp(i)%x_old
+        ycm = ycm + atomData(atmType)%mass*disp(i)%y_old
+      enddo
+
+      xcm = xcm/totalMass(nType)   
+      ycm = ycm/totalMass(nType)
+
+!     Generate a random translational displacement      
+      do i=1,nAtoms(nType)
+        disp(i)%z_new = disp(i)%z_old
+        x_scale = disp(i)%x_old - xcm
+        y_scale = disp(i)%y_old - ycm
+        disp(i)%x_new = c_term*x_scale - s_term*y_scale + xcm
+        disp(i)%y_new = s_term*x_scale + c_term*y_scale + ycm
+      enddo
+
+!     Calculate the Energy Difference Associated with the move   
+      E_Inter = 0d0
+      E_Intra = 0d0
+      rejMove = .false.
+      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+      if(rejMove) return
+       
+!      Calculate Acceptance and determine if the move is accepted or not       
+      if(E_Inter .le. 0d0) then
+        do i=1,nAtoms(nType)      
+          disp(i)%x_old = disp(i)%x_new
+          disp(i)%y_old = disp(i)%y_new
+          disp(i)%z_old = disp(i)%z_new
+        enddo
+        E_T = E_T + E_Inter
+        ETable = ETable + dETable
+        acc_x = acc_x+1d0
+        if(distCriteria) then
+          call NeighborUpdate_Distance(PairList, nIndx)        
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+!        call Create_NeiETable
+        call Update_SubEnergies        
+      elseif(exp(-beta*E_Inter) .gt. grnd()) then
+        do i=1,nAtoms(nType)      
+          disp(i)%x_old = disp(i)%x_new
+          disp(i)%y_old = disp(i)%y_new
+          disp(i)%z_old = disp(i)%z_new
+        enddo
+        E_T = E_T + E_Inter
+        ETable = ETable + dETable
+        acc_x = acc_x+1d0
+        if(distCriteria) then
+          call NeighborUpdate_Distance(PairList, nIndx)        
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+!        call Create_NeiETable
+        call Update_SubEnergies        
+      endif
+      end subroutine
+!=======================================================      
+      subroutine Rot_xz(E_T,max_rot,acc_x,atmp_x)
+      use SimParameters
+      use IndexingFunctions
+      use Coords
+      use Forcefield
+      use E_Interface
+      use EnergyCriteria
+      use DistanceCriteria      
+      use EnergyTables      
+      implicit none
+
+      real(kind(0.0d0)), intent(inout) :: E_T,acc_x,atmp_x
+      real(kind(0.0d0)), intent(in) :: max_rot
+
+      logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
+      
+      logical :: rejMove      
+      integer :: i,nMove 
+      integer :: atmType,nMol,nType,nIndx
+      real(kind(0.0d0)) :: angle
+      real(kind(0.0d0)) :: E_Inter, E_Intra
+      real(kind(0.0d0)) :: grnd   
+      real(kind(0.0d0)) :: c_term,s_term
+      real(kind(0.0d0)) :: x_scale, z_scale
+      real(kind(0.0d0)) :: xcm,zcm
+      type (displacement) :: disp(1:maxAtoms)
+      real(kind(0.0d0)) :: PairList(1:maxMol)
+      real(kind(0.0d0)) :: dETable(1:maxMol)
+      
+!     Randomly Select a Particle from the cluster and obtain its molecule type and index
+      nMove = floor(NTotal*grnd() + 1d0)
+      call Get_MolIndex(nMove, NPart, nType, nMol)
+      if(nAtoms(nType) .eq. 1) then
+        return
+      endif
+      atmp_x = atmp_x+1d0
+      nIndx = MolArray(nType)%mol(nMol)%indx
+
+!     Set the Displacement Array 
+      do i=1,nAtoms(nType)
+        disp(i)%molType = int(nType,2)
+        disp(i)%molIndx = int(nMol,2)
+        disp(i)%atmIndx = int(i,2)
+        
+        disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
+        disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
+        disp(i)%z_old => MolArray(nType)%mol(nMol)%z(i)
+      enddo
+      
+!     Uniformly choose a random rotational displacement ranging from -max_rot to +max_rot
+      angle = max_rot * (2d0 * grnd() - 1d0)
+      c_term=dcos(angle)
+      s_term=dsin(angle)
+
+!     Determine the center of mass which will act as the pivot point for the rotational motion. 
+      xcm=0d0
+      zcm=0d0
+      do i=1,nAtoms(nType)
+        atmType = atomArray(nType,i)
+        xcm = xcm + atomData(atmType)%mass*disp(i)%x_old
+        zcm = zcm + atomData(atmType)%mass*disp(i)%z_old
+      enddo
+
+      xcm = xcm/totalMass(nType)    
+      zcm = zcm/totalMass(nType)
+
+!     Generate a random translational displacement      
+      do i=1,nAtoms(nType)
+        disp(i)%y_new = disp(i)%y_old
+        x_scale = disp(i)%x_old - xcm
+        z_scale = disp(i)%z_old - zcm
+        disp(i)%x_new = c_term*x_scale - s_term*z_scale + xcm
+        disp(i)%z_new = s_term*x_scale + c_term*z_scale + zcm
+      enddo
+
+!     Calculate the Energy Difference Associated with the move   
+      E_Inter = 0d0
+      E_Intra = 0d0
+      rejMove = .false.
+      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+      if(rejMove) return
+       
+!      Calculate Acceptance and determine if the move is accepted or not       
+      if(E_Inter .le. 0d0) then
+        do i=1,nAtoms(nType)      
+          disp(i)%x_old = disp(i)%x_new
+          disp(i)%y_old = disp(i)%y_new
+          disp(i)%z_old = disp(i)%z_new
+        enddo
+        E_T = E_T + E_Inter
+        ETable = ETable + dETable
+        acc_x = acc_x + 1d0
+        if(distCriteria) then
+          call NeighborUpdate_Distance(PairList,nIndx)        
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+!        call Create_NeiETable
+        call Update_SubEnergies        
+      elseif(exp(-beta*E_Inter) .gt. grnd()) then
+        do i=1,nAtoms(nType)      
+          disp(i)%x_old = disp(i)%x_new
+          disp(i)%y_old = disp(i)%y_new
+          disp(i)%z_old = disp(i)%z_new
+        enddo
+        E_T = E_T + E_Inter
+        ETable = ETable + dETable
+        acc_x = acc_x + 1d0
+        if(distCriteria) then
+          call NeighborUpdate_Distance(PairList, nIndx)        
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+!        call Create_NeiETable
+        call Update_SubEnergies        
+      endif
+      end subroutine
+!=======================================================      
+      subroutine Rot_yz(E_T,max_rot,acc_x,atmp_x)
+      use SimParameters
+      use IndexingFunctions
+      use Coords
+      use Forcefield
+      use E_Interface
+      use EnergyCriteria
+      use DistanceCriteria
+      use EnergyTables
+      implicit none
+      
+      real(kind(0.0d0)), intent(inout) :: E_T,acc_x,atmp_x
+      real(kind(0.0d0)), intent(in) :: max_rot
+
+      logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
+      
+      logical :: rejMove      
+      integer :: i,nMove 
+      integer :: atmType,nMol,nType,nIndx
+      real(kind(0.0d0)) :: angle
+      real(kind(0.0d0)) :: E_Inter, E_Intra
+      real(kind(0.0d0)) :: grnd   
+      real(kind(0.0d0)) :: c_term,s_term
+      real(kind(0.0d0)) :: y_scale, z_scale
+      real(kind(0.0d0)) :: ycm,zcm
+      type (displacement) :: disp(1:maxAtoms)
+      real(kind(0.0d0)) :: PairList(1:maxMol)
+      real(kind(0.0d0)) :: dETable(1:maxMol)
+      
+!     Randomly Select a Particle from the cluster and obtain its molecule type and index
+      nMove = floor(NTotal*grnd() + 1d0)
+      call Get_MolIndex(nMove, NPart, nType, nMol)
+      if(nAtoms(nType) .eq. 1) then
+        return
+      endif
+      atmp_x = atmp_x+1d0
+      nIndx = MolArray(nType)%mol(nMol)%indx
+
+!     Set the Displacement Array 
+      do i=1,nAtoms(nType)
+        disp(i)%molType = int(nType,2)
+        disp(i)%molIndx = int(nMol,2)
+        disp(i)%atmIndx = int(i,2)
+        
+        disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
+        disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
+        disp(i)%z_old => MolArray(nType)%mol(nMol)%z(i)
+      enddo
+      
+!     Uniformly choose a random rotational displacement ranging from -max_rot to +max_rot
+      angle = max_rot*(2d0*grnd()-1d0)
+      c_term=dcos(angle)
+      s_term=dsin(angle)
+
+!     Determine the center of mass which will act as the pivot point for the rotational motion. 
+      ycm=0d0
+      zcm=0d0
+      do i=1,nAtoms(nType)
+        atmType = atomArray(nType,i)
+        ycm = ycm + atomData(atmType)%mass*disp(i)%y_old
+        zcm = zcm + atomData(atmType)%mass*disp(i)%z_old
+      enddo
+
+      ycm = ycm/totalMass(nType)
+      zcm = zcm/totalMass(nType)
+
+!     Generate a random translational displacement      
+      do i=1,nAtoms(nType)
+        disp(i)%x_new = disp(i)%x_old
+        y_scale = disp(i)%y_old - ycm
+        z_scale = disp(i)%z_old - zcm
+        disp(i)%y_new = c_term*y_scale - s_term*z_scale + ycm
+        disp(i)%z_new = s_term*y_scale + c_term*z_scale + zcm
+      enddo
+
+!     Calculate the Energy Difference Associated with the move   
+      E_Inter = 0d0
+      E_Intra = 0d0
+      rejMove = .false.
+      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+      if(rejMove) return
+       
+!      Calculate Acceptance and determine if the move is accepted or not       
+      if(E_Inter .le. 0d0) then
+        do i=1,nAtoms(nType)      
+          disp(i)%x_old = disp(i)%x_new
+          disp(i)%y_old = disp(i)%y_new
+          disp(i)%z_old = disp(i)%z_new
+        enddo
+        E_T = E_T + E_Inter
+        ETable = ETable + dETable
+        acc_x = acc_x+1d0
+        if(distCriteria) then
+          call NeighborUpdate_Distance(PairList,nIndx)        
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+!        call Create_NeiETable
+        call Update_SubEnergies        
+      elseif(exp(-beta*E_Inter) .gt. grnd()) then
+        do i=1,nAtoms(nType)      
+          disp(i)%x_old = disp(i)%x_new
+          disp(i)%y_old = disp(i)%y_new
+          disp(i)%z_old = disp(i)%z_new
+        enddo
+        E_T = E_T + E_Inter
+        ETable = ETable + dETable
+        acc_x = acc_x+1d0
+        if(distCriteria) then
+          call NeighborUpdate_Distance(PairList,nIndx)        
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+!        call Create_NeiETable
+        call Update_SubEnergies        
+      endif
+      end subroutine
