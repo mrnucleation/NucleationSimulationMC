@@ -211,10 +211,10 @@
          nPaths = pathArray(iType)%nPaths
          allocate(pathArray(iType)%path(1:nPaths,1:nAtoms(iType)),STAT = AllocateStatus) 
          pathArray(iType)%path = 0
-!         write(2,*) nPaths
+
          do i = 1, nPaths
            pathArray(iType)%path(i,1:nAtoms(iType)) = tempArray(i,1:nAtoms(iType))
-!           write(2,*) pathArray(iType)%path(i,1:nAtoms(iType)) 
+
          enddo
       enddo
       
@@ -233,7 +233,17 @@
         enddo
       enddo
 
-      
+      write(35,*) "------------------------------------------------------------------"
+      do iType = 1, nMolTypes
+        write(35,*) "iType:", iType
+        write(35,*) "Number of Paths:", pathArray(iType)%nPaths
+        do iPath = 1, pathArray(iType)%nPaths
+          write(35,*) pathArray(iType)%path(iPath,1:pathArray(iType)%pathMax(iPath)) 
+        enddo
+        write(35,*)
+      enddo
+      write(35,*) "------------------------------------------------------------------"
+
       end subroutine
 !=========================================================
       subroutine getNextAtom(iType,atmPrev,atmCur,atmNext)
@@ -297,7 +307,7 @@
       logical :: bondRidgid, bendRidgid
       integer :: iType, i
       integer :: xType
-      real(kind(0.0d0)) :: xForceConst, norm
+      real(dp) :: xForceConst, norm
       
       regrowType = -1
       
@@ -345,14 +355,16 @@
 
       probTypeCBMC = 0d0
       do iType = 1, nMolTypes
-        if(regrowType(iType) .ge. 2) then
+        if(regrowType(iType) .ge. 1) then
           probTypeCBMC(iType) = 1d0
         endif
       enddo
       norm = sum(probTypeCBMC)
-      do iType = 1, nMolTypes
-        probTypeCBMC(iType) = probTypeCBMC(iType)/norm
-      enddo
+      if( any(probTypeCBMC .ne. 0d0) ) then
+        do iType = 1, nMolTypes
+          probTypeCBMC(iType) = probTypeCBMC(iType)/norm
+        enddo
+      endif
 
       
       end subroutine  

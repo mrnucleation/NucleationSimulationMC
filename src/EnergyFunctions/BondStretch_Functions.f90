@@ -23,13 +23,13 @@
       use ForceFieldFunctions
       use EnergyTables, only: E_Stretch_T      
       implicit none
-      real(kind(0.0d0)), intent(inout) :: E_T
+      real(dp), intent(inout) :: E_T
       integer :: iType,iMol,iBond
       integer :: bondType      
       integer :: memb1, memb2      
-      real(kind(0.0d0)) :: k_eq,r_eq
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: E_Bond, E_Harmonic
+      real(dp) :: k_eq,r_eq
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: E_Bond, E_Harmonic
 
       E_Bond = 0d0
       do iType = 1, nMolTypes
@@ -64,7 +64,7 @@
       use ForceFieldFunctions
       implicit none
       
-      real(kind(0.0d0)), intent(out) :: E_Bond
+      real(dp), intent(out) :: E_Bond
       type(Displacement), intent(in) :: disp(:)  
 
       logical :: changed(1:maxAtoms)
@@ -74,12 +74,12 @@
       integer :: iType,iMol,iBond
       integer :: bondType
       integer :: memb1, memb2      
-      real(kind(0.0d0)) :: k_eq,r_eq
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: x1_new,y1_new,z1_new
-      real(kind(0.0d0)) :: x1_old,y1_old,z1_old
-      real(kind(0.0d0)) :: x2_new,y2_new,z2_new
-      real(kind(0.0d0)) :: x2_old,y2_old,z2_old
+      real(dp) :: k_eq,r_eq
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: x1_new,y1_new,z1_new
+      real(dp) :: x1_old,y1_old,z1_old
+      real(dp) :: x2_new,y2_new,z2_new
+      real(dp) :: x2_old,y2_old,z2_old
 
 	  
       nDisp = size(disp)
@@ -164,12 +164,12 @@
       use Coords
       use ForceFieldFunctions
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_Bond
+      real(dp), intent(out) :: E_Bond
       integer, intent(in) :: iType,iMol
       integer :: bondType,iBond
       integer :: memb1, memb2      
-      real(kind(0.0d0)) :: k_eq,r_eq
-      real(kind(0.0d0)) :: rx,ry,rz,r
+      real(dp) :: k_eq,r_eq
+      real(dp) :: rx,ry,rz,r
 
       E_Bond = 0d0
       do iBond = 1,nBonds(iType)
@@ -197,12 +197,12 @@
       use Coords
       use ForceFieldFunctions
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_Bond
+      real(dp), intent(out) :: E_Bond
       integer :: iType,iBond
       integer :: bondType
       integer :: memb1, memb2      
-      real(kind(0.0d0)) :: k_eq,r_eq
-      real(kind(0.0d0)) :: rx,ry,rz,r
+      real(dp) :: k_eq,r_eq
+      real(dp) :: rx,ry,rz,r
 
       E_Bond = 0d0
       iType = newMol%molType

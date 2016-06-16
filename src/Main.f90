@@ -19,6 +19,7 @@
       use Forcefield
       use Histogram
 !      use MPI
+      use MoveTypeModule
       use ParallelVar
       use SimParameters
       use VarPrecision
@@ -32,7 +33,7 @@
       integer(kind=8) :: ncycle,indx,ncycle2,indx2
       integer :: i,j,seed,AllocateStatus
       integer :: outFreq_Traj,outFreq_Screen,outFreq_GCD      
-    
+      integer :: nSel    
     
 !      real(dp) :: max_dist, max_dist_single, max_rot
       real(dp) :: atmp_1,atmp_2,atmp_3,atmp_4
@@ -41,7 +42,7 @@
       real(dp) :: grnd,ran_num
       real(dp) :: dist_limit,rot_limit
       real(dp) :: TimeStart,TimeFinish
-      real(dp) :: check
+      real(dp) :: check, norm
 
       real(dp) :: E_Inter_Final, E_Bend_Final, E_Torsion_Final
       real(dp) :: E_Stretch_Final, E_NBond_Final
@@ -102,18 +103,23 @@
       
 
 !   Counter for the number of Accepted Monte Carlo Moves   
-      acc_1=0d0
-      acc_2=0d0  
-      acc_3=0d0
-      acc_4=0d0 
+!      acc_1=0d0
+!      acc_2=0d0  
+!      acc_3=0d0
+!      acc_4=0d0 
+      movesAccepted = 0d0
+      distGen_accpt = 0d0
       angGen_accpt = 0d0
+      dihedGen_accpt = 0d0
 !  Counter for the number of Attempted Monte Carlo Moves  
-      atmp_1=0d0
-      atmp_2=0d0
-      atmp_3=0d0  
-      atmp_4=0d0  
+!      atmp_1=0d0
+!      atmp_2=0d0
+!      atmp_3=0d0  
+!      atmp_4=0d0  
+      movesAttempt = 1d-30
+      distGen_atmp = 0d0
       angGen_atmp = 0d0
-
+      dihedGen_atmp = 0d0
 !  Counter for the number of moves rejected due to the cluster criteria
       NeighRej=0d0
       NHist=0d0
@@ -131,9 +137,9 @@
       critriaRej = 0d0
       
 !      Maximum Displacement used by the translational move
-      max_dist = 0.1d0
+      max_dist = 0.5d0
 !      Maximum Displacement used by the rotation move      
-      max_rot = 0.01d0*pi
+      max_rot = 0.05d0*pi
       max_dist_single = 0.01d0
 !      Maximum Displacements allowed by the auto-tuning function. Failure to use this can result in
 !      critical simulation errors in the auto-tuning function.
@@ -141,8 +147,8 @@
       rot_limit = pi
       
 !      Histogram Initialization
-      d_ang = dble(nBin_Hist)/two_pi
-      d_r = dble(nBin_Hist)/(2d0)
+      d_ang = dble(nBin_Hist)/pi
+      d_r = dble(nBin_Hist)/(1.4d0)
       HistAngle = 0d0
       HistDist = 0d0
 
@@ -154,8 +160,8 @@
 !101   format(2x,I9,2x,I5,2x,F17.4,2x,F9.4,2x,F9.2,2x,F9.2)
 
       write(out1,"(A,I2,A)") "(",(8+nMolTypes),"(A))"
-      write(outFormat1, out1) "(", "2x,I9", (",2x,I5",i=1,nMolTypes),",E17.6,2x",(",2x,F9.2",i=1,4), ")"
-      write(outFormat2, out1) "(", "2x,I9", (",2x,I5",i=1,nMolTypes),",F17.4,2x",(",2x,F9.2",i=1,4), ")"  
+      write(outFormat1, out1) "(", "2x,I9", (",2x,I5",i=1,nMolTypes),",E17.6,2x",(",2x,F6.2",i=1,nMoveTypes), ")"
+      write(outFormat2, out1) "(", "2x,I9", (",2x,I5",i=1,nMolTypes),",F17.4,2x",(",2x,F6.2",i=1,nMoveTypes), ")"  
 !"
 !      E_T is the total energy of the system
       E_T=0d0
@@ -208,6 +214,8 @@
       write(nout,*) "Random Seed:", p_size*seed + myid
       write(nout,*) "Number of Molecule Types:", nMolTypes
       write(nout,*) "Number of Initial Particles:", NPART
+      write(nout,*) "Minimum Number of Particles:", NMIN
+      write(nout,*) "Maximum Number of Particles:", NMAX
       write(nout,*) "Number of Atoms per Molecule:", nAtoms
       write(nout,*) "Number of Cycles:", ncycle
       write(nout,*) "Number of Moves per Cycle:", ncycle2
@@ -259,19 +267,23 @@
        do indx=1,nCycle
          do indx2=1,nCycle2
            ran_num=grnd()
-           if(ran_num .lt. 1d0/2d0) then
-             call AVBMC(E_T, acc_3, atmp_3)
+!           if(ran_num .lt. 1d0/4d0) then
+!             call AVBMC(E_T, acc_3, atmp_3)
 !           elseif(ran_num .lt. 2d0/4d0) then
 !             call CBMC(E_T, acc_2, atmp_2)
-!             call SingleAtom_Translation(E_T,acc_2,atmp_2,max_dist_single)
+!             call SingleAtom_Translation(E_T,acc_2,atmp_2)
 !           elseif(ran_num .lt. 3d0/4d0) then
 !             call Rotation(E_T,acc_4,atmp_4)  
-           else
-             call Translation(E_T,acc_1,atmp_1)
-           endif
+!           else
+!             call Translation(E_T,acc_1,atmp_1)
+!           endif
 
-!            call SingleAtom_Translation(E_T,acc_2,atmp_2,0.05d0)           
-!           call Simple_Intra(E_T, acc_2, atmp_2)  
+           nSel = 1
+           do while(moveProbability(nSel) .lt. ran_num)
+             nSel = nSel + 1
+           enddo
+           call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
+
 !           call Calc_BendAngle(1, 1)
 !           call Calc_BondStretch(1, 1)
 !           call Calc_BondStretch(1, 2)           
@@ -299,18 +311,20 @@
         if(mod(indx,outFreq_GCD) .eq. 0) then
           if(mod(indx,outFreq_Screen) .eq. 0) then
             if(abs(E_T) .lt. 1d6) then
-             write(nout,outFormat2) indx,NPART, E_T,1d2*acc_1/atmp_1, 1d2*acc_3/atmp_3
+!             write(nout,outFormat2) indx,NPART, E_T,1d2*acc_1/atmp_1, 1d2*acc_3/atmp_3
+             write(nout,outFormat2) indx,NPART, E_T, (1d2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             else
-             write(nout,outFormat1) indx,NPART, E_T,1d2*acc_1/atmp_1, 1d2*acc_3/atmp_3
+!             write(nout,outFormat1) indx,NPART, E_T,1d2*acc_1/atmp_1, 1d2*acc_3/atmp_3
+             write(nout,outFormat1) indx,NPART, E_T,  (1d2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             endif
           endif
           if(mod(indx,outFreq_Traj) .eq. 0) call TrajOutput(indx)
         endif
 
         if(useWham) then
-         if(mod(indx,intervalWHAM) .eq. 0) then
-           call WHAM_AdjustHist
-         endif
+          if(mod(indx,intervalWHAM) .eq. 0) then
+            call WHAM_AdjustHist
+          endif
         endif
 
       enddo      
@@ -343,7 +357,7 @@
 !      and compare it to the culmative energy to check for possible errors during the simulation. 
 !      If these two values do not match there is an error in the energy calculation routines. 
       call Detailed_EnergyCalc(E_Final,errRtn)      
-      call Create_NeiETable      
+      
 !      Output final trajectory      
       call TrajOutput(indx)
       close(30)    
@@ -381,23 +395,36 @@
       endif        
       write(nout,*) "Final Max Displacement", (max_dist(j), j=1,nMolTypes)
       write(nout,*) "Final Max Rotation", (max_rot(j), j=1,nMolTypes)
-      write(nout,*) "Acceptance Rate Translation:", 1d2*acc_1/atmp_1
-      write(nout,*) "Acceptance Rate CBMC:", 1d2*acc_2/atmp_2
-      write(nout,*) "Acceptance Rate Swap:", 1d2*acc_3/atmp_3
-      write(nout,*) "Acceptance Rate Rotate:", 1d2*acc_4/atmp_4
+!      write(nout,*) "Acceptance Rate Translation:", 1d2*acc_1/atmp_1
+!      write(nout,*) "Acceptance Rate CBMC:", 1d2*acc_2/atmp_2
+!      write(nout,*) "Acceptance Rate Swap:", 1d2*acc_3/atmp_3
+!      write(nout,*) "Acceptance Rate Rotate:", 1d2*acc_4/atmp_4
+      do i = 1, nMoveTypes
+        if(movesAttempt(i) .ne. 0d0 ) then
+          write(nout,"(1x,A,1x,A,A,F8.2)") "Acceptance Rate", trim(adjustl(moveName(i))), ": ", 1d2*movesAccepted(i)/movesAttempt(i)
+        endif
+      enddo
       write(nout,*) "Acceptance Translate (Mol Type):", (1d2*acptTrans(j)/atmpTrans(j),j=1,nMolTypes) 
       write(nout,*) "Acceptance Rotate (Mol Type):", (1d2*acptRot(j)/atmpRot(j),j=1,nMolTypes) 
-      write(nout,*) "Angle Generation Success Rate:", 1d2*angGen_accpt/angGen_atmp
-      write(nout,*) "Cluster Criteria Rejections (Total):", 1d2*clusterCritRej/atmp_3 
-      write(nout,*) "********** AVBMC Insertion Rejection Breakdown ********"
-      write(nout,*) "Percent of Moves Rejected due to Overlap:", 1d2*ovrlapRej/totalRej
-      write(nout,*) "Percent of Moves Rejected due to Detailed Balance:", 1d2*dbalRej/totalRej
-      write(nout,*) "Percent of Moves Rejected due to Cluster Criteria:", 1d2*critriaRej/totalRej
-      write(nout,*) "**********"
-      if(atmp_3 .ge. 1d0) then
+      if(distGen_atmp .ne. 0d0) then
+        write(nout,*) "Distance Generation Success Rate:", 1d2*distGen_accpt/distGen_atmp
+      endif
+      if(angGen_atmp .ne. 0d0) then
+        write(nout,*) "Angle Generation Success Rate:", 1d2*angGen_accpt/angGen_atmp
+      endif
+      if(dihedGen_atmp .ne. 0d0) then
+        write(nout,*) "Dihedral Angle Generation Success Rate:", 1d2*dihedGen_accpt/dihedGen_atmp
+      endif
+!      write(nout,*) "Cluster Criteria Rejections (Total):", 1d2*clusterCritRej/atmp_3 
+      if(avbmcUsed) then
+        write(nout,*) "********** AVBMC Insertion Rejection Breakdown ********"
+        write(nout,*) "Percent of Moves Rejected due to Overlap:", 1d2*ovrlapRej/totalRej
+        write(nout,*) "Percent of Moves Rejected due to Detailed Balance:", 1d2*dbalRej/totalRej
+        write(nout,*) "Percent of Moves Rejected due to Cluster Criteria:", 1d2*critriaRej/totalRej
+        write(nout,*) "**********"
         write(nout,*) "Acceptance Swap In (Mol Type):", (1d2*acptSwapIn(j)/atmpSwapIn(j),j=1,nMolTypes)
         write(nout,*) "Acceptance Swap Out (Mol Type):", (1d2*acptSwapOut(j)/atmpSwapOut(j),j=1,nMolTypes) 
-        write(nout,*) "Cluster Criteria Rejections:",1d2*NeighRej/atmp_3
+!        write(nout,*) "Cluster Criteria Rejections:",1d2*NeighRej/atmp_3
       endif
 
 !      This block is the data collection block.  Variables such as the cluster histogram are collected by the root
@@ -450,8 +477,9 @@
       if(any(HistAngle .ne. 0d0)) then
         write(35,*)
         write(35,*) "Angle Histogram:"      
+        norm = sum(HistAngle)
         do i=0, nBin_Hist      
-           write(35,*) i/d_ang, HistAngle(i) 
+           write(35,*) (i+0.5d0)/d_ang, d_ang*HistAngle(i)/(norm)
         enddo
       endif
       if(any(HistDist .ne. 0d0)) then

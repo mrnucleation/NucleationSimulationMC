@@ -12,9 +12,9 @@
       integer :: iMol
       integer :: bin      
       integer :: memb1, memb2, memb3
-      real(kind(0.0d0)) :: rx12,ry12,rz12,r12
-      real(kind(0.0d0)) :: rx23,ry23,rz23,r23
-      real(kind(0.0d0)) :: Angle      
+      real(dp) :: rx12,ry12,rz12,r12
+      real(dp) :: rx23,ry23,rz23,r23
+      real(dp) :: Angle      
 
       do iMol = 1,NPART(iType)
         memb1 = bendArray(iType,iBend)%bendMembr(1)
@@ -57,7 +57,7 @@
       
       integer :: iMol, bin
       integer :: memb1, memb2      
-      real(kind(0.0d0)) :: rx,ry,rz,r
+      real(dp) :: rx,ry,rz,r
 
       do iMol = 1,NPART(iType)
         memb1 = bondArray(iType, iBond)%bondMembr(1)
