@@ -1,3 +1,5 @@
+      module NeighborTable
+      contains
 !===================================================================
       subroutine Create_NeiETable
       use EnergyTables
@@ -193,3 +195,4 @@
        
       end subroutine         
 !=================================================================================
+      end module

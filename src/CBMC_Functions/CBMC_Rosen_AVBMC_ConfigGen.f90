@@ -1,6 +1,9 @@
 !=======================================================================
-!     This subroutine generates a configuration of a ridgid molecule using
-!     a Rosenbluth sampling scheme. This is intended for situations where
+!     The purpose of this subroutine is generate a set of trial configurations that will
+!     used for the Aggregation-Volume-Bias insertion move. This subroutine is intended to generate
+!     configurations for perfectly ridgid molecules. Once a set of configurations is generated
+!     one of these configurations will be randomly chosen based on the Rosenbluth weight for each
+!     configuraiton. 
       subroutine Ridgid_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)
       use SimParameters
       use Coords
@@ -13,20 +16,21 @@
 
       integer, intent(in) :: nType, nTarget, nTargType, nIndx
       logical, intent(out) :: rejMove      
-      real(kind(0.0d0)), intent(out) :: rosenRatio
+      real(dp), intent(out) :: rosenRatio
 
       logical :: isIncluded(1:maxMol)
       logical :: overlap(1:maxRosenTrial)
+      integer :: atmType1, atmType2
       integer :: i, iRosen, nSel, nTargetMol
-      real(kind(0.0d0)) :: E_Trial(1:maxRosenTrial)      
-      real(kind(0.0d0)) :: grnd,rotang
-      real(kind(0.0d0)) :: c_term,s_term
-      real(kind(0.0d0)) :: dx, dy, dz
-      real(kind(0.0d0)) :: r, x1, y1, z1      
-      real(kind(0.0d0)) :: x_shift,y_shift,z_shift
-      real(kind(0.0d0)) :: x_rid_cm, y_rid_cm,z_rid_cm
-      real(kind(0.0d0)) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
-      real(kind(0.0d0)) :: ranNum, sumInt
+      real(dp) :: E_Trial(1:maxRosenTrial)      
+      real(dp) :: grnd,rotang
+      real(dp) :: c_term,s_term
+      real(dp) :: dx, dy, dz
+      real(dp) :: r, x1, y1, z1      
+      real(dp) :: x_shift,y_shift,z_shift
+      real(dp) :: x_rid_cm, y_rid_cm,z_rid_cm
+      real(dp) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
+      real(dp) :: ranNum, sumInt, rmin_ij
 
       
       newMol%molType = nType      
@@ -34,6 +38,12 @@
       E_Trial = 0d0
       rejMove = .false.   
       nTargetMol = subIndxList(nTarget)
+
+      atmType1 = atomArray(nType, 1)
+      atmType2 = atomArray(nTargType, 1)
+      rmin_ij = r_min_tab(atmType2, atmType1)
+      rmin_ij = sqrt(rmin_ij)
+
       do iRosen = 1, nRosenTrials(nType)
         rosenTrial(iRosen)%x(1:nAtoms(nType)) = gasConfig(nType)%x(1:nAtoms(nType))
         rosenTrial(iRosen)%y(1:nAtoms(nType)) = gasConfig(nType)%y(1:nAtoms(nType))
@@ -79,7 +89,7 @@
         endif
 
         r = Dist_Critr * grnd()**(1d0/3d0)
-        if(r .lt. global_r_min) then
+        if(r .lt. rmin_ij) then
           overlap(iRosen) = .true.
         endif
 
@@ -102,20 +112,14 @@
       enddo
 
       E_Max = minval(E_Trial)
-!      write(2,*) E_Max
       ProbRosen = 0d0
       do iRosen = 1, nRosenTrials(nType)
-         if(E_Trial(iRosen)- E_Max .le. 1d5) then
-            ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen) - E_Max))
-!            ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen)))         
-         else
-            ProbRosen(iRosen) = 0d0
-         endif
+        ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen) - E_Max))
       enddo
-      if(all(ProbRosen .eq. 0d0)) then
-        rejMove = .true.
-        return
-      endif
+!      if(all(ProbRosen .eq. 0d0)) then
+!        rejMove = .true.
+!        return
+!      endif
       rosenNorm = sum(ProbRosen)
       
       ranNum = grnd()*rosenNorm
@@ -152,20 +156,20 @@
       implicit none
 
       integer, intent(in) :: nType, nMol, nTarget, nTargType
-      real(kind(0.0d0)), intent(out) :: rosenRatio
+      real(dp), intent(out) :: rosenRatio
 
       logical :: isIncluded(1:maxMol)
       logical :: overlap(1:maxRosenTrial)
       integer :: i, iRosen, nSel, nIndx, nTargetMol
-      real(kind(0.0d0)) :: E_Trial(1:maxRosenTrial)      
-      real(kind(0.0d0)) :: grnd,rotang
-      real(kind(0.0d0)) :: c_term,s_term
-      real(kind(0.0d0)) :: dx, dy, dz
-      real(kind(0.0d0)) :: x_shift,y_shift,z_shift
-      real(kind(0.0d0)) :: x_rid_cm, y_rid_cm,z_rid_cm
-      real(kind(0.0d0)) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
-      real(kind(0.0d0)) :: ranNum, sumInt
-      real(kind(0.0d0)) :: r, x1, y1, z1       
+      real(dp) :: E_Trial(1:maxRosenTrial)      
+      real(dp) :: grnd,rotang
+      real(dp) :: c_term,s_term
+      real(dp) :: dx, dy, dz
+      real(dp) :: x_shift,y_shift,z_shift
+      real(dp) :: x_rid_cm, y_rid_cm,z_rid_cm
+      real(dp) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
+      real(dp) :: ranNum, sumInt
+      real(dp) :: r, x1, y1, z1       
 
       ProbRosen = 0d0      
       E_Trial = 0d0      
@@ -241,12 +245,7 @@
 
       E_Max = minval(E_Trial)
       do iRosen = 1, nRosenTrials(nType)
-         if(E_Trial(iRosen) - E_Max .le. 1d5) then
-            ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen) - E_Max))
-!            ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen)))         
-         else
-            ProbRosen(iRosen) = 0d0
-         endif
+        ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen) - E_Max))
       enddo
 
       rosenNorm = sum(ProbRosen)
@@ -266,30 +265,41 @@
 
       integer, intent(in) :: nType, nTarget, nTargType, nIndx
       logical, intent(out) :: rejMove      
-      real(kind(0.0d0)), intent(out):: rosenRatio
+      real(dp), intent(out):: rosenRatio
       
       logical :: isIncluded(1:maxMol)
       logical :: overlap(1:maxRosenTrial)
+      integer :: atmType1, atmType2
       integer :: i, iRosen, nSel, nTargetMol
-      integer :: Atm1, Atm2, Atm3
-      integer :: bendType, bondType      
-      real(kind(0.0d0)) :: E_Trial(1:maxRosenTrial)      
-      real(kind(0.0d0)) :: grnd,rotang
-      real(kind(0.0d0)) :: c_term,s_term
-      real(kind(0.0d0)) :: x_shift,y_shift,z_shift
-      real(kind(0.0d0)) :: x_rid_cm, y_rid_cm,z_rid_cm
-      real(kind(0.0d0)) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
-      real(kind(0.0d0)) :: ranNum, sumInt
-      real(kind(0.0d0)) :: k_bond, r_eq, r, Prob
-      real(kind(0.0d0)) :: k_bend, ang_eq, ang
-      real(kind(0.0d0)) :: x1, y1, z1, dx, dy, dz 
-      type(SimpleAtomCoords) :: v1, v2
+      integer :: Atm1, Atm2, Atm3, Atm4
+      integer :: bendType, bondType  
+      integer :: bendType1, bendType2, bendType3
+      real(dp) :: E_Trial(1:maxRosenTrial)      
+      real(dp) :: grnd,rotang
+      real(dp) :: c_term,s_term
+      real(dp) :: x_shift,y_shift,z_shift
+      real(dp) :: x_rid_cm, y_rid_cm,z_rid_cm
+      real(dp) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
+      real(dp) :: ranNum, sumInt
+      real(dp) :: k_bond, r_eq, r, Prob
+      real(dp) :: r1, r2, r3
+      real(dp) :: k_bend, ang_eq, ang
+      real(dp) :: ang1, ang2, dihed
+      real(dp) :: x1, y1, z1, dx, dy, dz 
+      real(dp) :: rmin_ij
+      type(SimpleAtomCoords) :: v1, v2, v3
       
       newMol%molType = nType      
       call Rosen_CreateSubset(nTarget, isIncluded)
       E_Trial = 0d0
       rejMove = .false.      
       nTargetMol = subIndxList(nTarget)
+
+      atmType1 = atomArray(nType, 1)
+      atmType2 = atomArray(nTargType, 1)
+      rmin_ij = r_min_tab(atmType2, atmType1)
+      rmin_ij = sqrt(rmin_ij)
+
       do iRosen = 1, nRosenTrials(nType)
       
 !        Initialize the first atom coordinates to 0      
@@ -333,19 +343,55 @@
           r_eq = bondData(bondType)%r_eq
           call GenerateBondLength(r, k_bond, r_eq, Prob)
           bendType = bendArray(nType,1)%bendType
-          k_bend = bendData(bendType)%k_eq
-          ang_eq = bendData(bendType)%ang_eq
-          call GenerateBendAngle(ang, k_bend, ang_eq, Prob)
+!          k_bend = bendData(bendType)%k_eq
+!          ang_eq = bendData(bendType)%ang_eq
+!          call GenerateBendAngle(ang, k_bend, ang_eq, Prob)
+          call GenerateBendAngle(ang, bendType, Prob)
           call Generate_UnitCone(v1, r, ang, v2)
           rosenTrial(iRosen)%x(atm3) = rosenTrial(iRosen)%x(atm2) + v2%x 
           rosenTrial(iRosen)%y(atm3) = rosenTrial(iRosen)%y(atm2) + v2%y
           rosenTrial(iRosen)%z(atm3) = rosenTrial(iRosen)%z(atm2) + v2%z
+        case(4)
+          Atm1 = pathArray(nType)%path(1, 1)
+          Atm2 = pathArray(nType)%path(1, 2)
+          Atm3 = pathArray(nType)%path(2, 1)
+          Atm4 = pathArray(nType)%path(3, 1)
+          call FindBond(nType, Atm1, Atm2, bondType)
+          k_bond = bondData(bondType)%k_eq
+          r_eq = bondData(bondType)%r_eq
+          call GenerateBondLength(r1, k_bond, r_eq, Prob)
+          call Generate_UnitSphere(dx, dy, dz)
+          v1%x = -r1*dx
+          v1%y = -r1*dy
+          v1%z = -r1*dz
+          rosenTrial(iRosen)%x(atm2) = r1 * dx
+          rosenTrial(iRosen)%y(atm2) = r1 * dy
+          rosenTrial(iRosen)%z(atm2) = r1 * dz
+          call FindBond(nType, Atm2, Atm3, bondType)
+          k_bond = bondData(bondType)%k_eq
+          r_eq = bondData(bondType)%r_eq
+          call GenerateBondLength(r2, k_bond, r_eq, Prob)
+          call FindBond(nType, Atm2, Atm4, bondType)
+          k_bond = bondData(bondType)%k_eq
+          r_eq = bondData(bondType)%r_eq
+          call GenerateBondLength(r3, k_bond, r_eq, Prob)
+          call FindAngle(nType, Atm1, Atm2, Atm3, bendType1)
+          call FindAngle(nType, Atm1, Atm2, Atm4, bendType2)
+          call FindAngle(nType, Atm3, Atm2, Atm4, bendType3)
+          call GenerateTwoBranches(ang1, ang2, dihed, bendType1, bendType2, bendType3, Prob)
+          call Generate_UnitPyramid(v1, r2, r3, ang1, ang2, dihed, v2, v3)
+          rosenTrial(iRosen)%x(atm3) = rosenTrial(iRosen)%x(atm2) + v2%x 
+          rosenTrial(iRosen)%y(atm3) = rosenTrial(iRosen)%y(atm2) + v2%y
+          rosenTrial(iRosen)%z(atm3) = rosenTrial(iRosen)%z(atm2) + v2%z
+          rosenTrial(iRosen)%x(atm4) = rosenTrial(iRosen)%x(atm2) + v3%x 
+          rosenTrial(iRosen)%y(atm4) = rosenTrial(iRosen)%y(atm2) + v3%y
+          rosenTrial(iRosen)%z(atm4) = rosenTrial(iRosen)%z(atm2) + v3%z
         case default
          stop "Error! Molecule has too many atoms for a simple regrowth"
         end select
 
         r = Dist_Critr * grnd()**(1d0/3d0)
-        if(r .lt. global_r_min) then
+        if(r .lt. rmin_ij) then
           overlap(iRosen) = .true.
         endif        
         call Generate_UnitSphere(dx, dy, dz)
@@ -368,18 +414,13 @@
       E_Max = minval(E_Trial)
       ProbRosen = 0d0
       do iRosen = 1, nRosenTrials(nType)
-!         ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen) - E_Max))
-         if(E_Trial(iRosen)-E_Max .le. 1d5) then
-            ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen)-E_Max))         
-         else
-            ProbRosen(iRosen) = 0d0
-         endif         
+        ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen)-E_Max))         
       enddo
 
-      if(all(ProbRosen .le. 0d0)) then
-        rejMove = .true.
-        return
-      endif
+!      if(all(ProbRosen .le. 0d0)) then
+!        rejMove = .true.
+!        return
+!      endif
       rosenNorm = sum(ProbRosen)
       
       ranNum = grnd() * rosenNorm
@@ -415,24 +456,27 @@
       implicit none
 
       integer, intent(in) :: nType, nTarget, nTargType, nMol
-      real(kind(0.0d0)), intent(out):: rosenRatio
+      real(dp), intent(out):: rosenRatio
       
       logical :: isIncluded(1:maxMol)
 
       integer :: i, iRosen, nSel, nIndx, nTargetMol
-      integer :: Atm1, Atm2, Atm3
+      integer :: Atm1, Atm2, Atm3, Atm4
       integer :: bondType, bendType
-      real(kind(0.0d0)) :: E_Trial(1:maxRosenTrial)      
-      real(kind(0.0d0)) :: grnd,rotang
-      real(kind(0.0d0)) :: c_term,s_term
-      real(kind(0.0d0)) :: x_shift,y_shift,z_shift
-      real(kind(0.0d0)) :: x_rid_cm, y_rid_cm,z_rid_cm
-      real(kind(0.0d0)) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
-      real(kind(0.0d0)) :: ranNum, sumInt
-      real(kind(0.0d0)) :: k_bond, r_eq, r, Prob
-      real(kind(0.0d0)) :: k_bend, ang_eq, ang
-      real(kind(0.0d0)) :: x1, y1, z1, dx, dy, dz 
-      type(SimpleAtomCoords) :: v1, v2
+      integer :: bendType1, bendType2, bendType3
+      real(dp) :: E_Trial(1:maxRosenTrial)      
+      real(dp) :: grnd,rotang
+      real(dp) :: c_term,s_term
+      real(dp) :: x_shift,y_shift,z_shift
+      real(dp) :: x_rid_cm, y_rid_cm,z_rid_cm
+      real(dp) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
+      real(dp) :: ranNum, sumInt
+      real(dp) :: k_bond, r_eq, r, Prob
+      real(dp) :: r1, r2, r3
+      real(dp) :: k_bend, ang_eq, ang
+      real(dp) :: ang1, ang2, dihed
+      real(dp) :: x1, y1, z1, dx, dy, dz 
+      type(SimpleAtomCoords) :: v1, v2, v3
       
       
       ProbRosen = 0d0      
@@ -483,13 +527,49 @@
           r_eq = bondData(bondType)%r_eq
           call GenerateBondLength(r, k_bond, r_eq, Prob)
           bendType = bendArray(nType,1)%bendType
-          k_bend = bendData(bendType)%k_eq
-          ang_eq = bendData(bendType)%ang_eq
-          call GenerateBendAngle(ang, k_bend, ang_eq, Prob)
+!          k_bend = bendData(bendType)%k_eq
+!          ang_eq = bendData(bendType)%ang_eq
+!          call GenerateBendAngle(ang, k_bend, ang_eq, Prob)
+          call GenerateBendAngle(ang, bendType, Prob)
           call Generate_UnitCone(v1, r, ang, v2)
           newMol%x(atm3) = newMol%x(atm2) + v2%x 
           newMol%y(atm3) = newMol%y(atm2) + v2%y
           newMol%z(atm3) = newMol%z(atm2) + v2%z
+        case(4)
+          Atm1 = pathArray(nType)%path(1, 1)
+          Atm2 = pathArray(nType)%path(1, 2)
+          Atm3 = pathArray(nType)%path(2, 1)
+          Atm4 = pathArray(nType)%path(3, 1)
+          call FindBond(nType, Atm1, Atm2, bondType)
+          k_bond = bondData(bondType)%k_eq
+          r_eq = bondData(bondType)%r_eq
+          call GenerateBondLength(r1, k_bond, r_eq, Prob)
+          call Generate_UnitSphere(dx, dy, dz)
+          v1%x = -r1*dx
+          v1%y = -r1*dy
+          v1%z = -r1*dz
+          newMol%x(atm2) = r1 * dx
+          newMol%y(atm2) = r1 * dy
+          newMol%z(atm2) = r1 * dz
+          call FindBond(nType, Atm2, Atm3, bondType)
+          k_bond = bondData(bondType)%k_eq
+          r_eq = bondData(bondType)%r_eq
+          call GenerateBondLength(r2, k_bond, r_eq, Prob)
+          call FindBond(nType, Atm2, Atm4, bondType)
+          k_bond = bondData(bondType)%k_eq
+          r_eq = bondData(bondType)%r_eq
+          call GenerateBondLength(r3, k_bond, r_eq, Prob)
+          call FindAngle(nType, Atm1, Atm2, Atm3, bendType1)
+          call FindAngle(nType, Atm1, Atm2, Atm4, bendType2)
+          call FindAngle(nType, Atm3, Atm2, Atm4, bendType3)
+          call GenerateTwoBranches(ang1, ang2, dihed, bendType1, bendType2, bendType3, Prob)
+          call Generate_UnitPyramid(v1, r2, r3, ang1, ang2, dihed, v2, v3)
+          newMol%x(atm3) = newMol%x(atm2) + v2%x 
+          newMol%y(atm3) = newMol%y(atm2) + v2%y
+          newMol%z(atm3) = newMol%z(atm2) + v2%z
+          newMol%x(atm4) = newMol%x(atm2) + v3%x 
+          newMol%y(atm4) = newMol%y(atm2) + v3%y
+          newMol%z(atm4) = newMol%z(atm2) + v3%z
         case default
          stop "Error! Molecule has too many atoms for a simple regrowth"
         end select
@@ -510,19 +590,13 @@
           newMol%z(i) = newMol%z(i) + z1
         enddo 
 
-        call Rosen_BoltzWeight_Molecule_Old( newMol%x(:), newMol%y(:), newMol%z(:), &
-                                   nType, isIncluded, E_Trial(iRosen) )
+        call Rosen_BoltzWeight_Molecule_Old( newMol%x(:), newMol%y(:), newMol%z(:), nType, isIncluded, E_Trial(iRosen) )
       enddo
 
       E_Max = minval(E_Trial)
       ProbRosen = 0d0
       do iRosen = 1, nRosenTrials(nType)
-!         ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen) - E_Max))
-         if(E_Trial(iRosen)-E_Max .le. 1d5) then
-            ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen)-E_Max))         
-         else
-            ProbRosen(iRosen) = 0d0
-         endif         
+        ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen)-E_Max))         
       enddo
       rosenNorm = sum(ProbRosen)
       
@@ -541,23 +615,25 @@
       implicit none
 
       integer, intent(in) :: nType, nTarget, nTargType
-      real(kind(0.0d0)), intent(out):: rosenRatio
+      real(dp), intent(out):: rosenRatio
       logical, intent(out) :: rejMove
 
       integer :: i, iRosen, iAtom, nSel, nIndx, nTargetMol
+      integer :: nRegrown
       integer :: Atm1, Atm2, Atm3, Atm4
       integer :: atom1_Pos, cnt
       integer :: bondType, bendType, torsType
       logical :: isIncluded(1:maxMol)
       logical :: overlap(1:maxRosenTrial)
       logical :: regrown(1:maxAtoms)
-      real(kind(0.0d0)) :: E_Trial(1:maxRosenTrial), E_Complete
-      real(kind(0.0d0)) :: grnd,rotang
-      real(kind(0.0d0)) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
-      real(kind(0.0d0)) :: ranNum, sumInt
-      real(kind(0.0d0)) :: k_bond, r_eq, r, Prob
-      real(kind(0.0d0)) :: k_bend, ang_eq, bend_angle, tors_angle
-      real(kind(0.0d0)) :: dx, dy, dz 
+      real(dp) :: E_Trial(1:maxRosenTrial), E_Complete
+      real(dp) :: grnd,rotang
+      real(dp) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
+      real(dp) :: ranNum, sumInt
+      real(dp) :: k_bond, r_eq, r, Prob
+      real(dp) :: k_bend, ang_eq, bend_angle, tors_angle
+      real(dp) :: dx, dy, dz 
+      real(dp) :: q1, q2
       type(SimpleAtomCoords) :: trialPos(1:maxRosenTrial)
       type(SimpleAtomCoords) :: v1, v2, v3
       
@@ -571,8 +647,17 @@
       newMol%z = 0d0
       regrown = .false.
       rejMove = .false.
+      nRegrown = 0
+
+
+!      Atm1 = 1
+!      Atm2 = regrowOrder(nType, 2) 
+!
+!      q1 = 
+!      q2 = 
 
 !      Begin the regrowth process by choosing an insertion site for the first atom in the chain
+      
       E_Trial = 0d0
       E_Complete = 0d0
       overlap = .false.
@@ -608,6 +693,7 @@
       endif
       rosenRatio = ProbRosen(nSel)*dble(nRosenTrials(nType))/rosenNorm
       regrown(1) = .true.
+      nRegrown = nRegrown + 1
       newMol%x(1) = trialPos(nSel)%x 
       newMol%y(1) = trialPos(nSel)%y 
       newMol%z(1) = trialPos(nSel)%z
@@ -652,6 +738,7 @@
       endif
       rosenRatio = rosenRatio*ProbRosen(nSel)*dble(nRosenTrials(nType))/rosenNorm
       regrown(Atm2) = .true.
+      nRegrown = nRegrown + 1
       newMol%x(Atm2) = trialPos(nSel)%x 
       newMol%y(Atm2) = trialPos(nSel)%y 
       newMol%z(Atm2) = trialPos(nSel)%z
@@ -676,12 +763,13 @@
       k_bond = bondData(bondType)%k_eq
       r_eq = bondData(bondType)%r_eq
       call FindAngle(nType, Atm1, Atm2, Atm3, bendType)
-      k_bend = bendData(bendType)%k_eq
-      ang_eq = bendData(bendType)%ang_eq
+!      k_bend = bendData(bendType)%k_eq
+!      ang_eq = bendData(bendType)%ang_eq
       overlap = .false.
       do iRosen = 1, nRosenTrials(nType)
         call GenerateBondLength(r, k_bond, r_eq, Prob)
-        call GenerateBendAngle(bend_angle, k_bend, ang_eq, Prob)
+!        call GenerateBendAngle(bend_angle, k_bend, ang_eq, Prob)
+        call GenerateBendAngle(bend_angle, bendType, Prob)
         call Generate_UnitCone(v1, r, bend_angle, v2)
         trialPos(iRosen)%x = v2%x + newMol%x(Atm2) 
         trialPos(iRosen)%y = v2%y + newMol%y(Atm2)
@@ -693,10 +781,10 @@
       do iRosen = 1, nRosenTrials(nType)
         ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen)-E_Max))         
       enddo
-      if(all(ProbRosen .le. 0d0)) then
-        rejMove = .true.
-        return
-      endif
+!      if(all(ProbRosen .le. 0d0)) then
+!        rejMove = .true.
+!        return
+!      endif
       rosenNorm = sum(ProbRosen)
       ranNum = grnd() * rosenNorm
       sumInt = ProbRosen(1)
@@ -711,6 +799,7 @@
       endif
       rosenRatio = rosenRatio*ProbRosen(nSel)*dble(nRosenTrials(nType))/rosenNorm
       regrown(Atm3) = .true.
+      nRegrown = nRegrown + 1
       newMol%x(Atm3) = trialPos(nSel)%x 
       newMol%y(Atm3) = trialPos(nSel)%y 
       newMol%z(Atm3) = trialPos(nSel)%z
@@ -726,8 +815,8 @@
         k_bond = bondData(bondType)%k_eq
         r_eq = bondData(bondType)%r_eq
         call FindAngle(nType, Atm2, Atm3, Atm4, bendType)
-        k_bend = bendData(bendType)%k_eq
-        ang_eq = bendData(bendType)%ang_eq
+!        k_bend = bendData(bendType)%k_eq
+!        ang_eq = bendData(bendType)%ang_eq
         call FindTorsion(nType, Atm1, Atm2, Atm3, Atm4, torsType)
         v1%x = newMol%x(Atm1) - newMol%x(Atm3)
         v1%y = newMol%y(Atm1) - newMol%y(Atm3)
@@ -740,7 +829,8 @@
         E_Trial = 0d0
         do iRosen = 1, nRosenTrials(nType)
           call GenerateBondLength(r, k_bond, r_eq, Prob)
-          call GenerateBendAngle(bend_angle, k_bend, ang_eq, Prob)
+!          call GenerateBendAngle(bend_angle, k_bend, ang_eq, Prob)
+          call GenerateBendAngle(bend_angle, bendType, Prob)
           call GenerateTorsAngle(tors_angle, torsType, Prob)
           call Generate_UnitTorsion(v1, v2, r, bend_angle, tors_angle, v3)
           trialPos(iRosen)%x = v3%x + newMol%x(Atm3) 
@@ -753,10 +843,10 @@
         do iRosen = 1, nRosenTrials(nType)
           ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen)-E_Max))         
         enddo
-        if(all(ProbRosen .le. 0d0)) then
-          rejMove = .true.
-          return
-        endif
+!        if(all(ProbRosen .le. 0d0)) then
+!          rejMove = .true.
+!          return
+!        endif
         rosenNorm = sum(ProbRosen)
         ranNum = grnd() * rosenNorm
         sumInt = ProbRosen(1)
@@ -770,18 +860,13 @@
           return
         endif
         rosenRatio = rosenRatio*ProbRosen(nSel)*dble(nRosenTrials(nType))/rosenNorm
-!        write(2,*) "nsel:", nsel
         regrown(Atm4) = .true.
+        nRegrown = nRegrown + 1
         newMol%x(Atm4) = trialPos(nSel)%x 
         newMol%y(Atm4) = trialPos(nSel)%y 
         newMol%z(Atm4) = trialPos(nSel)%z
       enddo
 
-!      do i = 1, nAtoms(nType)
-!        write(2,*) i, newMol%x(i), newMol%y(i), newMol%z(i)
-!      enddo
-!      write(2,*)
-!      flush(2)
 
       end subroutine
 !=======================================================================
@@ -796,7 +881,7 @@
       implicit none
 
       integer, intent(in) :: nType, nMol, nTarget, nTargType
-      real(kind(0.0d0)), intent(out):: rosenRatio
+      real(dp), intent(out):: rosenRatio
 
       integer :: i, iRosen, iAtom, nSel, nIndx, nTargetMol
       integer :: Atm1, Atm2, Atm3, Atm4
@@ -805,13 +890,13 @@
       logical :: overlap
       logical :: isIncluded(1:maxMol)
       logical :: regrown(1:maxAtoms)
-      real(kind(0.0d0)) :: E_Trial(1:maxRosenTrial), E_Complete
-      real(kind(0.0d0)) :: grnd,rotang
-      real(kind(0.0d0)) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
-      real(kind(0.0d0)) :: ranNum, sumInt
-      real(kind(0.0d0)) :: k_bond, r_eq, r, Prob
-      real(kind(0.0d0)) :: k_bend, ang_eq, bend_angle, tors_angle
-      real(kind(0.0d0)) :: dx, dy, dz 
+      real(dp) :: E_Trial(1:maxRosenTrial), E_Complete
+      real(dp) :: grnd,rotang
+      real(dp) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
+      real(dp) :: ranNum, sumInt
+      real(dp) :: k_bond, r_eq, r, Prob
+      real(dp) :: k_bend, ang_eq, bend_angle, tors_angle
+      real(dp) :: dx, dy, dz 
       type(SimpleAtomCoords) :: trialPos
       type(SimpleAtomCoords) :: v1, v2, v3
       
@@ -891,13 +976,14 @@
       k_bond = bondData(bondType)%k_eq
       r_eq = bondData(bondType)%r_eq
       call FindAngle(nType, Atm1, Atm2, Atm3, bendType)
-      k_bend = bendData(bendType)%k_eq
-      ang_eq = bendData(bendType)%ang_eq
+!      k_bend = bendData(bendType)%k_eq
+!      ang_eq = bendData(bendType)%ang_eq
 
       call Rosen_BoltzWeight_Atom_Old(nType, nMol, Atm3, isIncluded,  E_Trial(1))
       do iRosen = 2, nRosenTrials(nType)
         call GenerateBondLength(r, k_bond, r_eq, Prob)
-        call GenerateBendAngle(bend_angle, k_bend, ang_eq, Prob)
+!        call GenerateBendAngle(bend_angle, k_bend, ang_eq, Prob)
+        call GenerateBendAngle(bend_angle, bendType, Prob)
         call Generate_UnitCone(v1, r, bend_angle, v2)
         trialPos%x = v2%x + molArray(nType)%mol(nMol)%x(Atm2)
         trialPos%y = v2%y + molArray(nType)%mol(nMol)%y(Atm2)
@@ -924,8 +1010,8 @@
         k_bond = bondData(bondType)%k_eq
         r_eq = bondData(bondType)%r_eq
         call FindAngle(nType, Atm2, Atm3, Atm4, bendType)
-        k_bend = bendData(bendType)%k_eq
-        ang_eq = bendData(bendType)%ang_eq
+!        k_bend = bendData(bendType)%k_eq
+!        ang_eq = bendData(bendType)%ang_eq
         call FindTorsion(nType, Atm1, Atm2, Atm3, Atm4, torsType)
         v1%x = molArray(nType)%mol(nMol)%x(Atm1) - molArray(nType)%mol(nMol)%x(Atm3)
         v1%y = molArray(nType)%mol(nMol)%y(Atm1) - molArray(nType)%mol(nMol)%y(Atm3)
@@ -938,7 +1024,8 @@
         call Rosen_BoltzWeight_Atom_Old(nType, nMol, Atm4, isIncluded,  E_Trial(1))
         do iRosen = 2, nRosenTrials(nType)
           call GenerateBondLength(r, k_bond, r_eq, Prob)
-          call GenerateBendAngle(bend_angle, k_bend, ang_eq, Prob)
+!          call GenerateBendAngle(bend_angle, k_bend, ang_eq, Prob)
+          call GenerateBendAngle(bend_angle, bendType, Prob)
           call GenerateTorsAngle(tors_angle, torsType, Prob)
           call Generate_UnitTorsion(v1, v2, r, bend_angle, tors_angle, v3)
           trialPos%x = v3%x + molArray(nType)%mol(nMol)%x(Atm3)

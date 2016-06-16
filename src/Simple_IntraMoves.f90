@@ -2,8 +2,8 @@
       subroutine Simple_Intra(E_T, acc_x, atmp_x)
       use SimParameters    
       implicit none
-      real(kind(0.0d0)), intent(inout) :: E_T, acc_x, atmp_x
-      real(kind(0.0d0)) :: ran_num,grnd
+      real(dp), intent(inout) :: E_T, acc_x, atmp_x
+      real(dp) :: ran_num,grnd
 
       atmp_x = atmp_x + 1d0
       ran_num = grnd()
@@ -28,7 +28,7 @@
       use CBMC_Variables
       implicit none
       
-      real(kind(0.0d0)),intent(inout) :: E_T,acc_x      
+      real(dp),intent(inout) :: E_T,acc_x      
       
       logical, parameter :: useIntra(1:4) = [.false., .true., .false., .false.]
       
@@ -36,14 +36,14 @@
       integer :: nType,nMol,nIndx,nMove, nBondMove
       integer :: nBondType
       integer :: mem1, mem2
-      real(kind(0.0d0)) :: grnd 
-      real(kind(0.0d0)) :: dx,dy,dz 
-      real(kind(0.0d0)) :: r_new, r_old
-      real(kind(0.0d0)) :: E_Inter, E_Intra
+      real(dp) :: grnd 
+      real(dp) :: dx,dy,dz 
+      real(dp) :: r_new, r_old
+      real(dp) :: E_Inter, E_Intra
       type (displacement) :: disp(1:1)
-      real(kind(0.0d0)) :: PairList(1:maxMol)
-      real(kind(0.0d0)) :: dETable(1:maxMol)
-      real(kind(0.0d0)) :: k_bond, r_eq, Prob
+      real(dp) :: PairList(1:maxMol)
+      real(dp) :: dETable(1:maxMol)
+      real(dp) :: k_bond, r_eq, Prob
       
       rejMove = .false.
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
@@ -111,7 +111,6 @@
         else
           call NeighborUpdate(PairList, nIndx)
         endif      
-        call Create_NeiETable
       elseif(exp(-beta*E_Inter) .gt. grnd()) then
         disp(1)%x_old = disp(1)%x_new
         disp(1)%y_old = disp(1)%y_new
@@ -124,7 +123,6 @@
         else
           call NeighborUpdate(PairList, nIndx)
         endif  
-        call Create_NeiETable
       endif
 
       	  
@@ -142,7 +140,7 @@
       use CBMC_Variables      
       implicit none
       
-      real(kind(0.0d0)),intent(inout) :: E_T, acc_x      
+      real(dp),intent(inout) :: E_T, acc_x      
 
       logical, parameter :: useIntra(1:4) = [.false., .false., .true., .false.]
       
@@ -150,14 +148,14 @@
       integer :: nType,nMol,nIndx,nMove, nBend
       integer :: nBendType
       integer :: mem1, mem2, mem3
-      real(kind(0.0d0)) :: grnd 
-      real(kind(0.0d0)) :: r1, r2
-      real(kind(0.0d0)) :: angle_new
-      real(kind(0.0d0)) :: E_Inter, E_Intra
+      real(dp) :: grnd 
+      real(dp) :: r1, r2
+      real(dp) :: angle_new
+      real(dp) :: E_Inter, E_Intra
       type (displacement) :: disp(1:1)
-      real(kind(0.0d0)) :: PairList(1:maxMol)
-      real(kind(0.0d0)) :: dETable(1:maxMol)
-      real(kind(0.0d0)) :: k_bend, ang_eq, Prob
+      real(dp) :: PairList(1:maxMol)
+      real(dp) :: dETable(1:maxMol)
+      real(dp) :: k_bend, ang_eq, Prob
       type(SimpleAtomCoords) :: v1, v2, v3
 
        rejMove = .false.     
@@ -244,7 +242,6 @@
         else
           call NeighborUpdate(PairList, nIndx)
         endif  
-        call Create_NeiETable
       elseif(exp(-beta*E_Inter) .gt. grnd()) then
         disp(1)%x_old = disp(1)%x_new
         disp(1)%y_old = disp(1)%y_new
@@ -257,7 +254,6 @@
         else
           call NeighborUpdate(PairList, nIndx)
         endif  
-        call Create_NeiETable
       endif
 
       	  

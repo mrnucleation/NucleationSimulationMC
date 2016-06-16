@@ -26,19 +26,19 @@
       use Constants
       use EnergyTables, only: E_Torsion_T      
       implicit none
-      real(kind(0.0d0)), intent(inout) :: E_T
+      real(dp), intent(inout) :: E_T
       integer ::  iType,iMol,iTors
       integer(kind=2) :: torsType      
       integer :: memb1, memb2, memb3, memb4
-      real(kind(0.0d0)) :: x12,y12,z12
-      real(kind(0.0d0)) :: x23,y23,z23
-      real(kind(0.0d0)) :: x34,y34,z34
-      real(kind(0.0d0)) :: vx1,vy1,vz1
-      real(kind(0.0d0)) :: vx2,vy2,vz2
-      real(kind(0.0d0)) :: vx3,vy3,vz3
-      real(kind(0.0d0)) :: r1,r3,dot1,dot2
-      real(kind(0.0d0)) :: Angle      
-      real(kind(0.0d0)) :: E_Tors
+      real(dp) :: x12,y12,z12
+      real(dp) :: x23,y23,z23
+      real(dp) :: x34,y34,z34
+      real(dp) :: vx1,vy1,vz1
+      real(dp) :: vx2,vy2,vz2
+      real(dp) :: vx3,vy3,vz3
+      real(dp) :: r1,r3,dot1,dot2
+      real(dp) :: Angle      
+      real(dp) :: E_Tors
 
       E_Tors = 0d0
       do iType = 1, nMolTypes
@@ -110,7 +110,7 @@
       use Coords
       use ForceFieldFunctions
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_Tors
+      real(dp), intent(out) :: E_Tors
       type(Displacement), intent(in) :: disp(:)
 
       logical :: changed(1:maxAtoms)
@@ -118,16 +118,16 @@
       integer :: i,nDisp,iType,iMol,iTors
       integer :: torsType      
       integer :: memb(1:4)
-      real(kind(0.0d0)) :: x_new(1:4),y_new(1:4),z_new(1:4)  
-      real(kind(0.0d0)) :: x_old(1:4),y_old(1:4),z_old(1:4)  
-      real(kind(0.0d0)) :: x12,y12,z12
-      real(kind(0.0d0)) :: x23,y23,z23
-      real(kind(0.0d0)) :: x34,y34,z34
-      real(kind(0.0d0)) :: vx1,vy1,vz1
-      real(kind(0.0d0)) :: vx2,vy2,vz2
-      real(kind(0.0d0)) :: vx3,vy3,vz3
-      real(kind(0.0d0)) :: r1,r3,dot1,dot2
-      real(kind(0.0d0)) :: Angle,eng
+      real(dp) :: x_new(1:4),y_new(1:4),z_new(1:4)  
+      real(dp) :: x_old(1:4),y_old(1:4),z_old(1:4)  
+      real(dp) :: x12,y12,z12
+      real(dp) :: x23,y23,z23
+      real(dp) :: x34,y34,z34
+      real(dp) :: vx1,vy1,vz1
+      real(dp) :: vx2,vy2,vz2
+      real(dp) :: vx3,vy3,vz3
+      real(dp) :: r1,r3,dot1,dot2
+      real(dp) :: Angle,eng
 
 
       iType = disp(1)%molType
@@ -268,19 +268,19 @@
       use Coords
       use ForceFieldFunctions
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_Tors
+      real(dp), intent(out) :: E_Tors
       integer, intent(in) :: iType,iMol
       integer :: iTors
       integer(kind=2) :: torsType      
       integer :: memb1, memb2, memb3, memb4
-      real(kind(0.0d0)) :: x12,y12,z12
-      real(kind(0.0d0)) :: x23,y23,z23
-      real(kind(0.0d0)) :: x34,y34,z34
-      real(kind(0.0d0)) :: vx1,vy1,vz1
-      real(kind(0.0d0)) :: vx2,vy2,vz2
-      real(kind(0.0d0)) :: vx3,vy3,vz3
-      real(kind(0.0d0)) :: r1,r3,dot1,dot2
-      real(kind(0.0d0)) :: Angle      
+      real(dp) :: x12,y12,z12
+      real(dp) :: x23,y23,z23
+      real(dp) :: x34,y34,z34
+      real(dp) :: vx1,vy1,vz1
+      real(dp) :: vx2,vy2,vz2
+      real(dp) :: vx3,vy3,vz3
+      real(dp) :: r1,r3,dot1,dot2
+      real(dp) :: Angle      
 
       if(nTorsional(iType) .eq. 0) then
         return
@@ -343,18 +343,18 @@
       use Coords
       use ForceFieldFunctions
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_Tors
+      real(dp), intent(out) :: E_Tors
       integer :: iType,iTors
       integer(kind=2) :: torsType      
       integer :: memb1, memb2, memb3, memb4
-      real(kind(0.0d0)) :: x12,y12,z12
-      real(kind(0.0d0)) :: x23,y23,z23
-      real(kind(0.0d0)) :: x34,y34,z34
-      real(kind(0.0d0)) :: vx1,vy1,vz1
-      real(kind(0.0d0)) :: vx2,vy2,vz2
-      real(kind(0.0d0)) :: vx3,vy3,vz3
-      real(kind(0.0d0)) :: r1,r3,dot1,dot2
-      real(kind(0.0d0)) :: Angle      
+      real(dp) :: x12,y12,z12
+      real(dp) :: x23,y23,z23
+      real(dp) :: x34,y34,z34
+      real(dp) :: vx1,vy1,vz1
+      real(dp) :: vx2,vy2,vz2
+      real(dp) :: vx3,vy3,vz3
+      real(dp) :: r1,r3,dot1,dot2
+      real(dp) :: Angle      
 
       E_Tors = 0d0
       iType = newMol%molType

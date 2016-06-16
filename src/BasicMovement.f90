@@ -1,4 +1,7 @@
 !===========================================================================================
+      module SimpleMCMoves_Module
+      contains
+!===========================================================================================
       subroutine SingleAtom_Translation(E_T,acc_x,atmp_x)
       use SimParameters
       use IndexingFunctions
@@ -84,7 +87,7 @@
         else
           call NeighborUpdate(PairList, nIndx)
         endif  
-        call Create_NeiETable
+!        call Create_NeiETable
         call Update_SubEnergies
       elseif(exp(-beta*E_Diff) .gt. grnd()) then
         disp(1)%x_old = disp(1)%x_new
@@ -233,6 +236,7 @@
       endif      
       
       end subroutine   
+
 !=======================================================      
       subroutine Rot_xy(E_T,acc_x,atmp_x)
       use AcceptRates
@@ -594,3 +598,5 @@
         call Update_SubEnergies        
       endif
       end subroutine
+!===========================================================================================
+      end module
