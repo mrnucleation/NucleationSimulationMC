@@ -19,17 +19,18 @@
       subroutine Detailed_ECalc_IntraNonBonded(E_T)
       use ParallelVar
       use ForceField
+      use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
       use EnergyTables, only: E_NBond_T
       implicit none
-      real(kind(0.0d0)), intent(inout) :: E_T
+      real(dp), intent(inout) :: E_T
       integer :: iType,iMol,iPair,iAtom,jAtom
       integer :: atmType1,atmType2      
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
-      real(kind(0.0d0)) :: E_Ele,E_LJ
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
+      real(dp) :: E_Ele,E_LJ
       
       E_LJ = 0d0
       E_Ele = 0d0      
@@ -70,11 +71,12 @@
 !======================================================================================      
       pure subroutine Shift_ECalc_IntraNonBonded(E_Trial,disp)
       use ForceField
+      use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
       implicit none
       
-      real(kind(0.0d0)), intent(inout) :: E_Trial
+      real(dp), intent(inout) :: E_Trial
       type(Displacement), intent(in) :: disp(:)  
 
       logical :: changed(1:maxAtoms)
@@ -82,14 +84,14 @@
       integer :: i,nDisp
       integer :: iType,iMol,iPair,iAtom,jAtom
       integer :: atmType1,atmType2      
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
-      real(kind(0.0d0)) :: E_Ele,E_LJ
-      real(kind(0.0d0)) :: x1_New, y1_New, z1_New
-      real(kind(0.0d0)) :: x1_Old, y1_Old, z1_Old
-      real(kind(0.0d0)) :: x2_New, y2_New, z2_New
-      real(kind(0.0d0)) :: x2_Old, y2_Old, z2_Old
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
+      real(dp) :: E_Ele,E_LJ
+      real(dp) :: x1_New, y1_New, z1_New
+      real(dp) :: x1_Old, y1_Old, z1_Old
+      real(dp) :: x2_New, y2_New, z2_New
+      real(dp) :: x2_Old, y2_Old, z2_Old
       
 
       nDisp = size(disp)
@@ -183,18 +185,19 @@
 !======================================================================================
       pure subroutine Mol_ECalc_IntraNonBonded(iType, iMol, E_Trial)
       use ForceField
+      use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
       implicit none
       integer, intent(in) :: iType, iMol     
-      real(kind(0.0d0)), intent(out) :: E_Trial
+      real(dp), intent(out) :: E_Trial
      
       integer :: iPair, iAtom, jAtom
       integer(kind=2) :: atmType1,atmType2
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
-      real(kind(0.0d0)) :: E_Ele,E_LJ
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
+      real(dp) :: E_Ele,E_LJ
 
       E_LJ = 0d0
       E_Ele = 0d0      
@@ -234,17 +237,18 @@
 !======================================================================================      
       pure subroutine NewMol_ECalc_IntraNonBonded(E_Trial)
       use ForceField
+      use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_Trial
+      real(dp), intent(out) :: E_Trial
      
       integer :: iType,iPair, iAtom, jAtom
       integer(kind=2) :: atmType1,atmType2
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
-      real(kind(0.0d0)) :: E_Ele,E_LJ
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
+      real(dp) :: E_Ele,E_LJ
 
       E_LJ = 0d0
       E_Ele = 0d0      

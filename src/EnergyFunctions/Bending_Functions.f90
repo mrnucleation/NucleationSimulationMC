@@ -24,15 +24,15 @@
       use Constants
       use EnergyTables, only: E_Bend_T
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_T
+      real(dp), intent(out) :: E_T
       integer :: iType,iMol,iBend
       integer :: bendType      
       integer :: memb1, memb2, memb3
-      real(kind(0.0d0)) :: k_eq,ang_eq
-      real(kind(0.0d0)) :: rx12,ry12,rz12,r12
-      real(kind(0.0d0)) :: rx23,ry23,rz23,r23
-      real(kind(0.0d0)) :: Angle      
-      real(kind(0.0d0)) :: E_Bend, E_Harmonic
+      real(dp) :: k_eq,ang_eq
+      real(dp) :: rx12,ry12,rz12,r12
+      real(dp) :: rx23,ry23,rz23,r23
+      real(dp) :: Angle      
+      real(dp) :: E_Bend, E_Harmonic
 
       E_Bend = 0d0
       do iType = 1, nMolTypes
@@ -84,7 +84,7 @@
       use ForceFieldFunctions
       implicit none
       
-      real(kind(0.0d0)), intent(out) :: E_Bend
+      real(dp), intent(out) :: E_Bend
       type(Displacement), intent(in) :: disp(:)
 
       logical :: changed(1:maxAtoms)
@@ -94,16 +94,16 @@
       integer :: iType,iMol,iBend
       integer :: bendType
       integer :: memb1, memb2, memb3
-      real(kind(0.0d0)) :: k_eq,ang_eq
-      real(kind(0.0d0)) :: rx12,ry12,rz12,r12
-      real(kind(0.0d0)) :: rx23,ry23,rz23,r23
-      real(kind(0.0d0)) :: x1_new,y1_new,z1_new
-      real(kind(0.0d0)) :: x1_old,y1_old,z1_old
-      real(kind(0.0d0)) :: x2_new,y2_new,z2_new
-      real(kind(0.0d0)) :: x2_old,y2_old,z2_old
-      real(kind(0.0d0)) :: x3_new,y3_new,z3_new
-      real(kind(0.0d0)) :: x3_old,y3_old,z3_old      
-      real(kind(0.0d0)) :: Angle
+      real(dp) :: k_eq,ang_eq
+      real(dp) :: rx12,ry12,rz12,r12
+      real(dp) :: rx23,ry23,rz23,r23
+      real(dp) :: x1_new,y1_new,z1_new
+      real(dp) :: x1_old,y1_old,z1_old
+      real(dp) :: x2_new,y2_new,z2_new
+      real(dp) :: x2_old,y2_old,z2_old
+      real(dp) :: x3_new,y3_new,z3_new
+      real(dp) :: x3_old,y3_old,z3_old      
+      real(dp) :: Angle
       
       nDisp = size(disp)
       iType = disp(1)%molType
@@ -238,15 +238,15 @@
       use Coords
       use ForceFieldFunctions 
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_Bend
+      real(dp), intent(out) :: E_Bend
       integer, intent(in) :: iType, iMol
       integer :: iBend
       integer :: bendType
       integer :: memb1, memb2, memb3
-      real(kind(0.0d0)) :: k_eq,ang_eq
-      real(kind(0.0d0)) :: rx12,ry12,rz12,r12
-      real(kind(0.0d0)) :: rx23,ry23,rz23,r23
-      real(kind(0.0d0)) :: Angle    
+      real(dp) :: k_eq,ang_eq
+      real(dp) :: rx12,ry12,rz12,r12
+      real(dp) :: rx23,ry23,rz23,r23
+      real(dp) :: Angle    
 
       E_Bend = 0d0
       do iBend = 1,nAngles(iType)
@@ -289,15 +289,15 @@
       use Coords
       use ForceFieldFunctions 
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_Bend
+      real(dp), intent(out) :: E_Bend
       integer :: iType
       integer :: iBend
       integer :: bendType
       integer :: memb1, memb2, memb3
-      real(kind(0.0d0)) :: k_eq,ang_eq
-      real(kind(0.0d0)) :: rx12,ry12,rz12,r12
-      real(kind(0.0d0)) :: rx23,ry23,rz23,r23
-      real(kind(0.0d0)) :: Angle    
+      real(dp) :: k_eq,ang_eq
+      real(dp) :: rx12,ry12,rz12,r12
+      real(dp) :: rx23,ry23,rz23,r23
+      real(dp) :: Angle    
 
       E_Bend = 0d0
       iType = newMol%molType
@@ -340,14 +340,14 @@
       use Coords
       use ForceFieldFunctions 
       implicit none
-      real(kind(0.0d0)), intent(out) :: E_Bend
+      real(dp), intent(out) :: E_Bend
       integer, intent(in) :: iType, iMol,iBend
       integer :: bendType
       integer :: memb1, memb2, memb3
-      real(kind(0.0d0)) :: k_eq,ang_eq
-      real(kind(0.0d0)) :: rx12,ry12,rz12,r12
-      real(kind(0.0d0)) :: rx23,ry23,rz23,r23
-      real(kind(0.0d0)) :: Angle    
+      real(dp) :: k_eq,ang_eq
+      real(dp) :: rx12,ry12,rz12,r12
+      real(dp) :: rx23,ry23,rz23,r23
+      real(dp) :: Angle    
 
       E_Bend = 0d0
       bendType = bendArray(iType,iBend)%bendType

@@ -12,6 +12,7 @@
       use ParallelVar
       use WHAM_Module
       use UmbrellaFunctions
+      use VarPrecision
       implicit none
       
       logical, intent(OUT)  :: screenEcho
@@ -23,8 +24,10 @@
       logical :: useBias   
       integer :: AllocateStatus            
       character(len=30) :: labelField 
+      character(len=30) :: moveName_temp
       character(len=30) :: fileName
-      real(kind(0.0d0)) :: dummyCycle
+      real(dp) :: dummyCycle
+      real(dp) :: norm
 
 !      integer, allocatable :: NArray(:)
 
@@ -94,10 +97,9 @@
       read(54,*)
       read(54,*)           
 !      Monte Carlo Move Parameters   
-!      read(54,*) labelField, r_min
-!       r_min_sq=r_min**2
       read(54,*) labelField, (gas_dens(j),j=1,nMolTypes)    
-       
+
+!       Comment Space             
       read(54,*)
       read(54,*)
       read(54,*)  
@@ -110,15 +112,64 @@
       read(54,*) labelField, outputLenUnits   
       outputLenConv = FindLengthUnit(outputLenUnits)     
 !       Comment Space      
-!      read(54,*)
-!      read(54,*)
-!      read(54,*) 
-!
-!      read(54,*) labelField, nMoveTypes
-!      allocate(mcMoveArray(1:nMoveTypes), STAT = AllocateStatus)
-!      allocate(moveProbability(1:nMoveTypes), STAT = AllocateStatus)
-!      do i = 1, nMoveTypes
-!      enddo
+      read(54,*)
+      read(54,*)
+      read(54,*) 
+
+      norm = 0d0
+      read(54,*) labelField, nMoveTypes
+      if(nMoveTypes .le. 0) then
+        write(*,*) "ERROR! The user has specified an invalid number of Monte Carlo moves"
+        write(*,*) "Please specify at least one valid Monte Carlo move to continue"
+        write(*,*) labelField, nMoveTypes
+        stop
+      endif
+
+      allocate(mcMoveArray(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(moveProbability(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(movesAccepted(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(movesAttempt(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(moveName(1:nMoveTypes), STAT = AllocateStatus)
+      norm = 0d0
+      avbmcUsed = .false.
+      cbmcUsed = .false.
+      do i = 1, nMoveTypes
+        read(54,*) moveName_temp, moveProbability(i)
+        norm = norm + moveProbability(i)
+        select case( trim(adjustl(moveName_temp)) )
+        case("translation")
+          mcMoveArray(i) % moveFunction => Translation
+          moveName(i) = "Translation"
+        case("rotation")
+          mcMoveArray(i) % moveFunction => Rotation
+          moveName(i) = "Rotation"
+        case("avbmc")
+          mcMoveArray(i) % moveFunction => AVBMC
+          moveName(i) = "AVBMC"
+          avbmcUsed = .true.
+        case("cbmc")
+          mcMoveArray(i) % moveFunction => CBMC
+          moveName(i) = "CBMC"
+          cbmcUsed = .true.
+        case("singleatom_translation")
+          mcMoveArray(i) % moveFunction => SingleAtom_Translation
+          moveName(i) = "Single Atom Translation"
+        case default
+          write(*,*) "ERROR! Invalid move type specified in input file"
+          write(*,*) moveName, moveProbability(i)
+          stop
+        end select
+!        moveName(i) = moveName_temp
+      enddo
+
+      do i =1, nMoveTypes
+        moveProbability(i) = moveProbability(i)/norm
+      enddo
+      if(nMoveTypes .gt. 1) then
+        do i = 2, nMoveTypes
+          moveProbability(i) = moveProbability(i) + moveProbability(i-1)
+        enddo
+      endif
 
 !       Comment Space      
       read(54,*)
@@ -163,18 +214,43 @@
 
       
       close(54)       
-      end            
+      end subroutine
+!========================================================  
+      subroutine ReadForcefield
+      implicit none
+      character(len=15) :: labelField 
+      character(len=10) :: potenType
+
+      open(unit=55,file="input_forcefield.dat",status='OLD')
+      read(55,*) 
+      read(55,*) labelField, potenType
+
+      select case(trim(adjustl(potenType)))
+      case("LJ_Q")
+        call ReadForcefield_LJ_Q
+      case("Pedone")
+        write(*,*) "Place Holder!"
+        stop
+      case default
+        stop "Unknown potential type given in forcefield input"
+      end select
+ 
+         
+
+
+      end subroutine
 !========================================================  
 !     This subroutine reads the user specified forcefield.  The first half of this
 !     code deals with defining the types of atoms,bonds, etc. to be used in the simulation.
 !     This is done to such that degenerate angles only need to be defined once. 
 !     The second half of this routine deals with defining the molecule configuration using
 !     the atoms, angles, etc. defined in the first section of the routine.
-      subroutine ReadForcefield
+      subroutine ReadForcefield_LJ_Q
       use SimParameters
       use Constants
       use Coords
       use ForceField
+      use ForceFieldPara_LJ_Q
       use ForceFieldFunctions
       use Units
       use CBMC_Variables
@@ -192,29 +268,27 @@
       procedure (MixRule), pointer :: rmin_func => null()   
 
 !     Open forcefield file      
-      open(unit=54,file="input_forcefield.dat",status='OLD')
+!      open(unit=55,file="input_forcefield.dat",status='OLD')
 !     Blank Space for Comments
-      read(54,*) 
-      read(54,*)
-      read(54,*)   
+      read(55,*) 
+      read(55,*)
+      read(55,*)   
        
 !      Specifies the number of atoms, bonds, etc. types to be used in the simulation.
-      read(54,*) labelField, nAtomTypes
-      read(54,*) labelField, nBondTypes
-      read(54,*) labelField, nAngleTypes
-      read(54,*) labelField, nTorsionalTypes
-      read(54,*) labelField, nImproperTypes
-
-
+      read(55,*) labelField, nAtomTypes
+      read(55,*) labelField, nBondTypes
+      read(55,*) labelField, nAngleTypes
+      read(55,*) labelField, nTorsionalTypes
+      read(55,*) labelField, nImproperTypes
        
-      call Allocate_Common_Variables
+      call Allocate_Common_Variables_LJ_Q
 
 !     Blank Space for Comments
-      read(54,*) 
-      read(54,*)
+      read(55,*) 
+      read(55,*)
 
 !     Epsilon Mixing Rule
-      read(54,*) labelField, mixingRule 
+      read(55,*) labelField, mixingRule 
       select case(mixingRule)
         case("geometric")
            ep_func => GeoMean_MixingFunc
@@ -232,7 +306,7 @@
       end select
 
 !     Sigma Mixing Rule    
-      read(54,*) labelField, mixingRule 
+      read(55,*) labelField, mixingRule 
 !       write(6,*) labelField, mixingRule      
       select case(mixingRule)
         case("geometric")
@@ -248,24 +322,21 @@
         case default
           stop "Error! Invalid Sigma Mixing Rule Type"
       end select
-
-
-
-       
-      read(54,*) 
-      read(54,*)      
-      read(54,*) labelField, unitsEnergy
-      read(54,*) labelField, unitsDistance
-      read(54,*) labelField, unitsAngular
+      
+      read(55,*) 
+      read(55,*)      
+      read(55,*) labelField, unitsEnergy
+      read(55,*) labelField, unitsDistance
+      read(55,*) labelField, unitsAngular
       convEng = FindEngUnit(unitsEnergy)
       convDist = FindLengthUnit(unitsDistance)
       convAng = FindAngularUnit(unitsAngular)
        
 !      Begin reading the intermolecular forcefield from the file
-      read(54,*)
-      read(54,*)      
+      read(55,*)
+      read(55,*)      
       do i = 1,nAtomTypes
-        read(54,*) labelField, atomData(i)%Symb, atomData(i)%ep, atomData(i)%sig, atomData(i)%q, atomData(i)%mass
+        read(55,*) labelField, atomData(i)%Symb, atomData(i)%ep, atomData(i)%sig, atomData(i)%q, atomData(i)%mass
         if(echoInput) then
           write(35,*) labelField, atomData(i)%Symb, atomData(i)%ep, atomData(i)%sig, atomData(i)%q, atomData(i)%mass
         endif
@@ -307,8 +378,8 @@
       endif
       
 !     R_Min Mixing Rule    
-      read(54,*)
-      read(54,*) labelField, mixingRule 
+      read(55,*)
+      read(55,*) labelField, mixingRule 
 !       write(6,*) labelField, mixingRule      
       custom = .false.
       select case(mixingRule)
@@ -328,7 +399,7 @@
 
       if(custom) then           
         do i = 1,nAtomTypes
-          read(54,*) (r_min_tab(i,j), j=1,nAtomTypes)
+          read(55,*) (r_min_tab(i,j), j=1,nAtomTypes)
         enddo
         do i = 1,nAtomTypes
           do j = 1,nAtomTypes
@@ -337,7 +408,7 @@
         enddo
       else
         do i = 1,nAtomTypes
-          read(54,*) r_min(i)
+          read(55,*) r_min(i)
         enddo
         do i = 1,nAtomTypes
           do j = i,nAtomTypes
@@ -346,8 +417,6 @@
           enddo
         enddo
       endif
-
-
 
       global_r_min = minval(r_min)
  
@@ -358,10 +427,10 @@
 
  
 !     Begin reading the Bond type definitions from file
-      read(54,*)
-      read(54,*)      
+      read(55,*)
+      read(55,*)      
       do i=1,nBondTypes
-        read(54,*) labelField, bondData(i)%k_eq, bondData(i)%r_eq
+        read(55,*) labelField, bondData(i)%k_eq, bondData(i)%r_eq
         bondData(i)%k_eq = bondData(i)%k_eq * convEng
         bondData(i)%r_eq = bondData(i)%r_eq * convDist
         if(echoInput) then
@@ -369,10 +438,10 @@
         endif        
       enddo
 !     Begin reading the Bending Angle type definitions from file
-      read(54,*)
-      read(54,*)      
+      read(55,*)
+      read(55,*)      
       do i=1,nAngleTypes
-        read(54,*) labelField, bendData(i)%k_eq, bendData(i)%ang_eq
+        read(55,*) labelField, bendData(i)%k_eq, bendData(i)%ang_eq
         if(echoInput) then
           write(35,*) labelField, bendData(i)%k_eq, bendData(i)%ang_eq 
         endif          
@@ -381,13 +450,13 @@
       enddo      
 
 !     Begin reading the Torsional Angle type definitions from file
-      read(54,*)
-      read(54,*)      
+      read(55,*)
+      read(55,*)      
       do i=1,nTorsionalTypes
-        read(54,*) labelField, nParam
-        backspace(54)
+        read(55,*) labelField, nParam
+        backspace(55)
         allocate(torsData(i)%a(1:nParam),STAT = AllocateStatus)
-        read(54,*) labelField, torsData(i)%nPara, (torsData(i)%a(j),j=1,nParam)
+        read(55,*) labelField, torsData(i)%nPara, (torsData(i)%a(j),j=1,nParam)
         if(echoInput) then
           write(35,*) labelField, torsData(i)%nPara, (torsData(i)%a(j),j=1,nParam)
         endif         
@@ -397,32 +466,32 @@
       enddo          
 
 !     Begin reading the Improper Angle type definitions from file
-      read(54,*)
-      read(54,*)      
+      read(55,*)
+      read(55,*)      
       do i=1,nImproperTypes
-        read(54,*) labelField, nParam
-          backspace(54)
+        read(55,*) labelField, nParam
+        backspace(55)
         allocate(impropData(i)%a(1:nParam), STAT = AllocateStatus)
-        read(54,*) labelField, impropData(i)%nPara, (impropData(i)%a(j),j=1,nParam)
+        read(55,*) labelField, impropData(i)%nPara, (impropData(i)%a(j),j=1,nParam)
         do j=1,nParam
           impropData(i)%a(j) = impropData(i)%a(j) * convEng
         enddo
       enddo                
 
 !     Blank space for Comments
-      read(54,*) 
+      read(55,*) 
        
 !     This section constructs the internal molecular configuration 
 !     using the previously defined atom, bond, bend, etc. types.
       do i=1,nMolTypes
-        read(54,*)
-        read(54,*)       
-        read(54,*) labelField, nAtoms(i)
-        read(54,*) labelField, nIntraNonBond(i)        
-        read(54,*) labelField, nBonds(i)
-        read(54,*) labelField, nAngles(i)
-        read(54,*) labelField, nTorsional(i)
-        read(54,*) labelField, nImproper(i)       
+        read(55,*)
+        read(55,*)       
+        read(55,*) labelField, nAtoms(i)
+        read(55,*) labelField, nIntraNonBond(i)        
+        read(55,*) labelField, nBonds(i)
+        read(55,*) labelField, nAngles(i)
+        read(55,*) labelField, nTorsional(i)
+        read(55,*) labelField, nImproper(i)       
       enddo
 
       nAtomsMax = maxval(nAtoms)
@@ -439,10 +508,10 @@
       ALLOCATE (torsArray(1:nMolTypes,1:nTorsMax), STAT = AllocateStatus)
       ALLOCATE (impropArray(1:nMolTypes,1:nImpropMax), STAT = AllocateStatus)
   
-      ALLOCATE (atomUseByBond(1:nMolTypes,1:nAtomsMax), STAT = AllocateStatus)
-      ALLOCATE (atomUseByBend(1:nMolTypes,1:nAtomsMax), STAT = AllocateStatus)
-      ALLOCATE (atomUseByTors(1:nMolTypes,1:nAtomsMax), STAT = AllocateStatus)
-      ALLOCATE (atomUseByImprop(1:nMolTypes,1:nAtomsMax), STAT = AllocateStatus)
+!      ALLOCATE (atomUseByBond(1:nMolTypes,1:nAtomsMax), STAT = AllocateStatus)
+!      ALLOCATE (atomUseByBend(1:nMolTypes,1:nAtomsMax), STAT = AllocateStatus)
+!      ALLOCATE (atomUseByTors(1:nMolTypes,1:nAtomsMax), STAT = AllocateStatus)
+!      ALLOCATE (atomUseByImprop(1:nMolTypes,1:nAtomsMax), STAT = AllocateStatus)
 
       do i = 1, maxRosenTrial
         allocate(rosenTrial(i)%x(1:nAtomsMax))      
@@ -452,69 +521,58 @@
      
       do i=1,nMolTypes
         !Atom Definition for each molecular species
-        read(54,*)       
-        read(54,*)
-        read(54,*)
+        read(55,*)       
+        read(55,*)
+        read(55,*)
         do j=1,nAtoms(i)  
-          read(54,*) labelField, atomArray(i,j)
+          read(55,*) labelField, atomArray(i,j)
           if(echoInput) then
              write(35,*) labelField, atomArray(i,j)
            endif           
-!          write(6,*) labelField, atomArray(i,j)
         enddo
-!       !Intra Nonbonded (1-5) interaction definition for each molecular species
-        read(54,*)
-        read(54,*)
+!        Intra Nonbonded (1-5) interaction definition for each molecular species
+        read(55,*)
+        read(55,*)
         do j=1,nIntraNonBond(i) 
-          read(54,*) labelField, (nonBondArray(i,j)%nonMembr(h),h=1,2)
+          read(55,*) labelField, (nonBondArray(i,j)%nonMembr(h),h=1,2)
           if(echoInput) then
-           write(35,*) labelField, (nonBondArray(i,j)%nonMembr(h),h=1,2)
+            write(35,*) labelField, (nonBondArray(i,j)%nonMembr(h),h=1,2)
           endif                
-!          write(6,*) labelField, (nonBondArray(i,j)%nonMembr(h),h=1,2)
         enddo        
         !Bond Definition for each molecular species
-        read(54,*)
-        read(54,*)
+        read(55,*)
+        read(55,*)
         do j=1,nBonds(i)  
-          read(54,*) labelField, bondArray(i,j)%bondType, &
-                       (bondArray(i,j)%bondMembr(h),h=1,2)
+          read(55,*) labelField, bondArray(i,j)%bondType, (bondArray(i,j)%bondMembr(h),h=1,2)
           if(echoInput) then
-            write(35,*) labelField, bondArray(i,j)%bondType, &
-                        (bondArray(i,j)%bondMembr(h),h=1,2)
+            write(35,*) labelField, bondArray(i,j)%bondType, (bondArray(i,j)%bondMembr(h),h=1,2)
           endif                 
-     
         enddo
         !Bending Angle Definition for each molecular species          
-        read(54,*)
-        read(54,*)
+        read(55,*)
+        read(55,*)
         do j=1,nAngles(i)  
-          read(54,*) labelField, bendArray(i,j)%bendType, &
-                       (bendArray(i,j)%bendMembr(h),h=1,3)
+          read(55,*) labelField, bendArray(i,j)%bendType, (bendArray(i,j)%bendMembr(h),h=1,3)
           if(echoInput) then
-            write(35,*) labelField, bendArray(i,j)%bendType, &
-                        (bendArray(i,j)%bendMembr(h),h=1,3)
+            write(35,*) labelField, bendArray(i,j)%bendType, (bendArray(i,j)%bendMembr(h),h=1,3)
           endif          
         enddo
         !Torsion Angle Definition for each molecular species          
-        read(54,*)
-        read(54,*)
+        read(55,*)
+        read(55,*)
         do j=1,nTorsional(i)  
-          read(54,*) labelField, torsArray(i,j)%TorsType, &
-                       (torsArray(i,j)%torsMembr(h),h=1,4)
+          read(55,*) labelField, torsArray(i,j)%TorsType, (torsArray(i,j)%torsMembr(h),h=1,4)
           if(echoInput) then
-            write(35,*) labelField, torsArray(i,j)%TorsType, &
-                        (torsArray(i,j)%torsMembr(h),h=1,4)
+            write(35,*) labelField, torsArray(i,j)%TorsType, (torsArray(i,j)%torsMembr(h),h=1,4)
           endif       
         enddo
         !Improper Angle Definition for each molecular species         
-        read(54,*)
-        read(54,*)
+        read(55,*)
+        read(55,*)
         do j=1,nImproper(i)  
-          read(54,*) labelField, impropArray(i,j)%ImpropType, &
-                       (impropArray(i,j)%impropMembr(h),h=1,4)
+          read(55,*) labelField, impropArray(i,j)%ImpropType, (impropArray(i,j)%impropMembr(h),h=1,4)
           if(echoInput) then
-            write(35,*) labelField, impropArray(i,j)%ImpropType, &
-                        (impropArray(i,j)%impropMembr(h),h=1,4)
+            write(35,*) labelField, impropArray(i,j)%ImpropType, (impropArray(i,j)%impropMembr(h),h=1,4)
           endif        
         enddo
       enddo
@@ -532,16 +590,19 @@
         enddo
       enddo
       
-      close(54)
+      call IntegrateBendAngleProb
+
+      close(55)
 
  
       
       end subroutine
 
 !================================================================ 
-      subroutine Allocate_Common_Variables
+      subroutine Allocate_Common_Variables_LJ_Q
       use SimParameters
       use ForceField
+      use ForceFieldPara_LJ_Q
       use AcceptRates
       implicit none
       integer :: AllocateStatus
@@ -573,7 +634,6 @@
       ALLOCATE (nAngles(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (nTorsional(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (nImproper(1:nMolTypes), STAT = AllocateStatus)
-
 
       ALLOCATE (acptTrans(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (atmpTrans(1:nMolTypes), STAT = AllocateStatus)

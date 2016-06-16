@@ -72,6 +72,8 @@
           if(TempHist(i) .ne. 0d0) then
             WHAM_Numerator(i) = WHAM_Numerator(i) + TempHist(i)*TempHist(i)/norm
             WHAM_Denominator(i, nCurWhamItter) = TempHist(i)*exp(NBias(i))
+!            WHAM_Numerator(i) = WHAM_Numerator(i) + TempHist(i)
+!            WHAM_Denominator(i, nCurWhamItter) = norm*exp(NBias(i))
             HistStorage(i) = HistStorage(i) + TempHist(i)
           endif
         enddo 
@@ -114,7 +116,7 @@
             fSum = 0d0
             do i = 1, umbrellaLimit
               if(ProbArray(i) .ne. 0d0) then
-               fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j))
+                fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j))
               endif
             enddo
             F_Estimate(j) = log(fSum)
@@ -172,7 +174,7 @@
               if(ProbArray(i) .gt. 0d0) then
                NewBias(i) = NBias(i) + log(2d0)
               else
-               NewBias(i) = maxBias
+               NewBias(i) = NBias(i) + log(4d0)
               endif
             endif
           enddo
@@ -277,8 +279,47 @@
           endif
           NArray(nMolTypes) = NArray(nMolTypes) + 1
         enddo
+        close(36)
+
+        if(WHAM_ExtensiveOutput) then
+          open(unit=36, file="WHAM_Hist_Numerator.txt")
+          NArray = 0
+          do i = 1, umbrellaLimit
+            if(nMolTypes .gt. 1) then
+              do j = 1,nMolTypes-1
+                if(NArray(nMolTypes - j + 1) .gt. NMAX(nMolTypes - j + 1))then
+                  NArray(nMolTypes - j + 1) = 0
+                  NArray(nMolTypes - j) = NArray(nMolTypes - j) + 1          
+                endif
+              enddo
+            endif
+            if(HistStorage(i) .gt. 0d0) then
+              write(36, *) (NArray(j),j=1,nMolTypes), WHAM_Numerator(i)
+            endif
+            NArray(nMolTypes) = NArray(nMolTypes) + 1
+          enddo
+          close(36)
+
+          open(unit=36, file="WHAM_Hist_Denominator.txt")
+          NArray = 0
+          do i = 1, umbrellaLimit
+            if(nMolTypes .gt. 1) then
+              do j = 1,nMolTypes-1
+                if(NArray(nMolTypes - j + 1) .gt. NMAX(nMolTypes - j + 1))then
+                  NArray(nMolTypes - j + 1) = 0
+                  NArray(nMolTypes - j) = NArray(nMolTypes - j) + 1          
+                endif
+              enddo
+            endif
+            if(HistStorage(i) .gt. 0d0) then
+              write(36, *) (NArray(j),j=1,nMolTypes), (WHAM_Denominator(i,j), j=1,nCurWhamItter)
+            endif
+            NArray(nMolTypes) = NArray(nMolTypes) + 1
+          enddo
+          close(36)
+        endif
       endif
-      close(36)
+
              
       end subroutine
 !=========================================================================     

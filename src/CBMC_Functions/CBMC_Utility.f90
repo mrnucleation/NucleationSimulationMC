@@ -284,14 +284,14 @@
       integer, intent(in) :: atomNumber, nType
       type(SimpleAtomCoords), intent(in) :: trialPos(:)
       logical, intent(inout) :: regrown(:)
-      real(kind(0.0d0)), intent(inout) :: E_Trial(:)
-      real(kind(0.0d0)), intent(inout) :: rosenRatio
+      real(dp), intent(inout) :: E_Trial(:)
+      real(dp), intent(inout) :: rosenRatio
 
  
       logical,intent(out) :: rejMove
       integer :: nSel, iRosen
-      real(kind(0.0d0)) :: E_Min, ProbRosen(1:maxRosenTrial), rosenNorm, grnd
-      real(kind(0.0d0)) :: ranNum, sumInt
+      real(dp) :: E_Min, ProbRosen(1:maxRosenTrial), rosenNorm, grnd
+      real(dp) :: ranNum, sumInt
 
       rejMove = .false.
       E_Min = minval(E_Trial)

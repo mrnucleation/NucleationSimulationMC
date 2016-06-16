@@ -1,10 +1,8 @@
-!======================================================
-      module VarPrecision
-        integer, parameter :: dp = kind(0.0d0)
-      end module
+
 !======================================================
       module CoordinateTypes
       use VarPrecision
+
       type FloatPointer
         real(dp),pointer :: pnt
       end type
@@ -34,39 +32,19 @@
       end type
 
       type Displacement
-        integer(kind=2) :: molType, atmIndx,molIndx
+        integer(kind=2) :: molType, atmIndx, molIndx
 !        integer :: molType,molIndx,atmIndx        
-        real(dp) :: x_new,y_new,z_new
-        real(dp),pointer :: x_old,y_old,z_old
+        real(dp) :: x_new, y_new, z_new
+        real(dp),pointer :: x_old, y_old, z_old
       end type
 
       type TrialCoordinates
         integer(kind=2) :: molType, molIndx
-        real(dp), allocatable :: x(:),y(:),z(:)
+        real(dp), allocatable :: x(:), y(:), z(:)
       end type
 
       end module
-!======================================================
-      module MoveTypeModule
-      use VarPrecision
 
-      abstract interface 
-        subroutine MCMoveSub(E_T, acc_x, atmp_x)
-          use VarPrecision
-          implicit none
-          real(dp), intent(inout) :: E_T, acc_x, atmp_x
-        end subroutine
-      end interface 
- 
-      type MoveArray
-        procedure(MCMoveSub), pointer, nopass :: moveFunction => NULL()
-      end type
-
-      integer :: nMoveTypes
-      type(MoveArray), allocatable :: mcMoveArray(:)
-      real(dp), allocatable :: moveProbability(:)
-
-      end module
 !==============================================================
       module AcceptRates
       use VarPrecision
@@ -79,6 +57,8 @@
       real(dp), allocatable :: acptInSize(:), atmpInSize(:)
 
       real(dp) :: angGen_accpt, angGen_atmp
+      real(dp) :: dihedGen_accpt, dihedGen_atmp
+      real(dp) :: distGen_accpt, distGen_atmp
       real(dp) :: clusterCritRej
       
       end module  
@@ -98,7 +78,7 @@
       module IonBias
       use VarPrecision
         logical, parameter :: biasIon = .false.
-        integer, parameter :: rBins = 100
+        integer, parameter :: rBins = 300
         real(dp) :: ionDistance, dR
         real(dp),allocatable :: NR_Hist(:,:), NR_Bias(:,:)  
         
@@ -111,7 +91,7 @@
       type(MolArrayType), allocatable, target :: MolArray(:)
       type(MolPointers), allocatable :: JointArray(:) 
       
-      type(TrialCoordinates) :: newMol
+      type(TrialCoordinates) :: newMol, newMol2
       type(SimpleMolCoords),allocatable :: rosenTrial(:)
       
       logical, allocatable :: NeighborList(:,:)
@@ -154,50 +134,7 @@
       integer, allocatable :: atomPathIndex(:,:)
       
       end module
-!==============================================================
-      module ForceField
-      use ForceFieldVariableType
-      use VarPrecision
-      integer :: nAtomTypes
-      integer :: nBondTypes     
-      integer :: nAngleTypes
-      integer :: nTorsionalTypes
-      integer :: nImproperTypes       
-        
-      type(AtomDef), allocatable :: atomData(:)   
-      type(BondDef), allocatable :: bondData(:)
-      type(BendAngleDef), allocatable :: bendData(:)
-      type(TorsionAngleDef), allocatable :: torsData(:)
-      type(TorsionAngleDef), allocatable :: impropData(:)
 
-      real(dp),allocatable :: ep_tab(:,:),sig_tab(:,:)
-      real(dp),allocatable :: q_tab(:,:)       
-      real(dp), allocatable :: r_min(:), r_min_sq(:)
-      real(dp), allocatable :: r_min_tab(:,:)
-
-      integer, allocatable :: nAtoms(:)
-      integer, allocatable :: nIntraNonBond(:)      
-      integer, allocatable :: nBonds(:)  
-      integer, allocatable :: nAngles(:)
-      integer, allocatable :: nTorsional(:)
-      integer, allocatable :: nImproper(:)
-
-      real(dp),allocatable :: totalMass(:)
-      
-      integer(kind=2), allocatable :: atomArray(:,:)
-!      integer, allocatable :: atomArray(:,:)
-      type(NonBondedIndex), allocatable :: nonBondArray(:,:)      
-      type(BondIndex), allocatable :: bondArray(:,:)
-      type(BendAngleIndex), allocatable :: bendArray(:,:)
-      type(TorsionAngleIndex), allocatable :: torsArray(:,:)
-      type(ImproperAngleIndex), allocatable :: impropArray(:,:)
-
-      character(len=16), allocatable :: atomUseByBond(:,:)
-      character(len=66), allocatable :: atomUseByBend(:,:)      
-      character(len=66), allocatable :: atomUseByTors(:,:)
-      character(len=66), allocatable :: atomUseByImprop(:,:)
-      
-      end module
 
 !==============================================================
 !      module CBMC_Pointers
@@ -246,6 +183,7 @@
 !       curLimit = NPART(1)
        curLimit = 0
        molIndx = 1
+
        molType = 1
        do i=1,sizeN
          curLimit = curLimit + NPART(i)  
@@ -393,6 +331,8 @@
 !======================================================
       module WHAM_Module
       use VarPrecision
+
+      logical, parameter :: WHAM_ExtensiveOutput = .false.
 
       integer, allocatable :: refSizeNumbers(:)
       integer :: refBin

@@ -1,6 +1,0 @@
-     subroutine CreateInitialJointArray
-	 
-	 
-	 
-	 
-	 end

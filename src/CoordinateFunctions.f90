@@ -48,6 +48,10 @@
       allocate(newMol%y(1:maxAtoms), stat=AllocationStatus)
       allocate(newMol%z(1:maxAtoms), stat=AllocationStatus)
 
+      allocate(newMol2%x(1:maxAtoms), stat=AllocationStatus)
+      allocate(newMol2%y(1:maxAtoms), stat=AllocationStatus)
+      allocate(newMol2%z(1:maxAtoms), stat=AllocationStatus)
+
 !       allocate( JointArray(1:NMaxMol), stat=AllocationStatus)
 !       do i = 1,NMaxMol
 !         allocate( JointArray(i)%x(1:maxAtoms),
@@ -96,7 +100,7 @@
       use Coords
       implicit none
       integer :: iType,iMol,iAtom,iIndx
-      real(kind(0.0d0)) :: x,y,z
+      real(dp) :: x,y,z
       character(len=2) :: atmSymbol
       
       open(unit=10, file="configuration.dat")
@@ -160,7 +164,7 @@
       implicit none
       integer :: iType,iAtom
       character(len=2) :: atmSymbol
-      real(kind(0.0d0)) :: x1, y1, z1
+      real(dp) :: x1, y1, z1
       
       open(unit=10, file="gasPhase.dat", status = "Old")
       do iType = 1,nMolTypes
@@ -194,7 +198,7 @@
       use Coords
       implicit none
       integer :: iType,iMol,iAtom
-      real(kind(0.0d0)) :: xcm, ycm, zcm
+      real(dp) :: xcm, ycm, zcm
       
       xcm = MolArray(1)%mol(1)%x(1)
       ycm = MolArray(1)%mol(1)%y(1)
@@ -214,9 +218,10 @@
       end subroutine
 !========================================================            
       subroutine Generate_UnitSphere(x,y,z)
+      use VarPrecision
       implicit none
-      real(kind(0.0d0)), intent(out) :: x,y,z
-      real(kind(0.0d0)) :: u_12_sq, u1, u2, grnd
+      real(dp), intent(out) :: x,y,z
+      real(dp) :: u_12_sq, u1, u2, grnd
       
       u_12_sq = 2d0
       do while(u_12_sq .ge. 1)
@@ -245,12 +250,12 @@
       implicit none
       type(SimpleAtomCoords), intent(in) :: v1
       type(SimpleAtomCoords), intent(out) :: v2
-      real(kind(0.0d0)), intent(in) :: bond_ang, r2
-      real(kind(0.0d0)) :: tors_angle
-      real(kind(0.0d0)) :: r1
-      real(kind(0.0d0)) :: s_term,c_term
-      real(kind(0.0d0)) :: coeff1,coeff2,coeff3  
-      real(kind(0.0d0)) :: r_proj,grnd
+      real(dp), intent(in) :: bond_ang, r2
+      real(dp) :: tors_angle
+      real(dp) :: r1
+      real(dp) :: s_term,c_term
+      real(dp) :: coeff1,coeff2,coeff3  
+      real(dp) :: r_proj,grnd
 
       r1 = v1%x*v1%x + v1%y*v1%y + v1%z*v1%z
       r1 = dsqrt(r1)
@@ -271,6 +276,60 @@
 
          
       end subroutine
+	  
+!==========================================================================     
+!     The purpose of this function is to generate two random position for two atoms
+!     given two fixed bond angles (bond_ang1 and bond_ang2), one dihedral angle (dihed) which 
+!     is the angle between two planes made by two angles with a given vector (v1) and two 
+!     given distances (r2 and r3).
+!     The coordinate is created using a relative orthonormal framework given by these vectors
+!     w1=(x1,y1,z1)   w2=(-y1,x1,0)  w3=(-x1*z1, -y1*z1, x1^2 + y1^2)
+!     Using these vectors, the new vectors(v2 and v3) is calculated using a rotational matrix
+
+      subroutine Generate_UnitPyramid(v1, r2, r3, bond_ang1, bond_ang2, dihed, v2, v3)
+      use Constants      
+      use CoordinateTypes
+      implicit none
+      type(SimpleAtomCoords), intent(in) :: v1
+      type(SimpleAtomCoords), intent(out) :: v2, v3
+      real(dp), intent(in) :: bond_ang1, bond_ang2, dihed, r2, r3
+      real(dp) :: tors_angle
+      real(dp) :: r1
+      real(dp) :: s_term,c_term
+      real(dp) :: coeff1,coeff2,coeff3  
+      real(dp) :: r_proj,grnd
+
+      r1 = v1%x*v1%x + v1%y*v1%y + v1%z*v1%z
+      r1 = dsqrt(r1)
+
+      tors_angle = two_pi*grnd()
+        
+      s_term = dsin(tors_angle)
+      c_term = dcos(tors_angle)      
+      r_proj = dsqrt(v1%x*v1%x + v1%y*v1%y)
+        
+      coeff1 = (r2/r1)*dcos(bond_ang1)
+      coeff2 = (r2/r_proj)*dsin(bond_ang1)
+      coeff3 = coeff2/r1
+
+      v2%x = coeff1*v1%x - coeff2*c_Term*v1%y - coeff3*s_Term*v1%x*v1%z
+      v2%y = coeff1*v1%y + coeff2*c_term*v1%x - coeff3*s_term*v1%y*v1%z
+      v2%z = coeff1*v1%z                      + coeff3*s_term*(r_proj*r_proj)
+	  
+      tors_angle = tors_angle + dihed
+      s_term = dsin(tors_angle)
+      c_term = dcos(tors_angle) 
+
+      coeff1 = (r3/r1)*dcos(bond_ang2)
+      coeff2 = (r3/r_proj)*dsin(bond_ang2)
+      coeff3 = coeff2/r1
+	  
+      v3%x = coeff1*v1%x - coeff2*c_Term*v1%y - coeff3*s_Term*v1%x*v1%z
+      v3%y = coeff1*v1%y + coeff2*c_term*v1%x - coeff3*s_term*v1%y*v1%z
+      v3%z = coeff1*v1%z                      + coeff3*s_term*(r_proj*r_proj)
+         
+      end subroutine
+	  
 !==========================================================================     
 !     The purpose of this function is similar to the UnitCone function however
 !     in this case the torsional angle is fixed in addition to the distance and
@@ -284,13 +343,13 @@
       implicit none
       type(SimpleAtomCoords), intent(in) :: v1,v2
       type(SimpleAtomCoords), intent(out) :: v3
-      real(kind(0.0d0)), intent(in) :: bond_ang, tors_angle,r3
-      real(kind(0.0d0)) :: x1_u, y1_u, z1_u
-      real(kind(0.0d0)) :: x1_s, y1_s, z1_s
-      real(kind(0.0d0)) :: r2, rot_angle
-      real(kind(0.0d0)) :: s_term,c_term
-      real(kind(0.0d0)) :: coeff1,coeff2,coeff3  
-      real(kind(0.0d0)) :: r_proj
+      real(dp), intent(in) :: bond_ang, tors_angle,r3
+      real(dp) :: x1_u, y1_u, z1_u
+      real(dp) :: x1_s, y1_s, z1_s
+      real(dp) :: r2, rot_angle
+      real(dp) :: s_term,c_term
+      real(dp) :: coeff1,coeff2,coeff3  
+      real(dp) :: r_proj
 
       r2 = v2%x*v2%x + v2%y*v2%y + v2%z*v2%z
       r2 = dsqrt(r2)
@@ -340,44 +399,57 @@
       use Constants
       use SimParameters
       use ForceFieldFunctions
+      use AcceptRates, only: distGen_accpt, distGen_atmp
       implicit none
       logical acpt
-      real(kind(0.0d0)), intent(in) :: k_bond,r_eq
-      real(kind(0.0d0)), intent(out) :: dist  
-      real(kind(0.0d0)), intent(out), optional :: ProbGen   
-      real(kind(0.0d0)) :: grnd,eng
+      real(dp), intent(in) :: k_bond,r_eq
+      real(dp), intent(out) :: dist  
+      real(dp), intent(out), optional :: ProbGen   
+      real(dp) :: normalSigma, grnd,eng
+!      real(dp) ::
 
       if(k_bond .eq. 0d0) then
-         dist = r_eq
-         ProbGen = 1d0
-         return
+        dist = r_eq
+        ProbGen = 1d0
+        return
       endif
-        
+      
+      normalSigma = 1d0/(0.5d0*k_bond*beta)
       acpt=.false.         
       do while(.not. acpt)
+         distGen_atmp = distGen_atmp + 1d0
         dist = -log(1d0-grnd())
+!        dist = sqrt(-2d0*log(grnd())) * cos(two_pi*grnd())
+!        dist = dist*normalSigma + r_eq
         eng = Harmonic(dist, k_bond, r_eq)
         ProbGen = dist * dist * exp(-beta*eng+dist)
-!        if(ProbGen/(3d0*exp(-dist)) .gt. grnd()) then
+!        ProbGen = dist * dist
         if(ProbGen/3d0 .gt. grnd()) then        
           acpt=.true.
         endif
-      enddo    
-         
+      enddo  
+      distGen_accpt = distGen_accpt + 1d0   
+
       end subroutine
 !==========================================================================           
-      subroutine GenerateBendAngle(angle,k_bend,theta_eq,ProbGen)
+      subroutine GenerateBendAngle(angle, bendType, ProbGen)
       use Constants
       use SimParameters
+      use ForceField
       use ForceFieldFunctions
       use AcceptRates, only: angGen_accpt, angGen_atmp
       implicit none
-      logical acpt
-      real(kind(0.0d0)), intent(out) :: angle
-      real(kind(0.0d0)), intent(out), optional :: ProbGen
-      real(kind(0.0d0)), intent(in) :: k_bend,theta_eq
-      real(kind(0.0d0)) :: grnd, eng
-      
+      logical :: acpt
+      integer :: nSel
+      integer, intent(in) :: bendType
+      real(dp), intent(out) :: angle
+      real(dp), intent(out), optional :: ProbGen
+      real(dp) :: k_bend,theta_eq
+      real(dp) :: grnd, eng, ranNum, sumInt
+      real(dp) :: ProbSel
+
+      k_bend = bendData(bendType)%k_eq
+      theta_eq = bendData(bendType)%ang_eq  
       if(k_bend .eq. 0d0) then
          angle = theta_eq
          ProbGen = 1d0
@@ -385,17 +457,108 @@
       endif
       
       
-      acpt=.false.         
+      acpt=.false.  
       do while(acpt .eqv. .false.)
          angGen_atmp = angGen_atmp + 1d0
+
 !         angle = pi*grnd()
-         angle = acos(1d0-2d0*grnd())
+!         angle = acos(1d0-2d0*grnd())
+
+         ranNum = grnd()
+          !Since the majority of the probability density will be centered near the equilibrium angle
+          !we can use this fact to find the correct bin with much fewer comparisons by simply starting
+          !near the beginning of the gaussian curve unless the random number chosen is sufficiently small.
+         if(ranNum .lt. startProb) then
+           nSel = 1
+         else 
+           nSel = bendData(bendType)%startBin
+         endif
+         do while(bendData(bendType)%Prob(nSel) .lt. ranNum)
+           nSel = nSel + 1
+         enddo
+
+          !Now that the bin has been chosen, select an angle uniformly from the bin and calculate the
+          !acceptance probability.
+         angle = ( dble(nSel)-grnd() ) * bendBinWidth
+         if(nSel .ne. 1) then
+           ProbSel = bendData(bendType)%Prob(nSel) - bendData(bendType)%Prob(nSel-1)
+         else
+           ProbSel = bendData(bendType)%Prob(nSel)
+         endif
+
          eng = Harmonic(angle, k_bend, theta_eq)
-!         ProbGen = dsin(angle)*exp(-beta*eng)
+         ProbGen = dsin(angle)*exp(-beta*eng)/ProbSel
+         ProbGen = ProbGen*bendData(bendType)%accptConstant
+         if(ProbGen .gt. grnd()) then
+           acpt=.true.
+         endif
+      enddo    
+      angGen_accpt = angGen_accpt + 1d0   
+
+      end subroutine
+!==========================================================================  
+      subroutine GenerateTwoBranches(ang1, ang2, dihedral, bendType1, bendType2, bendType3, ProbGen)  
+      use Constants
+      use SimParameters
+      use ForceFieldFunctions
+      use ForceField
+      use AcceptRates, only: dihedGen_accpt, dihedGen_atmp
+      implicit none
+      interface
+        subroutine GenerateBendAngle(angle, bendType, ProbGen)
+         use VarPrecision
+         integer, intent(in) :: bendType
+         real(dp), intent(out) :: angle
+         real(dp), intent(out), optional :: ProbGen
+        end subroutine
+      end interface
+      logical acpt
+      integer, intent(in) :: bendType1, bendType2, bendType3
+      real(dp), intent(out) :: ang1, ang2, dihedral
+      real(dp), intent(out), optional :: ProbGen
+      real(dp) :: ProbTemp
+      real(dp) :: k_bend1,theta_eq1,k_bend2,theta_eq2,k_bend3,theta_eq3
+      real(dp) :: grnd, eng, ang3
+	  
+      k_bend1 = bendData(bendType1)%k_eq
+      theta_eq1 = bendData(bendType1)%ang_eq
+      k_bend2 = bendData(bendType2)%k_eq
+      theta_eq2 = bendData(bendType2)%ang_eq
+      k_bend3 = bendData(bendType3)%k_eq
+      theta_eq3 = bendData(bendType3)%ang_eq
+	
+      if((k_bend1 .eq. 0d0) .or. (k_bend2 .eq. 0d0) .or. (k_bend3 .eq. 0d0)) then
+        ang1 = theta_eq1
+        ang2 = theta_eq2
+        ang3 = theta_eq3
+        dihedral = acos((cos(ang3) - cos(ang1)*cos(ang2))/(sin(ang1)*sin(ang2)))
+        ProbGen = 1d0
+        return
+      endif
+      
+     
+      acpt=.false.         
+      do while(acpt .eqv. .false.)
+!         eng = 0d0
+         dihedGen_atmp = dihedGen_atmp + 1d0
+!         angle = pi*grnd()
+         ang1 = acos(1d0-2d0*grnd())
+         ang2 = acos(1d0-2d0*grnd())
+!         call GenerateBendAngle(ang1, bendType1, ProbTemp)
+!         call GenerateBendAngle(ang2, bendType2, ProbTemp)
+         dihedral = two_pi*grnd()
+         ang3 = cos(ang1)*cos(ang2) + sin(ang1)*sin(ang2)*cos(dihedral)
+         if (ang3 .ge. 1d0) ang3 = 1d0
+         if (ang3 .le. -1d0) ang3 = -1d0
+         ang3 = acos(ang3)
+         eng = Harmonic(ang1, k_bend1, theta_eq1)
+         eng = eng + Harmonic(ang2, k_bend2, theta_eq2)
+         eng = eng + Harmonic(ang3, k_bend3, theta_eq3)
+
          ProbGen = exp(-beta*eng)
          if(0.9999d0*ProbGen .gt. grnd()) acpt=.true.
       enddo    
-      angGen_accpt = angGen_accpt + 1d0   
+      dihedGen_accpt = dihedGen_accpt + 1d0   
       end subroutine
 
 !==========================================================================           
@@ -407,9 +570,9 @@
       implicit none
       logical :: acpt
       integer, intent(in) :: torsType
-      real(kind(0.0d0)), intent(out) :: angle
-      real(kind(0.0d0)), intent(out), optional :: ProbGen    
-      real(kind(0.0d0)) :: grnd, eng
+      real(dp), intent(out) :: angle
+      real(dp), intent(out), optional :: ProbGen    
+      real(dp) :: grnd, eng
       
       acpt=.false.         
       do while(acpt .eqv. .false.)
