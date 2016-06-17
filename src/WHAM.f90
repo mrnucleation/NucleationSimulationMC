@@ -233,10 +233,9 @@
           if(ProbArray(i) .gt. 0d0) then
             write(92, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i) - refBias
           else
- !           if(i .eq. refBin) then
-!             write(92, *) (NArray(j),j=1,nMolTypes), 0d0
-             write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
-!            endif
+            if(i .ne. 1) then
+              write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
+            endif
           endif
           NArray(nMolTypes) = NArray(nMolTypes) + 1
         enddo
