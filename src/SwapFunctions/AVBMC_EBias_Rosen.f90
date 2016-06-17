@@ -159,7 +159,7 @@
 
 !     Calculate acceptance probability and determine if the move is accepted or not          
       genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol * dble(nMolTypes) * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
-      write(2,*) ProbTarg_Out, ProbSel_Out, ProbTarg_In, rosenRatio
+!      write(2,*) ProbTarg_Out, ProbSel_Out, ProbTarg_In, rosenRatio
 
       if( genProbRatio * exp(-beta*E_Inter + bias_diff) .gt. grnd() ) then
          acptSwapIn(nType) = acptSwapIn(nType) + 1d0        
