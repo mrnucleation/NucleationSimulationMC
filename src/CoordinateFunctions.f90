@@ -542,21 +542,21 @@
 !         eng = 0d0
          dihedGen_atmp = dihedGen_atmp + 1d0
 !         angle = pi*grnd()
-         ang1 = acos(1d0-2d0*grnd())
-         ang2 = acos(1d0-2d0*grnd())
-!         call GenerateBendAngle(ang1, bendType1, ProbTemp)
-!         call GenerateBendAngle(ang2, bendType2, ProbTemp)
+!         ang1 = acos(1d0-2d0*grnd())
+!         ang2 = acos(1d0-2d0*grnd())
+         call GenerateBendAngle(ang1, bendType1, ProbTemp)
+         call GenerateBendAngle(ang2, bendType2, ProbTemp)
          dihedral = two_pi*grnd()
          ang3 = cos(ang1)*cos(ang2) + sin(ang1)*sin(ang2)*cos(dihedral)
          if (ang3 .ge. 1d0) ang3 = 1d0
          if (ang3 .le. -1d0) ang3 = -1d0
          ang3 = acos(ang3)
-         eng = Harmonic(ang1, k_bend1, theta_eq1)
-         eng = eng + Harmonic(ang2, k_bend2, theta_eq2)
-         eng = eng + Harmonic(ang3, k_bend3, theta_eq3)
+!         eng = Harmonic(ang1, k_bend1, theta_eq1)
+!         eng = eng + Harmonic(ang2, k_bend2, theta_eq2)
+         eng = Harmonic(ang3, k_bend3, theta_eq3)
 
          ProbGen = exp(-beta*eng)
-         if(0.9999d0*ProbGen .gt. grnd()) acpt=.true.
+         if(ProbGen .gt. grnd()) acpt=.true.
       enddo    
       dihedGen_accpt = dihedGen_accpt + 1d0   
       end subroutine
