@@ -26,7 +26,7 @@
       
       real(dp), intent(inout) :: E_T      
       real(dp), intent(inout) :: acc_x
-      logical rejMove     
+      logical :: rejMove     
       integer :: NDiff(1:nMolTypes)
       integer :: i, nTargType, nTargMol, nTargIndx, nTarget
       integer :: nType, nIndx, bIndx
@@ -42,8 +42,6 @@
       real(dp) :: x1, y1, z1
       real(dp) :: ProbTarg_In, ProbTarg_Out, ProbSel_Out
       real(dp) :: rmin_ij
-      
-      if(NTotal .eq. maxMol) return
 
 !      Choose the type of molecule to be inserted      
       if(nMolTypes .eq. 1) then
@@ -135,8 +133,9 @@
          enddo
          E_T = E_T + E_Inter + E_Intra
          acc_x = acc_x + 1d0
-         isActive(molArray(nType)%mol(NPART(nType)+1)%indx) = .true.
          nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
+         isActive(molArray(nType)%mol(NPART(nType)+1)%indx) = .true.
+
          if(distCriteria) then
            call NeighborUpdate_Distance(PairList,nIndx)        
          else
