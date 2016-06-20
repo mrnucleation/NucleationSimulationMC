@@ -1,10 +1,12 @@
+      module AVBMC_CBMC
+      contains
 !=======================================================================
 !     The purpose of this subroutine is generate a set of trial configurations that will
 !     used for the Aggregation-Volume-Bias insertion move. This subroutine is intended to generate
 !     configurations for perfectly ridgid molecules. Once a set of configurations is generated
 !     one of these configurations will be randomly chosen based on the Rosenbluth weight for each
 !     configuraiton. 
-      subroutine Ridgid_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)
+      subroutine Ridgid_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)
       use SimParameters
       use Coords
       use ForceField
@@ -17,8 +19,8 @@
       integer, intent(in) :: nType, nTarget, nTargType, nIndx
       logical, intent(out) :: rejMove      
       real(dp), intent(out) :: rosenRatio
+      logical, intent(in) :: isIncluded(:)
 
-      logical :: isIncluded(1:maxMol)
       logical :: overlap(1:maxRosenTrial)
       integer :: atmType1, atmType2
       integer :: i, iRosen, nSel, nTargetMol
@@ -34,7 +36,7 @@
 
       
       newMol%molType = nType      
-      call Rosen_CreateSubset(nTarget, isIncluded)
+!      call Rosen_CreateSubset(nTarget, isIncluded)
       E_Trial = 0d0
       rejMove = .false.   
       nTargetMol = subIndxList(nTarget)
@@ -89,9 +91,9 @@
         endif
 
         r = Dist_Critr * grnd()**(1d0/3d0)
-        if(r .lt. rmin_ij) then
-          overlap(iRosen) = .true.
-        endif
+!        if(r .lt. rmin_ij) then
+!          overlap(iRosen) = .true.
+!        endif
 
         call Generate_UnitSphere(dx, dy, dz)
         dx = r * dx
@@ -253,7 +255,7 @@
       
       end subroutine
 !=======================================================================
-      subroutine Simple_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)
+      subroutine Simple_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)
       use SimParameters
       use Coords
       use ForceField
@@ -266,8 +268,9 @@
       integer, intent(in) :: nType, nTarget, nTargType, nIndx
       logical, intent(out) :: rejMove      
       real(dp), intent(out):: rosenRatio
+      logical, intent(in) :: isIncluded(:)
       
-      logical :: isIncluded(1:maxMol)
+!      logical :: isIncluded(1:maxMol)
       logical :: overlap(1:maxRosenTrial)
       integer :: atmType1, atmType2
       integer :: i, iRosen, nSel, nTargetMol
@@ -290,7 +293,7 @@
       type(SimpleAtomCoords) :: v1, v2, v3
       
       newMol%molType = nType      
-      call Rosen_CreateSubset(nTarget, isIncluded)
+!      call Rosen_CreateSubset(nTarget, isIncluded)
       E_Trial = 0d0
       rejMove = .false.      
       nTargetMol = subIndxList(nTarget)
@@ -604,7 +607,7 @@
       
       end subroutine
 !=======================================================================
-      subroutine StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)
+      subroutine StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)
       use SimParameters
       use Coords
       use ForceField
@@ -617,13 +620,14 @@
       integer, intent(in) :: nType, nTarget, nTargType
       real(dp), intent(out):: rosenRatio
       logical, intent(out) :: rejMove
+      logical, intent(in) :: isIncluded(:)
 
+!      logical :: isIncluded(1:maxMol)
       integer :: i, iRosen, iAtom, nSel, nIndx, nTargetMol
       integer :: nRegrown
       integer :: Atm1, Atm2, Atm3, Atm4
       integer :: atom1_Pos, cnt
       integer :: bondType, bendType, torsType
-      logical :: isIncluded(1:maxMol)
       logical :: overlap(1:maxRosenTrial)
       logical :: regrown(1:maxAtoms)
       real(dp) :: E_Trial(1:maxRosenTrial), E_Complete
@@ -639,7 +643,7 @@
       
    
   
-      call Rosen_CreateSubset(nTarget, isIncluded)
+!      call Rosen_CreateSubset(nTarget, isIncluded)
       nTargetMol = subIndxList(nTarget)
       newMol%molType = nType 
       newMol%x = 0d0
@@ -1046,5 +1050,4 @@
 
       end subroutine
 !=======================================================================
-    
-    
+      end module
