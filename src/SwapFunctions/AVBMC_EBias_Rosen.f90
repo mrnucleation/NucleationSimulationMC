@@ -22,12 +22,16 @@
       end subroutine
 !===================================================================================
       subroutine AVBMC_EBias_Rosen_In(E_T, acc_x)
+      use AcceptRates
       use AVBMC_RejectionVar
-      use SimParameters
+      use AVBMC_CBMC
+      use CBMC_Utility
+      use CBMC_Variables
       use Constants  
+      use Coords
+      use SimParameters
       use ForceField
       use E_Interface
-      use Coords
       use UmbrellaFunctions
       use ForceField
       use IndexingFunctions      
@@ -35,9 +39,8 @@
       use DistanceCriteria
       use InterEnergy_LJ_Electro
       use EnergyTables
-      use AcceptRates
-      use CBMC_Variables
       use NeighborTable
+
       implicit none
 
 !      interface      
@@ -60,7 +63,8 @@
       
       real(dp), intent(inout) :: E_T      
       real(dp), intent(inout) :: acc_x
-      logical rejMove     
+      logical :: rejMove     
+      logical :: isIncluded(1:maxMol)
       integer :: NDiff(1:nMolTypes)
       integer :: i, nTargType, nTargMol, nTargIndx, nTarget
       integer :: nType, nIndx, bIndx
@@ -98,13 +102,15 @@
 
 !      Generate the configuration for the newly inserted molecule
       nIndx = MolArray(nType)%mol(NPART(nType) + 1)%indx      
+      call Rosen_CreateSubset(nTarget, isIncluded)
+
       select case(regrowType(nType))
       case(0)
-        call Ridgid_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)
+        call Ridgid_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)
       case(1)
-        call Simple_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)   
+        call Simple_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)   
       case(2)
-        call StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)   
+        call StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)   
       case default
         write(*,*) "Error! EBias can not regrow a molecule of regrow type:", regrowType(nType)
 !"
@@ -171,8 +177,8 @@
          enddo
          E_T = E_T + E_Inter + E_Intra
          acc_x = acc_x + 1d0
-         isActive(molArray(nType)%mol(NPART(nType)+1)%indx) = .true.
-         nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
+         isActive(nIndx) = .true.
+!         nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
          if(distCriteria) then
            call NeighborUpdate_Distance(PairList,nIndx)        
          else
@@ -190,6 +196,7 @@
        end subroutine
 !===================================================================================            
       subroutine AVBMC_EBias_Rosen_Out(E_T, acc_x)
+      use AVBMC_CBMC
       use SimParameters
       use Constants
       use E_Interface
