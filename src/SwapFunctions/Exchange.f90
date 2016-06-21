@@ -29,11 +29,11 @@
       logical rejMove     
       integer :: NDiff(1:nMolTypes)
       integer :: i, nTargType, nTargMol, nTargIndx, nTarget
-      integer :: nType1, nType2, nIndx, bIndx
+      integer :: nType1, nType2, nIndx, nIndx2,  bIndx
       integer :: atmType1, atmType2      
       real(dp) :: grnd
       real(dp) :: dx, dy, dz, r
-      real(dp) :: genProbRatio, rosenRatio
+      real(dp) :: genProbRatio, rosenRatio_in, rosenRatio_out
       real(dp) :: E_Inter, E_Intra, bias_Diff
       real(dp) :: biasOld, biasNew
       real(dp) :: PairList(1:maxMol)
@@ -46,12 +46,13 @@
       nTarget = floor(NTotal*grnd() + 1d0)
       call Get_MolIndex(nMove, NPart, nTargType, nTargMol)
       call Uniform_ChooseNeighbor(nTarget, nMove, nNei)
-      call Get_MolIndex(nMove, NPart, nType1, nMol)
+
       nType2 = nType1
       do while(nType2 .eq. nType1) 
         nType2 = floor(nMolTypes*grnd() + 1d0)
       enddo
 
+         
       NDiff = 0 
       NDiff(nType1) = -1
       NDiff(nType2) = 1
@@ -59,26 +60,23 @@
       nTargIndx = MolArray(nTargType)%mol(nTargMol)%indx      
 
 !      Generate the configuration for the newly inserted molecule
-      nIndx = MolArray(nType)%mol(NPART(nType) + 1)%indx      
+      nIndx2 = MolArray(nType)%mol(NPART(nType) + 1)%indx      
       call Rosen_CreateSubset(nTarget, isIncluded)
-
-      select case(regrowType(nType))
+      isIncluded(nIndx) = .false.
+      select case(regrowType(nType2))
       case(0)
-        call Ridgid_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)
+        call Ridgid_RosenConfigGen(nType2, nIndx2, nTarget, nTargType, isIncluded, rosenRatio_in, rejMove)
       case(1)
-        call Simple_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)   
+        call Simple_RosenConfigGen(nType2, nIndx2, nTarget, nTargType, isIncluded, rosenRatio_in, rejMove)   
       case(2)
-        call StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)   
+        call StraightChain_RosenConfigGen(nType2, nIndx2, nTarget, nTargType, isIncluded, rosenRatio_in, rejMove)   
       case default
-        write(*,*) "Error! EBias can not regrow a molecule of regrow type:", regrowType(nType)
-!"
+        write(*,*) "Error! EBias can not regrow a molecule of regrow type:", regrowType(nType2)
         stop
       end select        
       if(rejMove) then
         return
       endif          
-
-!      call DEBUG_Output_NewConfig
 
 !      Perform a check to see if the cluster criteria is statisfied or not.
       if(.not. distCriteria) then
@@ -88,17 +86,31 @@
           return
         endif  
       endif
+!      call DEBUG_Output_NewConfig
+
+
+      select case(regrowType(nType1))
+      case(0)
+         call Ridgid_RosenConfigGen_Reverse(nType1, nMol, nTarget, nTargType, rosenRatio_out)
+      case(1)
+         call Simple_RosenConfigGen_Reverse(nType1, nMol, nTarget, nTargType, rosenRatio_out)
+      case(2)
+         call StraightChain_RosenConfigGen_Reverse(nType1, nMol, nTarget, nTargType, rosenRatio_out)
+      case default
+         write(*,*) "Error! EBias can not regrow a molecule of regrow type:", nType1
+         stop
+      end select 
+
+
+
 
 !      Calculate the Energy Difference Associated with the move
       E_Inter = 0d0
       E_Intra = 0d0
       call SwapIn_EnergyCalc(E_Inter, E_Intra, PairList, dETable, rejMove) 
       if(rejMove) then
-        totalRej = totalRej + 1d0
-        ovrlapRej = ovrlapRej + 1d0
         return
       endif
-
       
 !     Calculate the umbrella sampling bias.
       bIndx = getBiasIndex(NPart,NMAX)
@@ -132,12 +144,9 @@
          NPART(nType) = NPART(nType) + 1 
 !         call Create_NeiETable
          call Update_SubEnergies
-       else
-         totalRej = totalRej + 1d0
-         dbalRej = dbalRej + 1d0
        endif
-       end subroutine
 
+       end subroutine
 !=================================================================================	  
       subroutine Uniform_ChooseNeighbor(nTarget, nSel, nNei)
       use SimParameters  
