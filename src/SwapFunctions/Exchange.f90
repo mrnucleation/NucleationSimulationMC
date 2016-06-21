@@ -26,10 +26,10 @@
       
       real(dp), intent(inout) :: E_T      
       real(dp), intent(inout) :: acc_x
-      logical :: rejMove     
+      logical rejMove     
       integer :: NDiff(1:nMolTypes)
       integer :: i, nTargType, nTargMol, nTargIndx, nTarget
-      integer :: nType, nIndx, bIndx
+      integer :: nType1, nType2, nIndx, bIndx
       integer :: atmType1, atmType2      
       real(dp) :: grnd
       real(dp) :: dx, dy, dz, r
@@ -43,41 +43,40 @@
       real(dp) :: ProbTarg_In, ProbTarg_Out, ProbSel_Out
       real(dp) :: rmin_ij
 
-!      Choose the type of molecule to be inserted      
-      if(nMolTypes .eq. 1) then
-        nType = 1
-      else
-        nType = floor(nMolTypes*grnd() + 1d0)
-      endif
-      atmpSwapIn(nType) = atmpSwapIn(nType) + 1d0
-      atmpInSize(NTotal) = atmpInSize(NTotal) + 1d0
-      if(NPART(nType) .eq. NMAX(nTYPE)) then
-         return
-      endif
+      nTarget = floor(NTotal*grnd() + 1d0)
+      call Get_MolIndex(nMove, NPart, nTargType, nTargMol)
+      call Uniform_ChooseNeighbor(nTarget, nMove, nNei)
+      call Get_MolIndex(nMove, NPart, nType1, nMol)
+      nType2 = nType1
+      do while(nType2 .eq. nType1) 
+        nType2 = floor(nMolTypes*grnd() + 1d0)
+      enddo
 
       NDiff = 0 
-      NDiff(nType) = 1
-      call EBias_Insert_ChooseTarget(nType, nTarget, nTargType, nTargMol, ProbTarg_In)
+      NDiff(nType1) = -1
+      NDiff(nType2) = 1
+
       nTargIndx = MolArray(nTargType)%mol(nTargMol)%indx      
 
 !      Generate the configuration for the newly inserted molecule
       nIndx = MolArray(nType)%mol(NPART(nType) + 1)%indx      
+      call Rosen_CreateSubset(nTarget, isIncluded)
+
       select case(regrowType(nType))
       case(0)
-        call Ridgid_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)
+        call Ridgid_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)
       case(1)
-        call Simple_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)   
+        call Simple_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)   
       case(2)
-        call StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, rosenRatio, rejMove)   
+        call StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)   
       case default
         write(*,*) "Error! EBias can not regrow a molecule of regrow type:", regrowType(nType)
+!"
         stop
       end select        
       if(rejMove) then
-        totalRej = totalRej + 1d0
-        ovrlapRej = ovrlapRej + 1d0
         return
-      endif      
+      endif          
 
 !      call DEBUG_Output_NewConfig
 
@@ -86,9 +85,6 @@
         rejMove = .false.
         call QuickNei_ECalc_Inter(nTargType, nTargMol, rejMove)     
         if(rejMove) then
-          totalRej = totalRej + 1d0
-          critriaRej = critriaRej + 1d0
-          clusterCritRej = clusterCritRej + 1d0
           return
         endif  
       endif
@@ -102,16 +98,7 @@
         ovrlapRej = ovrlapRej + 1d0
         return
       endif
-  
 
-!     Determine the reverse probability of this move.
-      if(distCriteria) then
-        call Insert_NewNeiETable_Distance(nType, PairList, dETable, newNeiETable)  
-      else
-        call Insert_NewNeiETable(nType, PairList, dETable, newNeiETable)      
-      endif
-      call EBias_Insert_ReverseProbTarget(nTarget, nType, newNeiETable, ProbTarg_Out)
-      call EBias_Insert_ReverseProbSel(nTarget, nType, dETable, ProbSel_Out)
       
 !     Calculate the umbrella sampling bias.
       bIndx = getBiasIndex(NPart,NMAX)
@@ -133,9 +120,8 @@
          enddo
          E_T = E_T + E_Inter + E_Intra
          acc_x = acc_x + 1d0
-         nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
          isActive(molArray(nType)%mol(NPART(nType)+1)%indx) = .true.
-
+         nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
          if(distCriteria) then
            call NeighborUpdate_Distance(PairList,nIndx)        
          else
@@ -151,5 +137,41 @@
          dbalRej = dbalRej + 1d0
        endif
        end subroutine
+
+!=================================================================================	  
+      subroutine Uniform_ChooseNeighbor(nTarget, nSel, nNei)
+      use SimParameters  
+      use Coords
+      implicit none
+      integer, intent(in) :: nTarget
+      integer, intent(out) :: nSel, nNei
+      integer :: i,j
+      integer :: ListCur(1:60)
+      real(kind(0.0d0)) :: grnd	  
+	  
+        
+      nNei = 0
+      ListCur = 0
+      do j = 1, maxMol
+        if( NeighborList(nTarget,j) ) then
+          if( j .ne. nTarget ) then             
+            nNei = nNei + 1
+            ListCur(nNei) = j
+          endif
+        endif
+      enddo
+
+      j = floor(nNei*grnd() + 1d0)	  
+      nSel = ListCur(j)
+      
+      if(nSel .eq. 0) then
+        write(35,*) "ERROR"
+        write(35,*) "NPART:", NPART
+        do i = 1, maxMol
+          write(35,*) (NeighborList(i,j),j=1,maxMol)      
+        enddo
+      endif
+      
+      end subroutine
 !=================================================================================    
       end module
