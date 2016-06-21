@@ -12,7 +12,7 @@
       use ParallelVar
       implicit none     
       logical,intent(out) :: rejMove
-      real(kind(0.0d0)),intent(inout) :: PairList(1:maxMol,1:maxMol)
+      real(dp),intent(inout) :: PairList(1:maxMol,1:maxMol)
       
       logical :: ClusterMember(1:maxMol)
       integer :: i,j,h,cnt
@@ -86,7 +86,7 @@
       implicit none     
       
       logical, intent(out) :: rejMove      
-      real(kind(0.0d0)), intent(in) :: PairList(1:maxMol)
+      real(dp), intent(in) :: PairList(1:maxMol)
       integer,intent(in) :: nIndx
       
       logical :: neiFlipped, memberAdded
@@ -104,59 +104,35 @@
       
       nType = Get_MolType(nIndx,NMAX)
      
-!     This section dermines which molecules are neighbored with the new trial position
-
-!      ClusterMember(nIndx) = .true.
-!      flipped(nIndx) = .true.           
-!      cnt = 1      
+!     This section dermines which molecules are neighbored with the new trial position.  In the event
+!     that the molecule's new location has no neghibors all further calcualtions are skipped and the move is
+!     rejected.
+   
       memberAdded = .false.
       do j=1,maxMol
-!        if(.not. isActive(j)) then
-!          cycle
-!        endif
-!        if(j .ne. nIndx) then
-          jType = typeList(j)          
-          if(PairList(j) .le. Eng_Critr(jType,nType)) then
-            ClusterMember(j) = .true.        
-!            cnt = cnt + 1
-            memberAdded = .true.
-          endif
-!        endif   
+        jType = typeList(j)          
+        if(PairList(j) .le. Eng_Critr(jType,nType)) then
+          ClusterMember(j) = .true.        
+          memberAdded = .true.
+        endif
       enddo
 
-!      jlowerIndx = 0
-!      do jType = 1, nMolTypes
-!       do j = jlowerIndx+1,jlowerIndx+NPART(jType)
-!         if(PairList(j) .le. Eng_Critr(jType,nType)) then
-!           if(j .ne. nIndx) then
-!            ClusterMember(j) = .true.        
-!            cnt = cnt + 1
-!           endif
-!         endif  
-!        enddo
-!        jlowerIndx = jlowerIndx + NMAX(jType)
-!      enddo
-      
-
-      
-!     This section checked to see if there were any neighbors for the molecule's new position.
-!     If cnt is equal to 0 the new position has no neighbors which implies the cluster is broken.
-!      if(cnt .eq. 1) then
       if(.not. memberAdded) then      
         rejMove = .true.
         return     
       endif    
-      
+
+!      This part of the code tabulates all the neighbors       
       neiMax = 0
       curNeigh = 0
       do i=1,maxMol
         if(NeighborList(i,nIndx)) then
-         if(i .ne. nIndx) then
-           if(isActive(i)) then
-            neiMax = neiMax + 1
-            curNeigh(neiMax) = i
-          endif
-         endif      
+          if(i .ne. nIndx) then
+            if(isActive(i)) then
+              neiMax = neiMax + 1
+              curNeigh(neiMax) = i
+            endif
+          endif      
         endif
       enddo      
       
@@ -164,36 +140,6 @@
 !     This section performs a quick check to see if the molecules that were neighbored with the old position
 !     are part of the new cluster.  If all the old neighbors are indeed part of the cluster then no furth
 !     calculations are needed.      
-!      neiFlipped = .true.
-!      do i=1,maxMol
-!        if(.not. isActive(i)) then
-!          cycle
-!        endif
-!        if(NeighborList(i,nIndx)) then
-!          if(i .ne. nIndx) then
-!            if(.not. ClusterMember(i)) then
-!              neiFlipped = .false.
-!              exit
-!            endif
-!          endif
-!        endif
-!      enddo
-
-!      jlowerIndx = 0
-!      do jType = 1, nMolTypes
-!       do j = jlowerIndx+1,jlowerIndx+NPART(jType)
-!         if(NeighborList(j,nIndx)) then
-!           if(.not. ClusterMember(j)) then
-!             neiFlipped = .false.
-!             exit
-!           endif
-!         endif  
-!        enddo
-!        if(neiFlipped .eqv. .false.) then
-!          exit
-!        endif
-!        jlowerIndx = jlowerIndx + NMAX(jType)
-!      enddo
       neiFlipped = .true.
       do i = 1, neiMax
         if(.not. clusterMember(curNeigh(i))) then
@@ -212,25 +158,18 @@
 !        cnt = 0
         memberAdded = .false.
         do i = 1, maxMol
-!          if(isActive(i)) then
             if(ClusterMember(i) .neqv. flipped(i)) then
               do j=1,maxMol
-!                if(.not. isActive(j)) then
-!                  cycle
-!                endif
                 if(NeighborList(i,j)) then
                   if(j .ne. nIndx) then
                     ClusterMember(j)=.true.   
-!                    cnt = cnt + 1                         
                     memberAdded = .true.
                   endif
                 endif
               enddo        
               flipped(i)=.true.
             endif
-!          endif
         enddo
-!        if(h .gt. 1) then
  
         neiFlipped = .true.
         do i = 1, neiMax
@@ -239,43 +178,13 @@
             exit
           endif
         enddo        
-
-          
-!        do i=1, maxMol
-!          if(.not. isActive(i)) then
-!            cycle
-!          endif        
-!          if( NeighborList(i,nIndx) ) then
-!            if( .not. ClusterMember(i) ) then
-!              neiFlipped = .false.
-!              exit
-!            endif
-!          endif
-!        enddo
-!        jlowerIndx = 0
-!        do jType = 1, nMolTypes
-!         do j = jlowerIndx+1,jlowerIndx+NPART(jType)
-!          if(NeighborList(j,nIndx)) then
-!             if(.not. ClusterMember(j)) then
-!               neiFlipped = .false.
-!               exit
-!             endif
-!            endif  
-!          enddo
-!          if(neiFlipped .eqv. .false.) then
-!            exit
-!          endif
-!          jlowerIndx = jlowerIndx + NMAX(jType)
-!        enddo
-          if( neiFlipped ) then
+        if( neiFlipped ) then
+          exit
+        else 
+          if(.not. memberAdded) then
             exit
-          else 
-!            if(cnt .eq. 0) then
-            if(.not. memberAdded) then
-              exit
-            endif           
-          endif
-!        endif
+          endif           
+        endif
       enddo
   
        if( .not. neiFlipped ) then
@@ -292,7 +201,7 @@
       implicit none     
       
       logical, intent(out) :: rejMove      
-      real(kind(0.0d0)), intent(in) :: PairList(1:maxMol)
+      real(dp), intent(in) :: PairList(1:maxMol)
       integer, intent(in) :: nType
       integer :: j, jType
       
@@ -358,32 +267,16 @@
         endif        
       enddo
       
-!      cnt = 0
-!      do i=1,maxMol
-!        if(isActive(i) .eqv. .false.) then
-!          ClusterMember(i) = .true.      
-!          flipped(i) = .true.         
-!          cnt = cnt + 1
-!        endif
-!      enddo
-
-     do h=1,NTotal
-!        cnt = 0
+      do h=1,NTotal
         memberAdded = .false.
         do i=1,maxMol
-!         if(.not. isActive(i)) then
-!           cycle
-!         endif
            if(ClusterMember(i) .neqv. flipped(i)) then
              if(i .ne. nSwap) then 
               do j=1,maxMol
-!1                if(.not. isActive(j)) then
-!                  cycle
-!                endif
                 if(NeighborList(i,j)) then
                   if(j .ne. nSwap) then
                     clusterMember(j) = .true. 
-!                    cnt = cnt + 1                    
+      
                     memberAdded = .true.
                   endif
                 endif
@@ -392,46 +285,28 @@
             endif
           endif
         enddo
-
-!        if(h .gt. 1) then
-          neiFlipped = .true.
-          do i = 1, neiMax
-            if(.not. clusterMember(curNeigh(i))) then
-              neiFlipped = .false.
-              exit
-            endif
-          enddo     
-        
-!        do i=1, maxMol
-!          if( NeighborList(i,nSwap) ) then
-!            if(i .ne. nSwap) then
-!              if( .not. ClusterMember(i) ) then
-!                neiFlipped = .false.
-!                exit
-!              endif
-!            endif
-!          endif
-!        enddo
-     
-          if( neiFlipped ) then
+        neiFlipped = .true.
+        do i = 1, neiMax
+          if(.not. clusterMember(curNeigh(i))) then
+            neiFlipped = .false.
             exit
-          else
-!            if(cnt .eq. 0) then
-            if(.not. memberAdded) then            
-              exit
-            endif            
           endif
-!        endif
-     enddo
+        enddo     
+        if( neiFlipped ) then
+          exit
+        else
+          if(.not. memberAdded) then            
+            exit
+          endif            
+        endif
+      enddo
   
   
-     if( .not. neiFlipped ) then
-       rejMove = .true.
-!     else
-!       write(2,*) "Accepted!"
-     endif
+      if( .not. neiFlipped ) then
+        rejMove = .true.
+      endif
      
-     end subroutine
+      end subroutine
 !=================================================================================     
 !     This function updates the neighborlist if a move is accepted.
       subroutine NeighborUpdate(PairList, nIndx)
@@ -440,7 +315,7 @@
       use Coords      
       implicit none     
       integer iType,j,jType,nIndx
-      real(kind(0.0d0)) :: PairList(1:maxMol)
+      real(dp) :: PairList(1:maxMol)
 
 
 !      do j=1,maxMol
@@ -517,6 +392,26 @@
       NeighborList(:,nSwapIndx) = .false.      
 
       end subroutine      
+!=================================================================================           
+      subroutine MultipleSwap_EnergyCriteria(PairList, isIncluded, rejMove)
+      use SimParameters     
+      use Coords
+      use IndexingFunctions
+      implicit none     
+      
+      logical, intent(out) :: rejMove      
+      real(dp), intent(in) :: PairList(1:maxMol)
+      logical,  intent(in) :: isIncluded(:)
+      
+      logical :: neiFlipped, memberAdded
+      logical :: ClusterMember(1:maxMol)      
+      logical :: flipped(1:maxMol)
+      integer :: i,j,h,cnt
+      integer :: nType, jType
+      integer :: jlowerIndx      
+      integer :: curNeigh(1:60), neiMax
+ 
+      end subroutine
 !=================================================================================           
       end module
       
