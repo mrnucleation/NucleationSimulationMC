@@ -14,19 +14,19 @@
       use CBMC_Variables      
       implicit none
       
-      real(kind(0.0d0)),intent(inout) :: E_T,acc_x,atmp_x      
-      real(kind(0.0d0)) max_distx
+      real(dp),intent(inout) :: E_T,acc_x,atmp_x      
+      real(dp) max_distx
 
       logical, parameter :: useIntra(1:4) = [.true., .true., .true., .true.]
       
       logical rejMove      
       integer nType,nMol,nIndx,nMove, nAtom
-      real(kind(0.0d0)) :: grnd 
-      real(kind(0.0d0)) :: dx,dy,dz      
-      real(kind(0.0d0)) :: E_Diff,E_Inter, E_Intra
+      real(dp) :: grnd 
+      real(dp) :: dx,dy,dz      
+      real(dp) :: E_Diff,E_Inter, E_Intra
       type (displacement) :: disp(1:1)
-      real(kind(0.0d0)) :: PairList(1:maxMol)
-      real(kind(0.0d0)) :: dETable(1:maxMol)
+      real(dp) :: PairList(1:maxMol)
+      real(dp) :: dETable(1:maxMol)
       
 
       max_distx = 0.1d0
@@ -122,17 +122,17 @@
       use EnergyTables
       implicit none
       
-      real(kind(0.0d0)),intent(inout) :: E_T, acc_x, atmp_x      
+      real(dp),intent(inout) :: E_T, acc_x, atmp_x      
       logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
       
       logical rejMove      
       integer :: i, nType, nMol, nIndx, nMove
-      real(kind(0.0d0)) :: grnd 
-      real(kind(0.0d0)) :: dx, dy, dz      
-      real(kind(0.0d0)) :: E_Inter, E_Intra
+      real(dp) :: grnd 
+      real(dp) :: dx, dy, dz      
+      real(dp) :: E_Inter, E_Intra
       type (displacement) :: disp(1:maxAtoms)
-      real(kind(0.0d0)) :: PairList(1:maxMol)
-      real(kind(0.0d0)) :: dETable(1:maxMol)
+      real(dp) :: PairList(1:maxMol)
+      real(dp) :: dETable(1:maxMol)
       
       if(NTotal .eq. 1) return
       
@@ -216,8 +216,8 @@
       subroutine Rotation(E_T,acc_x,atmp_x)
       use SimParameters    
       implicit none
-      real(kind(0.0d0)), intent(inout) :: atmp_x,acc_x,E_T
-      real(kind(0.0d0)) :: ran_num, grnd
+      real(dp), intent(inout) :: atmp_x,acc_x,E_T
+      real(dp) :: ran_num, grnd
 
 
       if(NTotal .eq. 1) then
@@ -250,20 +250,20 @@
       use EnergyTables
       implicit none
 
-      real(kind(0.0d0)), intent(inout) :: E_T,acc_x,atmp_x
+      real(dp), intent(inout) :: E_T,acc_x,atmp_x
       logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
       
       logical :: rejMove      
       integer :: i,nMove 
       integer :: atmType,nMol,nType,nIndx
-      real(kind(0.0d0)) :: E_Inter, E_Intra
-      real(kind(0.0d0)) :: grnd   
-      real(kind(0.0d0)) :: c_term,s_term
-      real(kind(0.0d0)) :: x_scale, y_scale
-      real(kind(0.0d0)) :: xcm,ycm,angle
+      real(dp) :: E_Inter, E_Intra
+      real(dp) :: grnd   
+      real(dp) :: c_term,s_term
+      real(dp) :: x_scale, y_scale
+      real(dp) :: xcm,ycm,angle
       type (displacement) :: disp(1:maxAtoms)
-      real(kind(0.0d0)) :: PairList(1:maxMol)
-      real(kind(0.0d0)) :: dETable(1:maxMol)
+      real(dp) :: PairList(1:maxMol)
+      real(dp) :: dETable(1:maxMol)
       
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
       nMove = floor(NTotal*grnd() + 1d0)
@@ -369,22 +369,22 @@
       use EnergyTables      
       implicit none
 
-      real(kind(0.0d0)), intent(inout) :: E_T,acc_x,atmp_x
+      real(dp), intent(inout) :: E_T,acc_x,atmp_x
 
       logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
       
       logical :: rejMove      
       integer :: i,nMove 
       integer :: atmType,nMol,nType,nIndx
-      real(kind(0.0d0)) :: angle
-      real(kind(0.0d0)) :: E_Inter, E_Intra
-      real(kind(0.0d0)) :: grnd   
-      real(kind(0.0d0)) :: c_term,s_term
-      real(kind(0.0d0)) :: x_scale, z_scale
-      real(kind(0.0d0)) :: xcm,zcm
+      real(dp) :: angle
+      real(dp) :: E_Inter, E_Intra
+      real(dp) :: grnd   
+      real(dp) :: c_term,s_term
+      real(dp) :: x_scale, z_scale
+      real(dp) :: xcm,zcm
       type (displacement) :: disp(1:maxAtoms)
-      real(kind(0.0d0)) :: PairList(1:maxMol)
-      real(kind(0.0d0)) :: dETable(1:maxMol)
+      real(dp) :: PairList(1:maxMol)
+      real(dp) :: dETable(1:maxMol)
       
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
       nMove = floor(NTotal*grnd() + 1d0)
@@ -491,21 +491,21 @@
       use EnergyTables
       implicit none
       
-      real(kind(0.0d0)), intent(inout) :: E_T,acc_x,atmp_x
+      real(dp), intent(inout) :: E_T,acc_x,atmp_x
       logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
       
       logical :: rejMove      
       integer :: i,nMove 
       integer :: atmType,nMol,nType,nIndx
-      real(kind(0.0d0)) :: angle
-      real(kind(0.0d0)) :: E_Inter, E_Intra
-      real(kind(0.0d0)) :: grnd   
-      real(kind(0.0d0)) :: c_term,s_term
-      real(kind(0.0d0)) :: y_scale, z_scale
-      real(kind(0.0d0)) :: ycm,zcm
+      real(dp) :: angle
+      real(dp) :: E_Inter, E_Intra
+      real(dp) :: grnd   
+      real(dp) :: c_term,s_term
+      real(dp) :: y_scale, z_scale
+      real(dp) :: ycm,zcm
       type (displacement) :: disp(1:maxAtoms)
-      real(kind(0.0d0)) :: PairList(1:maxMol)
-      real(kind(0.0d0)) :: dETable(1:maxMol)
+      real(dp) :: PairList(1:maxMol)
+      real(dp) :: dETable(1:maxMol)
       
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
       nMove = floor(NTotal*grnd() + 1d0)
