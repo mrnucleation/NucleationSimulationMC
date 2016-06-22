@@ -473,7 +473,6 @@
       
     
       do h = 1, NTotal
-!        cnt = 0
         memberAdded = .false.
         do i = 1, maxMol
           if(ClusterMember(i) .neqv. flipped(i)) then
