@@ -6,11 +6,11 @@
 !=============================================================================      
       ! interface
          ! subroutine TotalE(E_T)
-           ! real(kind(0.0d0)), intent(inout) :: E_T
+           ! real(dp), intent(inout) :: E_T
          ! end subroutine
 
          ! subroutine ShiftE(E_Trial,disp)
-           ! real(kind(0.0d0)), intent(inout) :: E_Trial
+           ! real(dp), intent(inout) :: E_Trial
            ! type(Displacement), intent(in) :: disp(:)
          ! end subroutine          
       ! end interface  
@@ -35,8 +35,8 @@
       
       logical , intent(inout) :: rejMove
       integer :: i,j
-      real(kind(0.0d0)), intent(inout) :: E_T
-      real(kind(0.0d0)) :: PairList(1:maxMol,1:maxMol)
+      real(dp), intent(inout) :: E_T
+      real(dp) :: PairList(1:maxMol,1:maxMol)
       
       E_T = 0d0
       call Detailed_ECalc_Inter(E_T,PairList)
@@ -92,13 +92,13 @@
       logical, intent(in) :: useIntra(1:4)
       type(Displacement), intent(in) :: disp(:)
       logical, intent(inout) :: rejMove
-      real(kind(0.0d0)), intent(inout) :: dETable(:)
-      real(kind(0.0d0)), intent(out) :: E_Intra, E_Inter
-      real(kind(0.0d0)), intent(InOut) :: PairList(:)
+      real(dp), intent(inout) :: dETable(:)
+      real(dp), intent(out) :: E_Intra, E_Inter
+      real(dp), intent(InOut) :: PairList(:)
       
       integer :: nIndx, nDisp
-      real(kind(0.0d0)) :: E_NonBond, E_Stretch, E_Bend
-      real(kind(0.0d0)) :: E_Torsion, E_Improper
+      real(dp) :: E_NonBond, E_Stretch, E_Bend
+      real(dp) :: E_Torsion, E_Improper
 
       nDisp = size(disp)
       rejMove = .false.
@@ -178,7 +178,7 @@
       
       end subroutine
 !=============================================================================      
-      subroutine SwapIn_EnergyCalc(E_Inter, E_Intra,PairList,dETable,rejMove)
+      subroutine SwapIn_EnergyCalc(E_Inter, E_Intra, PairList, dETable, rejMove)
       use InterEnergy_LJ_Electro
       use IntraEnergy_LJ_Electro
       use BondStretchFunctions
@@ -192,10 +192,10 @@
       implicit none
       
       logical, intent(out) :: rejMove
-      real(kind(0.0d0)), intent(out) :: E_Inter, E_Intra
-      real(kind(0.0d0)), intent(inout) :: PairList(:), dETable(:)      
-      real(kind(0.0d0)) :: E_NonBond, E_Stretch, E_Bend
-      real(kind(0.0d0)) :: E_Torsion, E_Improper
+      real(dp), intent(out) :: E_Inter, E_Intra
+      real(dp), intent(inout) :: PairList(:), dETable(:)      
+      real(dp) :: E_NonBond, E_Stretch, E_Bend
+      real(dp) :: E_Torsion, E_Improper
 
       
       rejMove = .false.      
@@ -239,67 +239,6 @@
 
       
       end subroutine
-!=============================================================================      
-      subroutine SwapIn_Rosen_EnergyCalc(E_Inter, E_Intra,PairList,dETable,rejMove)
-      use InterEnergy_LJ_Electro
-      use IntraEnergy_LJ_Electro
-      use BondStretchFunctions
-      use BendingFunctions
-      use TorsionalFunctions
-      use ImproperAngleFunctions
-      use EnergyCriteria
-      use EnergyTables         
-      use Coords
-      use CBMC_Variables      
-      implicit none
-      
-      logical, intent(out) :: rejMove
-      real(kind(0.0d0)), intent(out) :: E_Inter, E_Intra
-      real(kind(0.0d0)), intent(inout) :: PairList(:), dETable(:)      
-      real(kind(0.0d0)) :: E_NonBond, E_Stretch, E_Bend
-      real(kind(0.0d0)) :: E_Torsion, E_Improper
-
-      
-      rejMove = .false.      
-      
-      E_Inter = 0d0
-      E_Intra = 0d0
-      E_NonBond = 0d0
-      E_Stretch = 0d0
-      E_Bend = 0d0      
-      E_Torsion = 0d0      
-      E_Improper = 0d0            
-      PairList = 0d0
-      dETable = 0d0
-!           
-      call NewMol_ECalc_Inter(E_Inter, PairList, dETable, rejMove)
-      if(rejMove) then
-        return
-      endif
-      
-!     This block contains the calculations for all Intramolecular interactions.  
-      if(regrowType(newMol%molType) .ne. 0) then      
-        call NewMol_ECalc_IntraNonBonded(E_NonBond)    
-        call NewMol_ECalc_BondStretch(E_Stretch)
-        call NewMol_ECalc_Bending(E_Bend)
-        call NewMol_ECalc_Torsional(E_Torsion)
-!        call NewMol_ECalc_Improper(E_Improper)      
-        E_Intra = E_NonBond + E_Stretch + E_Bend + E_Torsion + E_Improper
-      endif          
-      
-      E_Inter_Diff = 0d0
-      E_NBond_Diff = 0d0
-      E_Strch_Diff = 0d0
-      E_Bend_Diff = 0d0
-      E_Tors_Diff = 0d0
-      E_Inter_Diff = E_Inter
-      E_NBond_Diff = E_NonBond
-      E_Strch_Diff = E_Stretch
-      E_Bend_Diff = E_Bend
-      E_Tors_Diff = E_Torsion
-
-      
-      end subroutine      
 !=============================================================================
 !     This function contains the energy calculations that are used when a molecule
 !     has been selected for removal.  
@@ -316,12 +255,12 @@
       use CBMC_Variables
       implicit none
       
-      real(kind(0.0d0)), intent(out) :: E_Inter, E_Intra      
+      real(dp), intent(out) :: E_Inter, E_Intra      
       integer, intent(in) :: nType, nMol
-      real(kind(0.0d0)), intent(inout) :: dETable(:)      
+      real(dp), intent(inout) :: dETable(:)      
       
-      real(kind(0.0d0)) :: E_NonBond, E_Stretch, E_Bend
-      real(kind(0.0d0)) :: E_Torsion, E_Improper
+      real(dp) :: E_NonBond, E_Stretch, E_Bend
+      real(dp) :: E_Torsion, E_Improper
       
       E_Inter = 0d0
       E_Intra = 0d0

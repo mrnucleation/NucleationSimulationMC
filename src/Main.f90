@@ -75,6 +75,7 @@
 !     Assign screen output for each thread to fort.(100+myid)      
       nout = 100+myid
 
+
       write(fl_name,format_string) "Final_Report_", myid,".txt"      
       open( unit=35, file=trim(adjustl(fl_name)) ) 
       
@@ -590,7 +591,9 @@
 
       end subroutine
 !===========================================================
-
+!     This subroutine prints a dummy frame to the Trajectory file.  This
+!     is done so that when the trajectory is loaded into VMD it will properly
+!     display the cluster configuration.
       subroutine InitialTrajOutput
       use VarPrecision
       use SimParameters      

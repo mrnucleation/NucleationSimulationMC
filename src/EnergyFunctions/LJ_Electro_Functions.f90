@@ -372,7 +372,7 @@
               rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
-              r = rx**2 + ry**2 + rz**2
+              r = rx*rx + ry*ry + rz*rz
               if(ep .ne. 0d0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
@@ -441,11 +441,10 @@
             rmin_ij = r_min_tab(atmType2,atmType1)
             do jMol = 1,NPART(jType)
               jIndx = molArray(jType)%mol(jMol)%indx              
-              
               rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
-              r = rx**2 + ry**2 + rz**2
+              r = rx*rx + ry*ry + rz*rz
               if(r .lt. rmin_ij) then
                 rejMove = .true.
                 return
@@ -501,7 +500,8 @@
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
-      integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom
+      integer :: iAtom, newIndx, jType, jIndx, jMol, jAtom
+      integer :: iIndx2
       integer(kind=2) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
@@ -516,8 +516,11 @@
       PairList = 0d0
       rejMove = .false.
       
-      iIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
-  
+      newIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
+      iIndx = molArray(iType)%mol(iMol)%indx
+
+       !Calculate the energy of the molecule that is entering the cluster
+
       do iAtom = 1,nAtoms(newMol%molType)
         atmType1 = atomArray(newMol%molType,iAtom)
         do jType = 1, nMolTypes
@@ -533,12 +536,16 @@
             sig_sq = sig_tab(atmType2,atmType1)
             rmin_ij = r_min_tab(atmType2,atmType1)
             do jMol = 1,NPART(jType)
+              if(jMol .eq. iMol) then
+                if(iType .eq. jType) then
+                endif
+              endif
               jIndx = molArray(jType)%mol(jMol)%indx              
               
               rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
-              r = rx**2 + ry**2 + rz**2
+              r = rx*rx + ry*ry + rz*rz
               if(r .lt. rmin_ij) then
                 rejMove = .true.
                 return
@@ -561,7 +568,7 @@
                   PairList(jIndx) = PairList(jIndx) + LJ
                 endif
                 dETable(jIndx) = dETable(jIndx) + LJ
-                dETable(iIndx) = dETable(iIndx) + LJ
+                dETable(newIndx) = dETable(newIndx) + LJ
               endif
               if(q .ne. 0d0) then
                 r = sqrt(r)
@@ -571,12 +578,60 @@
                   PairList(jIndx) = PairList(jIndx) + Ele
                 endif
                 dETable(jIndx) = dETable(jIndx) + Ele
-                dETable(iIndx) = dETable(iIndx) + Ele
+                dETable(newIndx) = dETable(newIndx) + Ele
               endif
             enddo
           enddo
         enddo
       enddo
+
+       !Calculate the energy of the molecule that is exiting the cluster
+   
+      do iAtom = 1,nAtoms(iType)
+        atmType1 = atomArray(iType,iAtom)
+        do jType = 1, nMolTypes
+          do jAtom = 1,nAtoms(jType)        
+            atmType2 = atomArray(jType,jAtom)
+            ep = ep_tab(atmType2,atmType1)
+            sig_sq = sig_tab(atmType2,atmType1)
+            q = q_tab(atmType2,atmType1)
+            if(q .eq. 0d0) then
+              if(ep .eq. 0d0) then
+                cycle
+              endif
+            endif
+            do jMol=1,NPART(jType)
+              if(iType .eq. jType) then
+                if(iMol .eq. jMol) then
+                  cycle
+                endif
+              endif
+              jIndx = MolArray(jType)%mol(jMol)%indx               
+              rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
+              ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
+              rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
+              r = rx*rx + ry*ry + rz*rz
+              if(ep .ne. 0d0) then
+                LJ = (sig_sq/r)
+                LJ = LJ * LJ * LJ              
+                LJ = ep * LJ * (LJ-1d0)                
+                E_LJ = E_LJ - LJ
+                dETable(iIndx) = dETable(iIndx) - LJ
+                dETable(jIndx) = dETable(jIndx) - LJ
+              endif
+              if(q .ne. 0d0) then            
+                r = sqrt(r)
+                Ele = q / r
+                E_Ele = E_Ele - Ele
+                dETable(iIndx) = dETable(iIndx) - Ele
+                dETable(jIndx) = dETable(jIndx) - Ele                
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
+     
+
      
       E_Trial = E_LJ + E_Ele
       
