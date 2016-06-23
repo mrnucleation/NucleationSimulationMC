@@ -12,7 +12,7 @@ OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
-#DEBUGFLAGS := -g -fbacktrace -fcheck=all
+DEBUGFLAGS := -g -fbacktrace -fcheck=all
 #DEBUGFLAGS := -fbounds-check
 #DEBUGFLAGS := -check bounds
 #DEBUGFLAGS += -heap-arrays 1024
@@ -108,7 +108,8 @@ SRC_CBMC := $(CBMC)/CBMC.f90\
             $(CBMC)/CBMC_Utility.f90\
             $(CBMC)/CBMC_PartialRegrowth.f90\
             $(CBMC)/CBMC_Rosen_AVBMC_ConfigGen.f90
-SRC_SWAP := $(SWAP)/AVBMC_EBias_Rosen.f90
+SRC_SWAP := $(SWAP)/AVBMC_EBias_Rosen.f90\
+            $(SWAP)/Exchange.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90
 SRC_COMPLETE:= $(SRC_ENERGY) $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT) $(MOD_SRC) $(SRC_MAIN) 

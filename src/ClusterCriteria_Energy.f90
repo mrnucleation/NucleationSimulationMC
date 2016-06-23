@@ -334,7 +334,7 @@
       iType = Get_MolType(nIndx,NMAX)  
       do j=1,maxMol
         if(.not. isActive(j)) then
-            cycle
+          cycle
         endif
         if(j .ne. nIndx) then
           jType = Get_MolType(j,NMAX)        
@@ -393,7 +393,7 @@
 
       end subroutine      
 !=================================================================================           
-      subroutine MultipleSwap_EnergyCriteria(nType, PairList, isIncluded, rejMove)
+      subroutine MultipleSwap_EnergyCriteria(nType2, nIndx1, PairList, isIncluded, rejMove)
       use SimParameters     
       use Coords
       use IndexingFunctions
@@ -402,7 +402,7 @@
       logical, intent(out) :: rejMove      
       real(dp), intent(in) :: PairList(1:maxMol)
       logical,  intent(in) :: isIncluded(:)
-      integer intent(in) :: nType
+      integer, intent(in) :: nType2, nIndx1
       
       logical :: neiFlipped, memberAdded
       logical :: ClusterMember(1:maxMol)      
@@ -427,7 +427,7 @@
       do j=1,maxMol
         if(isIncluded(j)) then
           jType = typeList(j)          
-          if(PairList(j) .le. Eng_Critr(jType,nType)) then
+          if(PairList(j) .le. Eng_Critr(jType,nType2)) then
             ClusterMember(j) = .true.        
             memberAdded = .true.
           endif
@@ -443,8 +443,8 @@
       neiMax = 0
       curNeigh = 0
       do i=1,maxMol
-        if(NeighborList(i,nIndx)) then
-          if(i .ne. nIndx) then
+        if(NeighborList(i,nIndx1)) then
+          if(i .ne. nIndx1) then
             if(isIncluded(i)) then
               neiMax = neiMax + 1
               curNeigh(neiMax) = i
@@ -475,11 +475,11 @@
       do h = 1, NTotal
         memberAdded = .false.
         do i = 1, maxMol
-          if(ClusterMember(i) .neqv. flipped(i)) then
-            if(isIncluded(i)) then
+          if(isIncluded(i)) then
+            if(ClusterMember(i) .neqv. flipped(i)) then
               do j=1,maxMol
-                if(NeighborList(i,j)) then  
-                  if(j .ne. nIndx) then
+                if(isIncluded(i)) then
+                  if(NeighborList(i,j)) then  
                     ClusterMember(j)=.true.   
                     memberAdded = .true.
                   endif
