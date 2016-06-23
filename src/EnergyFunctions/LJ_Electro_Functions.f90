@@ -269,8 +269,6 @@
       real(dp) :: LJ, Ele
 
       sizeDisp = size(disp)
-
-
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
 
@@ -354,13 +352,14 @@
           do jAtom = 1,nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
-            sig_sq = sig_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
             if(q .eq. 0d0) then
               if(ep .eq. 0d0) then
                 cycle
               endif
             endif
+            sig_sq = sig_tab(atmType2,atmType1)
+
             do jMol=1,NPART(jType)
               if(iType .eq. jType) then
                 if(iMol .eq. jMol) then
@@ -413,6 +412,7 @@
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
+
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij
 
@@ -489,14 +489,14 @@
       
       end subroutine    
 !======================================================================================      
-      pure subroutine Exchange_ECalc_Inter(E_Trial,iType, iMol, PairList, dETable, rejMove)
+      pure subroutine Exchange_ECalc_Inter(E_Trial, nType, nMol, PairList, dETable, rejMove)
       use ForceField
       use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
       implicit none
       logical, intent(out) :: rejMove
-      integer, intent(in) :: iType, iMol
+      integer, intent(in) :: nType, nMol
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
@@ -517,7 +517,7 @@
       rejMove = .false.
       
       newIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
-      iIndx = molArray(iType)%mol(iMol)%indx
+      iIndx2 = molArray(nType)%mol(nMol)%indx
 
        !Calculate the energy of the molecule that is entering the cluster
 
@@ -536,8 +536,9 @@
             sig_sq = sig_tab(atmType2,atmType1)
             rmin_ij = r_min_tab(atmType2,atmType1)
             do jMol = 1,NPART(jType)
-              if(jMol .eq. iMol) then
-                if(iType .eq. jType) then
+              if(jMol .eq. nMol) then
+                if(nType .eq. jType) then
+                  cycle
                 endif
               endif
               jIndx = molArray(jType)%mol(jMol)%indx              
@@ -587,43 +588,43 @@
 
        !Calculate the energy of the molecule that is exiting the cluster
    
-      do iAtom = 1,nAtoms(iType)
-        atmType1 = atomArray(iType,iAtom)
+      do iAtom = 1,nAtoms(nType)
+        atmType1 = atomArray(nType, iAtom)
         do jType = 1, nMolTypes
           do jAtom = 1,nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
-            sig_sq = sig_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
             if(q .eq. 0d0) then
               if(ep .eq. 0d0) then
                 cycle
               endif
             endif
+            sig_sq = sig_tab(atmType2,atmType1)
             do jMol=1,NPART(jType)
-              if(iType .eq. jType) then
-                if(iMol .eq. jMol) then
+              if(nMol .eq. jMol) then
+                if(nType .eq. jType) then
                   cycle
                 endif
               endif
               jIndx = MolArray(jType)%mol(jMol)%indx               
-              rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
+              rx = MolArray(nType)%mol(nMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
+              ry = MolArray(nType)%mol(nMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
+              rz = MolArray(nType)%mol(nMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
               r = rx*rx + ry*ry + rz*rz
               if(ep .ne. 0d0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
                 LJ = ep * LJ * (LJ-1d0)                
                 E_LJ = E_LJ - LJ
-                dETable(iIndx) = dETable(iIndx) - LJ
+                dETable(iIndx2) = dETable(iIndx2) - LJ
                 dETable(jIndx) = dETable(jIndx) - LJ
               endif
               if(q .ne. 0d0) then            
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele - Ele
-                dETable(iIndx) = dETable(iIndx) - Ele
+                dETable(iIndx2) = dETable(iIndx2) - Ele
                 dETable(jIndx) = dETable(jIndx) - Ele                
               endif
             enddo

@@ -151,6 +151,9 @@
           mcMoveArray(i) % moveFunction => CBMC
           moveName(i) = "CBMC"
           cbmcUsed = .true.
+        case("exchange")
+          mcMoveArray(i) % moveFunction => Exchange
+          moveName(i) = "Exchange"
         case("singleatom_translation")
           mcMoveArray(i) % moveFunction => SingleAtom_Translation
           moveName(i) = "Single Atom Translation"
