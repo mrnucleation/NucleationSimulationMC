@@ -174,7 +174,7 @@
               if(ProbArray(i) .gt. 0d0) then
                NewBias(i) = NBias(i) + log(2d0)
               else
-               NewBias(i) = NBias(i) + log(4d0)
+               NewBias(i) = NBias(i) + log(dble(nCurWhamItter))
               endif
             endif
           enddo
