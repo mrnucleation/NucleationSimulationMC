@@ -47,8 +47,8 @@
       real(dp) :: E_Inter_Final, E_Bend_Final, E_Torsion_Final
       real(dp) :: E_Stretch_Final, E_NBond_Final
       
-      character(len=30) :: format_string,fl_name, out1
-      character(len=100) :: outFormat1, outFormat2
+      character(len=100) :: format_string,fl_name, out1
+      character(len=1500) :: outFormat1, outFormat2
       
       logical,allocatable,dimension(:,:) :: FinalNeighborList
       real(dp),allocatable,dimension(:) :: FinalETable      
@@ -160,7 +160,7 @@
 !100   format(2x,I9,2x,I5,2x,E17.6,2x,F9.2,2x,F9.2,2x,F9.2)
 !101   format(2x,I9,2x,I5,2x,F17.4,2x,F9.4,2x,F9.2,2x,F9.2)
 
-      write(out1,"(A,I2,A)") "(",(8+nMolTypes),"(A))"
+      write(out1,"(A,I2,A)") "(",(4+nMoveTypes+nMolTypes),"(A))"
       write(outFormat1, out1) "(", "2x,I9", (",2x,I5",i=1,nMolTypes),",E17.6,2x",(",2x,F6.2",i=1,nMoveTypes), ")"
       write(outFormat2, out1) "(", "2x,I9", (",2x,I5",i=1,nMolTypes),",F17.4,2x",(",2x,F6.2",i=1,nMoveTypes), ")"  
 !"

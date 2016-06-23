@@ -178,7 +178,7 @@
       
       end subroutine
 !=============================================================================      
-      subroutine SwapIn_EnergyCalc(E_Inter, E_Intra, PairList, dETable, rejMove)
+      subroutine SwapIn_EnergyCalc(E_Inter, E_Intra, PairList, dETable, rejMove, useInter)
       use InterEnergy_LJ_Electro
       use IntraEnergy_LJ_Electro
       use BondStretchFunctions
@@ -192,6 +192,8 @@
       implicit none
       
       logical, intent(out) :: rejMove
+      logical, intent(in), optional :: useInter
+      logical :: interSwitch
       real(dp), intent(out) :: E_Inter, E_Intra
       real(dp), intent(inout) :: PairList(:), dETable(:)      
       real(dp) :: E_NonBond, E_Stretch, E_Bend
@@ -199,6 +201,12 @@
 
       
       rejMove = .false.      
+
+      if(present(useInter)) then
+        interSwitch = useInter
+      else
+        interSwitch = .true.
+      endif
       
       E_Inter = 0d0
       E_Intra = 0d0
@@ -209,10 +217,12 @@
       E_Improper = 0d0            
       PairList = 0d0
       dETable = 0d0
-!           
-      call NewMol_ECalc_Inter(E_Inter, PairList, dETable, rejMove)
-      if(rejMove) then
-        return
+
+      if(interSwitch) then
+        call NewMol_ECalc_Inter(E_Inter, PairList, dETable, rejMove)
+        if(rejMove) then
+          return
+        endif
       endif
       
 !     This block contains the calculations for all Intramolecular interactions.  
@@ -225,13 +235,16 @@
         E_Intra = E_NonBond + E_Stretch + E_Bend + E_Torsion + E_Improper
       endif          
 
-      E_Inter_Diff = 0d0
+      if(interSwitch) then
+        E_Inter_Diff = 0d0
+        E_Inter_Diff = E_Inter 
+      endif
+
       E_NBond_Diff = 0d0
       E_Strch_Diff = 0d0
       E_Bend_Diff = 0d0
       E_Tors_Diff = 0d0
-      
-      E_Inter_Diff = E_Inter
+
       E_NBond_Diff = E_NonBond
       E_Strch_Diff = E_Stretch
       E_Bend_Diff = E_Bend
@@ -242,7 +255,7 @@
 !=============================================================================
 !     This function contains the energy calculations that are used when a molecule
 !     has been selected for removal.  
-      subroutine SwapOut_EnergyCalc(E_Inter, E_Intra, nType, nMol, dETable)
+      subroutine SwapOut_EnergyCalc(E_Inter, E_Intra, nType, nMol, dETable, useInter)
       use InterEnergy_LJ_Electro
       use IntraEnergy_LJ_Electro
       use BondStretchFunctions
@@ -255,10 +268,12 @@
       use CBMC_Variables
       implicit none
       
+      logical, intent(in), optional :: useInter
       real(dp), intent(out) :: E_Inter, E_Intra      
       integer, intent(in) :: nType, nMol
       real(dp), intent(inout) :: dETable(:)      
-      
+
+      logical :: interSwitch      
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
       
@@ -271,8 +286,16 @@
       E_Improper = 0d0            
       dETable = 0d0
 
-      call Mol_ECalc_Inter(nType, nMol, dETable, E_Inter)
-      E_Inter = -E_Inter
+      if(present(useInter)) then
+        interSwitch = useInter
+      else
+        interSwitch = .true.
+      endif
+
+      if(interSwitch) then
+        call Mol_ECalc_Inter(nType, nMol, dETable, E_Inter)
+        E_Inter = -E_Inter
+      endif
       
 !     This block contains the calculations for all Intramolecular interactions.  
       if(regrowType(nType) .ne. 0) then        
@@ -284,14 +307,17 @@
          E_Intra = E_NonBond + E_Stretch + E_Bend + E_Torsion + E_Improper
          E_Intra = -E_Intra
       endif
-  
-      E_Inter_Diff = 0d0
+
+      if(interSwitch) then
+        E_Inter_Diff = 0d0
+        E_Inter_Diff = E_Inter
+      endif
+
       E_NBond_Diff = 0d0
       E_Strch_Diff = 0d0
       E_Bend_Diff = 0d0
       E_Tors_Diff = 0d0
 
-      E_Inter_Diff = E_Inter
       E_NBond_Diff = -E_NonBond
       E_Strch_Diff = -E_Stretch
       E_Bend_Diff = -E_Bend

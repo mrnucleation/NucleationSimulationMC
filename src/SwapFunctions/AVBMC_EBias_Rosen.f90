@@ -310,13 +310,12 @@
          nIndx = molArray(nType)%mol(nMol)%indx
          call NeighborUpdate_Delete(nIndx)
          isActive(molArray(nType)%mol(NPART(nType))%indx) = .false.         
-         acc_x = acc_x + 1d0 
          ETable = ETable - dETable
          ETable(nIndx) = ETable(molArray(nType)%mol(NPART(nType))%indx)
          ETable(molArray(nType)%mol(NPART(nType))%indx) = 0d0
          NPART(nType) = NPART(nType) - 1
          NTotal = NTotal - 1         
-!         call Create_NeiETable
+         acc_x = acc_x + 1d0 
          call Update_SubEnergies
 !         call DEBUG_Output_NeighborList
        endif

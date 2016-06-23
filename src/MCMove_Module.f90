@@ -2,6 +2,7 @@
       module MoveTypeModule
       use AVBMC_Module, only: AVBMC
       use CBMC_Module, only: CBMC
+      use Exchange_Module, only: Exchange
       use SimpleMCMoves_Module, only: Translation, Rotation, SingleAtom_Translation
       use VarPrecision
 
