@@ -232,10 +232,10 @@
           endif
           if(ProbArray(i) .gt. 0d0) then
             write(92, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i) - refBias
-          else
-            if(i .ne. 1) then
-              write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
-            endif
+!          else
+!            if(i .ne. 1) then
+!              write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
+!            endif
           endif
           NArray(nMolTypes) = NArray(nMolTypes) + 1
         enddo
