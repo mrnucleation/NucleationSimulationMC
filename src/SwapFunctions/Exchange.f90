@@ -78,16 +78,16 @@
 
 !      Generate the configuration for the newly inserted molecule
       nIndx2 = MolArray(nType2)%mol(NPART(nType2) + 1)%indx      
-      call Rosen_CreateSubset(nTarget, isIncluded)
+      call Rosen_CreateSubset(nTargIndx, isIncluded)
       isIncluded(nIndx) = .false.
 
       select case(regrowType(nType2))
       case(0)
-        call Ridgid_RosenConfigGen(nType2, nIndx2, nTarget, nTargType, isIncluded, rosenRatio_in, rejMove)
+        call Ridgid_RosenConfigGen(nType2, nIndx2, nTargIndx, nTargType, isIncluded, rosenRatio_in, rejMove)
       case(1)
-        call Simple_RosenConfigGen(nType2, nIndx2, nTarget, nTargType, isIncluded, rosenRatio_in, rejMove)   
+        call Simple_RosenConfigGen(nType2, nIndx2, nTargIndx, nTargType, isIncluded, rosenRatio_in, rejMove)   
       case(2)
-        call StraightChain_RosenConfigGen(nType2, nIndx2, nTarget, nTargType, isIncluded, rosenRatio_in, rejMove)   
+        call StraightChain_RosenConfigGen(nType2, nIndx2, nTargIndx, nTargType, isIncluded, rosenRatio_in, rejMove)   
       case default
         write(*,*) "Error! EBias can not regrow a molecule of regrow type:", regrowType(nType2)
         stop
@@ -107,13 +107,13 @@
       
       select case(regrowType(nType1))
       case(0)
-         call Ridgid_RosenConfigGen_Reverse(nType1, nMol1, nTarget, nTargType, rosenRatio_out)
+         call Ridgid_RosenConfigGen_Reverse(nType1, nMol1, nTargIndx, nTargType, rosenRatio_out)
       case(1)
-         call Simple_RosenConfigGen_Reverse(nType1, nMol1, nTarget, nTargType, rosenRatio_out)
+         call Simple_RosenConfigGen_Reverse(nType1, nMol1, nTargIndx, nTargType, rosenRatio_out)
       case(2)
-         call StraightChain_RosenConfigGen_Reverse(nType1, nMol1, nTarget, nTargType, rosenRatio_out)
+         call StraightChain_RosenConfigGen_Reverse(nType1, nMol1, nTargIndx, nTargType, rosenRatio_out)
       case default
-         write(*,*) "Error! EBias can not regrow a molecule of regrow type:", nType1
+         write(*,*) "Error! EBias can not regrow a molecule of regrow type:", regrowType(nType1)
          stop
       end select 
 
@@ -125,6 +125,7 @@
       if(rejMove) then
         return
       endif
+!      write(2,*) E_Inter
 !      do i = 1, maxMol
 !        if(PairList(i) .ne. 0d0) then
 !          write(35,*) i, PairList(i)
@@ -152,16 +153,16 @@
 
 !     Calculate acceptance probability and determine if the move is accepted or not          
       genProbRatio = (gas_dens(nType2)*rosenRatio_out) / (gas_dens(nType1)*rosenRatio_in)
-      write(2,*) genProbRatio, rosenRatio_out, rosenRatio_in
-
       if( genProbRatio * exp(-beta*E_Inter + bias_diff) .gt. grnd() ) then
          E_T = E_T + E_Inter
+         E_Inter_T = E_Inter_T + E_Inter
          ETable = ETable + dETable  
          if(distCriteria) then
            call NeighborUpdate_Distance(PairList, nIndx2)        
          else
            call NeighborUpdate(PairList, nIndx2)
          endif 
+         isActive(nIndx2) = .true.
 
          call SwapOut_EnergyCalc(E_Inter, E_Intra, nType1, nMol1, dETable, .false.)
          call Update_SubEnergies
@@ -183,7 +184,6 @@
            molArray(nType2)%mol(NPART(nType2)+1)%y(i) = newMol%y(i)
            molArray(nType2)%mol(NPART(nType2)+1)%z(i) = newMol%z(i)
          enddo
-         isActive(nIndx2) = .true.
          acc_x = acc_x + 1d0       
          NPART(nType1) = NPART(nType1) - 1 
          NPART(nType2) = NPART(nType2) + 1 

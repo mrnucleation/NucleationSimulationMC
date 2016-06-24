@@ -2,7 +2,7 @@
 #             Simulation Parameters
 #-----------------------------------------------------
    RNG_Seed:=                     1024
-   Number_of_Cycles:=             1d5
+   Number_of_Cycles:=             5d3
    Moves_Per_Cycles:=             1d2
    Number_of_Mol_Types:=          2
    Min_Cluster_Size:=             0 0 
@@ -21,7 +21,7 @@
 #             Output Parameters
 #-----------------------------------------------------	
     Screen_Output_Frequency:=       1000
-    Trajectory_Output_Frequency:=   5000
+    Trajectory_Output_Frequency:=   50
     Output_Energy_Units:=           kb
     Output_Distance_Units:=         ang
 #-----------------------------------------------------
