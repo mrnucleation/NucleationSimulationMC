@@ -38,6 +38,7 @@
 
       E_LJ = 0d0
       E_Ele = 0d0
+      E_Inter_T = 0d0
       PairList = 0d0      
       ETable = 0d0
       do iType = 1,nMolTypes
@@ -104,6 +105,7 @@
 !      enddo
       
       E_T = E_T + E_Ele + E_LJ    
+
       E_Inter_T = E_Ele + E_LJ   
       
       end subroutine
@@ -440,7 +442,6 @@
             sig_sq = sig_tab(atmType2,atmType1)
             rmin_ij = r_min_tab(atmType2,atmType1)
             do jMol = 1,NPART(jType)
-              jIndx = molArray(jType)%mol(jMol)%indx              
               rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
@@ -458,6 +459,7 @@
               endif              
               LJ = 0d0
               Ele = 0d0
+              jIndx = molArray(jType)%mol(jMol)%indx  
               if(ep .ne. 0d0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
@@ -491,7 +493,7 @@
 !======================================================================================      
       pure subroutine Exchange_ECalc_Inter(E_Trial, nType, nMol, PairList, dETable, rejMove)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Pedone
       use Coords
       use SimParameters
       implicit none
