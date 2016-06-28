@@ -111,6 +111,12 @@
       E_Improper = 0d0
       dETable = 0d0
 
+      E_Inter_Diff = 0d0
+      E_NBond_Diff = 0d0
+      E_Strch_Diff = 0d0
+      E_Bend_Diff = 0d0
+      E_Tors_Diff = 0d0
+
 !     Begin by calculating the intermolecular potential. If any atoms overlap the move will be rejected
 !     immediately.      
       if(useInter) then
@@ -118,9 +124,11 @@
           dETable = 0d0
           PairList = 0d0
           call Shift_ECalc_Inter(E_Inter,disp, PairList, dETable, rejMove)
+
           if(rejMove) then
             return
           endif
+          E_Inter_Diff = E_Inter
 
           if(E_Inter*beta .gt. softCutOff) then
             rejMove = .true.
@@ -149,32 +157,24 @@
       if(regrowType(disp(1)%molType) .ne. 0) then
          if(useIntra(1))  then
            call Shift_ECalc_IntraNonBonded(E_NonBond, disp)    
+           E_NBond_Diff = E_NonBond
          endif
          if(useIntra(2))  then
            call Shift_ECalc_BondStretch(E_Stretch, disp)
+           E_Strch_Diff = E_Stretch
          endif
          if(useIntra(3)) then
            call Shift_ECalc_Bending(E_Bend, disp)
+           E_Bend_Diff = E_Bend
          endif
          if(useIntra(4))  then
            call Shift_ECalc_Torsional(E_Torsion, disp)
+           E_Tors_Diff = E_Torsion
          endif
 !           call Shift_ECalc_Improper(E_Improper, disp)      
-!         write(2,*) useIntra
-!         write(2,*) E_Stretch, E_Bend
          E_Intra = E_NonBond + E_Stretch + E_Bend + E_Torsion + E_Improper
-                  
       endif
-!      Store the change to
-      if(useInter) then
-        E_Inter_Diff = E_Inter
-      endif
-      if(any(useIntra .eqv. .true.)) then
-        E_NBond_Diff = E_NonBond
-        E_Strch_Diff = E_Stretch
-        E_Bend_Diff = E_Bend
-        E_Tors_Diff = E_Torsion
-      endif
+
       
       end subroutine
 !=============================================================================      
@@ -218,6 +218,12 @@
       PairList = 0d0
       dETable = 0d0
 
+      E_Inter_Diff = 0d0
+      E_NBond_Diff = 0d0
+      E_Strch_Diff = 0d0
+      E_Bend_Diff = 0d0
+      E_Tors_Diff = 0d0
+
       if(interSwitch) then
         call NewMol_ECalc_Inter(E_Inter, PairList, dETable, rejMove)
         if(rejMove) then
@@ -233,23 +239,15 @@
         call NewMol_ECalc_Torsional(E_Torsion)
 !        call NewMol_ECalc_Improper(E_Improper)      
         E_Intra = E_NonBond + E_Stretch + E_Bend + E_Torsion + E_Improper
+        E_NBond_Diff = E_NonBond
+        E_Strch_Diff = E_Stretch
+        E_Bend_Diff = E_Bend
+        E_Tors_Diff = E_Torsion
       endif          
 
       if(interSwitch) then
-        E_Inter_Diff = 0d0
         E_Inter_Diff = E_Inter 
       endif
-
-      E_NBond_Diff = 0d0
-      E_Strch_Diff = 0d0
-      E_Bend_Diff = 0d0
-      E_Tors_Diff = 0d0
-
-      E_NBond_Diff = E_NonBond
-      E_Strch_Diff = E_Stretch
-      E_Bend_Diff = E_Bend
-      E_Tors_Diff = E_Torsion
-
       
       end subroutine
 !=============================================================================
@@ -284,6 +282,12 @@
       E_Bend = 0d0      
       E_Torsion = 0d0      
       E_Improper = 0d0            
+
+      E_Inter_Diff = 0d0
+      E_NBond_Diff = 0d0
+      E_Strch_Diff = 0d0
+      E_Bend_Diff = 0d0
+      E_Tors_Diff = 0d0
       dETable = 0d0
 
       if(present(useInter)) then
@@ -304,25 +308,17 @@
         call Mol_ECalc_Bending(nType, nMol, E_Bend)
         call Mol_ECalc_Torsional(nType, nMol, E_Torsion)
 !        call Mol_ECalc_Improper(nType, nMol, E_Improper)      
-         E_Intra = E_NonBond + E_Stretch + E_Bend + E_Torsion + E_Improper
-         E_Intra = -E_Intra
+        E_Intra = E_NonBond + E_Stretch + E_Bend + E_Torsion + E_Improper
+        E_Intra = -E_Intra
+        E_NBond_Diff = -E_NonBond
+        E_Strch_Diff = -E_Stretch
+        E_Bend_Diff = -E_Bend
+        E_Tors_Diff = -E_Torsion
       endif
 
       if(interSwitch) then
-        E_Inter_Diff = 0d0
         E_Inter_Diff = E_Inter
       endif
-
-      E_NBond_Diff = 0d0
-      E_Strch_Diff = 0d0
-      E_Bend_Diff = 0d0
-      E_Tors_Diff = 0d0
-
-      E_NBond_Diff = -E_NonBond
-      E_Strch_Diff = -E_Stretch
-      E_Bend_Diff = -E_Bend
-      E_Tors_Diff = -E_Torsion
-
   
       end subroutine      
 
@@ -339,6 +335,12 @@
       E_Bend_T = E_Bend_T + E_Bend_Diff
       E_Torsion_T = E_Torsion_T + E_Tors_Diff      
       
+      E_Inter_Diff = 0d0
+      E_NBond_Diff = 0d0
+      E_Strch_Diff = 0d0
+      E_Bend_Diff = 0d0
+      E_Tors_Diff = 0d0
+
       end subroutine
 !=============================================================================      
       

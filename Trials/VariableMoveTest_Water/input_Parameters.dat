@@ -2,11 +2,11 @@
 #             Simulation Parameters
 #-----------------------------------------------------
    RNG_Seed:=                     1224
-   Number_of_Cycles:=             1d5
+   Number_of_Cycles:=             5d5
    Moves_Per_Cycles:=             1d2
    Number_of_Mol_Types:=          1
    Min_Cluster_Size:=             1 
-   Max_Cluster_Size:=             5
+   Max_Cluster_Size:=             10
    Temperature(K):=               300
    Echo_To_Screen:=               .true.
    Use_Umbrela_Bias:=             .true.  fort.25

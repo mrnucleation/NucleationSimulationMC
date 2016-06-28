@@ -46,7 +46,7 @@
       real(dp) :: newNeiETable(1:maxMol)      
       real(dp) :: x1, y1, z1
       real(dp) :: ProbTarg_In, ProbTarg_Out, ProbSel_Out
-      real(dp) :: rmin_ij
+      real(dp) :: rmin_ij, dist, rx, ry, rz
 
       if(NTotal .eq. 1) then
         return
@@ -59,6 +59,17 @@
       call Uniform_ChooseNeighbor(nTargIndx, nIndx, nNei)
       nType1 = typeList(nIndx)
       nMol1 = subIndxList(nIndx)
+      rejMove = .false.
+
+      if(.not. distCriteria) then
+        rx = molArray(nTargType)%mol(nTargMol)%x(1) - molArray(nType1)%mol(nMol1)%x(1)
+        ry = molArray(nTargType)%mol(nTargMol)%y(1) - molArray(nType1)%mol(nMol1)%y(1)
+        rz = molArray(nTargType)%mol(nTargMol)%z(1) - molArray(nType1)%mol(nMol1)%z(1)
+        dist = rx*rx + ry*ry + rz*rz
+        if(dist .gt. Dist_Critr_sq) then
+          return
+        endif
+      endif
 
       nType2 = nType1
       do while(nType2 .eq. nType1) 

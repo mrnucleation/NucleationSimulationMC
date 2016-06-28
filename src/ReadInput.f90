@@ -345,7 +345,7 @@
         endif
         atomData(i)%ep = atomData(i)%ep * convEng
         atomData(i)%sig = atomData(i)%sig * convDist   
-        r_min_sq(i) = r_min(i)*r_min(i)
+!        r_min_sq(i) = r_min(i)*r_min(i)
 
       enddo
       
@@ -600,7 +600,107 @@
  
       
       end subroutine
+!========================================================  
+!     This subroutine reads the user specified forcefield.  The first half of this
+!     code deals with defining the types of atoms,bonds, etc. to be used in the simulation.
+!     This is done to such that degenerate angles only need to be defined once. 
+!     The second half of this routine deals with defining the molecule configuration using
+!     the atoms, angles, etc. defined in the first section of the routine.
+      subroutine ReadForcefield_Pedone
+      use SimParameters
+      use Constants
+      use Coords
+      use ForceField
+      use ForceFieldPara_LJ_Q
+      use ForceFieldFunctions
+      use Units
+      use CBMC_Variables
+      implicit none
+      logical :: custom
+      integer i,j,h,AllocateStatus,nParam
+      integer :: nAtomsMax, nBondsMax,nAnglesMax    
+      integer :: nTorsMax, nImpropMax, nNonBondMax
+      character(len=15) :: labelField 
+      character(len=10) :: mixingRule
+      character(len=10) :: unitsEnergy,unitsDistance,unitsAngular
+      real(kind(0.0d0)) :: convEng, convDist, convAng
+      procedure (MixRule), pointer :: rmin_func => null()   
 
+!     Open forcefield file      
+!      open(unit=55,file="input_forcefield.dat",status='OLD')
+!     Blank Space for Comments
+      read(55,*) 
+      read(55,*)
+      read(55,*)   
+       
+!      Specifies the number of atoms, bonds, etc. types to be used in the simulation.
+      read(55,*) labelField, nAtomTypes
+      read(55,*) 
+      read(55,*)      
+      read(55,*) labelField, unitsEnergy
+      read(55,*) labelField, unitsDistance
+      read(55,*) labelField, unitsAngular
+      convEng = FindEngUnit(unitsEnergy)
+      convDist = FindLengthUnit(unitsDistance)
+      convAng = FindAngularUnit(unitsAngular)
+
+      read(55,*)
+      read(55,*)      
+      do i = 1,nAtomTypes
+        read(55,*) labelField, atomData(i)%Symb, atomData(i)%repul, atomData(i)%rEq_tab, &
+                    atomData(i)%alpha_Tab, atomData(i)%delta, atomData(i)%q, atomData(i)%mass
+        if(echoInput) then
+          write(35,*) labelField, atomData(i)%Symb, atomData(i)%repul, atomData(i)%rEq_tab, &
+                    atomData(i)%alpha_Tab, atomData(i)%delta, atomData(i)%q, atomData(i)%mass
+        endif
+        atomData(i)%ep = atomData(i)%ep * convEng
+        atomData(i)%sig = atomData(i)%sig * convDist   
+!        r_min_sq(i) = r_min(i)*r_min(i)
+
+      enddo
+
+!     R_Min Mixing Rule    
+      read(55,*)
+      read(55,*) labelField, mixingRule 
+!       write(6,*) labelField, mixingRule      
+      custom = .false.
+      select case(mixingRule)
+        case("geometric")
+          rmin_func => GeoMean_MixingFunc
+        case("average")
+           rmin_func => Mean_MixingFunc
+        case("min")
+           rmin_func => Min_MixingFunc
+        case("max")
+           rmin_func => Max_MixingFunc
+        case("custom")
+           custom = .true. 
+        case default
+          stop "Error! Invalid R_Min Mixing Rule Type"
+      end select
+
+      if(custom) then           
+        do i = 1,nAtomTypes
+          read(55,*) (r_min_tab(i,j), j=1,nAtomTypes)
+        enddo
+        do i = 1,nAtomTypes
+          do j = 1,nAtomTypes
+            r_min_tab(i,j) = r_min_tab(i,j)**2
+          enddo
+        enddo
+      else
+        do i = 1,nAtomTypes
+          read(55,*) r_min(i)
+        enddo
+        do i = 1,nAtomTypes
+          do j = i,nAtomTypes
+            r_min_tab(i,j) = rmin_func(r_min(i), r_min(j))**2
+            r_min_tab(j,i) = r_min_tab(i,j)
+          enddo
+        enddo
+      endif
+
+      end subroutine
 !================================================================ 
       subroutine Allocate_Common_Variables_LJ_Q
       use SimParameters
@@ -657,4 +757,53 @@
       
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
   
-      end    
+      end subroutine
+!================================================================ 
+      subroutine Allocate_Common_Variables_Pedone
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_LJ_Q
+      use AcceptRates
+      implicit none
+      integer :: AllocateStatus
+      
+      ALLOCATE (atomData(1:nMolTypes), STAT = AllocateStatus)
+
+      ALLOCATE (r_min(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_sq(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_tab(1:nMolTypes, 1:nMolTypes), STAT = AllocateStatus) 
+
+      ALLOCATE (alpha_Tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (D_Tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (repul_tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (rEq_tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (q_tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+
+      ALLOCATE (totalMass(1:nMolTypes), STAT = AllocateStatus)
+     
+      repul_tab = 0d0
+      D_Tab = 0d0       
+      alpha_Tab = 0d0   
+      rEq_tab = 0d0
+      q_tab = 0d0
+      r_min_tab = 0d0
+
+
+
+      ALLOCATE (acptTrans(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpTrans(1:nMolTypes), STAT = AllocateStatus)
+
+      ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptSwapOut(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpSwapOut(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStatus)
+      ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStatus)
+
+      ALLOCATE (max_dist(1:nMolTypes), STAT = AllocateStatus)
+
+      
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+  
+      end subroutine

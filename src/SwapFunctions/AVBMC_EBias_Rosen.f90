@@ -284,14 +284,14 @@
 
       select case(regrowType(nType))
       case(0)
-         call Ridgid_RosenConfigGen_Reverse(nType, nMol, nTarget, nTargType, rosenRatio)
+        call Ridgid_RosenConfigGen_Reverse(nType, nMol, nTarget, nTargType, rosenRatio)
       case(1)
-         call Simple_RosenConfigGen_Reverse(nType, nMol, nTarget, nTargType, rosenRatio)
+        call Simple_RosenConfigGen_Reverse(nType, nMol, nTarget, nTargType, rosenRatio)
       case(2)
-         call StraightChain_RosenConfigGen_Reverse(nType, nMol, nTarget, nTargType, rosenRatio)
+        call StraightChain_RosenConfigGen_Reverse(nType, nMol, nTarget, nTargType, rosenRatio)
       case default
-     write(*,*) "Error! EBias can not regrow a molecule of regrow type:", nType
-         stop
+        write(*,*) "Error! EBias can not regrow a molecule of regrow type:", nType
+        stop
       end select 
 !      Calculate the Energy Difference Associated with the move.
       E_Inter = 0d0

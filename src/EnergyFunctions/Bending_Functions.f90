@@ -35,6 +35,7 @@
       real(dp) :: E_Bend, E_Harmonic
 
       E_Bend = 0d0
+      E_Bend_T = 0d0
       do iType = 1, nMolTypes
         do iMol = 1,NPART(iType)
           do iBend = 1,nAngles(iType)
@@ -263,12 +264,12 @@
         rx12 = MolArray(iType)%mol(iMol)%x(memb1) - MolArray(iType)%mol(iMol)%x(memb2)
         ry12 = MolArray(iType)%mol(iMol)%y(memb1) - MolArray(iType)%mol(iMol)%y(memb2)
         rz12 = MolArray(iType)%mol(iMol)%z(memb1) - MolArray(iType)%mol(iMol)%z(memb2)
-        r12 = sqrt(rx12**2 + ry12**2 + rz12**2)
+        r12 = sqrt(rx12*rx12 + ry12*ry12 + rz12*rz12)
             
         rx23 = MolArray(iType)%mol(iMol)%x(memb3) - MolArray(iType)%mol(iMol)%x(memb2)
         ry23 = MolArray(iType)%mol(iMol)%y(memb3) - MolArray(iType)%mol(iMol)%y(memb2)
         rz23 = MolArray(iType)%mol(iMol)%z(memb3) - MolArray(iType)%mol(iMol)%z(memb2)          
-        r23 = sqrt(rx23**2 + ry23**2 + rz23**2)
+        r23 = sqrt(rx23*rx23 + ry23*ry23 + rz23*rz23)
             
         Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
         Angle = Angle/(r12*r23)
@@ -315,12 +316,12 @@
         rx12 = newMol%x(memb1) - newMol%x(memb2)
         ry12 = newMol%y(memb1) - newMol%y(memb2)
         rz12 = newMol%z(memb1) - newMol%z(memb2)
-        r12 = sqrt(rx12**2 + ry12**2 + rz12**2)
+        r12 = sqrt(rx12*rx12 + ry12*ry12 + rz12*rz12)
         
         rx23 = newMol%x(memb3) - newMol%x(memb2)
         ry23 = newMol%y(memb3) - newMol%y(memb2)
         rz23 = newMol%z(memb3) - newMol%z(memb2)
-        r23 = sqrt(rx23**2 + ry23**2 + rz23**2)
+        r23 = sqrt(rx23*rx23 + ry23*ry23 + rz23*rz23)
 
         Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
         Angle = Angle/(r12*r23)
