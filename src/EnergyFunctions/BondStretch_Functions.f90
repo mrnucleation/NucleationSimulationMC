@@ -32,6 +32,7 @@
       real(dp) :: E_Bond, E_Harmonic
 
       E_Bond = 0d0
+      E_Stretch_T = 0d0
       do iType = 1, nMolTypes
         do iMol = 1,NPART(iType)
           do iBond = 1,nBonds(iType)
@@ -55,6 +56,7 @@
       write(nout,*) "Stretch Energy:", E_Bond
       E_T = E_T + E_Bond
       E_Stretch_T = E_Bond
+
       end subroutine
 !======================================================================================      
       pure subroutine Shift_ECalc_BondStretch(E_Bond,disp)

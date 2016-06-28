@@ -41,6 +41,7 @@
       real(dp) :: E_Tors
 
       E_Tors = 0d0
+      E_Torsion_T = 0d0
       do iType = 1, nMolTypes
         do iMol = 1,NPART(iType)
 !          do i = 1,nAtoms(iType)

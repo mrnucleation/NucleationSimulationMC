@@ -1,0 +1,679 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 37.15     62.39    62.39 29722411     0.00     0.00  __interenergy_lj_electro_MOD_shift_ecalc_inter
+ 18.96     94.23    31.84 39284990     0.00     0.00  __rosenbluth_functions_MOD_rosen_boltzweight_molecule_new
+ 14.45    118.50    24.27 34288600     0.00     0.00  __rosenbluth_functions_MOD_rosen_boltzweight_molecule_old
+  4.64    126.30     7.80  6857720     0.00     0.00  __interenergy_lj_electro_MOD_mol_ecalc_inter
+  2.88    131.13     4.84 29711100     0.00     0.00  __energycriteria_MOD_shift_energycriteria
+  2.69    135.64     4.51  7856998     0.00     0.00  __avbmc_cbmc_MOD_ridgid_rosenconfiggen
+  2.55    139.92     4.28  3941602     0.00     0.00  __interenergy_lj_electro_MOD_newmol_ecalc_inter
+  1.67    142.73     2.81  6857720     0.00     0.00  __avbmc_cbmc_MOD_ridgid_rosenconfiggen_reverse
+  1.55    145.33     2.60  7850836     0.00     0.00  __interenergy_lj_electro_MOD_quicknei_ecalc_inter
+  1.10    147.19     1.86  6871544     0.00     0.00  __energycriteria_MOD_swapout_energycriteria
+  1.08    149.00     1.81 29722411     0.00     0.00  __e_interface_MOD_shift_energycalc
+  1.04    150.74     1.75  8333299     0.00     0.01  __avbmc_module_MOD_avbmc_ebias_rosen_out
+  0.91    152.28     1.54  8332441     0.00     0.01  __avbmc_module_MOD_avbmc_ebias_rosen_in
+  0.87    153.74     1.46 15966576     0.00     0.00  __energycriteria_MOD_neighborupdate
+  0.81    155.10     1.36                             MAIN__
+  0.75    156.36     1.27  7429356     0.00     0.00  __neighbortable_MOD_create_neietable
+  0.74    157.61     1.25 16665191     0.00     0.00  __simplemcmoves_module_MOD_translation
+  0.70    158.78     1.17 66715870     0.00     0.00  generate_unitsphere_
+  0.66    159.89     1.11 670239675     0.00     0.00  grnd_
+  0.58    160.86     0.97  3914112     0.00     0.00  __neighbortable_MOD_insert_newneietable
+  0.53    161.75     0.89  7856998     0.00     0.00  __avbmc_module_MOD_ebias_insert_choosetarget
+  0.41    162.43     0.69  4954998     0.00     0.00  __simplemcmoves_module_MOD_rot_xz
+  0.38    163.06     0.63  4954334     0.00     0.00  __simplemcmoves_module_MOD_rot_xy
+  0.32    163.61     0.55  4953502     0.00     0.00  __simplemcmoves_module_MOD_rot_yz
+  0.28    164.08     0.47  7429356     0.00     0.00  __avbmc_module_MOD_ebias_remove_chooseneighbor
+  0.27    164.53     0.45        1   450.01   450.01  wham_finalize_
+  0.25    164.94     0.42 116136508     0.00     0.00  __indexingfunctions_MOD_get_moltype
+  0.24    165.35     0.41  7856998     0.00     0.00  __cbmc_utility_MOD_rosen_createsubset
+  0.24    165.75     0.40 49899000     0.00     0.00  nhistadd_
+  0.20    166.09     0.34  6857720     0.00     0.00  __cbmc_utility_MOD_rosen_createsubset_reverse
+  0.18    166.40     0.31  7429356     0.00     0.00  __avbmc_module_MOD_ebias_remove_choosetarget
+  0.17    166.69     0.29 29722411     0.00     0.00  __indexingfunctions_MOD_get_molindex
+  0.13    166.90     0.21 18553715     0.00     0.00  __umbrellafunctions_MOD_getnewbiasindex
+  0.11    167.09     0.19  3941602     0.00     0.00  __e_interface_MOD_swapin_energycalc
+  0.09    167.24     0.16  6857720     0.00     0.00  __e_interface_MOD_swapout_energycalc
+  0.08    167.37     0.13 16669069     0.00     0.00  __simplemcmoves_module_MOD_rotation
+  0.06    167.48     0.11 17069724     0.00     0.00  __e_interface_MOD_update_subenergies
+  0.04    167.54     0.07 11343479     0.00     0.00  __umbrellafunctions_MOD_getbiasindex
+  0.04    167.61     0.07                             __interenergy_lj_electro_MOD_shift_pairlist_correct
+  0.02    167.65     0.04        2    20.00    20.00  __bondstretchfunctions_MOD_detailed_ecalc_bondstretch
+  0.02    167.68     0.04 16665740     0.00     0.00  __avbmc_module_MOD_avbmc
+  0.02    167.72     0.04  1103148     0.00     0.00  __energycriteria_MOD_neighborupdate_delete
+  0.02    167.75     0.04                             __energycriteria_MOD_swapin_energycriteria
+  0.02    167.78     0.03        1    30.00    30.00  allocateumbrellabias_
+  0.02    167.81     0.03                             __avbmc_cbmc_MOD_simple_rosenconfiggen
+  0.02    167.84     0.03                             __cbmc_utility_MOD_findatomsfrompath
+  0.02    167.87     0.03                             __indexingfunctions_MOD_get_subindex
+  0.01    167.89     0.02        1    20.00    20.00  recentercoordinates_
+  0.01    167.91     0.02                             __avbmc_module_MOD_ebias_insert_reverseprobtarget
+  0.01    167.92     0.01                             __exchange_module_MOD_exchange
+  0.01    167.93     0.01                             __interenergy_lj_electro_MOD_exchange_ecalc_inter
+  0.01    167.94     0.01                             __neighbortable_MOD_insert_newneietable_distance
+  0.01    167.95     0.01                             __rosenbluth_functions_MOD_rosen_boltzweight_atom_new
+  0.00    167.95     0.00     2004     0.00     0.00  __forcefieldfunctions_MOD_harmonic
+  0.00    167.95     0.00      335     0.00     0.00  trajoutput_
+  0.00    167.95     0.00       10     0.00     0.00  wham_adjusthist_
+  0.00    167.95     0.00        6     0.00     0.00  __forcefieldfunctions_MOD_geomean_mixingfunc
+  0.00    167.95     0.00        6     0.00     0.00  __forcefieldfunctions_MOD_max_mixingfunc
+  0.00    167.95     0.00        6     0.00     0.00  __forcefieldfunctions_MOD_mean_mixingfunc
+  0.00    167.95     0.00        3     0.00     0.00  getnextatom_
+  0.00    167.95     0.00        2     0.00     0.00  __bendingfunctions_MOD_detailed_ecalc_bending
+  0.00    167.95     0.00        2     0.00    20.00  __e_interface_MOD_detailed_energycalc
+  0.00    167.95     0.00        2     0.00     0.00  __energycriteria_MOD_detailed_energycriteria
+  0.00    167.95     0.00        2     0.00     0.00  __interenergy_lj_electro_MOD_detailed_ecalc_inter
+  0.00    167.95     0.00        2     0.00     0.00  __intraenergy_lj_electro_MOD_detailed_ecalc_intranonbonded
+  0.00    167.95     0.00        2     0.00     0.00  __torsionalfunctions_MOD_detailed_ecalc_torsional
+  0.00    167.95     0.00        2     0.00     0.00  __units_MOD_findengunit
+  0.00    167.95     0.00        2     0.00     0.00  __units_MOD_findlengthunit
+  0.00    167.95     0.00        1     0.00     0.00  __units_MOD_findangularunit
+  0.00    167.95     0.00        1     0.00     0.00  allocate_common_variables_lj_q_
+  0.00    167.95     0.00        1     0.00     0.00  allocatecoordinatearrays_
+  0.00    167.95     0.00        1     0.00     0.00  cbmc_createtopology_
+  0.00    167.95     0.00        1     0.00     0.00  cbmc_findpathways_
+  0.00    167.95     0.00        1     0.00     0.00  collapsen_
+  0.00    167.95     0.00        1     0.00     0.00  createjointarray_
+  0.00    167.95     0.00        1     0.00     0.00  determineregroworder_
+  0.00    167.95     0.00        1     0.00     0.00  determineregrowthtype_
+  0.00    167.95     0.00        1     0.00     0.00  gcd_calc_
+  0.00    167.95     0.00        1     0.00     0.00  initialtrajoutput_
+  0.00    167.95     0.00        1     0.00     0.00  integratebendangleprob_
+  0.00    167.95     0.00        1     0.00     0.00  n_histoutput_
+  0.00    167.95     0.00        1     0.00     0.00  output_vmd_final_
+  0.00    167.95     0.00        1     0.00     0.00  readforcefield_
+  0.00    167.95     0.00        1     0.00     0.00  readforcefield_lj_q_
+  0.00    167.95     0.00        1     0.00     0.00  readinitialconfiguration_
+  0.00    167.95     0.00        1     0.00     0.00  readinitialgasphase_
+  0.00    167.95     0.00        1     0.00    30.00  readparameters_
+  0.00    167.95     0.00        1     0.00     0.00  sgrnd_
+  0.00    167.95     0.00        1     0.00     0.00  single_n_histoutput_
+  0.00    167.95     0.00        1     0.00     0.00  wham_initialize_
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 0.01% of 167.95 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     99.9    1.36  166.34                 MAIN__ [1]
+                1.54   47.11 8332441/8332441     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+                1.75   40.26 8333299/8333299     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+                1.25   35.70 16665191/16665191     __simplemcmoves_module_MOD_translation [7]
+                0.69   11.88 4954998/4954998     __simplemcmoves_module_MOD_rot_xz [11]
+                0.63   11.88 4954334/4954334     __simplemcmoves_module_MOD_rot_xy [12]
+                0.55   11.88 4953502/4953502     __simplemcmoves_module_MOD_rot_yz [13]
+                0.45    0.00       1/1           wham_finalize_ [28]
+                0.40    0.00 49899000/49899000     nhistadd_ [31]
+                0.13    0.02 16669069/16669069     __simplemcmoves_module_MOD_rotation [36]
+                0.08    0.00 50000000/670239675     grnd_ [24]
+                0.04    0.03 16665740/16665740     __avbmc_module_MOD_avbmc [40]
+                0.00    0.04       2/2           __e_interface_MOD_detailed_energycalc [42]
+                0.00    0.03       1/1           readparameters_ [45]
+                0.02    0.00       1/1           recentercoordinates_ [50]
+                0.00    0.00     335/335         trajoutput_ [56]
+                0.00    0.00      10/10          wham_adjusthist_ [57]
+                0.00    0.00       1/1           createjointarray_ [64]
+                0.00    0.00       1/1           allocatecoordinatearrays_ [60]
+                0.00    0.00       1/1           readforcefield_lj_q_ [73]
+                0.00    0.00       1/1           readforcefield_ [72]
+                0.00    0.00       1/1           readinitialconfiguration_ [74]
+                0.00    0.00       1/1           readinitialgasphase_ [75]
+                0.00    0.00       1/1           sgrnd_ [76]
+                0.00    0.00       1/1           determineregroworder_ [65]
+                0.00    0.00       1/1           cbmc_createtopology_ [61]
+                0.00    0.00       1/1           initialtrajoutput_ [68]
+                0.00    0.00       1/1           collapsen_ [63]
+                0.00    0.00       1/1           output_vmd_final_ [71]
+                0.00    0.00       1/1           n_histoutput_ [70]
+-----------------------------------------------
+                0.30   11.22 4953502/29722411     __simplemcmoves_module_MOD_rot_yz [13]
+                0.30   11.22 4954334/29722411     __simplemcmoves_module_MOD_rot_xy [12]
+                0.30   11.22 4954998/29722411     __simplemcmoves_module_MOD_rot_xz [11]
+                0.90   33.66 14859577/29722411     __simplemcmoves_module_MOD_translation [7]
+[2]     41.2    1.81   67.33 29722411         __e_interface_MOD_shift_energycalc [2]
+               62.39    0.00 29722411/29722411     __interenergy_lj_electro_MOD_shift_ecalc_inter [3]
+                4.84    0.11 29711100/29711100     __energycriteria_MOD_shift_energycriteria [16]
+-----------------------------------------------
+               62.39    0.00 29722411/29722411     __e_interface_MOD_shift_energycalc [2]
+[3]     37.1   62.39    0.00 29722411         __interenergy_lj_electro_MOD_shift_ecalc_inter [3]
+-----------------------------------------------
+                1.54   47.11 8332441/8332441     MAIN__ [1]
+[4]     29.0    1.54   47.11 8332441         __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+                4.51   32.97 7856998/7856998     __avbmc_cbmc_MOD_ridgid_rosenconfiggen [6]
+                0.19    4.28 3941602/3941602     __e_interface_MOD_swapin_energycalc [17]
+                2.60    0.00 7850836/7850836     __interenergy_lj_electro_MOD_quicknei_ecalc_inter [19]
+                0.97    0.00 3914112/3914112     __neighbortable_MOD_insert_newneietable [25]
+                0.89    0.01 7856998/7856998     __avbmc_module_MOD_ebias_insert_choosetarget [26]
+                0.41    0.00 7856998/7856998     __cbmc_utility_MOD_rosen_createsubset [30]
+                0.13    0.00 11124359/18553715     __umbrellafunctions_MOD_getnewbiasindex [35]
+                0.10    0.02 1103155/15966576     __energycriteria_MOD_neighborupdate [21]
+                0.02    0.00 3914112/11343479     __umbrellafunctions_MOD_getbiasindex [38]
+                0.01    0.00 1103155/17069724     __e_interface_MOD_update_subenergies [37]
+                0.01    0.00 3914112/670239675     grnd_ [24]
+-----------------------------------------------
+                1.75   40.26 8333299/8333299     MAIN__ [1]
+[5]     25.0    1.75   40.26 8333299         __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+                2.81   25.39 6857720/6857720     __avbmc_cbmc_MOD_ridgid_rosenconfiggen_reverse [9]
+                0.16    7.80 6857720/6857720     __e_interface_MOD_swapout_energycalc [14]
+                1.86    0.00 6871544/6871544     __energycriteria_MOD_swapout_energycriteria [20]
+                1.27    0.00 7429356/7429356     __neighbortable_MOD_create_neietable [23]
+                0.47    0.01 7429356/7429356     __avbmc_module_MOD_ebias_remove_chooseneighbor [27]
+                0.31    0.01 7429356/7429356     __avbmc_module_MOD_ebias_remove_choosetarget [33]
+                0.08    0.00 7429356/18553715     __umbrellafunctions_MOD_getnewbiasindex [35]
+                0.04    0.00 7429356/11343479     __umbrellafunctions_MOD_getbiasindex [38]
+                0.04    0.00 1103148/1103148     __energycriteria_MOD_neighborupdate_delete [43]
+                0.01    0.00 6857720/670239675     grnd_ [24]
+                0.01    0.00 1103148/17069724     __e_interface_MOD_update_subenergies [37]
+-----------------------------------------------
+                4.51   32.97 7856998/7856998     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+[6]     22.3    4.51   32.97 7856998         __avbmc_cbmc_MOD_ridgid_rosenconfiggen [6]
+               31.84    0.00 39284990/39284990     __rosenbluth_functions_MOD_rosen_boltzweight_molecule_new [8]
+                0.69    0.17 39284990/66715870     generate_unitsphere_ [22]
+                0.27    0.00 164996958/670239675     grnd_ [24]
+-----------------------------------------------
+                1.25   35.70 16665191/16665191     MAIN__ [1]
+[7]     22.0    1.25   35.70 16665191         __simplemcmoves_module_MOD_translation [7]
+                0.90   33.66 14859577/29722411     __e_interface_MOD_shift_energycalc [2]
+                0.68    0.14 7461609/15966576     __energycriteria_MOD_neighborupdate [21]
+                0.14    0.00 14859577/29722411     __indexingfunctions_MOD_get_molindex [34]
+                0.12    0.00 70400470/670239675     grnd_ [24]
+                0.05    0.00 7461609/17069724     __e_interface_MOD_update_subenergies [37]
+-----------------------------------------------
+               31.84    0.00 39284990/39284990     __avbmc_cbmc_MOD_ridgid_rosenconfiggen [6]
+[8]     19.0   31.84    0.00 39284990         __rosenbluth_functions_MOD_rosen_boltzweight_molecule_new [8]
+-----------------------------------------------
+                2.81   25.39 6857720/6857720     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+[9]     16.8    2.81   25.39 6857720         __avbmc_cbmc_MOD_ridgid_rosenconfiggen_reverse [9]
+               24.27    0.00 34288600/34288600     __rosenbluth_functions_MOD_rosen_boltzweight_molecule_old [10]
+                0.48    0.12 27430880/66715870     generate_unitsphere_ [22]
+                0.34    0.00 6857720/6857720     __cbmc_utility_MOD_rosen_createsubset_reverse [32]
+                0.18    0.00 109723520/670239675     grnd_ [24]
+-----------------------------------------------
+               24.27    0.00 34288600/34288600     __avbmc_cbmc_MOD_ridgid_rosenconfiggen_reverse [9]
+[10]    14.5   24.27    0.00 34288600         __rosenbluth_functions_MOD_rosen_boltzweight_molecule_old [10]
+-----------------------------------------------
+                0.69   11.88 4954998/4954998     MAIN__ [1]
+[11]     7.5    0.69   11.88 4954998         __simplemcmoves_module_MOD_rot_xz [11]
+                0.30   11.22 4954998/29722411     __e_interface_MOD_shift_energycalc [2]
+                0.23    0.05 2468650/15966576     __energycriteria_MOD_neighborupdate [21]
+                0.05    0.00 4954998/29722411     __indexingfunctions_MOD_get_molindex [34]
+                0.02    0.00 13402002/670239675     grnd_ [24]
+                0.02    0.00 2468650/17069724     __e_interface_MOD_update_subenergies [37]
+-----------------------------------------------
+                0.63   11.88 4954334/4954334     MAIN__ [1]
+[12]     7.4    0.63   11.88 4954334         __simplemcmoves_module_MOD_rot_xy [12]
+                0.30   11.22 4954334/29722411     __e_interface_MOD_shift_energycalc [2]
+                0.23    0.05 2464621/15966576     __energycriteria_MOD_neighborupdate [21]
+                0.05    0.00 4954334/29722411     __indexingfunctions_MOD_get_molindex [34]
+                0.02    0.00 13398189/670239675     grnd_ [24]
+                0.02    0.00 2464621/17069724     __e_interface_MOD_update_subenergies [37]
+-----------------------------------------------
+                0.55   11.88 4953502/4953502     MAIN__ [1]
+[13]     7.4    0.55   11.88 4953502         __simplemcmoves_module_MOD_rot_yz [13]
+                0.30   11.22 4953502/29722411     __e_interface_MOD_shift_energycalc [2]
+                0.23    0.05 2468541/15966576     __energycriteria_MOD_neighborupdate [21]
+                0.05    0.00 4953502/29722411     __indexingfunctions_MOD_get_molindex [34]
+                0.02    0.00 13397562/670239675     grnd_ [24]
+                0.02    0.00 2468541/17069724     __e_interface_MOD_update_subenergies [37]
+-----------------------------------------------
+                0.16    7.80 6857720/6857720     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+[14]     4.7    0.16    7.80 6857720         __e_interface_MOD_swapout_energycalc [14]
+                7.80    0.00 6857720/6857720     __interenergy_lj_electro_MOD_mol_ecalc_inter [15]
+-----------------------------------------------
+                7.80    0.00 6857720/6857720     __e_interface_MOD_swapout_energycalc [14]
+[15]     4.6    7.80    0.00 6857720         __interenergy_lj_electro_MOD_mol_ecalc_inter [15]
+-----------------------------------------------
+                4.84    0.11 29711100/29711100     __e_interface_MOD_shift_energycalc [2]
+[16]     2.9    4.84    0.11 29711100         __energycriteria_MOD_shift_energycriteria [16]
+                0.11    0.00 29711100/116136508     __indexingfunctions_MOD_get_moltype [29]
+-----------------------------------------------
+                0.19    4.28 3941602/3941602     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+[17]     2.7    0.19    4.28 3941602         __e_interface_MOD_swapin_energycalc [17]
+                4.28    0.00 3941602/3941602     __interenergy_lj_electro_MOD_newmol_ecalc_inter [18]
+-----------------------------------------------
+                4.28    0.00 3941602/3941602     __e_interface_MOD_swapin_energycalc [17]
+[18]     2.5    4.28    0.00 3941602         __interenergy_lj_electro_MOD_newmol_ecalc_inter [18]
+-----------------------------------------------
+                2.60    0.00 7850836/7850836     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+[19]     1.5    2.60    0.00 7850836         __interenergy_lj_electro_MOD_quicknei_ecalc_inter [19]
+-----------------------------------------------
+                1.86    0.00 6871544/6871544     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+[20]     1.1    1.86    0.00 6871544         __energycriteria_MOD_swapout_energycriteria [20]
+-----------------------------------------------
+                0.10    0.02 1103155/15966576     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+                0.23    0.05 2464621/15966576     __simplemcmoves_module_MOD_rot_xy [12]
+                0.23    0.05 2468541/15966576     __simplemcmoves_module_MOD_rot_yz [13]
+                0.23    0.05 2468650/15966576     __simplemcmoves_module_MOD_rot_xz [11]
+                0.68    0.14 7461609/15966576     __simplemcmoves_module_MOD_translation [7]
+[21]     1.1    1.46    0.31 15966576         __energycriteria_MOD_neighborupdate [21]
+                0.31    0.00 86425408/116136508     __indexingfunctions_MOD_get_moltype [29]
+-----------------------------------------------
+                0.48    0.12 27430880/66715870     __avbmc_cbmc_MOD_ridgid_rosenconfiggen_reverse [9]
+                0.69    0.17 39284990/66715870     __avbmc_cbmc_MOD_ridgid_rosenconfiggen [6]
+[22]     0.9    1.17    0.28 66715870         generate_unitsphere_ [22]
+                0.28    0.00 169904858/670239675     grnd_ [24]
+-----------------------------------------------
+                1.27    0.00 7429356/7429356     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+[23]     0.8    1.27    0.00 7429356         __neighbortable_MOD_create_neietable [23]
+-----------------------------------------------
+                0.01    0.00 3914112/670239675     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+                0.01    0.00 6857720/670239675     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+                0.01    0.00 7429356/670239675     __avbmc_module_MOD_ebias_remove_chooseneighbor [27]
+                0.01    0.00 7429356/670239675     __avbmc_module_MOD_ebias_remove_choosetarget [33]
+                0.01    0.00 7856998/670239675     __avbmc_module_MOD_ebias_insert_choosetarget [26]
+                0.02    0.00 13397562/670239675     __simplemcmoves_module_MOD_rot_yz [13]
+                0.02    0.00 13398189/670239675     __simplemcmoves_module_MOD_rot_xy [12]
+                0.02    0.00 13402002/670239675     __simplemcmoves_module_MOD_rot_xz [11]
+                0.02    0.00 14862834/670239675     __simplemcmoves_module_MOD_rotation [36]
+                0.03    0.00 16665740/670239675     __avbmc_module_MOD_avbmc [40]
+                0.08    0.00 50000000/670239675     MAIN__ [1]
+                0.12    0.00 70400470/670239675     __simplemcmoves_module_MOD_translation [7]
+                0.18    0.00 109723520/670239675     __avbmc_cbmc_MOD_ridgid_rosenconfiggen_reverse [9]
+                0.27    0.00 164996958/670239675     __avbmc_cbmc_MOD_ridgid_rosenconfiggen [6]
+                0.28    0.00 169904858/670239675     generate_unitsphere_ [22]
+[24]     0.7    1.11    0.00 670239675         grnd_ [24]
+-----------------------------------------------
+                0.97    0.00 3914112/3914112     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+[25]     0.6    0.97    0.00 3914112         __neighbortable_MOD_insert_newneietable [25]
+-----------------------------------------------
+                0.89    0.01 7856998/7856998     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+[26]     0.5    0.89    0.01 7856998         __avbmc_module_MOD_ebias_insert_choosetarget [26]
+                0.01    0.00 7856998/670239675     grnd_ [24]
+-----------------------------------------------
+                0.47    0.01 7429356/7429356     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+[27]     0.3    0.47    0.01 7429356         __avbmc_module_MOD_ebias_remove_chooseneighbor [27]
+                0.01    0.00 7429356/670239675     grnd_ [24]
+-----------------------------------------------
+                0.45    0.00       1/1           MAIN__ [1]
+[28]     0.3    0.45    0.00       1         wham_finalize_ [28]
+-----------------------------------------------
+                0.11    0.00 29711100/116136508     __energycriteria_MOD_shift_energycriteria [16]
+                0.31    0.00 86425408/116136508     __energycriteria_MOD_neighborupdate [21]
+[29]     0.2    0.42    0.00 116136508         __indexingfunctions_MOD_get_moltype [29]
+-----------------------------------------------
+                0.41    0.00 7856998/7856998     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+[30]     0.2    0.41    0.00 7856998         __cbmc_utility_MOD_rosen_createsubset [30]
+-----------------------------------------------
+                0.40    0.00 49899000/49899000     MAIN__ [1]
+[31]     0.2    0.40    0.00 49899000         nhistadd_ [31]
+-----------------------------------------------
+                0.34    0.00 6857720/6857720     __avbmc_cbmc_MOD_ridgid_rosenconfiggen_reverse [9]
+[32]     0.2    0.34    0.00 6857720         __cbmc_utility_MOD_rosen_createsubset_reverse [32]
+-----------------------------------------------
+                0.31    0.01 7429356/7429356     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+[33]     0.2    0.31    0.01 7429356         __avbmc_module_MOD_ebias_remove_choosetarget [33]
+                0.01    0.00 7429356/670239675     grnd_ [24]
+-----------------------------------------------
+                0.05    0.00 4953502/29722411     __simplemcmoves_module_MOD_rot_yz [13]
+                0.05    0.00 4954334/29722411     __simplemcmoves_module_MOD_rot_xy [12]
+                0.05    0.00 4954998/29722411     __simplemcmoves_module_MOD_rot_xz [11]
+                0.14    0.00 14859577/29722411     __simplemcmoves_module_MOD_translation [7]
+[34]     0.2    0.29    0.00 29722411         __indexingfunctions_MOD_get_molindex [34]
+-----------------------------------------------
+                0.08    0.00 7429356/18553715     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+                0.13    0.00 11124359/18553715     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+[35]     0.1    0.21    0.00 18553715         __umbrellafunctions_MOD_getnewbiasindex [35]
+-----------------------------------------------
+                0.13    0.02 16669069/16669069     MAIN__ [1]
+[36]     0.1    0.13    0.02 16669069         __simplemcmoves_module_MOD_rotation [36]
+                0.02    0.00 14862834/670239675     grnd_ [24]
+-----------------------------------------------
+                0.01    0.00 1103148/17069724     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+                0.01    0.00 1103155/17069724     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+                0.02    0.00 2464621/17069724     __simplemcmoves_module_MOD_rot_xy [12]
+                0.02    0.00 2468541/17069724     __simplemcmoves_module_MOD_rot_yz [13]
+                0.02    0.00 2468650/17069724     __simplemcmoves_module_MOD_rot_xz [11]
+                0.05    0.00 7461609/17069724     __simplemcmoves_module_MOD_translation [7]
+[37]     0.1    0.11    0.00 17069724         __e_interface_MOD_update_subenergies [37]
+-----------------------------------------------
+                0.00    0.00       1/11343479     readparameters_ [45]
+                0.00    0.00      10/11343479     allocateumbrellabias_ [46]
+                0.02    0.00 3914112/11343479     __avbmc_module_MOD_avbmc_ebias_rosen_in [4]
+                0.04    0.00 7429356/11343479     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+[38]     0.0    0.07    0.00 11343479         __umbrellafunctions_MOD_getbiasindex [38]
+-----------------------------------------------
+                                                 <spontaneous>
+[39]     0.0    0.07    0.00                 __interenergy_lj_electro_MOD_shift_pairlist_correct [39]
+-----------------------------------------------
+                0.04    0.03 16665740/16665740     MAIN__ [1]
+[40]     0.0    0.04    0.03 16665740         __avbmc_module_MOD_avbmc [40]
+                0.03    0.00 16665740/670239675     grnd_ [24]
+-----------------------------------------------
+                0.04    0.00       2/2           __e_interface_MOD_detailed_energycalc [42]
+[41]     0.0    0.04    0.00       2         __bondstretchfunctions_MOD_detailed_ecalc_bondstretch [41]
+-----------------------------------------------
+                0.00    0.04       2/2           MAIN__ [1]
+[42]     0.0    0.00    0.04       2         __e_interface_MOD_detailed_energycalc [42]
+                0.04    0.00       2/2           __bondstretchfunctions_MOD_detailed_ecalc_bondstretch [41]
+                0.00    0.00       2/2           __interenergy_lj_electro_MOD_detailed_ecalc_inter [118]
+                0.00    0.00       2/2           __energycriteria_MOD_detailed_energycriteria [117]
+                0.00    0.00       2/2           __intraenergy_lj_electro_MOD_detailed_ecalc_intranonbonded [119]
+                0.00    0.00       2/2           __bendingfunctions_MOD_detailed_ecalc_bending [116]
+                0.00    0.00       2/2           __torsionalfunctions_MOD_detailed_ecalc_torsional [120]
+-----------------------------------------------
+                0.04    0.00 1103148/1103148     __avbmc_module_MOD_avbmc_ebias_rosen_out [5]
+[43]     0.0    0.04    0.00 1103148         __energycriteria_MOD_neighborupdate_delete [43]
+-----------------------------------------------
+                                                 <spontaneous>
+[44]     0.0    0.04    0.00                 __energycriteria_MOD_swapin_energycriteria [44]
+-----------------------------------------------
+                0.00    0.03       1/1           MAIN__ [1]
+[45]     0.0    0.00    0.03       1         readparameters_ [45]
+                0.03    0.00       1/1           allocateumbrellabias_ [46]
+                0.00    0.00       1/11343479     __umbrellafunctions_MOD_getbiasindex [38]
+                0.00    0.00       1/1           gcd_calc_ [67]
+                0.00    0.00       1/2           __units_MOD_findengunit [121]
+                0.00    0.00       1/2           __units_MOD_findlengthunit [122]
+                0.00    0.00       1/1           wham_initialize_ [78]
+-----------------------------------------------
+                0.03    0.00       1/1           readparameters_ [45]
+[46]     0.0    0.03    0.00       1         allocateumbrellabias_ [46]
+                0.00    0.00      10/11343479     __umbrellafunctions_MOD_getbiasindex [38]
+-----------------------------------------------
+                                                 <spontaneous>
+[47]     0.0    0.03    0.00                 __avbmc_cbmc_MOD_simple_rosenconfiggen [47]
+-----------------------------------------------
+                                                 <spontaneous>
+[48]     0.0    0.03    0.00                 __cbmc_utility_MOD_findatomsfrompath [48]
+-----------------------------------------------
+                                                 <spontaneous>
+[49]     0.0    0.03    0.00                 __indexingfunctions_MOD_get_subindex [49]
+-----------------------------------------------
+                0.02    0.00       1/1           MAIN__ [1]
+[50]     0.0    0.02    0.00       1         recentercoordinates_ [50]
+-----------------------------------------------
+                                                 <spontaneous>
+[51]     0.0    0.02    0.00                 __avbmc_module_MOD_ebias_insert_reverseprobtarget [51]
+-----------------------------------------------
+                                                 <spontaneous>
+[52]     0.0    0.01    0.00                 __exchange_module_MOD_exchange [52]
+-----------------------------------------------
+                                                 <spontaneous>
+[53]     0.0    0.01    0.00                 __interenergy_lj_electro_MOD_exchange_ecalc_inter [53]
+-----------------------------------------------
+                                                 <spontaneous>
+[54]     0.0    0.01    0.00                 __neighbortable_MOD_insert_newneietable_distance [54]
+-----------------------------------------------
+                                                 <spontaneous>
+[55]     0.0    0.01    0.00                 __rosenbluth_functions_MOD_rosen_boltzweight_atom_new [55]
+-----------------------------------------------
+                0.00    0.00     335/335         MAIN__ [1]
+[56]     0.0    0.00    0.00     335         trajoutput_ [56]
+-----------------------------------------------
+                0.00    0.00      10/10          MAIN__ [1]
+[57]     0.0    0.00    0.00      10         wham_adjusthist_ [57]
+-----------------------------------------------
+                0.00    0.00       3/3           cbmc_findpathways_ [62]
+[58]     0.0    0.00    0.00       3         getnextatom_ [58]
+-----------------------------------------------
+                0.00    0.00       1/1           readforcefield_lj_q_ [73]
+[59]     0.0    0.00    0.00       1         allocate_common_variables_lj_q_ [59]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[60]     0.0    0.00    0.00       1         allocatecoordinatearrays_ [60]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[61]     0.0    0.00    0.00       1         cbmc_createtopology_ [61]
+                0.00    0.00       1/1           cbmc_findpathways_ [62]
+                0.00    0.00       1/1           determineregrowthtype_ [66]
+-----------------------------------------------
+                0.00    0.00       1/1           cbmc_createtopology_ [61]
+[62]     0.0    0.00    0.00       1         cbmc_findpathways_ [62]
+                0.00    0.00       3/3           getnextatom_ [58]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[63]     0.0    0.00    0.00       1         collapsen_ [63]
+                0.00    0.00       1/1           single_n_histoutput_ [77]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[64]     0.0    0.00    0.00       1         createjointarray_ [64]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[65]     0.0    0.00    0.00       1         determineregroworder_ [65]
+-----------------------------------------------
+                0.00    0.00       1/1           cbmc_createtopology_ [61]
+[66]     0.0    0.00    0.00       1         determineregrowthtype_ [66]
+-----------------------------------------------
+                0.00    0.00       1/1           readparameters_ [45]
+[67]     0.0    0.00    0.00       1         gcd_calc_ [67]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[68]     0.0    0.00    0.00       1         initialtrajoutput_ [68]
+-----------------------------------------------
+                0.00    0.00       1/1           readforcefield_lj_q_ [73]
+[69]     0.0    0.00    0.00       1         integratebendangleprob_ [69]
+                0.00    0.00    2004/2004        __forcefieldfunctions_MOD_harmonic [112]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[70]     0.0    0.00    0.00       1         n_histoutput_ [70]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[71]     0.0    0.00    0.00       1         output_vmd_final_ [71]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[72]     0.0    0.00    0.00       1         readforcefield_ [72]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[73]     0.0    0.00    0.00       1         readforcefield_lj_q_ [73]
+                0.00    0.00       6/6           __forcefieldfunctions_MOD_geomean_mixingfunc [113]
+                0.00    0.00       6/6           __forcefieldfunctions_MOD_mean_mixingfunc [115]
+                0.00    0.00       6/6           __forcefieldfunctions_MOD_max_mixingfunc [114]
+                0.00    0.00       1/1           allocate_common_variables_lj_q_ [59]
+                0.00    0.00       1/2           __units_MOD_findengunit [121]
+                0.00    0.00       1/2           __units_MOD_findlengthunit [122]
+                0.00    0.00       1/1           __units_MOD_findangularunit [123]
+                0.00    0.00       1/1           integratebendangleprob_ [69]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[74]     0.0    0.00    0.00       1         readinitialconfiguration_ [74]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[75]     0.0    0.00    0.00       1         readinitialgasphase_ [75]
+-----------------------------------------------
+                0.00    0.00       1/1           MAIN__ [1]
+[76]     0.0    0.00    0.00       1         sgrnd_ [76]
+-----------------------------------------------
+                0.00    0.00       1/1           collapsen_ [63]
+[77]     0.0    0.00    0.00       1         single_n_histoutput_ [77]
+-----------------------------------------------
+                0.00    0.00       1/1           readparameters_ [45]
+[78]     0.0    0.00    0.00       1         wham_initialize_ [78]
+-----------------------------------------------
+                0.00    0.00    2004/2004        integratebendangleprob_ [69]
+[112]    0.0    0.00    0.00    2004         __forcefieldfunctions_MOD_harmonic [112]
+-----------------------------------------------
+                0.00    0.00       6/6           readforcefield_lj_q_ [73]
+[113]    0.0    0.00    0.00       6         __forcefieldfunctions_MOD_geomean_mixingfunc [113]
+-----------------------------------------------
+                0.00    0.00       6/6           readforcefield_lj_q_ [73]
+[114]    0.0    0.00    0.00       6         __forcefieldfunctions_MOD_max_mixingfunc [114]
+-----------------------------------------------
+                0.00    0.00       6/6           readforcefield_lj_q_ [73]
+[115]    0.0    0.00    0.00       6         __forcefieldfunctions_MOD_mean_mixingfunc [115]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [42]
+[116]    0.0    0.00    0.00       2         __bendingfunctions_MOD_detailed_ecalc_bending [116]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [42]
+[117]    0.0    0.00    0.00       2         __energycriteria_MOD_detailed_energycriteria [117]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [42]
+[118]    0.0    0.00    0.00       2         __interenergy_lj_electro_MOD_detailed_ecalc_inter [118]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [42]
+[119]    0.0    0.00    0.00       2         __intraenergy_lj_electro_MOD_detailed_ecalc_intranonbonded [119]
+-----------------------------------------------
+                0.00    0.00       2/2           __e_interface_MOD_detailed_energycalc [42]
+[120]    0.0    0.00    0.00       2         __torsionalfunctions_MOD_detailed_ecalc_torsional [120]
+-----------------------------------------------
+                0.00    0.00       1/2           readforcefield_lj_q_ [73]
+                0.00    0.00       1/2           readparameters_ [45]
+[121]    0.0    0.00    0.00       2         __units_MOD_findengunit [121]
+-----------------------------------------------
+                0.00    0.00       1/2           readforcefield_lj_q_ [73]
+                0.00    0.00       1/2           readparameters_ [45]
+[122]    0.0    0.00    0.00       2         __units_MOD_findlengthunit [122]
+-----------------------------------------------
+                0.00    0.00       1/1           readforcefield_lj_q_ [73]
+[123]    0.0    0.00    0.00       1         __units_MOD_findangularunit [123]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+   [1] MAIN__                [114] __forcefieldfunctions_MOD_max_mixingfunc [59] allocate_common_variables_lj_q_
+   [6] __avbmc_cbmc_MOD_ridgid_rosenconfiggen [115] __forcefieldfunctions_MOD_mean_mixingfunc [60] allocatecoordinatearrays_
+   [9] __avbmc_cbmc_MOD_ridgid_rosenconfiggen_reverse [34] __indexingfunctions_MOD_get_molindex [46] allocateumbrellabias_
+  [47] __avbmc_cbmc_MOD_simple_rosenconfiggen [29] __indexingfunctions_MOD_get_moltype [61] cbmc_createtopology_
+  [40] __avbmc_module_MOD_avbmc [49] __indexingfunctions_MOD_get_subindex [62] cbmc_findpathways_
+   [4] __avbmc_module_MOD_avbmc_ebias_rosen_in [118] __interenergy_lj_electro_MOD_detailed_ecalc_inter [63] collapsen_
+   [5] __avbmc_module_MOD_avbmc_ebias_rosen_out [53] __interenergy_lj_electro_MOD_exchange_ecalc_inter [64] createjointarray_
+  [26] __avbmc_module_MOD_ebias_insert_choosetarget [15] __interenergy_lj_electro_MOD_mol_ecalc_inter [65] determineregroworder_
+  [51] __avbmc_module_MOD_ebias_insert_reverseprobtarget [18] __interenergy_lj_electro_MOD_newmol_ecalc_inter [66] determineregrowthtype_
+  [27] __avbmc_module_MOD_ebias_remove_chooseneighbor [19] __interenergy_lj_electro_MOD_quicknei_ecalc_inter [67] gcd_calc_
+  [33] __avbmc_module_MOD_ebias_remove_choosetarget [3] __interenergy_lj_electro_MOD_shift_ecalc_inter [22] generate_unitsphere_
+ [116] __bendingfunctions_MOD_detailed_ecalc_bending [39] __interenergy_lj_electro_MOD_shift_pairlist_correct [58] getnextatom_
+  [41] __bondstretchfunctions_MOD_detailed_ecalc_bondstretch [119] __intraenergy_lj_electro_MOD_detailed_ecalc_intranonbonded [24] grnd_
+  [48] __cbmc_utility_MOD_findatomsfrompath [23] __neighbortable_MOD_create_neietable [68] initialtrajoutput_
+  [30] __cbmc_utility_MOD_rosen_createsubset [25] __neighbortable_MOD_insert_newneietable [69] integratebendangleprob_
+  [32] __cbmc_utility_MOD_rosen_createsubset_reverse [54] __neighbortable_MOD_insert_newneietable_distance [70] n_histoutput_
+  [42] __e_interface_MOD_detailed_energycalc [55] __rosenbluth_functions_MOD_rosen_boltzweight_atom_new [31] nhistadd_
+   [2] __e_interface_MOD_shift_energycalc [8] __rosenbluth_functions_MOD_rosen_boltzweight_molecule_new [71] output_vmd_final_
+  [17] __e_interface_MOD_swapin_energycalc [10] __rosenbluth_functions_MOD_rosen_boltzweight_molecule_old [72] readforcefield_
+  [14] __e_interface_MOD_swapout_energycalc [12] __simplemcmoves_module_MOD_rot_xy [73] readforcefield_lj_q_
+  [37] __e_interface_MOD_update_subenergies [11] __simplemcmoves_module_MOD_rot_xz [74] readinitialconfiguration_
+ [117] __energycriteria_MOD_detailed_energycriteria [13] __simplemcmoves_module_MOD_rot_yz [75] readinitialgasphase_
+  [21] __energycriteria_MOD_neighborupdate [36] __simplemcmoves_module_MOD_rotation [45] readparameters_
+  [43] __energycriteria_MOD_neighborupdate_delete [7] __simplemcmoves_module_MOD_translation [50] recentercoordinates_
+  [16] __energycriteria_MOD_shift_energycriteria [120] __torsionalfunctions_MOD_detailed_ecalc_torsional [76] sgrnd_
+  [44] __energycriteria_MOD_swapin_energycriteria [38] __umbrellafunctions_MOD_getbiasindex [77] single_n_histoutput_
+  [20] __energycriteria_MOD_swapout_energycriteria [35] __umbrellafunctions_MOD_getnewbiasindex [56] trajoutput_
+  [52] __exchange_module_MOD_exchange [123] __units_MOD_findangularunit [57] wham_adjusthist_
+ [113] __forcefieldfunctions_MOD_geomean_mixingfunc [121] __units_MOD_findengunit [28] wham_finalize_
+ [112] __forcefieldfunctions_MOD_harmonic [122] __units_MOD_findlengthunit [78] wham_initialize_
