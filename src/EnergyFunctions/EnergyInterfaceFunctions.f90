@@ -34,8 +34,8 @@
       implicit none
       
       logical , intent(inout) :: rejMove
-      integer :: i,j
       real(dp), intent(inout) :: E_T
+      integer :: i,j
       real(dp) :: PairList(1:maxMol,1:maxMol)
       
       E_T = 0d0
@@ -73,7 +73,7 @@
 !     Inter-molecular components.  This function can be used for for moves that any number of
 !     atoms in a given molecule, but it can not be used if more than one molecule changes
 !     in a given move.  
-      subroutine Shift_EnergyCalc(E_Inter, E_Intra, disp, PairList, dETable, useInter, useIntra, rejMove)
+      subroutine Shift_EnergyCalc(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove, useInter)
       use SimParameters, only: distCriteria, beta, softcutoff, NTotal
       use BendingFunctions      
       use BondStretchFunctions
@@ -88,7 +88,7 @@
       use TorsionalFunctions
       implicit none
       
-      logical, intent(in) :: useInter
+      logical, intent(in), optional :: useInter
       logical, intent(in) :: useIntra(1:4)
       type(Displacement), intent(in) :: disp(:)
       logical, intent(inout) :: rejMove
@@ -96,6 +96,7 @@
       real(dp), intent(out) :: E_Intra, E_Inter
       real(dp), intent(InOut) :: PairList(:)
       
+      logical :: interSwitch
       integer :: nIndx, nDisp
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
@@ -117,9 +118,16 @@
       E_Bend_Diff = 0d0
       E_Tors_Diff = 0d0
 
+      if(present(useInter)) then
+        interSwitch = useInter
+      else
+        interSwitch = .true.
+      endif
+
+
 !     Begin by calculating the intermolecular potential. If any atoms overlap the move will be rejected
 !     immediately.      
-      if(useInter) then
+      if(interSwitch) then
         if(NTotal .gt. 1) then
           dETable = 0d0
           PairList = 0d0
@@ -193,9 +201,10 @@
       
       logical, intent(out) :: rejMove
       logical, intent(in), optional :: useInter
-      logical :: interSwitch
       real(dp), intent(out) :: E_Inter, E_Intra
       real(dp), intent(inout) :: PairList(:), dETable(:)      
+
+      logical :: interSwitch
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
 

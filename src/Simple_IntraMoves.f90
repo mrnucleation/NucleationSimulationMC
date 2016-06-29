@@ -96,7 +96,7 @@
 !     the cluster criteria.
       E_Inter = 0d0
       E_Intra = 0d0
-      call Shift_EnergyCalc(E_Inter, E_Intra, disp, PairList, dETable, .true., useIntra, rejMove)
+      call Shift_EnergyCalc(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove)
       if(rejMove) return
 !     Calculate Acceptance and determine if the move is accepted or not     
       if(E_Inter .le. 0d0) then
@@ -225,7 +225,7 @@
 !     the cluster criteria.
       E_Inter = 0d0
       E_Intra = 0d0
-      call Shift_EnergyCalc(E_Inter, E_Intra, disp, PairList, dETable, .true.,useIntra, rejMove)
+      call Shift_EnergyCalc(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove)
       if(rejMove) return
 
       

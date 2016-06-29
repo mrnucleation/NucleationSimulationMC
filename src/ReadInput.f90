@@ -612,7 +612,7 @@
       use Constants
       use Coords
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Pedone
       use ForceFieldFunctions
       use Units
       use CBMC_Variables
@@ -648,15 +648,15 @@
       read(55,*)
       read(55,*)      
       do i = 1,nAtomTypes
-        read(55,*) labelField, atomData(i)%Symb, atomData(i)%repul, atomData(i)%rEq_tab, &
-                    atomData(i)%alpha_Tab, atomData(i)%delta, atomData(i)%q, atomData(i)%mass
+        read(55,*) labelField, pedoneData(i)%Symb, pedoneData(i)%repul, pedoneData(i)%rEq, &
+                    pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass
         if(echoInput) then
-          write(35,*) labelField, atomData(i)%Symb, atomData(i)%repul, atomData(i)%rEq_tab, &
-                    atomData(i)%alpha_Tab, atomData(i)%delta, atomData(i)%q, atomData(i)%mass
+          write(35,*) labelField, pedoneData(i)%Symb, pedoneData(i)%repul, pedoneData(i)%rEq, &
+                    pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass
         endif
-        atomData(i)%repul = atomData(i)%repul * convEng
-        atomData(i)%delta = atomData(i)%delta * convEng
-        atomData(i)%sig = atomData(i)%sig * convDist   
+        pedoneData(i)%repul = pedoneData(i)%repul * convEng
+        pedoneData(i)%delta = pedoneData(i)%delta * convEng
+        pedoneData(i)%rEq = pedoneData(i)%rEq * convDist   
 !        r_min_sq(i) = r_min(i)*r_min(i)
 
       enddo
@@ -664,7 +664,7 @@
       q_tab = 0d0
       do i = 1,nAtomTypes
         do j = i,nAtomTypes
-          q_tab(i,j) = atomData(i)%q * atomData(j)%q * 1.671d5
+          q_tab(i,j) = pedoneData(i)%q * pedoneData(j)%q * 1.671d5
           q_tab(j,i) = q_tab(i,j)
           if(echoInput) then
              write(35,*) i, j, q_tab(i,j) 
@@ -676,10 +676,10 @@
       alpha_Tab = 0d0
       rEq_tab = 0d0
       do i = 1,nAtomTypes
-        repul_tab(i,1) = atomData(i)%repul
-        alpha_Tab(i,1) = atomData(i)%alpha
-        rEq_tab(i,1) = atomData(i)%rEq
-        D_Tab(i,1) = atomData(i)%delta
+        repul_tab(i,1) = pedoneData(i)%repul
+        alpha_Tab(i,1) = pedoneData(i)%alpha
+        rEq_tab(i,1) = pedoneData(i)%rEq
+        D_Tab(i,1) = pedoneData(i)%delta
 
         repul_tab(1,i) = repul_tab(i,1)
         alpha_Tab(1,i) = alpha_Tab(i,1)
@@ -730,6 +730,12 @@
           enddo
         enddo
       endif
+
+      do i = 1, maxRosenTrial
+        allocate(rosenTrial(i)%x(1:1))      
+        allocate(rosenTrial(i)%y(1:1)) 
+        allocate(rosenTrial(i)%z(1:1))         
+      enddo
 
       end subroutine
 !================================================================ 
@@ -793,12 +799,12 @@
       subroutine Allocate_Common_Variables_Pedone
       use SimParameters
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Pedone
       use AcceptRates
       implicit none
       integer :: AllocateStatus
       
-      ALLOCATE (atomData(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (pedoneData(1:nMolTypes), STAT = AllocateStatus)
 
       ALLOCATE (r_min(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (r_min_sq(1:nMolTypes), STAT = AllocateStatus)

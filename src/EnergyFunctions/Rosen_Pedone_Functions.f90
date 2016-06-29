@@ -3,7 +3,7 @@
 !======================================================================================================
 !      This subrotuine is intended to calculate the Rosenbluth weight for a single trial
 !      in any method which regrows an entire molecule for the given trial.
-      pure subroutine Rosen_BoltzWeight_Molecule_New(nRosen, nType, included,  E_Trial, overlap)
+      pure subroutine Rosen_BoltzWeight_Pedone_New(nRosen, nType, included,  E_Trial, overlap)
       use ForceField
       use ForceFieldPara_LJ_Q
       use Coords
@@ -19,7 +19,7 @@
       integer :: iAtom, jType, jIndx, jMol, jAtom
       integer(kind=2) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
-      real(dp) :: q
+      real(dp) :: q, alpha, delta, repul_C, r_eq
       real(dp) :: LJ, Ele, Morse
       real(dp) :: E_Ele, E_LJ, E_Morse
       real(dp) :: rmin_ij
@@ -29,6 +29,7 @@
       
       E_LJ = 0d0
       E_Ele = 0d0      
+      E_Morse = 0d0
 
       atmType1 = atomArray(nType, iAtom)
       do jType = 1, nMolTypes
@@ -74,7 +75,7 @@
       
       end subroutine 
 !======================================================================================================
-      pure subroutine Rosen_BoltzWeight_Molecule_Old(mol_x, mol_y, mol_z, nType, included,  E_Trial)
+      pure subroutine Rosen_BoltzWeight_Pedone_Old(mol_x, mol_y, mol_z, nType, included,  E_Trial)
       use ForceField
       use ForceFieldPara_LJ_Q
       use Coords
@@ -88,11 +89,11 @@
       real(dp), intent(out) :: E_Trial
       
       integer :: iAtom, jType, jIndx, jMol, jAtom
-      integer(kind=2) :: atmType1,atmType2
-      real(dp) :: rx,ry,rz,r
-      real(dp) :: ep,sig_sq,q
-      real(dp) :: LJ, Ele
-      real(dp) :: E_Ele,E_LJ
+      integer(kind=2) :: atmType1, atmType2
+      real(dp) :: rx, ry, rz, r
+      real(dp) :: q, alpha, delta, repul_C, r_eq
+      real(dp) :: LJ, Ele, Morse
+      real(dp) :: E_Ele, E_LJ, E_Morse
       real(dp) :: rmin_ij
 
       E_Trial = 0d0

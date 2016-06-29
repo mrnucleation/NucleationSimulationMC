@@ -84,7 +84,9 @@ SRC_ENERGY := $(ESUB)/Bending_Functions.f90 \
             $(ESUB)/Torsional_Functions.f90 \
             $(ESUB)/Improper_Functions.f90 \
             $(ESUB)/Rosen_Boltz_Fuctions.f90\
-            $(ESUB)/EnergyInterfaceFunctions.f90
+            $(ESUB)/Rosen_Boltz_Fuctions.f90\
+            $(ESUB)/EnergyInterfaceFunctions.f90\
+            $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
 SRC_MAIN := $(SRC)/BasicMovement.f90\
@@ -280,4 +282,5 @@ $(SRC_SWAP): $(CUR_DIR)/neighbortable.mod
 $(CUR_DIR)/avbmc_module.mod: $(SRC_SWAP) $(SRC)/ETableFunctions.f90
 $(CUR_DIR)/simplemcmoves_module.mod: $(SRC)/BasicMovement.f90
 $(CUR_DIR)/movetypemodule.mod: $(SRC)/MCMove_Module.f90 $(CUR_DIR)/avbmc_module.mod $(CUR_DIR)/simplemcmoves_module.mod $(CUR_DIR)/cbmc_module.mod
+$(CUR_DIR)/energypointers.mod: $(ESUB)/EnergyPointers.f90 $(ESUB)/EnergyInterfaceFunctions.f90 $(CUR_DIR)/e_interface.mod
 		

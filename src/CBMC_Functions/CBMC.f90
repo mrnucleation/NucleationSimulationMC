@@ -179,7 +179,7 @@
 
       E_Inter = 0d0
       E_Intra = 0d0
-      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nDisp), PairList, dETable, .true., useIntra, rejMove)
+      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nDisp), PairList, dETable, useIntra, rejMove)
       if(rejMove) then
         return      
       endif
