@@ -46,11 +46,37 @@
          real(dp), intent(inout) :: dETable(:)   
        end subroutine
      end interface 
+
+     interface 
+       subroutine RosenMolNewInterface(nRosen, nType, included,  E_Trial, overlap)
+         use VarPrecision
+         implicit none
+         logical, intent(in) :: included(:)
+         integer, intent(in) :: nType, nRosen      
+     
+         logical, intent(out) :: overlap
+         real(dp), intent(out) :: E_Trial 
+       end subroutine
+     end interface 
+
+     interface 
+       subroutine RosenMolOldInterface(mol_x, mol_y, mol_z, nType, included,  E_Trial)
+         use VarPrecision
+         implicit none
+         logical, intent(in) :: included(:)
+         integer, intent(in) :: nType
+         real(dp), intent(in) :: mol_x(:), mol_y(:), mol_z(:)
+         real(dp), intent(out) :: E_Trial
+       end subroutine
+     end interface 
      
      procedure(DetailedInterface), pointer :: Detailed_ECalc => NULL()
      procedure(ShiftInterface), pointer  :: Shift_ECalc => NULL()
      procedure(SwapInInterface), pointer :: SwapIn_ECalc => NULL()
      procedure(SwapOutInterface), pointer :: SwapOut_ECalc => NULL()
+
+     procedure(RosenMolNewInterface), pointer :: Rosen_Mol_New => NULL()
+     procedure(RosenMolOldInterface), pointer :: Rosen_Mol_Old => NULL()
 
      end module
 !================================================================================================================
