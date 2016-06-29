@@ -116,6 +116,8 @@
       read(54,*)
       read(54,*) 
 
+       ! This block allows the user to define which types of Monte Carlo moves will be used
+       ! during the simulation.
       norm = 0d0
       read(54,*) labelField, nMoveTypes
       if(nMoveTypes .le. 0) then
