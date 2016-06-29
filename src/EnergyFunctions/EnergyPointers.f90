@@ -47,7 +47,6 @@
        end subroutine
      end interface 
      
-     logical :: blah
      procedure(DetailedInterface), pointer :: Detailed_ECalc => NULL()
      procedure(ShiftInterface), pointer  :: Shift_ECalc => NULL()
      procedure(SwapInInterface), pointer :: SwapIn_ECalc => NULL()

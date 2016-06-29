@@ -145,7 +145,7 @@
         endif
 
 !        Using the data collected from the intermolecular function, check to see that the new position
-!        satisfies the distance criteria.      
+!        satisfies the cluster criteria.      
         nIndx = MolArray( disp(1)%molType )%mol( disp(1)%molIndx )%indx
         if(distCriteria) then
           if(any(disp(1:nDisp)%atmIndx .eq. 1)) then
