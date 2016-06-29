@@ -136,6 +136,7 @@
       sizeDisp = size(disp)
       E_LJ = 0d0
       E_Ele = 0d0      
+      E_Morse = 0d0
       E_Trial = 0d0
       PairList = 0d0      
 
@@ -147,7 +148,7 @@
       
 !      !This section calculates the Intermolecular interaction between the atoms that
 !      !have been modified in this trial move with the atoms that have remained stationary
-       do iDisp=1,sizeDisp
+       do iDisp = 1, sizeDisp
          do jType = 1, nMolTypes
            atmType2 = atomArray(jType, 1)
            r_eq = rEq_tab(atmType1, atmType2)
@@ -156,7 +157,7 @@
            delta = D_Tab(atmType1, atmType2)
            repul_C = repul_tab(atmType1, atmType2)          
            rmin_ij = r_min_tab(atmType1, atmType2)  
-           do jMol=1,NPART(jType)
+           do jMol = 1, NPART(jType)
              if(iType .eq. jType) then
                if(iMol .eq. jMol) then
                  cycle
@@ -184,6 +185,13 @@
                E_LJ = E_LJ + LJ
              endif
 
+             r_new = dsqrt(r_new)
+             Ele = q/r_new
+             dETable(iIndx) = dETable(iIndx) + Ele
+             dETable(jIndx) = dETable(jIndx) + Ele
+             PairList(jIndx) = PairList(jIndx) + Ele
+             E_Ele = E_Ele + Ele
+
              if(delta .ne. 0d0) then
                Morse = exp(-alpha*(r_new-r_eq))
                Morse = delta*(Morse*Morse - 1d0)
@@ -192,15 +200,6 @@
                PairList(jIndx) = PairList(jIndx) + Morse
                E_Morse = E_Morse + Morse
              endif
-
-             r_new = dsqrt(r_new)
-             Ele = q/r_new
-             dETable(iIndx) = dETable(iIndx) + Ele
-             dETable(jIndx) = dETable(jIndx) + Ele
-             PairList(jIndx) = PairList(jIndx) + Ele
-             E_Ele = E_Ele + Ele
-
-
    
 !            Distance for the Old position
              rx = disp(iDisp)%x_old - MolArray(jType)%mol(jMol)%x(jAtom)
@@ -216,6 +215,12 @@
                E_LJ = E_LJ - LJ
              endif
 
+             r_old= dsqrt(r_old)
+             Ele = q/r_old
+             dETable(iIndx) = dETable(iIndx) - Ele
+             dETable(jIndx) = dETable(jIndx) - Ele
+             E_Ele = E_Ele - Ele
+
              if(delta .ne. 0d0) then
                Morse = exp(-alpha*(r_old-r_eq))
                Morse = delta*(Morse*Morse - 1d0)
@@ -224,11 +229,6 @@
                E_Morse = E_Morse - Morse
              endif
 
-             r_old= dsqrt(r_old)
-             Ele = q/r_old
-             dETable(iIndx) = dETable(iIndx) - Ele
-             dETable(jIndx) = dETable(jIndx) - Ele
-             E_Ele = E_Ele - Ele
            enddo
          enddo
        enddo
@@ -255,8 +255,8 @@
       integer(kind=2)  :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
-      real(dp) :: LJ, Ele
-      real(dp) :: E_Ele,E_LJ
+      real(dp) :: LJ, Ele, Morse
+      real(dp) :: E_Ele, E_LJ, E_Morse
 
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp
@@ -265,18 +265,16 @@
       integer :: sizeList
       real(dp) :: rx,ry,rz
       real(dp) :: r
-      real(dp) :: ep,sig_sq,q
+      real(dp) :: q
       real(dp) :: LJ, Ele
-      real(dp) :: E_Ele,E_LJ
+      real(dp) :: E_Ele, E_LJ, E_Morse
       real(dp) :: rmin_ij    
 
-      sizeDisp = size(disp)
       E_LJ = 0d0
       E_Ele = 0d0      
+      E_Morse = 0d0
       E_Trial = 0d0
       dETable = 0d0
-
-
       
        !This section calculates the Intermolecular interaction between the atoms that
        !have been modified in this trial move with the atoms that have remained stationary
@@ -289,7 +287,7 @@
         delta = D_Tab(atmType1, atmType2)
         repul_C = repul_tab(atmType1, atmType2)          
         rmin_ij = r_min_tab(atmType1, atmType2)  
-        do jMol=1,NPART(jType)
+        do jMol = 1, NPART(jType)
           if(iType .eq. jType) then
             if(iMol .eq. jMol) then
               cycle
@@ -301,24 +299,29 @@
           r = rx*rx + ry*ry + rz*rz              
 
           if(repul_C .ne. 0d0) then
-            LJ = (1d0/r_old)**6
+            LJ = (1d0/r_new)**6
             LJ = repul_C * LJ
             dETable(iIndx) = dETable(iIndx) + LJ
             dETable(jIndx) = dETable(jIndx) + LJ
+            PairList(jIndx) = PairList(jIndx) + LJ
             E_LJ = E_LJ + LJ
           endif
-          if(delta .ne. 0d0) then
-            Morse = exp(-alpha*(r_old-r_eq))
-            Morse = delta*(Morse*Morse - 1d0)
-            dETable(iIndx) = dETable(iIndx) + Morse
-            dETable(jIndx) = dETable(jIndx) + Morse
-            E_Morse = E_Morse + Morse
-          endif
+
           r = dsqrt(r)
           Ele = q/r
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
+          PairList(jIndx) = PairList(jIndx) + Ele
           E_Ele = E_Ele + Ele
+
+          if(delta .ne. 0d0) then
+            Morse = exp(-alpha*(r - r_eq))
+            Morse = delta*(Morse*Morse - 1d0)
+            dETable(iIndx) = dETable(iIndx) + Morse
+            dETable(jIndx) = dETable(jIndx) + Morse
+            PairList(jIndx) = PairList(jIndx) + Morse
+            E_Morse = E_Morse + Morse
+          endif
         enddo
       enddo
      
@@ -340,11 +343,7 @@
       
       integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom
       integer(kind=2) :: atmType1,atmType2
-      
-      integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp
-      integer(kind=2) :: atmType1,atmType2,iIndx,jIndx
 
-      integer :: sizeDisp 
       real(dp) :: rx,ry,rz
       real(dp) :: r_new, r_old
       real(dp) :: r_min1_sq      
@@ -353,26 +352,22 @@
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij    
 
-      sizeDisp = size(disp)
       E_LJ = 0d0
       E_Ele = 0d0      
       E_Trial = 0d0
       PairList = 0d0      
-
       dETable = 0d0
-      iType = disp(1)%molType
-      iMol = disp(1)%molIndx
-      iIndx = MolArray(iType)%mol(iMol)%indx
-      atmType1 = atomArray(iType, 1)
+
       iIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
-  
       atmType1 = atomArray(newMol%molType, 1)
       do jType = 1, nMolTypes
         atmType2 = atomArray(jType, 1)
-        ep = ep_tab(atmType2,atmType1)
-        q = q_tab(atmType2,atmType1)
-        sig_sq = sig_tab(atmType2,atmType1)
-        rmin_ij = r_min_tab(atmType2,atmType1)
+        r_eq = rEq_tab(atmType1, atmType2)
+        q = q_tab(atmType1, atmType2)
+        alpha = alpha_Tab(atmType1, atmType2)
+        delta = D_Tab(atmType1, atmType2)
+        repul_C = repul_tab(atmType1, atmType2)          
+        rmin_ij = r_min_tab(atmType1, atmType2)  
         do jMol = 1,NPART(jType)
           rx = newMol%x(1) - MolArray(jType)%mol(jMol)%x(1)
           ry = newMol%y(1) - MolArray(jType)%mol(jMol)%y(1)
@@ -381,33 +376,31 @@
           if(r .lt. rmin_ij) then
             rejMove = .true.
             return
-          endif
-          jIndx = molArray(jType)%mol(jMol)%indx  
-          if(distCriteria) then              
-            PairList(jIndx) = r
-          endif              
-          LJ = 0d0
-          Ele = 0d0
-          if(ep .ne. 0d0) then
-            LJ = (sig_sq/r)
-            LJ = LJ * LJ * LJ              
-            LJ = ep * LJ * (LJ-1d0)                
-            E_LJ = E_LJ + LJ
-            if(.not. distCriteria) then                
-              PairList(jIndx) = PairList(jIndx) + LJ
-            endif
-            dETable(jIndx) = dETable(jIndx) + LJ
+          endif           
+
+          if(repul_C .ne. 0d0) then
+            LJ = ( 1d0/r )**6
+            LJ = repul_C * LJ
             dETable(iIndx) = dETable(iIndx) + LJ
+            dETable(jIndx) = dETable(jIndx) + LJ
+            PairList(jIndx) = PairList(jIndx) + LJ
+            E_LJ = E_LJ + LJ
           endif
-          if(q .ne. 0d0) then
-            r = sqrt(r)
-            Ele = q / r
-            E_Ele = E_Ele + Ele
-            if(.not. distCriteria) then                
-              PairList(jIndx) = PairList(jIndx) + Ele
-            endif
-            dETable(jIndx) = dETable(jIndx) + Ele
-            dETable(iIndx) = dETable(iIndx) + Ele
+
+          r = dsqrt(r)
+          Ele = q/r
+          dETable(iIndx) = dETable(iIndx) + Ele
+          dETable(jIndx) = dETable(jIndx) + Ele
+          PairList(jIndx) = PairList(jIndx) + Ele
+          E_Ele = E_Ele + Ele
+
+          if(delta .ne. 0d0) then
+            Morse = exp(-alpha*(r-r_eq))
+            Morse = delta*(Morse*Morse - 1d0)
+            dETable(iIndx) = dETable(iIndx) + Morse
+            dETable(jIndx) = dETable(jIndx) + Morse
+            PairList(jIndx) = PairList(jIndx) + Morse
+            E_Morse = E_Morse + Morse
           endif
         enddo
       enddo
