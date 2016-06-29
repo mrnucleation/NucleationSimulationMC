@@ -655,7 +655,7 @@
                     atomData(i)%alpha_Tab, atomData(i)%delta, atomData(i)%q, atomData(i)%mass
         endif
         atomData(i)%repul = atomData(i)%repul * convEng
-        atomData(i)%alpha_Tab = atomData(i)%alpha_Tab * convEng
+        atomData(i)%delta = atomData(i)%delta * convEng
         atomData(i)%sig = atomData(i)%sig * convDist   
 !        r_min_sq(i) = r_min(i)*r_min(i)
 
