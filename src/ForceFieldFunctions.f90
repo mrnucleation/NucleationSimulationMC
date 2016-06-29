@@ -120,7 +120,6 @@
       end module
 !==============================================================
       module ForceFieldPara_Pedone
-      use ForceFieldVariableType
       use VarPrecision
 
       type AtomDefPedone
@@ -128,7 +127,7 @@
         real(dp) :: repul, rEq, q, alpha, delta, mass
       end type
 
-      type(AtomDef), allocatable :: atomData(:)
+      type(AtomDefPedone), allocatable :: pedoneData(:)
       real(dp), allocatable :: repul_tab(:,:), rEq_tab(:,:)
       real(dp), allocatable :: q_tab(:,:), alpha_Tab(:,:), D_Tab(:,:)
       

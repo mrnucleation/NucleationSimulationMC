@@ -493,7 +493,7 @@
 !======================================================================================      
       pure subroutine Exchange_ECalc_Inter(E_Trial, nType, nMol, PairList, dETable, rejMove)
       use ForceField
-      use ForceFieldPara_Pedone
+      use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
       implicit none
