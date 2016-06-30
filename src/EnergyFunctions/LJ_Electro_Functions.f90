@@ -641,7 +641,7 @@
       
       end subroutine    
 !======================================================================================      
-      subroutine QuickNei_ECalc_Inter(jType, jMol, rejMove)
+      subroutine QuickNei_ECalc_Inter_LJ_Q(jType, jMol, rejMove)
       use ForceField
       use ForceFieldPara_LJ_Q
       use Coords

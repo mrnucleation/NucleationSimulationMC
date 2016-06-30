@@ -277,7 +277,7 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+!      use Rosenbluth_Functions
       use CBMC_Variables
       implicit none
       logical, intent(in) :: overlap(:)

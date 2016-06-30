@@ -71,6 +71,9 @@
       module ForceField
       use ForceFieldVariableType
       use VarPrecision
+ 
+      character(len=20) :: ForceFieldName
+
       integer :: nAtomTypes
       integer :: nBondTypes     
       integer :: nAngleTypes

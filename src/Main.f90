@@ -14,7 +14,8 @@
       use CBMC_Variables
       use Coords
       use Constants
-      use E_Interface
+!      use E_Interface
+      use EnergyPointers, only: Detailed_ECalc
       use EnergyTables
       use Forcefield
       use Histogram
@@ -62,15 +63,15 @@
       call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierror)      
 !      This section of code generates the file number for each MPI thread's files
       if (myid .lt. 10) then
-          format_string = "(A,I1,A)"
+        format_string = "(A,I1,A)"
       elseif(myid .lt. 100) then
-          format_string = "(A,I2,A)"
+        format_string = "(A,I2,A)"
       elseif(myid .lt. 1000) then
-          format_string = "(A,I3,A)"
+        format_string = "(A,I3,A)"
       elseif(myid .lt. 1000) then
-          format_string = "(A,I4,A)"          
+        format_string = "(A,I4,A)"          
       else
-          format_string = "(A,I5,A)"      
+        format_string = "(A,I5,A)"      
       endif      
 !     Assign screen output for each thread to fort.(100+myid)      
       nout = 100+myid
@@ -173,9 +174,12 @@
 
       call CBMC_CreateTopology     
 
+
 !      Perform the Intial Energy Calculations and perform the intial Cluster Criteria Check to ensure
 !      the starting configuration is valid. 
-      call Detailed_EnergyCalc(E_T,errRtn)
+!      call Detailed_EnergyCalc(E_T,errRtn)
+      call Detailed_ECalc(E_T,errRtn)
+
       if(errRtn) then
         stop      
       endif
@@ -357,7 +361,8 @@
 !      Calculate the final energy using the detailed energy function
 !      and compare it to the culmative energy to check for possible errors during the simulation. 
 !      If these two values do not match there is an error in the energy calculation routines. 
-      call Detailed_EnergyCalc(E_Final,errRtn)      
+!      call Detailed_EnergyCalc(E_Final,errRtn)      
+      call Detailed_ECalc(E_Final,errRtn)
       
 !      Output final trajectory      
       call TrajOutput(indx)
@@ -405,8 +410,12 @@
           write(nout,"(1x,A,1x,A,A,F8.2)") "Acceptance Rate", trim(adjustl(moveName(i))), ": ", 1d2*movesAccepted(i)/movesAttempt(i)
         endif
       enddo
-      write(nout,*) "Acceptance Translate (Mol Type):", (1d2*acptTrans(j)/atmpTrans(j),j=1,nMolTypes) 
-      write(nout,*) "Acceptance Rotate (Mol Type):", (1d2*acptRot(j)/atmpRot(j),j=1,nMolTypes) 
+      if(any(atmpTrans .ne. 0d0)) then
+        write(nout,*) "Acceptance Translate (Mol Type):", (1d2*acptTrans(j)/atmpTrans(j),j=1,nMolTypes) 
+      endif
+      if(any(atmpRot .ne. 0d0)) then
+        write(nout,*) "Acceptance Rotate (Mol Type):", (1d2*acptRot(j)/atmpRot(j),j=1,nMolTypes) 
+      endif
       if(distGen_atmp .ne. 0d0) then
         write(nout,*) "Distance Generation Success Rate:", 1d2*distGen_accpt/distGen_atmp
       endif

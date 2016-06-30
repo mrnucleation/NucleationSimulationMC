@@ -27,7 +27,7 @@
       implicit none
       real(dp), intent(inOut) :: E_T
       real(dp), intent(inOut) :: PairList(:,:)
-      integer :: iType,jType,,jMol,iAtom,jAtom
+      integer :: iType,jType,iMol, jMol
       integer(kind=2) :: atmType1,atmType2      
       integer :: iIndx, jIndx, jMolMin
       real(dp) :: rx,ry,rz,r
@@ -60,37 +60,43 @@
            else
              jMolMin = 1        
            endif
+           iIndx = MolArray(iType)%mol(iMol)%indx
            do jMol = jMolMin,NPART(jType)
-       
-             iIndx = MolArray(iType)%mol(iMol)%indx
              jIndx = MolArray(jType)%mol(jMol)%indx  
 
-             rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-             ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-             rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom) 
+             rx = MolArray(iType)%mol(iMol)%x(1) - MolArray(jType)%mol(jMol)%x(1)
+             ry = MolArray(iType)%mol(iMol)%y(1) - MolArray(jType)%mol(jMol)%y(1)
+             rz = MolArray(iType)%mol(iMol)%z(1) - MolArray(jType)%mol(jMol)%z(1) 
              r = rx**2 + ry**2 + rz**2
              if(r .lt. rmin_ij) then
                stop "ERROR: Overlaping atoms found in the configuration!"
              endif 
+             if(distCriteria) then
+               PairList(iIndx, jIndx) = r
+               PairList(jIndx, iIndx) = PairList(iIndx,jIndx)                    
+             endif
              if(repul_C .ne. 0d0) then
                LJ = (1d0/r)**6
                LJ = repul_C * LJ
                E_LJ = E_LJ + LJ
              endif
 
-             if(delta .ne. 0d0) then
-               Morse = delta*(exp(-alpha*(r-r_eq))**2 - 1d0)
-               E_Morse = E_Morse + Morse
-             endif
-
              r = dsqrt(r)
              Ele = q/r
              E_Ele = E_Ele + Ele
-             
-             PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ + Morse
-             PairList(jIndx, iIndx) = PairList(iIndx, jIndx)
+
+             if(delta .ne. 0d0) then
+               Morse = 1d0 - exp(-alpha*(r-r_eq))
+               Morse = delta*(Morse*Morse - 1d0)
+               E_Morse = E_Morse + Morse
+             endif
+             if(.not. distCriteria) then            
+               PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ + Morse
+               PairList(jIndx, iIndx) = PairList(iIndx, jIndx)
+             endif
              ETable(iIndx) = ETable(iIndx) + Ele + LJ + Morse
              ETable(jIndx) = ETable(jIndx) + Ele + LJ + Morse
+            enddo
           enddo
         enddo
       enddo
@@ -122,15 +128,16 @@
       logical, intent(out) :: rejMove
 
       
-      integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp
+      integer :: iType,jType,iMol,jMol,iDisp
       integer(kind=2) :: atmType1,atmType2,iIndx,jIndx
       integer :: sizeDisp 
       real(dp) :: rx,ry,rz
       real(dp) :: r_new, r_old
       real(dp) :: r_min1_sq      
-      real(dp) :: ep,sig_sq,q
-      real(dp) :: LJ, Ele
-      real(dp) :: E_Ele,E_LJ
+      real(dp) :: r_eq, repul_C, q
+      real(dp) :: alpha, delta
+      real(dp) :: Morse, LJ, Ele
+      real(dp) :: E_Ele,E_LJ, E_Morse
       real(dp) :: rmin_ij    
 
       sizeDisp = size(disp)
@@ -165,23 +172,30 @@
              endif  
              
 !            Distance for the New position
-             rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
-             ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
-             rz = disp(iDisp)%z_new - MolArray(jType)%mol(jMol)%z(jAtom)
+             rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(1)
+             ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(1)
+             rz = disp(iDisp)%z_new - MolArray(jType)%mol(jMol)%z(1)
              r_new = rx*rx + ry*ry + rz*rz
 
 !            If r_new is less than r_min reject the move.              
              if(r_new .lt. rmin_ij) then
                rejMove = .true.
                return
-             endif           
+             endif        
+
+             jIndx = MolArray(jType)%mol(jMol)%indx   
+             if(distCriteria) then   
+               PairList(jIndx) = r_new
+             endif  
 
              if(repul_C .ne. 0d0) then
                LJ = (1d0/r_new)**6
                LJ = repul_C * LJ
                dETable(iIndx) = dETable(iIndx) + LJ
                dETable(jIndx) = dETable(jIndx) + LJ
-               PairList(jIndx) = PairList(jIndx) + LJ
+               if(.not. distCriteria) then   
+                 PairList(jIndx) = PairList(jIndx) + LJ
+               endif
                E_LJ = E_LJ + LJ
              endif
 
@@ -189,22 +203,26 @@
              Ele = q/r_new
              dETable(iIndx) = dETable(iIndx) + Ele
              dETable(jIndx) = dETable(jIndx) + Ele
-             PairList(jIndx) = PairList(jIndx) + Ele
+             if(.not. distCriteria) then   
+               PairList(jIndx) = PairList(jIndx) + Ele
+             endif
              E_Ele = E_Ele + Ele
 
              if(delta .ne. 0d0) then
-               Morse = exp(-alpha*(r_new-r_eq))
+               Morse = 1d0-exp(-alpha*(r_new-r_eq))
                Morse = delta*(Morse*Morse - 1d0)
                dETable(iIndx) = dETable(iIndx) + Morse
                dETable(jIndx) = dETable(jIndx) + Morse
-               PairList(jIndx) = PairList(jIndx) + Morse
+               if(.not. distCriteria) then   
+                 PairList(jIndx) = PairList(jIndx) + Morse
+               endif
                E_Morse = E_Morse + Morse
              endif
    
 !            Distance for the Old position
-             rx = disp(iDisp)%x_old - MolArray(jType)%mol(jMol)%x(jAtom)
-             ry = disp(iDisp)%y_old - MolArray(jType)%mol(jMol)%y(jAtom)
-             rz = disp(iDisp)%z_old - MolArray(jType)%mol(jMol)%z(jAtom)
+             rx = disp(iDisp)%x_old - MolArray(jType)%mol(jMol)%x(1)
+             ry = disp(iDisp)%y_old - MolArray(jType)%mol(jMol)%y(1)
+             rz = disp(iDisp)%z_old - MolArray(jType)%mol(jMol)%z(1)
              r_old = rx*rx + ry*ry + rz*rz              
 
              if(repul_C .ne. 0d0) then
@@ -214,7 +232,7 @@
                dETable(jIndx) = dETable(jIndx) - LJ
                E_LJ = E_LJ - LJ
              endif
-
+ 
              r_old= dsqrt(r_old)
              Ele = q/r_old
              dETable(iIndx) = dETable(iIndx) - Ele
@@ -222,14 +240,12 @@
              E_Ele = E_Ele - Ele
 
              if(delta .ne. 0d0) then
-               Morse = exp(-alpha*(r_old-r_eq))
+               Morse = 1d0-exp(-alpha*(r_old-r_eq))
                Morse = delta*(Morse*Morse - 1d0)
                dETable(iIndx) = dETable(iIndx) - Morse
                dETable(jIndx) = dETable(jIndx) - Morse
                E_Morse = E_Morse - Morse
              endif
-
-           enddo
          enddo
        enddo
      enddo
@@ -243,7 +259,7 @@
 !======================================================================================      
       pure subroutine Mol_ECalc_Inter(iType, iMol, dETable, E_Trial)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Pedone
       use Coords
       use SimParameters
       implicit none
@@ -251,24 +267,16 @@
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: dETable(:)
       
-      integer :: iAtom,iIndx,jType,jIndx,jMol,jAtom
+      integer :: iIndx,jType,jIndx,jMol
       integer(kind=2)  :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
-      real(dp) :: ep,sig_sq,q
+      real(dp) :: r_eq, repul_C, q
+      real(dp) :: alpha, delta
       real(dp) :: LJ, Ele, Morse
       real(dp) :: E_Ele, E_LJ, E_Morse
 
       
-      integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp
-      integer :: iAtom
-      integer(kind=2) :: atmType1,atmType2,iIndx,jIndx
-      integer :: sizeList
-      real(dp) :: rx,ry,rz
-      real(dp) :: r
-      real(dp) :: q
-      real(dp) :: LJ, Ele
-      real(dp) :: E_Ele, E_LJ, E_Morse
-      real(dp) :: rmin_ij    
+
 
       E_LJ = 0d0
       E_Ele = 0d0      
@@ -279,6 +287,7 @@
        !This section calculates the Intermolecular interaction between the atoms that
        !have been modified in this trial move with the atoms that have remained stationary
       atmType1 = atomArray(iType, 1)
+      iIndx = MolArray(iType) % mol(iMol) % indx
       do jType = 1, nMolTypes
         atmType2 = atomArray(jType, 1)
         r_eq = rEq_tab(atmType1, atmType2)
@@ -286,7 +295,6 @@
         alpha = alpha_Tab(atmType1, atmType2)
         delta = D_Tab(atmType1, atmType2)
         repul_C = repul_tab(atmType1, atmType2)          
-        rmin_ij = r_min_tab(atmType1, atmType2)  
         do jMol = 1, NPART(jType)
           if(iType .eq. jType) then
             if(iMol .eq. jMol) then
@@ -298,12 +306,12 @@
           rz = MolArray(iType)%mol(iMol)%z(1) - MolArray(jType)%mol(jMol)%z(1)
           r = rx*rx + ry*ry + rz*rz              
 
+          jIndx = MolArray(jType)%mol(jMol)%indx  
           if(repul_C .ne. 0d0) then
-            LJ = (1d0/r_new)**6
+            LJ = (1d0/r)**6
             LJ = repul_C * LJ
             dETable(iIndx) = dETable(iIndx) + LJ
             dETable(jIndx) = dETable(jIndx) + LJ
-            PairList(jIndx) = PairList(jIndx) + LJ
             E_LJ = E_LJ + LJ
           endif
 
@@ -311,15 +319,13 @@
           Ele = q/r
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
-          PairList(jIndx) = PairList(jIndx) + Ele
           E_Ele = E_Ele + Ele
 
           if(delta .ne. 0d0) then
-            Morse = exp(-alpha*(r - r_eq))
+            Morse = 1d0-exp(-alpha*(r - r_eq))
             Morse = delta*(Morse*Morse - 1d0)
             dETable(iIndx) = dETable(iIndx) + Morse
             dETable(jIndx) = dETable(jIndx) + Morse
-            PairList(jIndx) = PairList(jIndx) + Morse
             E_Morse = E_Morse + Morse
           endif
         enddo
@@ -333,7 +339,7 @@
 !======================================================================================      
       pure subroutine NewMol_ECalc_Inter(E_Trial, PairList, dETable, rejMove)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Pedone
       use Coords
       use SimParameters
       implicit none
@@ -345,15 +351,17 @@
       integer(kind=2) :: atmType1,atmType2
 
       real(dp) :: rx,ry,rz
-      real(dp) :: r_new, r_old
+      real(dp) :: r
       real(dp) :: r_min1_sq      
-      real(dp) :: ep,sig_sq,q
-      real(dp) :: LJ, Ele
-      real(dp) :: E_Ele,E_LJ
+      real(dp) :: r_eq, repul_C, q
+      real(dp) :: alpha, delta
+      real(dp) :: LJ, Ele, Morse
+      real(dp) :: E_Ele,E_LJ, E_Morse
       real(dp) :: rmin_ij    
 
       E_LJ = 0d0
       E_Ele = 0d0      
+      E_Morse = 0d0      
       E_Trial = 0d0
       PairList = 0d0      
       dETable = 0d0
@@ -376,14 +384,19 @@
           if(r .lt. rmin_ij) then
             rejMove = .true.
             return
-          endif           
-
+          endif   
+          if(distCriteria) then          
+            PairList(jIndx) = r
+          endif
+          jIndx = molArray(jType)%mol(jMol)%indx
           if(repul_C .ne. 0d0) then
             LJ = ( 1d0/r )**6
             LJ = repul_C * LJ
             dETable(iIndx) = dETable(iIndx) + LJ
             dETable(jIndx) = dETable(jIndx) + LJ
-            PairList(jIndx) = PairList(jIndx) + LJ
+            if(.not. distCriteria) then  
+              PairList(jIndx) = PairList(jIndx) + LJ
+            endif
             E_LJ = E_LJ + LJ
           endif
 
@@ -391,15 +404,19 @@
           Ele = q/r
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
-          PairList(jIndx) = PairList(jIndx) + Ele
+          if(.not. distCriteria) then  
+            PairList(jIndx) = PairList(jIndx) + Ele
+          endif
           E_Ele = E_Ele + Ele
 
           if(delta .ne. 0d0) then
-            Morse = exp(-alpha*(r-r_eq))
+            Morse = 1d0-exp(-alpha*(r-r_eq))
             Morse = delta*(Morse*Morse - 1d0)
             dETable(iIndx) = dETable(iIndx) + Morse
             dETable(jIndx) = dETable(jIndx) + Morse
-            PairList(jIndx) = PairList(jIndx) + Morse
+            if(.not. distCriteria) then  
+              PairList(jIndx) = PairList(jIndx) + Morse
+            endif
             E_Morse = E_Morse + Morse
           endif
         enddo
@@ -410,5 +427,73 @@
       
       
       end subroutine    
+!======================================================================================      
+      subroutine QuickNei_ECalc_Inter_Pedone(jType, jMol, rejMove)
+      use ForceField
+      use ForceFieldPara_Pedone
+      use Coords
+      use SimParameters
+      implicit none
+      integer, intent(in) :: jType, jMol     
+      logical, intent(out) :: rejMove
+      
+      integer :: iAtom,jAtom
+      integer(kind=2)  :: atmType1,atmType2
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: r_eq, repul_C, q
+      real(dp) :: alpha, delta
+      real(dp) :: LJ, Ele, Morse
+      real(dp) :: E_Trial, E_Ele, E_LJ, E_Morse
+      real(dp) :: rmin_ij
+
+      E_LJ = 0d0
+      E_Ele = 0d0      
+      E_Morse = 0d0
+      E_Trial = 0d0
+      rejMove = .false.
+    
+      atmType1 = atomArray(newMol%molType, 1)
+      atmType2 = atomArray(jType, 1)
+      r_eq = rEq_tab(atmType1, atmType2)
+      q = q_tab(atmType1, atmType2)
+      alpha = alpha_Tab(atmType1, atmType2)
+      delta = D_Tab(atmType1, atmType2)
+      repul_C = repul_tab(atmType1, atmType2)          
+      rmin_ij = r_min_tab(atmType1, atmType2) 
+
+      rx = newMol%x(1) - MolArray(jType)%mol(jMol)%x(1)
+      ry = newMol%y(1) - MolArray(jType)%mol(jMol)%y(1)
+      rz = newMol%z(1) - MolArray(jType)%mol(jMol)%z(1)
+
+      r = rx*rx + ry*ry + rz*rz
+      if(r .lt. rmin_ij) then
+         rejMove = .true.
+         return
+      endif          
+
+      if(repul_C .ne. 0d0) then
+        LJ = ( 1d0/r )**6
+        LJ = repul_C * LJ
+        E_LJ = E_LJ + LJ
+      endif
+
+      r = dsqrt(r)
+      Ele = q/r
+      E_Ele = E_Ele + Ele
+
+      if(delta .ne. 0d0) then
+        Morse = 1d0-exp(-alpha*(r-r_eq))
+        Morse = delta*(Morse*Morse - 1d0)
+        E_Morse = E_Morse + Morse
+      endif
+     
+      E_Trial = E_LJ + E_Ele + E_Morse
+
+      if( E_Trial .gt. Eng_Critr(newMol%molType,jType) ) then
+        rejMove = .true.
+      endif
+!      write(2,*) "E:",E_Trial , rejMove
+      
+      end subroutine
 !======================================================================================
       end module

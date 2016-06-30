@@ -27,9 +27,11 @@
 #-----------------------------------------------------
 #             Monte Carlo Move Type Definition
 #-----------------------------------------------------
-     Number_of_Move_Types:=  2
-     translation 1
-     rotation 1
+     Number_of_Move_Types:=  4
+     cbmc 0.5
+     avbmc 1 
+     translation 1 
+     rotation 1 
 #-----------------------------------------------------
 #             Weighted Histogram Analysis Variables
 #-----------------------------------------------------
