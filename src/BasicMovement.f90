@@ -7,7 +7,8 @@
       use IndexingFunctions
       use Coords
       use Forcefield
-      use E_Interface
+!      use E_Interface
+      use EnergyPointers, only: Shift_ECalc, Update_SubEnergies 
       use EnergyCriteria
       use DistanceCriteria      
       use EnergyTables
@@ -68,7 +69,8 @@
 !     the cluster criteria.
       E_Inter = 0d0
       E_Intra = 0d0
-      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:1), PairList, dETable, useIntra, rejMove)
+!      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:1), PairList, dETable, useIntra, rejMove)
+      call Shift_ECalc(E_Inter, E_Intra, disp(1:1), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
       E_Diff = E_Inter + E_Intra
 
@@ -116,7 +118,8 @@
       use IndexingFunctions
       use Coords
       use Forcefield
-      use E_Interface
+!      use E_Interface
+      use EnergyPointers, only: Shift_ECalc, Update_SubEnergies
       use EnergyCriteria
       use DistanceCriteria      
       use EnergyTables
@@ -170,7 +173,8 @@
 !     the cluster criteria.
       E_Inter = 0d0
       E_Intra = 0d0
-      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+      !call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+      call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
       
 !     Calculate Acceptance and determine if the move is accepted or not     
@@ -244,7 +248,8 @@
       use IndexingFunctions
       use Coords
       use Forcefield
-      use E_Interface
+!      use E_Interface
+      use EnergyPointers, only: Shift_ECalc, Update_SubEnergies 
       use EnergyCriteria
       use DistanceCriteria      
       use EnergyTables
@@ -316,7 +321,8 @@
       E_Inter = 0d0
       E_Intra = 0d0
       rejMove = .false.
-      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+!      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+      call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
        
 !      Calculate Acceptance and determine if the move is accepted or not       
@@ -363,7 +369,8 @@
       use IndexingFunctions
       use Coords
       use Forcefield
-      use E_Interface
+!      use E_Interface
+      use EnergyPointers, only: Shift_ECalc, Update_SubEnergies
       use EnergyCriteria
       use DistanceCriteria      
       use EnergyTables      
@@ -437,7 +444,8 @@
       E_Inter = 0d0
       E_Intra = 0d0
       rejMove = .false.
-      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+!      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+      call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
        
 !      Calculate Acceptance and determine if the move is accepted or not       
@@ -485,7 +493,8 @@
       use IndexingFunctions
       use Coords
       use Forcefield
-      use E_Interface
+!      use E_Interface
+      use EnergyPointers, only: Shift_ECalc, Update_SubEnergies
       use EnergyCriteria
       use DistanceCriteria
       use EnergyTables
@@ -558,7 +567,8 @@
       E_Inter = 0d0
       E_Intra = 0d0
       rejMove = .false.
-      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+!      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
+      call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
        
 !      Calculate Acceptance and determine if the move is accepted or not       

@@ -1,6 +1,16 @@
 !================================================================================================================
+!    This file contains the Energy Function Pointer Module.  This module exists to allows
+!    the end user to freely switch between different types of forcefield potentials via the inputfile.  
+!    This is done by
+!================================================================================================================
      module EnergyPointers
-     use E_Interface
+     use E_Interface_LJ_Q
+     use E_Interface_Pedone
+     use Rosenbluth_Functions_LJ_Q
+     use Rosenbluth_Functions_Pedone
+     use InterEnergy_LJ_Electro, only: QuickNei_ECalc_Inter_LJ_Q
+     use InterEnergy_Pedone, only: QuickNei_ECalc_Inter_Pedone
+
      interface 
        subroutine DetailedInterface(E_T,rejMove)
          use VarPrecision
@@ -69,6 +79,14 @@
          real(dp), intent(out) :: E_Trial
        end subroutine
      end interface 
+
+     interface 
+       subroutine QuickInterface(jType, jMol, rejMove)
+         implicit none
+         integer, intent(in) :: jType, jMol     
+         logical, intent(out) :: rejMove
+       end subroutine
+     end interface 
      
      procedure(DetailedInterface), pointer :: Detailed_ECalc => NULL()
      procedure(ShiftInterface), pointer  :: Shift_ECalc => NULL()
@@ -77,6 +95,8 @@
 
      procedure(RosenMolNewInterface), pointer :: Rosen_Mol_New => NULL()
      procedure(RosenMolOldInterface), pointer :: Rosen_Mol_Old => NULL()
+
+     procedure(QuickInterface), pointer :: Quick_Nei_ECalc => NULL()
 
      end module
 !================================================================================================================

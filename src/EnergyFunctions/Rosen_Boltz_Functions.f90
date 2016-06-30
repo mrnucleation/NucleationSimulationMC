@@ -1,4 +1,4 @@
-      module Rosenbluth_Functions
+      module Rosenbluth_Functions_LJ_Q
       contains
 !======================================================================================================
 !      This subrotuine is intended to calculate the Rosenbluth weight for a single trial

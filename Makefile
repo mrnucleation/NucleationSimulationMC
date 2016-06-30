@@ -12,12 +12,12 @@ OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
-#DEBUGFLAGS := -g -fbacktrace -fcheck=all
+DEBUGFLAGS := -g -fbacktrace -fcheck=all
 #DEBUGFLAGS := -fbounds-check
 #DEBUGFLAGS := -check bounds
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
-DEBUGFLAGS += -pg 
+#DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
@@ -80,12 +80,14 @@ MOD_SRC := $(SRC)/Common.f90 \
 SRC_ENERGY := $(ESUB)/Bending_Functions.f90 \
             $(ESUB)/BondStretch_Functions.f90 \
             $(ESUB)/LJ_Electro_Functions.f90 \
+            $(ESUB)/Pedone_Functions.f90 \
             $(ESUB)/Intra_LJ_Electro_Functions.f90\
             $(ESUB)/Torsional_Functions.f90 \
             $(ESUB)/Improper_Functions.f90 \
-            $(ESUB)/Rosen_Boltz_Fuctions.f90\
-            $(ESUB)/Rosen_Boltz_Fuctions.f90\
+            $(ESUB)/Rosen_Boltz_Functions.f90\
+            $(ESUB)/Rosen_Pedone_Functions.f90\
             $(ESUB)/EnergyInterfaceFunctions.f90\
+            $(ESUB)/EnergyInterfaceFunctions_Pedone.f90\
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
@@ -101,7 +103,6 @@ SRC_MAIN := $(SRC)/BasicMovement.f90\
  		$(SRC)/UmbrellaSampling.f\
  		$(SRC)/AngleIntegration.f90\
  		$(SRC)/CoordinateFunctions.f90\
- 		$(SRC)/Simple_IntraMoves.f90\
 		$(SRC)/ReadInput.f90
 SRC_MAIN2:=  $(SRC)/ETableFunctions.f90
 SRC_CBMC := $(CBMC)/CBMC.f90\

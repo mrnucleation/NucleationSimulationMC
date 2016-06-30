@@ -14,7 +14,7 @@
       use Constants  
       use Coords
       use ForceField
-      use E_Interface
+      use E_Interface_LJ_Q
       use IndexingFunctions      
       use EnergyCriteria
       use DistanceCriteria
@@ -110,7 +110,7 @@
 !      Perform a check to see if the cluster criteria is statisfied or not.
       if(.not. distCriteria) then
         rejMove = .false.
-        call QuickNei_ECalc_Inter(nTargType, nTargMol, rejMove)     
+        call QuickNei_ECalc_Inter_LJ_Q(nTargType, nTargMol, rejMove)     
         if(rejMove) then
           return
         endif  
@@ -175,7 +175,7 @@
          endif 
          isActive(nIndx2) = .true.
 
-         call SwapOut_EnergyCalc(E_Inter, E_Intra, nType1, nMol1, dETable, .false.)
+         call SwapOut_EnergyCalc_LJ_Q(E_Inter, E_Intra, nType1, nMol1, dETable, .false.)
          call Update_SubEnergies
          E_T = E_T + E_Intra
          molArray(nType1)%mol(nMol1)%x(1:nAtoms(nType1)) = molArray(nType1)%mol(NPART(nType1))%x(1:nAtoms(nType1))
@@ -187,7 +187,7 @@
          ETable(nIndx) = ETable(maxIndx)
          ETable(maxIndx) = 0d0
 
-         call SwapIn_EnergyCalc(E_Inter, E_Intra, PairList, dETable, rejMove, .false.)
+         call SwapIn_EnergyCalc_LJ_Q(E_Inter, E_Intra, PairList, dETable, rejMove, .false.)
          call Update_SubEnergies
          E_T = E_T + E_Intra
          do i=1,nAtoms(nType2)      

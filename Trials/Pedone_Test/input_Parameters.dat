@@ -2,12 +2,12 @@
 #             Simulation Parameters
 #-----------------------------------------------------
    RNG_Seed:=                     1024
-   Number_of_Cycles:=             5d4
+   Number_of_Cycles:=             1.5d5
    Moves_Per_Cycles:=             1d2
    Number_of_Mol_Types:=          2
    Min_Cluster_Size:=             0 0 
-   Max_Cluster_Size:=             2 2
-   Temperature(K):=               230
+   Max_Cluster_Size:=             100 50
+   Temperature(K):=               5000
    Echo_To_Screen:=               .true.
    Use_Umbrela_Bias:=             .true.  fort.25
    Number_Of_RosenTrials:=        12 12
@@ -16,24 +16,23 @@
 #-----------------------------------------------------
 #             Monte Carlo Move Parameters
 #-----------------------------------------------------
-    Gas_Phase_Density:=        3d-9  3d-9
+    Gas_Phase_Density:=        3d-2  3d-2
 #-----------------------------------------------------
 #             Output Parameters
 #-----------------------------------------------------	
     Screen_Output_Frequency:=       1000
-    Trajectory_Output_Frequency:=   5000
+    Trajectory_Output_Frequency:=   50
     Output_Energy_Units:=           kb
     Output_Distance_Units:=         ang
 #-----------------------------------------------------
 #             Monte Carlo Move Type Definition
 #-----------------------------------------------------
-     Number_of_Move_Types:=  2
+     Number_of_Move_Types:=  1
      translation 1
-     rotation 1
 #-----------------------------------------------------
 #             Weighted Histogram Analysis Variables
 #-----------------------------------------------------
-   Use_WHAM:=                      .true.
+   Use_WHAM:=                      .false.
    Reference_Cluster:=              1 1
    Cycles_Per_WHAM_Interval:=       10000
    Tolereance:=                     1d-5
@@ -44,8 +43,8 @@
 #             Cluster Parameters
 #-----------------------------------------------------
       Energy Criteria:
-      -260 -260
-      -260 -260
+       1d2 -1d5
+      -1d5  1d2
       E_Bias_Alpha:=                 
       0.05 0.05
       0.05 0.05

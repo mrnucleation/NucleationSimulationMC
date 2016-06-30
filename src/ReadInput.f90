@@ -222,6 +222,9 @@
       end subroutine
 !========================================================  
       subroutine ReadForcefield
+      use ForceField, only: ForceFieldName
+      use EnergyPointers
+      use ParallelVar, only: nout
       implicit none
       character(len=15) :: labelField 
       character(len=10) :: potenType
@@ -229,14 +232,33 @@
       open(unit=55,file="input_forcefield.dat",status='OLD')
       read(55,*) 
       read(55,*) labelField, potenType
+      write(35,*) "-------------------------"
+      write(35,*) labelField, potenType
+      write(35,*) "-------------------------"
 
       select case(trim(adjustl(potenType)))
       case("LJ_Q")
+        write(nout,*) "Forcefield Type: Standard Lennard-Jones w/ Eletrostatic"
+        ForceFieldName = "LJ_Q"
         call ReadForcefield_LJ_Q
+        Detailed_ECalc => Detailed_EnergyCalc_LJ_Q
+        Shift_ECalc => Shift_EnergyCalc_LJ_Q
+        SwapIn_ECalc => SwapIn_EnergyCalc_LJ_Q
+        SwapOut_ECalc => SwapOut_EnergyCalc_LJ_Q
+        Rosen_Mol_New => Rosen_BoltzWeight_Molecule_New
+        Rosen_Mol_Old => Rosen_BoltzWeight_Molecule_Old
+        Quick_Nei_ECalc => QuickNei_ECalc_Inter_LJ_Q
       case("Pedone")
-!        write(*,*) "Place Holder!"
+        write(nout,*) "Forcefield Type: Pedone"
+        ForceFieldName = "Pedone"
         call ReadForcefield_Pedone
-        stop
+        Detailed_ECalc => Detailed_EnergyCalc_Pedone
+        Shift_ECalc => Shift_EnergyCalc_Pedone
+        SwapIn_ECalc => SwapIn_EnergyCalc_Pedone
+        SwapOut_ECalc => SwapOut_EnergyCalc_Pedone
+        Rosen_Mol_New => Rosen_BoltzWeight_Pedone_New
+        Rosen_Mol_Old => Rosen_BoltzWeight_Pedone_Old
+        Quick_Nei_ECalc => QuickNei_ECalc_Inter_Pedone
       case default
         stop "Unknown potential type given in forcefield input"
       end select
@@ -372,8 +394,7 @@
           sig_tab(j,i) = sig_tab(i,j)
           q_tab(j,i) = q_tab(i,j)
           if(echoInput) then
-             write(35,*) i,j, ep_tab(i,j)/4d0, sqrt(sig_tab(i,j)), &
-                         q_tab(i,j) 
+             write(35,*) i,j, ep_tab(i,j)/4d0, sqrt(sig_tab(i,j)), q_tab(i,j) 
            endif          
 !          r_min_tab(j,i) = r_min_tab(i,j)
         enddo
@@ -632,14 +653,19 @@
 !     Open forcefield file      
 !      open(unit=55,file="input_forcefield.dat",status='OLD')
 !     Blank Space for Comments
+
+      call Allocate_Common_Variables_Pedone
+
+      nAtomTypes = nMolTypes
+
       read(55,*) 
       read(55,*)
       read(55,*)   
        
 !      Specifies the number of atoms, bonds, etc. types to be used in the simulation.
-      read(55,*) labelField, nAtomTypes
-      read(55,*) 
-      read(55,*)      
+
+
+
       read(55,*) labelField, unitsEnergy
       read(55,*) labelField, unitsDistance
       read(55,*) labelField, unitsAngular
@@ -649,7 +675,7 @@
 
       read(55,*)
       read(55,*)      
-      do i = 1,nAtomTypes
+      do i = 1, nMolTypes
         read(55,*) labelField, pedoneData(i)%Symb, pedoneData(i)%repul, pedoneData(i)%rEq, &
                     pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass
         if(echoInput) then
@@ -677,6 +703,7 @@
       repul_tab = 0d0
       alpha_Tab = 0d0
       rEq_tab = 0d0
+      D_Tab = 0d0
       do i = 1,nAtomTypes
         repul_tab(i,1) = pedoneData(i)%repul
         alpha_Tab(i,1) = pedoneData(i)%alpha
@@ -687,10 +714,17 @@
         alpha_Tab(1,i) = alpha_Tab(i,1)
         rEq_tab(1,i) = rEq_tab(i,1)
         D_Tab(1,i) = D_Tab(i,1)
-        if(echoInput) then
-          write(35,*) i,j,  repul_tab(i,1), alpha_Tab(i,1), rEq_tab(i,1), D_Tab(i,1)
-        endif          
+         
       enddo
+
+   
+        if(echoInput) then
+          do i = 1, nAtomTypes 
+            do j = 1, nAtomTypes 
+              write(35,*) i, j, repul_tab(i,j), alpha_Tab(i,j), rEq_tab(i,j), D_Tab(i,j), q_tab(i,j)
+            enddo
+          enddo
+        endif 
 
 !     R_Min Mixing Rule    
       read(55,*)
@@ -738,6 +772,26 @@
         allocate(rosenTrial(i)%y(1:1)) 
         allocate(rosenTrial(i)%z(1:1))         
       enddo
+
+      ALLOCATE (atomArray(1:nMolTypes,1:1), STAT = AllocateStatus)
+      do i = 1, nMolTypes
+        atomArray(i,1) = i
+        atomData(i)%Symb = pedoneData(i)%Symb
+      enddo
+ 
+      vmdAtoms = 0
+      do i = 1,nMolTypes
+        vmdAtoms = vmdAtoms + (NMAX(i)*nAtoms(i))
+      enddo
+      
+      totalMass = 0d0
+      do i = 1, nMolTypes
+        do j = 1,nAtoms(i)
+          totalMass(i) = totalMass(i) + atomData(atomArray(i,j))%mass
+        enddo
+      enddo
+
+      flush(35)
 
       end subroutine
 !================================================================ 
@@ -807,6 +861,9 @@
       integer :: AllocateStatus
       
       ALLOCATE (pedoneData(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atomData(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (nAtoms(1:nMolTypes), STAT = AllocateStatus)
+      nAtoms = 1
 
       ALLOCATE (r_min(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (r_min_sq(1:nMolTypes), STAT = AllocateStatus)
@@ -831,7 +888,8 @@
 
       ALLOCATE (acptTrans(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (atmpTrans(1:nMolTypes), STAT = AllocateStatus)
-
+      ALLOCATE (acptRot(1:nMolTypes),   STAT = AllocateStatus)
+      ALLOCATE (atmpRot(1:nMolTypes),  STAT = AllocateStatus)
       ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (atmpSwapIn(1:nMolTypes), STAT = AllocateStatus)
@@ -841,6 +899,8 @@
       ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStatus)
 
       ALLOCATE (max_dist(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (max_dist_single(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (max_rot(1:nMolTypes), STAT = AllocateStatus) 
 
       
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"

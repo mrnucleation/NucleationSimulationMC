@@ -5,7 +5,8 @@
       use SimParameters
       use CBMC_Variables
       use Coords
-      use E_Interface
+!      use E_Interface
+      use EnergyPointers, only: Shift_ECalc, Update_SubEnergies
       use EnergyCriteria
       use EnergyTables
       use Forcefield
@@ -179,7 +180,8 @@
 
       E_Inter = 0d0
       E_Intra = 0d0
-      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nDisp), PairList, dETable, useIntra, rejMove)
+!      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nDisp), PairList, dETable, useIntra, rejMove)
+      call Shift_ECalc(E_Inter, E_Intra, disp(1:nDisp), PairList, dETable, useIntra, rejMove)
       if(rejMove) then
         return      
       endif
