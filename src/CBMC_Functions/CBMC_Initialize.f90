@@ -21,6 +21,15 @@
       integer :: cnt,curAtom
       integer :: nTerminal, nLinker, nHub      
       
+      select case(trim(adjustl(ForceFieldName)))
+      case("Pedone") 
+        allocate(regrowType(1:nMolTypes), STAT = AllocateStatus)
+        regrowType = 0
+        return
+      case default
+        continue
+      end select
+
 !      Allocate the Topology arrays      
       allocate(topolArray(1:nMolTypes),STAT = AllocateStatus)
       do iType = 1,nMolTypes
@@ -151,11 +160,12 @@
       integer :: i,cnt
       integer :: iType,iAtom, iPath
       integer :: nPaths,curBonds      
-      integer :: tempArray(1:50,1:maxAtoms)
+      integer, allocatable :: tempArray(:,:)
       integer :: atmPrev, atmCur, atmNext
       integer :: AllocateStatus      
 
 
+      allocate(tempArray(1:50,1:maxAtoms))
 
 
       do iType = 1, nMolTypes

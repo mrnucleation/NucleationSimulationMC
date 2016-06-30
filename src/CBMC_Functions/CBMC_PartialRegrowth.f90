@@ -4,7 +4,8 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+!      use Rosenbluth_Functions_LJ_Q
+      use EnergyPointers, only: Rosen_Mol_New, Rosen_Mol_Old
       use CBMC_Variables
       use CBMC_Utility
       implicit none
@@ -138,7 +139,8 @@
           rosenTrial(iRosen)%z(i) = rosenTrial(iRosen)%z(i) + z1 
         enddo 
 
-        call Rosen_BoltzWeight_Molecule_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
+!        call Rosen_BoltzWeight_Molecule_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
+        call Rosen_Mol_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
       enddo
       E_Max = minval(E_Trial)
       ProbRosen = 0d0
@@ -173,8 +175,10 @@
 
 
 !      To simulate the reverse move, calculate the 
-      call Rosen_BoltzWeight_Molecule_Old(molArray(nType)%mol(nMol)%x(:), molArray(nType)%mol(nMol)%y(:), &
-                                 molArray(nType)%mol(nMol)%z(:), nType, isIncluded, E_Trial(1))   
+!      call Rosen_BoltzWeight_Molecule_Old(molArray(nType)%mol(nMol)%x(:), molArray(nType)%mol(nMol)%y(:), &
+!                                 molArray(nType)%mol(nMol)%z(:), nType, isIncluded, E_Trial(1))   
+      call Rosen_Mol_Old(molArray(nType)%mol(nMol)%x(:), molArray(nType)%mol(nMol)%y(:), &
+                                 molArray(nType)%mol(nMol)%z(:), nType, isIncluded, E_Trial(1))  
       do iRosen = 2, nRosenTrials(nType)
      
 !        Initialize the first atom coordinates to 0      
@@ -275,7 +279,8 @@
           rosenTrial(iRosen)%z(i) = rosenTrial(iRosen)%z(i) + z1 
         enddo 
 
-        call Rosen_BoltzWeight_Molecule_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
+!        call Rosen_BoltzWeight_Molecule_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
+        call Rosen_Mol_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
       enddo
       E_Max = minval(E_Trial)
       ProbRosen = 0d0
@@ -294,7 +299,7 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+      use Rosenbluth_Functions_LJ_Q
       use CBMC_Variables
       use CBMC_Utility
       implicit none
@@ -481,7 +486,7 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+      use Rosenbluth_Functions_LJ_Q
       use CBMC_Variables
       use CBMC_Utility
       implicit none

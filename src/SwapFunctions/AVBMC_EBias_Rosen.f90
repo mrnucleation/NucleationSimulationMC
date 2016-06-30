@@ -31,7 +31,8 @@
       use Coords
       use SimParameters
       use ForceField
-      use E_Interface
+!      use E_Interface
+      use EnergyPointers, only: SwapIn_ECalc, Update_SubEnergies, Quick_Nei_ECalc
       use UmbrellaFunctions
       use ForceField
       use IndexingFunctions      
@@ -127,7 +128,8 @@
 !      Perform a check to see if the cluster criteria is statisfied or not.
       if(.not. distCriteria) then
         rejMove = .false.
-        call QuickNei_ECalc_Inter(nTargType, nTargMol, rejMove)     
+!        call QuickNei_ECalc_Inter(nTargType, nTargMol, rejMove)     
+        call Quick_Nei_ECalc(nTargType, nTargMol, rejMove)     
         if(rejMove) then
           totalRej = totalRej + 1d0
           critriaRej = critriaRej + 1d0
@@ -139,7 +141,8 @@
 !      Calculate the Energy Difference Associated with the move
       E_Inter = 0d0
       E_Intra = 0d0
-      call SwapIn_EnergyCalc(E_Inter, E_Intra, PairList, dETable, rejMove) 
+!      call SwapIn_EnergyCalc(E_Inter, E_Intra, PairList, dETable, rejMove) 
+      call SwapIn_ECalc(E_Inter, E_Intra, PairList, dETable, rejMove) 
       if(rejMove) then
         totalRej = totalRej + 1d0
         ovrlapRej = ovrlapRej + 1d0
@@ -199,7 +202,8 @@
       use AVBMC_CBMC
       use SimParameters
       use Constants
-      use E_Interface
+!      use E_Interface
+      use EnergyPointers, only: SwapOut_ECalc, Update_SubEnergies
       use Coords
       use UmbrellaFunctions
       use ForceField
@@ -296,7 +300,8 @@
 !      Calculate the Energy Difference Associated with the move.
       E_Inter = 0d0
       E_Intra = 0d0
-      call SwapOut_EnergyCalc(E_Inter, E_Intra, nType, nMol, dETable)
+!      call SwapOut_EnergyCalc(E_Inter, E_Intra, nType, nMol, dETable)
+      call SwapOut_ECalc(E_Inter, E_Intra, nType, nMol, dETable)
       call EBias_Remove_ReverseProbTarget(nTarget, nSel, nType, dETable, ProbTargIn)
       genProbRatio = (ProbTargIn * rosenRatio) / (ProbTargOut * ProbSel * dble(nMolTypes) * avbmc_vol * gas_dens(nType))
 !

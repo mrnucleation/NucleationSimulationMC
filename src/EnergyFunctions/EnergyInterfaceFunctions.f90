@@ -1,7 +1,7 @@
 !****************************************************************************************
 
 !****************************************************************************************
-      module E_Interface
+      module E_Interface_LJ_Q
       use CoordinateTypes
 !=============================================================================      
       ! interface
@@ -21,7 +21,7 @@
 !=============================================================================
       contains
 !=============================================================================      
-      subroutine Detailed_EnergyCalc(E_T,rejMove)
+      subroutine Detailed_EnergyCalc_LJ_Q(E_T,rejMove)
       use InterEnergy_LJ_Electro
       use IntraEnergy_LJ_Electro
       use BondStretchFunctions
@@ -73,7 +73,7 @@
 !     Inter-molecular components.  This function can be used for for moves that any number of
 !     atoms in a given molecule, but it can not be used if more than one molecule changes
 !     in a given move.  
-      subroutine Shift_EnergyCalc(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove, useInter)
+      subroutine Shift_EnergyCalc_LJ_Q(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove, useInter)
       use SimParameters, only: distCriteria, beta, softcutoff, NTotal
       use BendingFunctions      
       use BondStretchFunctions
@@ -186,7 +186,7 @@
       
       end subroutine
 !=============================================================================      
-      subroutine SwapIn_EnergyCalc(E_Inter, E_Intra, PairList, dETable, rejMove, useInter)
+      subroutine SwapIn_EnergyCalc_LJ_Q(E_Inter, E_Intra, PairList, dETable, rejMove, useInter)
       use InterEnergy_LJ_Electro
       use IntraEnergy_LJ_Electro
       use BondStretchFunctions
@@ -262,7 +262,7 @@
 !=============================================================================
 !     This function contains the energy calculations that are used when a molecule
 !     has been selected for removal.  
-      subroutine SwapOut_EnergyCalc(E_Inter, E_Intra, nType, nMol, dETable, useInter)
+      subroutine SwapOut_EnergyCalc_LJ_Q(E_Inter, E_Intra, nType, nMol, dETable, useInter)
       use InterEnergy_LJ_Electro
       use IntraEnergy_LJ_Electro
       use BondStretchFunctions
@@ -353,6 +353,6 @@
       end subroutine
 !=============================================================================      
       
-      end module E_Interface
+      end module
       
       

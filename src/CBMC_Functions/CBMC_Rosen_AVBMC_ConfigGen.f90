@@ -11,7 +11,8 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+!      use Rosenbluth_Functions
+      use EnergyPointers, only: Rosen_Mol_New
       use CBMC_Variables
       use CBMC_Utility
       implicit none
@@ -110,7 +111,8 @@
           rosenTrial(iRosen)%z(i) = rosenTrial(iRosen)%z(i) + z1
         enddo 
 
-        call Rosen_BoltzWeight_Molecule_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
+!        call Rosen_BoltzWeight_Molecule_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
+        call Rosen_Mol_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
       enddo
 
       E_Max = minval(E_Trial)
@@ -152,7 +154,8 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+!      use Rosenbluth_Functions
+      use EnergyPointers, only: Rosen_Mol_Old
       use CBMC_Variables
       use CBMC_Utility
       implicit none
@@ -178,7 +181,9 @@
       nIndx = molArray(nType)%mol(nMol)%indx
 !      write(2,*) NPART
       call Rosen_CreateSubset_Reverse(nTarget, nIndx, isIncluded)
-      call Rosen_BoltzWeight_Molecule_Old(molArray(nType)%mol(nMol)%x(:), molArray(nType)%mol(nMol)%y(:), &
+!      call Rosen_BoltzWeight_Molecule_Old(molArray(nType)%mol(nMol)%x(:), molArray(nType)%mol(nMol)%y(:), &
+!                                 molArray(nType)%mol(nMol)%z(:), nType, isIncluded, E_Trial(1))
+      call Rosen_Mol_Old(molArray(nType)%mol(nMol)%x(:), molArray(nType)%mol(nMol)%y(:), &
                                  molArray(nType)%mol(nMol)%z(:), nType, isIncluded, E_Trial(1))
       nTargetMol = subIndxList(nTarget)
       do iRosen = 2, nRosenTrials(nType)
@@ -241,7 +246,9 @@
           newMol%z(i) = newMol%z(i) + z1
         enddo 
 
-        call Rosen_BoltzWeight_Molecule_Old( newMol%x(:), newMol%y(:), newMol%z(:), &
+!        call Rosen_BoltzWeight_Molecule_Old( newMol%x(:), newMol%y(:), newMol%z(:), &
+!                                   nType, isIncluded, E_Trial(iRosen) )
+        call Rosen_Mol_Old( newMol%x(:), newMol%y(:), newMol%z(:), &
                                    nType, isIncluded, E_Trial(iRosen) )
       enddo
 
@@ -260,7 +267,8 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+!      use Rosenbluth_Functions
+      use EnergyPointers, only: Rosen_Mol_New
       use CBMC_Variables
       use CBMC_Utility
       implicit none
@@ -412,7 +420,8 @@
           rosenTrial(iRosen)%z(i) = rosenTrial(iRosen)%z(i) + z1 
         enddo 
 
-        call Rosen_BoltzWeight_Molecule_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
+!        call Rosen_BoltzWeight_Molecule_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
+        call Rosen_Mol_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
       enddo
       E_Max = minval(E_Trial)
       ProbRosen = 0d0
@@ -453,7 +462,8 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+!      use Rosenbluth_Functions
+      use EnergyPointers, only: Rosen_Mol_Old
       use CBMC_Variables
       use CBMC_Utility
       implicit none
@@ -487,8 +497,11 @@
       nTargetMol = subIndxList(nTarget)
       nIndx = molArray(nType)%mol(nMol)%indx
       call Rosen_CreateSubset_Reverse(nTarget, nIndx, isIncluded)
-      call Rosen_BoltzWeight_Molecule_Old(molArray(nType)%mol(nMol)%x(:), molArray(nType)%mol(nMol)%y(:), &
-                                 molArray(nType)%mol(nMol)%z(:), nType, isIncluded, E_Trial(1))      
+!      call Rosen_BoltzWeight_Molecule_Old(molArray(nType)%mol(nMol)%x(:), molArray(nType)%mol(nMol)%y(:), &
+!                                 molArray(nType)%mol(nMol)%z(:), nType, isIncluded, E_Trial(1))      
+
+      call Rosen_Mol_Old(molArray(nType)%mol(nMol)%x(:), molArray(nType)%mol(nMol)%y(:), &
+                                 molArray(nType)%mol(nMol)%z(:), nType, isIncluded, E_Trial(1))     
 
       do iRosen = 2, nRosenTrials(nType)
       
@@ -593,7 +606,9 @@
           newMol%z(i) = newMol%z(i) + z1
         enddo 
 
-        call Rosen_BoltzWeight_Molecule_Old( newMol%x(:), newMol%y(:), newMol%z(:), nType, isIncluded, E_Trial(iRosen) )
+!        call Rosen_BoltzWeight_Molecule_Old( newMol%x(:), newMol%y(:), newMol%z(:), nType, isIncluded, E_Trial(iRosen) )
+        call Rosen_Mol_Old( newMol%x(:), newMol%y(:), newMol%z(:), nType, isIncluded, E_Trial(iRosen) )
+
       enddo
 
       E_Max = minval(E_Trial)
@@ -612,7 +627,7 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+      use Rosenbluth_Functions_LJ_Q
       use CBMC_Variables
       use CBMC_Utility
       implicit none
@@ -879,7 +894,7 @@
       use Coords
       use ForceField
       use Constants
-      use Rosenbluth_Functions
+      use Rosenbluth_Functions_LJ_Q
       use CBMC_Variables
       use CBMC_Utility
       implicit none

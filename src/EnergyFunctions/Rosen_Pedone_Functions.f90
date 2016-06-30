@@ -5,7 +5,7 @@
 !      in any method which regrows an entire molecule for the given trial.
       pure subroutine Rosen_BoltzWeight_Pedone_New(nRosen, nType, included,  E_Trial, overlap)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Pedone
       use Coords
       use SimParameters
       implicit none
@@ -31,7 +31,7 @@
       E_Ele = 0d0      
       E_Morse = 0d0
 
-      atmType1 = atomArray(nType, iAtom)
+      atmType1 = atomArray(nType, 1)
       do jType = 1, nMolTypes
         atmType2 = atomArray(jType, 1)
         r_eq = rEq_tab(atmType1, atmType2)
@@ -77,7 +77,7 @@
 !======================================================================================================
       pure subroutine Rosen_BoltzWeight_Pedone_Old(mol_x, mol_y, mol_z, nType, included,  E_Trial)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Pedone
       use Coords
       use SimParameters
       implicit none
