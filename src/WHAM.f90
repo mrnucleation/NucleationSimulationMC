@@ -105,10 +105,17 @@
                   denomSum = denomSum + WHAM_Denominator(i,j)*exp(-F_Estimate(j))
                 endif
               enddo
-              ProbArray(i) = WHAM_Numerator(i)/denomSum
+              if(denomSum .ne. 0d0) then
+                ProbArray(i) = WHAM_Numerator(i)/denomSum
+              endif
             else
               ProbArray(i) = 0d0
             endif
+          enddo 
+
+          norm = sum(ProbArray)
+          do i = 1, umbrellaLimit
+            ProbArray(i) = ProbArray(i)/norm
           enddo 
 !          Once all the unbiased probabilities have been estimated, use these unbiased estimates
 !          to calculate a new estimate for F
@@ -172,9 +179,9 @@
             if(TempHist(i) .le. 0d0) then
 !              NBias(i) = NBias(i) + log(3d0)
               if(ProbArray(i) .gt. 0d0) then
-               NewBias(i) = NBias(i) + log(2d0)
+               NewBias(i) = NBias(i) + log(10d0)
               else
-               NewBias(i) = NBias(i) + log(4d0)
+               NewBias(i) = NBias(i) + log(10d0*nCurWhamItter)
               endif
             endif
           enddo
@@ -232,10 +239,10 @@
           endif
           if(ProbArray(i) .gt. 0d0) then
             write(92, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i) - refBias
-!          else
-!            if(i .ne. 1) then
-!              write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
-!            endif
+          else
+            if(i .ne. 1) then
+              write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
+            endif
           endif
           NArray(nMolTypes) = NArray(nMolTypes) + 1
         enddo

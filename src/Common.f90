@@ -250,7 +250,7 @@
       module SimParameters
       use VarPrecision
       logical, parameter :: echoInput = .false.      
-      logical, parameter :: distCriteria = .false.
+      logical, parameter :: distCriteria = .true.
        
       logical :: ridgidMolecules
       integer(kind=2) :: nMolTypes

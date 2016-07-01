@@ -385,10 +385,10 @@
             rejMove = .true.
             return
           endif   
+          jIndx = molArray(jType)%mol(jMol)%indx
           if(distCriteria) then          
             PairList(jIndx) = r
           endif
-          jIndx = molArray(jType)%mol(jMol)%indx
           if(repul_C .ne. 0d0) then
             LJ = ( 1d0/r )**6
             LJ = repul_C * LJ
