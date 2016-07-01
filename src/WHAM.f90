@@ -179,13 +179,9 @@
             if(TempHist(i) .le. 0d0) then
 !              NBias(i) = NBias(i) + log(3d0)
               if(ProbArray(i) .gt. 0d0) then
-               NewBias(i) = NBias(i) + log(10d0)
+                NewBias(i) = NBias(i) + log(10d0)
               else
-<<<<<<< HEAD
-               NewBias(i) = NBias(i) + log(10d0*nCurWhamItter)
-=======
-               NewBias(i) = NBias(i) + log(dble(nCurWhamItter))
->>>>>>> master
+                NewBias(i) = NBias(i) + log(10d0*nCurWhamItter)
               endif
             endif
           enddo
