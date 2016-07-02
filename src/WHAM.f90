@@ -162,6 +162,7 @@
           do i = 1, umbrellaLimit
             if(ProbArray(i) .le. 0d0) then
               NewBias(i) = maxBias + 1d0
+              FreeEnergyEst(i) = maxBias + 1d0
             endif
           enddo
         else
@@ -171,7 +172,7 @@
               FreeEnergyEst(i) = -log(ProbArray(i)/ProbArray(maxbin))
             endif
             if(TempHist(i) .gt. 0d0) then
-              NewBias(i) = NBias(i) - log(TempHist(i)/TempHist(maxbin2))
+              NewBias(i) = NBias(i) - NBias(maxbin2) - log(TempHist(i)/TempHist(maxbin2))
             endif
           enddo
           maxBias = maxval(NewBias)
@@ -179,9 +180,9 @@
             if(TempHist(i) .le. 0d0) then
 !              NBias(i) = NBias(i) + log(3d0)
               if(ProbArray(i) .gt. 0d0) then
-                NewBias(i) = NBias(i) + log(10d0)
+                NewBias(i) = NBias(i) - NBias(maxbin2) + log(10d0)
               else
-                NewBias(i) = NBias(i) + log(10d0*nCurWhamItter)
+                NewBias(i) = NBias(i) - NBias(maxbin2) + log(10d0*nCurWhamItter)
               endif
             endif
           enddo
@@ -190,6 +191,10 @@
         refBias = NewBias(refBin)
         do i = 1, umbrellaLimit
           NewBias(i) = NewBias(i) - refBias
+        enddo
+        refBias = FreeEnergyEst(refBin)
+        do i = 1, umbrellaLimit
+          FreeEnergyEst(i) = FreeEnergyEst(i) - refBias
         enddo
       endif
 !     End of processor 0 only block
