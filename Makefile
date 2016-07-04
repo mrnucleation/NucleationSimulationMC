@@ -17,7 +17,7 @@ OPTIMIZE_FLAGS := -O3
 #DEBUGFLAGS := -check bounds
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
-#DEBUGFLAGS += -pg 
+DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
