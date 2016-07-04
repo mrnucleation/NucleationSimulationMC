@@ -450,6 +450,7 @@
                 rejMove = .true.
                 return
               endif
+              jIndx = molArray(jType)%mol(jMol)%indx  
               if(distCriteria) then              
                 if(iAtom .eq. 1) then
                   if(jAtom .eq. 1) then
@@ -459,7 +460,7 @@
               endif              
               LJ = 0d0
               Ele = 0d0
-              jIndx = molArray(jType)%mol(jMol)%indx  
+
               if(ep .ne. 0d0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
