@@ -1,15 +1,16 @@
       module NeighborTable
       contains
 !===================================================================
-      subroutine Create_NeiETable
+      subroutine Create_NeiETable(biasArray)
       use EnergyTables
       use SimParameters
       use Coords
       implicit none
+      real(dp), intent(in) :: biasArray(:)
       integer :: i,j     
       integer :: iType, jType, iLowIndx, jLowIndx
-      real(kind(0.0d0)) :: EMax
-
+      real(dp) :: EMax
+      real(dp) :: biasOld, biasNew
 
       NeiETable=0d0
 !      return
@@ -24,13 +25,14 @@
             do j = jlowIndx+1,jlowIndx+NPART(jType)
               if(NeighborList(j,i)) then
                 if(ETable(j) .gt. EMax) then
-                 EMax = ETable(j)
+                 EMax = ETable(j)!-biasArray(jType)/beta
                endif
               endif 
             enddo
             jLowIndx = jLowIndx + NMAX(jType)
           enddo    
           NeiETable(i) = EMax       
+!          write(*,*) i, NeiETable(i)
         enddo
         iLowIndx = iLowIndx + NMAX(iType)
       enddo
@@ -57,18 +59,19 @@
        
       end subroutine
 !=================================================================================
-      subroutine Insert_NewNeiETable(nType,PairList,dE,newNeiTable)
+      subroutine Insert_NewNeiETable(nType, PairList, dE, biasArray,newNeiTable)
       use EnergyTables
       use SimParameters
       use Coords
       implicit none
       integer, intent(in) :: nType
-      real(kind(0.0d0)), intent(in) :: PairList(:)
-      real(kind(0.0d0)), intent(inout) :: dE(:), newNeiTable(:)
+      real(dp), intent(in) :: PairList(:)
+      real(dp), intent(inout) :: dE(:), newNeiTable(:)
+      real(dp), intent(in) :: biasArray(:)
 
       integer :: i,j, nIndx
       integer :: iType, jType, iLowIndx, jLowIndx
-      real(kind(0.0d0)) :: EMax, ETab
+      real(dp) :: EMax, ETab
        
       
       
@@ -87,7 +90,7 @@
             do j = jlowIndx+1,jlowIndx+NPART(jType)
 !              write(2,*) i,j
               if(NeighborList(j,i)) then
-                ETab = ETable(j)+dE(j)
+                ETab = ETable(j) + dE(j)! - biasArray(jType)/beta
                 if(ETab .gt. EMax) then
                  EMax = ETab
                endif
@@ -97,7 +100,7 @@
           enddo    
 !          write(2,*) i, nIndx
 	  if(PairList(i) .le. Eng_Critr(typeList(i),nType)) then
-            ETab = ETable(nIndx) + dE(nIndx)
+            ETab = ETable(nIndx) + dE(nIndx)! - biasArray(nType)/beta
             if(ETab .gt. EMax) then
               EMax = ETab
             endif		
@@ -114,7 +117,7 @@
 !	  write(2,*) nindx, j
           if(PairList(j) .le. Eng_Critr(typeList(j),nType)) then
             if(ETable(j)+dE(j) .gt. EMax) then
-              EMax = ETable(j)+dE(j)
+              EMax = ETable(j)+dE(j)!- biasArray(jType)/beta
             endif
           endif 
         enddo
@@ -131,11 +134,11 @@
       use Coords
       implicit none
       integer, intent(in) :: nType
-      real(kind(0.0d0)), intent(in) :: PairList(:)
-      real(kind(0.0d0)), intent(inout) :: dE(:), newNeiTable(:)
+      real(dp), intent(in) :: PairList(:)
+      real(dp), intent(inout) :: dE(:), newNeiTable(:)
 
       integer :: i,j, nIndx
-      real(kind(0.0d0)) :: EMax
+      real(dp) :: EMax
        
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
       
