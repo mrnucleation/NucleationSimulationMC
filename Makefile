@@ -7,9 +7,9 @@ FC := mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
-OPTIMIZE_FLAGS := -O3 -xHost -ipo
-#OPTIMIZE_FLAGS := -O3
-OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
+#OPTIMIZE_FLAGS := -O3 -xHost -ipo
+OPTIMIZE_FLAGS := -O3
+#OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
 #DEBUGFLAGS := -g -fbacktrace -fcheck=all

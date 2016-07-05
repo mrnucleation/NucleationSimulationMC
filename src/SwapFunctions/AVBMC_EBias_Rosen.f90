@@ -67,7 +67,7 @@
       logical :: rejMove     
       logical :: isIncluded(1:maxMol)
       integer :: NDiff(1:nMolTypes)
-      integer :: i, nTargType, nTargMol, nTargIndx, nTarget
+      integer :: i, iType, nTargType, nTargMol, nTargIndx, nTarget
       integer :: nType, nIndx, bIndx
       integer :: atmType1, atmType2      
       real(dp) :: grnd
@@ -81,7 +81,8 @@
       real(dp) :: x1, y1, z1
       real(dp) :: ProbTarg_In, ProbTarg_Out, ProbSel_Out
       real(dp) :: rmin_ij
-      
+      real(dp) :: biasArray(1:nMolTypes)
+  
       if(NTotal .eq. maxMol) return
 
 !      Choose the type of molecule to be inserted      
@@ -96,8 +97,7 @@
          return
       endif
 
-      NDiff = 0 
-      NDiff(nType) = 1
+
       call EBias_Insert_ChooseTarget(nType, nTarget, nTargType, nTargMol, ProbTarg_In)
       nTargIndx = MolArray(nTargType)%mol(nTargMol)%indx      
 
@@ -149,17 +149,34 @@
         return
       endif
   
+      biasArray = 0d0
+      NDiff = 0
+      NDiff(nType) = +1
+      bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
+      biasOld = NBias(bIndx)      
+      do iType = 1, nMolTypes
+        NDiff = 0
+        NDiff(nType) = +1
+        NDiff(iType) = NDiff(iType) - 1       
+        if(NPART(iType) - 1 .lt. NMIN(iType)) cycle
+        bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
+        biasNew = NBias(bIndx)      
+        bias_diff = biasNew - biasOld
+        biasArray(iType) = bias_diff
+      enddo   
 
 !     Determine the reverse probability of this move.
       if(distCriteria) then
-        call Insert_NewNeiETable_Distance(nType, PairList, dETable, newNeiETable)  
+        call Insert_NewNeiETable_Distance(nType, PairList, dETable,  newNeiETable)  
       else
-        call Insert_NewNeiETable(nType, PairList, dETable, newNeiETable)      
+        call Insert_NewNeiETable(nType, PairList, dETable, biasArray, newNeiETable)      
       endif
       call EBias_Insert_ReverseProbTarget(nTarget, nType, newNeiETable, ProbTarg_Out)
-      call EBias_Insert_ReverseProbSel(nTarget, nType, dETable, ProbSel_Out)
+      call EBias_Insert_ReverseProbSel(nTarget, nType, dETable, biasArray, ProbSel_Out)
       
 !     Calculate the umbrella sampling bias.
+      NDiff = 0 
+      NDiff(nType) = 1
       bIndx = getBiasIndex(NPart,NMAX)
       biasOld = NBias(bIndx)
       bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
@@ -168,7 +185,6 @@
 
 !     Calculate acceptance probability and determine if the move is accepted or not          
       genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol * dble(nMolTypes) * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
-!      write(2,*) ProbTarg_Out, ProbSel_Out, ProbTarg_In, rosenRatio
 
       if( genProbRatio * exp(-beta*E_Inter + bias_diff) .gt. grnd() ) then
          acptSwapIn(nType) = acptSwapIn(nType) + 1d0        
@@ -190,7 +206,6 @@
          NTotal = NTotal + 1
          ETable = ETable + dETable         
          NPART(nType) = NPART(nType) + 1 
-!         call Create_NeiETable
          call Update_SubEnergies
        else
          totalRej = totalRej + 1d0
@@ -216,8 +231,6 @@
       use CBMC_Variables
       use NeighborTable
       implicit none
-
-
       
       real(dp), intent(inout) :: E_T      
       real(dp), intent(inout) :: acc_x
@@ -239,8 +252,6 @@
       if(NTotal .eq. 1) return
       
 !     Pick a Random Target Particle to Delete   
-      call Create_NeiETable
-      call EBias_Remove_ChooseTarget(nTarget, nTargType, nTargMol, ProbTargOut)
       biasArray = 0d0 
       bIndx = getBiasIndex(NPart,NMAX)
       biasOld = NBias(bIndx)
@@ -254,6 +265,9 @@
         bias_diff = biasNew - biasOld
         biasArray(iType) = bias_diff
       enddo      
+
+      call Create_NeiETable(biasArray)
+      call EBias_Remove_ChooseTarget(nTarget, nTargType, nTargMol, ProbTargOut)
       call EBias_Remove_ChooseNeighbor(nTarget, biasArray, nSel, ProbSel)
       nType = typeList(nSel)
       nMol = subIndxList(nSel)
@@ -304,6 +318,8 @@
       call SwapOut_ECalc(E_Inter, E_Intra, nType, nMol, dETable)
       call EBias_Remove_ReverseProbTarget(nTarget, nSel, nType, dETable, ProbTargIn)
       genProbRatio = (ProbTargIn * rosenRatio) / (ProbTargOut * ProbSel * dble(nMolTypes) * avbmc_vol * gas_dens(nType))
+
+
 !
 !      Calculate Acceptance and determine if the move is accepted or not         
       if( genProbRatio * exp(-beta*E_Inter + bias_diff) .gt. grnd() ) then
@@ -422,7 +438,7 @@
       
       end subroutine
 !=================================================================================    
-      subroutine EBias_Insert_ReverseProbSel(nTarget, nType, dE, ProbRev)
+      subroutine EBias_Insert_ReverseProbSel(nTarget, nType, dE, biasArray, ProbRev)
       use SimParameters  
       use Coords
       use EnergyTables
@@ -431,28 +447,13 @@
       integer, intent(in) :: nTarget, nType
       real(dp), intent(in) :: dE(:)
       real(dp), intent(out) :: ProbRev
+      real(dp) :: biasArray(:)
       
       integer :: i, iType, nIndx, bIndx
       integer :: NDiff(1:nMolTypes)
-      real(dp) :: biasArray(1:nMolTypes)
       real(dp) :: norm, bias_diff, biasOld, biasNew       
 
 
-      biasArray = 0d0
-      NDiff = 0
-      NDiff(nType) = +1
-      bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
-      biasOld = NBias(bIndx)      
-      do iType = 1, nMolTypes
-        NDiff = 0
-        NDiff(nType) = +1
-        NDiff(iType) = NDiff(iType) - 1       
-        if(NPART(iType) - 1 .lt. NMIN(iType)) cycle
-        bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
-        biasNew = NBias(bIndx)      
-        bias_diff = biasNew - biasOld
-        biasArray(iType) = bias_diff
-      enddo      
 
       
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
