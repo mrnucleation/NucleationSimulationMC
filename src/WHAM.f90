@@ -182,7 +182,7 @@
               if(ProbArray(i) .gt. 0d0) then
                 NewBias(i) = NBias(i) - maxBias + log(10d0)
               else
-                NewBias(i) = NBias(i) - maxBias + log(10d0*nCurWhamItter)
+                NewBias(i) = NBias(i) - maxBias + 2d0*log(10d0*nCurWhamItter)
               endif
             endif
           enddo
