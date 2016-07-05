@@ -246,7 +246,7 @@
             write(92, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i) - refBias
           else
             if(i .ne. 1) then
-              write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
+              write(92, *) (NArray(j),j=1,nMolTypes), NBias(i) - refBias
             endif
           endif
           NArray(nMolTypes) = NArray(nMolTypes) + 1
