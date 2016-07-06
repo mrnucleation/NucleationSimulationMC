@@ -9,7 +9,7 @@
       real(dp), intent(in) :: biasArray(:)
       integer :: i,j     
       integer :: iType, jType, iLowIndx, jLowIndx
-      real(dp) :: EMax
+      real(dp) :: EMax, ETab
       real(dp) :: biasOld, biasNew
 
       NeiETable=0d0
@@ -24,8 +24,9 @@
           do jType = 1,nMolTypes
             do j = jlowIndx+1,jlowIndx+NPART(jType)
               if(NeighborList(j,i)) then
-                if(ETable(j) .gt. EMax) then
-                 EMax = ETable(j)!-biasArray(jType)/beta
+                ETab = ETable(j)-biasArray(jType)/beta
+                if(ETab .gt. EMax) then
+                 EMax = ETab
                endif
               endif 
             enddo
@@ -90,7 +91,7 @@
             do j = jlowIndx+1,jlowIndx+NPART(jType)
 !              write(2,*) i,j
               if(NeighborList(j,i)) then
-                ETab = ETable(j) + dE(j)! - biasArray(jType)/beta
+                ETab = ETable(j) + dE(j) - biasArray(jType)/beta
                 if(ETab .gt. EMax) then
                  EMax = ETab
                endif
@@ -99,8 +100,8 @@
             jLowIndx = jLowIndx + NMAX(jType)
           enddo    
 !          write(2,*) i, nIndx
-	  if(PairList(i) .le. Eng_Critr(typeList(i),nType)) then
-            ETab = ETable(nIndx) + dE(nIndx)! - biasArray(nType)/beta
+	  if(PairList(i) .le. Eng_Critr(iType, nType)) then
+            ETab = ETable(nIndx) + dE(nIndx) - biasArray(nType)/beta
             if(ETab .gt. EMax) then
               EMax = ETab
             endif		
@@ -115,9 +116,10 @@
       do jType = 1,nMolTypes
         do j = jlowIndx+1,jlowIndx+NPART(jType)
 !	  write(2,*) nindx, j
-          if(PairList(j) .le. Eng_Critr(typeList(j),nType)) then
-            if(ETable(j)+dE(j) .gt. EMax) then
-              EMax = ETable(j)+dE(j)!- biasArray(jType)/beta
+          if(PairList(j) .le. Eng_Critr(jType, nType)) then
+            ETab = ETable(j)+dE(j)- biasArray(jType)/beta
+            if(ETab .gt. EMax) then
+              EMax = ETab
             endif
           endif 
         enddo
