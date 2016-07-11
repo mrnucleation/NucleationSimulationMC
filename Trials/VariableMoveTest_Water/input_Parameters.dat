@@ -2,11 +2,11 @@
 #             Simulation Parameters
 #-----------------------------------------------------
    RNG_Seed:=                     1224
-   Number_of_Cycles:=             2d5
+   Number_of_Cycles:=             5d4
    Moves_Per_Cycles:=             1d2
    Number_of_Mol_Types:=          1
    Min_Cluster_Size:=             1 
-   Max_Cluster_Size:=             15
+   Max_Cluster_Size:=             50
    Temperature(K):=               230
    Echo_To_Screen:=               .true.
    Use_Umbrela_Bias:=             .true.  fort.25
@@ -17,7 +17,7 @@
 #-----------------------------------------------------
 #             Monte Carlo Move Parameters
 #-----------------------------------------------------
-    Gas_Phase_Density:=           3d-9
+    Gas_Phase_Density:=           3d-2
 #-----------------------------------------------------
 #             Output Parameters
 #-----------------------------------------------------	
@@ -28,8 +28,7 @@
 #-----------------------------------------------------
 #             Monte Carlo Move Type Definition
 #-----------------------------------------------------
-   Number_of_Move_Types:=  3
-   avbmc 1
+   Number_of_Move_Types:=  2
    rotation 1
    translation 1
 #-----------------------------------------------------
