@@ -254,7 +254,9 @@
       use VarPrecision
       logical, parameter :: echoInput = .false.      
       logical, parameter :: distCriteria = .false.
-       
+
+
+      integer(kind=8) :: ncycle,ncycle2       
       logical :: ridgidMolecules, multipleInput
       integer(kind=2) :: nMolTypes
       integer,allocatable :: NPart(:),NMin(:),NMax(:)

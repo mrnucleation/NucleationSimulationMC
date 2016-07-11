@@ -43,6 +43,16 @@
       use WHAM_Module
       implicit none
       include 'mpif.h' 
+
+      interface
+       subroutine WHAM_CurveSmoothing(NewBias,HistStorage)
+         use SimParameters
+         use UmbrellaFunctions
+         implicit none
+         real(dp), intent(inout) :: NewBias(:)
+         real(dp), intent(in) :: HistStorage(:)
+       end subroutine
+      end interface
 !      integer, parameter :: dp = kind(0.0d0)
       integer :: arraySize, i, j, cnt, maxbin, maxbin2
       integer :: NArray(1:nMolTypes)
@@ -193,10 +203,16 @@
         do i = 1, umbrellaLimit
           NewBias(i) = NewBias(i) - refBias
         enddo
+        call WHAM_CurveSmoothing(NewBias, HistStorage)
+        refBias = NewBias(refBin)
+        do i = 1, umbrellaLimit
+          NewBias(i) = NewBias(i) - refBias
+        enddo
         refBias = FreeEnergyEst(refBin)
         do i = 1, umbrellaLimit
           FreeEnergyEst(i) = FreeEnergyEst(i) - refBias
         enddo
+
       endif
 !     End of processor 0 only block
 
@@ -334,5 +350,96 @@
       endif
 
              
+      end subroutine
+!==================================================================================
+      subroutine WHAM_CurveSmoothing(NewBias, HistStorage)
+      use SimParameters
+      use UmbrellaFunctions
+      implicit none
+      include 'mpif.h' 
+      real(dp), intent(inout) :: NewBias(:)
+      real(dp), intent(in) :: HistStorage(:)
+      real(dp), allocatable :: TempBias(:), weightArray(:)
+      real(dp) :: gaussPara
+      real(dp) :: averageWeight
+      logical :: arrayCycle
+      integer :: arraySize, cnt
+      integer :: i,j,k
+      integer :: NArray(1:nMolTypes), NDiff(1:nMolTypes)
+      integer :: nNeighCells, bIndx
+      real(dp) :: curBias, sumWeight, maxHist
+
+      nNeighCells = 3**nMolTypes 
+      arraySize = size(NewBias)
+!      gaussPara = 1d0/dble(ncycle*ncycle2)
+      gaussPara = 1d0
+      allocate( TempBias(1:arraySize) )
+      allocate( weightArray(1:arraySize) )
+  
+      maxHist = maxval(HistStorage)
+      write(*,*) maxHist, gaussPara
+      do i = 1, arraySize
+        if(HistStorage(i)/maxHist .gt. 0.01d0) then
+          weightArray(i) = abs(1d0-HistStorage(i)/maxHist)
+        else
+          weightArray(i) = 0.99d0
+        endif
+        write(*,*) i, weightArray(i)
+      enddo
+
+      NArray = 0
+      do i = 2, arraySize
+        sumWeight = 1d0
+        NArray(nMolTypes) = NArray(nMolTypes) + 1
+        if(nMolTypes .gt. 1) then
+          do j = 1, nMolTypes - 1
+            if(NArray(nMolTypes - j + 1) .gt. NMAX(nMolTypes - j + 1))then
+              NArray(nMolTypes - j + 1) = 0
+              NArray(nMolTypes - j) = NArray(nMolTypes - j) + 1          
+            endif
+          enddo
+        endif
+        curBias = NewBias(i)
+        NDiff = -1
+        NDiff(nMolTypes) = -2
+        cnt = 0
+        do k = 1, nNeighCells
+          NDiff(nMolTypes) = NDiff(nMolTypes) + 1
+          if(nMolTypes .gt. 1) then
+            do j = 1, nMolTypes - 1
+              if(NDiff(nMolTypes - j + 1) .gt. 1)then
+                NDiff(nMolTypes - j + 1) = -1
+                NDiff(nMolTypes - j) = NDiff(nMolTypes - j) + 1          
+              endif
+            enddo
+          endif
+          arrayCycle = .false.
+          if( all(NDiff .eq. 0) ) then
+            arrayCycle = .true.
+          endif
+          do j = 1, nMolTypes
+            if(NArray(j) + NDiff(j) .lt. NMIN(j)) then
+              arrayCycle = .true.
+            endif
+            if(NArray(j) + NDiff(j) .gt. NMAX(j))  then
+              arrayCycle = .true.
+            endif
+          enddo
+          if(arrayCycle) then
+            cycle
+          endif
+          cnt = cnt + 1
+          bIndx = getNewBiasIndex(NArray, NMAX, NDiff)
+          sumWeight = sumWeight + weightArray(i)
+          curBias = curBias + weightArray(i) * NewBias(bIndx)
+        enddo
+        curBias = curBias/(sumWeight)
+        TempBias(i) = curBias
+        write(*,*) i, NArray, NewBias(i), TempBias(i)
+      enddo
+    
+      NewBias = TempBias
+      deallocate(TempBias)             
+
       end subroutine
 !=========================================================================     

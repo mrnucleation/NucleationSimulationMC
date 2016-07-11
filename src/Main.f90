@@ -31,7 +31,8 @@
       
       logical :: errRtn
       logical :: screenEcho      
-      integer(kind=8) :: ncycle,indx,ncycle2,indx2
+
+      integer(kind=8) :: indx, indx2    
       integer :: i,j,seed,AllocateStatus
       integer :: outFreq_Traj,outFreq_Screen,outFreq_GCD      
       integer :: nSel    
@@ -76,7 +77,6 @@
 !     Assign screen output for each thread to fort.(100+myid)      
       nout = 100+myid
 
-
       write(fl_name,format_string) "Final_Report_", myid,".txt"      
       open( unit=35, file=trim(adjustl(fl_name)) ) 
       
@@ -97,27 +97,15 @@
       call ReadInitialConfiguration
       call RecenterCoordinates
       call ReadInitialGasPhase      
-      
-      
-!      useWHAM = .true.
-!      write(nout,*) "WHAM:", useWHAM
-!      equilInterval = nint(0.02d0*intervalWHAM)
+    
       
 
 !   Counter for the number of Accepted Monte Carlo Moves   
-!      acc_1=0d0
-!      acc_2=0d0  
-!      acc_3=0d0
-!      acc_4=0d0 
       movesAccepted = 0d0
       distGen_accpt = 0d0
       angGen_accpt = 0d0
       dihedGen_accpt = 0d0
 !  Counter for the number of Attempted Monte Carlo Moves  
-!      atmp_1=0d0
-!      atmp_2=0d0
-!      atmp_3=0d0  
-!      atmp_4=0d0  
       movesAttempt = 1d-30
       distGen_atmp = 0d0
       angGen_atmp = 0d0
@@ -126,7 +114,7 @@
       NeighRej=0d0
       NHist=0d0
       E_Avg=0d0      
-!  Detailed Counters for the swap move
+!      Detailed Counters for the swap move
       acptSwapIn = 0d0
       acptSwapOut = 0d0
       atmpSwapIn = 1d-30
@@ -144,7 +132,7 @@
 !      Maximum Displacement used by the translational move
       max_dist = 0.5d0
 !      Maximum Displacement used by the rotation move      
-      max_rot = 0.05d0*pi
+      max_rot = 0.5d0*pi
       max_dist_single = 0.01d0
 !      Maximum Displacements allowed by the auto-tuning function. Failure to use this can result in
 !      critical simulation errors in the auto-tuning function.
@@ -174,9 +162,7 @@
 !      Initialize random number generator      
       seed = p_size*seed + myid
       call sgrnd(seed)
-
       call CBMC_CreateTopology     
-
 
 !      Perform the Intial Energy Calculations and perform the intial Cluster Criteria Check to ensure
 !      the starting configuration is valid. 
