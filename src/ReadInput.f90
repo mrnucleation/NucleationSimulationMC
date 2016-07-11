@@ -82,13 +82,11 @@
       else 
         call BlankUmbrellaBias
       endif
-
+      read(54,*) labelField, multipleInput
       read(54,*) labelField, (nRosenTrials(j),j=1,nMolTypes) 
       maxRosenTrial = maxval(nRosenTrials)
       allocate(rosenTrial(1:maxRosenTrial))
 
-
-      
       read(54,*) labelField, Dist_Critr
       read(54,*) labelField, softCutoff
 

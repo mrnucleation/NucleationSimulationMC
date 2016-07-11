@@ -102,11 +102,28 @@
       integer :: iType,iMol,iAtom,iIndx
       real(dp) :: x,y,z
       character(len=2) :: atmSymbol
-      
-      open(unit=10, file="configuration.dat")
+      character(len=100) :: format_string ,fl_name, out1
+
+      if(multipleInput) then
+        if (myid .lt. 10) then
+          format_string = "(A,I1,A)"
+        elseif(myid .lt. 100) then
+          format_string = "(A,I2,A)"
+        elseif(myid .lt. 1000) then
+          format_string = "(A,I3,A)"
+        elseif(myid .lt. 1000) then
+          format_string = "(A,I4,A)"          
+        else
+          format_string = "(A,I5,A)"      
+        endif      
+        write(fl_name,format_string) "configuration", myid,".dat"      
+        open( unit=10, file=trim(adjustl(fl_name)), status = "Old" ) 
+      else
+        open( unit=10, file="configuration.dat", status = "Old")
+      endif
+
       read(10,*) (NPART(iType),iType=1,nMolTypes)
-      read(10,*)      
-      
+      read(10,*)            
 !     This block ensures the initial configuration is within the min/max bounds set in the input parameter file      
       do iType = 1, nMolTypes
         if(NPART(iType) .gt. NMAX(iType)) then

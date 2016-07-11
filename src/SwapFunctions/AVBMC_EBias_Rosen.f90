@@ -64,12 +64,13 @@
       
       real(dp), intent(inout) :: E_T      
       real(dp), intent(inout) :: acc_x
-      logical :: rejMove     
+      logical :: rejMove
       logical :: isIncluded(1:maxMol)
       integer :: NDiff(1:nMolTypes)
       integer :: i, iType, nTargType, nTargMol, nTargIndx, nTarget
       integer :: nType, nIndx, bIndx
-      integer :: atmType1, atmType2      
+      integer :: atmType1, atmType2, nSel
+      integer :: nMolCanidates
       real(dp) :: grnd
       real(dp) :: dx, dy, dz, r
       real(dp) :: genProbRatio, rosenRatio
@@ -82,8 +83,14 @@
       real(dp) :: ProbTarg_In, ProbTarg_Out, ProbSel_Out
       real(dp) :: rmin_ij
       real(dp) :: biasArray(1:nMolTypes)
-  
-      if(NTotal .eq. maxMol) return
+      real(dp) :: Boltzterm
+      real(dp) :: ProbMol(1:nMolTypes), sumInt, ranNum, norm
+
+      if(NTotal .eq. maxMol) then
+        boundaryRej = boundaryRej + 1d0
+        totalRej = totalRej + 1d0
+        return
+      endif
 
 !      Choose the type of molecule to be inserted      
       if(nMolTypes .eq. 1) then
@@ -91,12 +98,14 @@
       else
         nType = floor(nMolTypes*grnd() + 1d0)
       endif
-      atmpSwapIn(nType) = atmpSwapIn(nType) + 1d0
-      atmpInSize(NTotal) = atmpInSize(NTotal) + 1d0
-      if(NPART(nType) .eq. NMAX(nTYPE)) then
+
+      if(NPART(nType) .eq. NMAX(nType)) then
+         boundaryRej = boundaryRej + 1d0
+         totalRej = totalRej + 1d0
          return
       endif
-
+      atmpSwapIn(nType) = atmpSwapIn(nType) + 1d0
+      atmpInSize(NTotal) = atmpInSize(NTotal) + 1d0
 
       call EBias_Insert_ChooseTarget(nType, nTarget, nTargType, nTargMol, ProbTarg_In)
       nTargIndx = MolArray(nTargType)%mol(nTargMol)%indx      
@@ -158,7 +167,7 @@
         NDiff = 0
         NDiff(nType) = +1
         NDiff(iType) = NDiff(iType) - 1       
-        if(NPART(iType) - 1 .lt. NMIN(iType)) cycle
+        if(NPART(iType) + NDiff(iType) .lt. NMIN(iType)) cycle
         bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
         biasNew = NBias(bIndx)      
         bias_diff = biasNew - biasOld
@@ -185,8 +194,11 @@
 
 !     Calculate acceptance probability and determine if the move is accepted or not          
       genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol * dble(nMolTypes) * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
+!      genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol * dble(nMolCanidates) * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
 
-      if( genProbRatio * exp(-beta*E_Inter + bias_diff) .gt. grnd() ) then
+      Boltzterm = exp(-beta*E_Inter + bias_diff)
+
+      if( genProbRatio * Boltzterm .gt. grnd() ) then
          acptSwapIn(nType) = acptSwapIn(nType) + 1d0        
          acptInSize(NTotal) = acptInSize(NTotal) + 1d0         
          do i=1,nAtoms(nType)      
@@ -215,6 +227,7 @@
 !===================================================================================            
       subroutine AVBMC_EBias_Rosen_Out(E_T, acc_x)
       use AVBMC_CBMC
+      use AVBMC_RejectionVar
       use SimParameters
       use Constants
 !      use E_Interface
@@ -236,9 +249,10 @@
       real(dp), intent(inout) :: acc_x
       
       logical :: rejMove  
-      integer :: nTarget, nIndx, bIndx, iType
+      integer :: i, nTarget, nIndx, bIndx, iType
       integer :: nSel,nType, nMol,nTargMol,nTargType
       integer :: NDiff(1:nMolTypes)      
+      integer :: nMolCanidates
       real(dp) :: grnd
       real(dp) :: genProbRatio
       real(dp) :: bias_diff       
@@ -246,20 +260,23 @@
       real(dp) :: E_Inter, E_Intra
       real(dp) :: dETable(1:maxMol)
       real(dp) :: ProbTargOut, ProbSel, ProbTargIn
-      real(dp) :: rx, ry, rz, dist, rosenRatio
+      real(dp) :: rx, ry, rz, dist, rosenRatio, gasNorm
       real(dp) :: biasArray(1:nMolTypes)
       
-      if(NTotal .eq. 1) return
+      if(NTotal .eq. 1) then
+        boundaryRej_out = boundaryRej_out + 1d0
+        totalRej_out = totalRej_out + 1d0
+        return
+      endif
       
 !     Pick a Random Target Particle to Delete   
       biasArray = 0d0 
       bIndx = getBiasIndex(NPart,NMAX)
       biasOld = NBias(bIndx)
       do iType = 1, nMolTypes
-        if(NPART(iType) .eq. 0) cycle
         NDiff = 0
         NDiff(iType) = -1
-        if(NPART(iType) - 1 .lt. NMIN(iType)) cycle
+        if(NPART(iType) + NDiff(iType) .lt. NMIN(iType)) cycle
         bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
         biasNew = NBias(bIndx)      
         bias_diff = biasNew - biasOld
@@ -274,10 +291,12 @@
      
       atmpSwapOut(nType) = atmpSwapOut(nType) + 1d0      
       if(NPART(nType) .eq. NMIN(nType)) then
+        boundaryRej_out = boundaryRej_out + 1d0
+        totalRej_out = totalRej_out + 1d0
         return
       endif
       
-      bias_diff = biasArray(nType)
+
 !     Check to see that the appropriate atoms are within the insertion distance
 !     in order to ensure the move is reversible. If not reject the move since
 !     the reverse probility is equal to 0. 
@@ -287,6 +306,7 @@
         rz = molArray(nTargType)%mol(nTargMol)%z(1) - molArray(nType)%mol(nMol)%z(1)
         dist = rx*rx + ry*ry + rz*rz
         if(dist .gt. Dist_Critr_sq) then
+          totalRej_out = totalRej_out + 1d0
           return
         endif
       endif
@@ -296,6 +316,7 @@
       call SwapOut_EnergyCriteria(nSel, rejMove)
       if(rejMove) then
         clusterCritRej = clusterCritRej + 1d0
+        totalRej_out = totalRej_out + 1d0
         return
       endif
 
@@ -317,10 +338,14 @@
 !      call SwapOut_EnergyCalc(E_Inter, E_Intra, nType, nMol, dETable)
       call SwapOut_ECalc(E_Inter, E_Intra, nType, nMol, dETable)
       call EBias_Remove_ReverseProbTarget(nTarget, nSel, nType, dETable, ProbTargIn)
+
       genProbRatio = (ProbTargIn * rosenRatio) / (ProbTargOut * ProbSel * dble(nMolTypes) * avbmc_vol * gas_dens(nType))
+!      genProbRatio = (ProbTargIn * rosenRatio) / (ProbTargOut * ProbSel * dble(nMolCanidates) * avbmc_vol * gas_dens(nType))
 
 
-!
+      bias_diff = biasArray(nType)
+
+
 !      Calculate Acceptance and determine if the move is accepted or not         
       if( genProbRatio * exp(-beta*E_Inter + bias_diff) .gt. grnd() ) then
          acptSwapOut(nType) = acptSwapOut(nType) + 1d0      
@@ -339,6 +364,8 @@
          acc_x = acc_x + 1d0 
          call Update_SubEnergies
 !         call DEBUG_Output_NeighborList
+       else
+         totalRej_out = totalRej_out + 1d0
        endif
        end subroutine
 !=================================================================================    

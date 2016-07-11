@@ -18,13 +18,13 @@
       if(NTotal .eq. 1) return
       iLowIndx = 0      
       do iType = 1,nMolTypes
-        do i = ilowIndx+1,ilowIndx+NPART(iType)
+        do i = ilowIndx+1, ilowIndx+NPART(iType)
           EMax = -1d40
           jLowIndx = 0
           do jType = 1,nMolTypes
             do j = jlowIndx+1,jlowIndx+NPART(jType)
               if(NeighborList(j,i)) then
-                ETab = ETable(j)-biasArray(jType)/beta
+                ETab = ETable(j) - biasArray(jType)/beta
                 if(ETab .gt. EMax) then
                  EMax = ETab
                endif
@@ -93,8 +93,8 @@
               if(NeighborList(j,i)) then
                 ETab = ETable(j) + dE(j) - biasArray(jType)/beta
                 if(ETab .gt. EMax) then
-                 EMax = ETab
-               endif
+                  EMax = ETab
+                endif
               endif 
             enddo
             jLowIndx = jLowIndx + NMAX(jType)
@@ -117,7 +117,7 @@
         do j = jlowIndx+1,jlowIndx+NPART(jType)
 !	  write(2,*) nindx, j
           if(PairList(j) .le. Eng_Critr(jType, nType)) then
-            ETab = ETable(j)+dE(j)- biasArray(jType)/beta
+            ETab = ETable(j) + dE(j) - biasArray(jType)/beta
             if(ETab .gt. EMax) then
               EMax = ETab
             endif
