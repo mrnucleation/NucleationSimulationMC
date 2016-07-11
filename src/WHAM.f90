@@ -87,7 +87,8 @@
         do while(tol .gt. tolLimit)
           cnt = cnt + 1
 !          Infinite Loop protection
-          if(cnt .gt. maxSelfConsist) then
+          if(cnt .gt. maxSelfConsist) then 
+            write(35,*) "Self Consistent Limit Hit"
             exit
           endif
 

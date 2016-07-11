@@ -67,7 +67,10 @@
       use CoordinateTypes
         
       real(dp) :: totalRej
-      real(dp) :: ovrlapRej, dbalRej, critriaRej
+      real(dp) :: ovrlapRej, dbalRej, critriaRej, boundaryRej
+
+      real(dp) :: totalRej_out
+      real(dp) :: boundaryRej_out
       
       end module
 !======================================================
@@ -252,7 +255,7 @@
       logical, parameter :: echoInput = .false.      
       logical, parameter :: distCriteria = .false.
        
-      logical :: ridgidMolecules
+      logical :: ridgidMolecules, multipleInput
       integer(kind=2) :: nMolTypes
       integer,allocatable :: NPart(:),NMin(:),NMax(:)
       logical,allocatable :: isActive(:)

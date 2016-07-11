@@ -137,7 +137,10 @@
       ovrlapRej = 0d0
       dbalRej = 0d0
       critriaRej = 0d0
-      
+      boundaryRej = 0d0
+
+      totalRej_out = 0d0
+      boundaryRej_out = 0d0      
 !      Maximum Displacement used by the translational move
       max_dist = 0.5d0
 !      Maximum Displacement used by the rotation move      
@@ -431,9 +434,13 @@
         write(nout,*) "Percent of Moves Rejected due to Overlap:", 1d2*ovrlapRej/totalRej
         write(nout,*) "Percent of Moves Rejected due to Detailed Balance:", 1d2*dbalRej/totalRej
         write(nout,*) "Percent of Moves Rejected due to Cluster Criteria:", 1d2*critriaRej/totalRej
+        write(nout,*) "Percent of Moves Rejected due to Boundary Condition:", 1d2*boundaryRej/totalRej
+        write(nout,*) "********** AVBMC Deletion Rejection Breakdown ********"
+        write(nout,*) "Percent of Moves Rejected due to Boundary Condition:", 1d2*boundaryRej_out/totalRej_out
         write(nout,*) "**********"
         write(nout,*) "Acceptance Swap In (Mol Type):", (1d2*acptSwapIn(j)/atmpSwapIn(j),j=1,nMolTypes)
         write(nout,*) "Acceptance Swap Out (Mol Type):", (1d2*acptSwapOut(j)/atmpSwapOut(j),j=1,nMolTypes) 
+
 !        write(nout,*) "Cluster Criteria Rejections:",1d2*NeighRej/atmp_3
       endif
 
@@ -578,7 +585,7 @@
       zcm = zcm/dble(cnt)
 
       write(30,*) vmdAtoms
-      write(30,*) indx
+      write(30,*) NPART
       do iType = 1,nMolTypes
         do iMol = 1, NPART(iType)
           do iAtom = 1, nAtoms(iType)
@@ -599,7 +606,7 @@
 
 
       end subroutine
-!===========================================================
+!=============================================================================================
 !     This subroutine prints a dummy frame to the Trajectory file.  This
 !     is done so that when the trajectory is loaded into VMD it will properly
 !     display the cluster configuration.
@@ -663,5 +670,6 @@
 
 
       end subroutine
-      
+
+!=============================================================================================      
 
