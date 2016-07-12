@@ -1,5 +1,5 @@
 !========================================================            
-      subroutine ReadParameters(seed,ncycle,nmoves,outFreq_Traj, &
+      subroutine ReadParameters(seed,outFreq_Traj, &
                                 outFreq_Screen,outFreq_GCD,screenEcho)
       use CBMC_Variables
       use Constants
@@ -17,7 +17,7 @@
       
       logical, intent(OUT)  :: screenEcho
       integer, intent(OUT) :: seed
-      integer(kind=8), intent(OUT) :: ncycle,nmoves
+!      integer(kind=8), intent(OUT) :: ncycle,nmoves
       integer, intent(OUT)  :: outFreq_Traj,outFreq_Screen,outFreq_GCD
       
       integer :: i,j
@@ -43,7 +43,7 @@
       read(54,*) labelField, dummyCycle
        NCYCLE=nint(dummyCycle)
       read(54,*) labelField, dummyCycle
-       nMoves=nint(dummyCycle)
+       ncycle2=nint(dummyCycle)
       read(54,*) labelField, nMolTypes
    
 

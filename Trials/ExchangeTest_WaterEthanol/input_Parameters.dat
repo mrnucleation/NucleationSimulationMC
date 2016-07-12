@@ -2,7 +2,7 @@
 #             Simulation Parameters
 #-----------------------------------------------------
    RNG_Seed:=                     1024
-   Number_of_Cycles:=             2d5
+   Number_of_Cycles:=             5d5
    Moves_Per_Cycles:=             1d2
    Number_of_Mol_Types:=          2
    Min_Cluster_Size:=             0 0 
@@ -10,7 +10,7 @@
    Temperature(K):=               230
    Echo_To_Screen:=               .true.
    Use_Umbrela_Bias:=             .true.  fort.25
-   Use_Multiple_Input_Config:=    .true.
+   Use_Multiple_Input_Config:=    .false.
    Number_Of_RosenTrials:=        12 12
    AVBMC_Insertion_R:=            4d0
    Softcut:=                      100.0d0   
@@ -38,8 +38,8 @@
 #-----------------------------------------------------
    Use_WHAM:=                      .true.
    Reference_Cluster:=              0 1
-   Cycles_Per_WHAM_Interval:=       10000
-   Tolereance:=                     1d-5
+   Cycles_Per_WHAM_Interval:=       20000
+   Tolereance:=                     1d-6
    Max_Itterations:=                2000
    Use_Wham_DG_Interval:=           12
    Equilibration_Cycles:=           10
