@@ -177,6 +177,8 @@
               FreeEnergyEst(i) = maxBias + 1d0
             endif
           enddo
+          write(*,*) "WHAM Potenial Used"
+          call WHAM_CurveSmoothing(NewBias, HistStorage)
         else
           maxbin2 = maxloc(TempHist,1)
           do i = 1, umbrellaLimit
@@ -198,6 +200,7 @@
               endif
             endif
           enddo
+          call WHAM_CurveSmoothing(NewBias, TempHist)
         endif
 !        Rescale the pontential such that the reference free energy is set to 0
 !        refBias = NewBias(refBin)
@@ -205,7 +208,7 @@
 !          NewBias(i) = NewBias(i) - refBias
 !        enddo
 !        call WHAM_CurveSmoothing(NewBias, HistStorage)
-        call WHAM_CurveSmoothing(NewBias, TempHist)
+
         refBias = NewBias(refBin)
         do i = 1, umbrellaLimit
           NewBias(i) = NewBias(i) - refBias
@@ -362,31 +365,31 @@
       real(dp), intent(inout) :: NewBias(:)
       real(dp), intent(in) :: HistStorage(:)
       real(dp), allocatable :: TempBias(:), weightArray(:)
-      real(dp), parameter :: weightLimit = 0.25d0
-      real(dp) ::
+      real(dp), parameter :: weightLimit = 0.1d0
       logical :: arrayCycle
       integer :: arraySize, cnt
       integer :: i,j,k
       integer :: NArray(1:nMolTypes), NDiff(1:nMolTypes)
       integer :: nNeighCells, bIndx
-      real(dp) :: curBias, sumWeight, maxHist
+      real(dp) :: curBias, curWeight, sumWeight, maxHist
+      real(dp) :: sumHist
 
       nNeighCells = 3**nMolTypes 
       arraySize = size(NewBias)
 !      gaussPara = 1d0/dble(ncycle*ncycle2)
-      gaussPara = 1d0
       allocate( TempBias(1:arraySize) )
       allocate( weightArray(1:arraySize) )
   
+      sumHist = sum(HistStorage)
       maxHist = maxval(HistStorage)
-      write(*,*) maxHist, gaussPara
       do i = 1, arraySize
-        if(HistStorage(i)/maxHist .gt. 0.01d0) then
-          weightArray(i) = weightLimit*abs(1d0-HistStorage(i)/maxHist)
-        else
-          weightArray(i) = weightLimit*(1d0-0.01d0)
-        endif
-        write(*,*) i, weightArray(i)
+!        if(exp(-1d-2*(1d0-HistStorage(i)/maxHist)) .gt. 0.01d0) then
+!          weightArray(i) = weightLimit*abs(1d0-HistStorage(i)/maxHist)
+          weightArray(i) = weightLimit*exp(-0.5d0*6d0*((HistStorage(i)-maxHist)/sumHist)**2)
+!        else
+!          weightArray(i) = weightLimit*(exp(-1d-2)-0.01d0)
+!        endif
+        write(*,*) i, weightArray(i), HistStorage(i),HistStorage(i)-maxHist
       enddo
 
       NArray = 0
@@ -433,14 +436,13 @@
           endif
           cnt = cnt + 1
           bIndx = getNewBiasIndex(NArray, NMAX, NDiff)
-          sumWeight = sumWeight + weightArray(i) * (weightLimit - weightArray(bIndx))
-          curBias = curBias + weightArray(i) * (weightLimit - weightArray(bIndx)) * NewBias(bIndx)
+          curWeight = (weightLimit - weightArray(i)) * weightArray(bIndx)
+          curWeight = sqrt(curWeight)
+          sumWeight = sumWeight + curWeight
+          curBias = curBias + curWeight * NewBias(bIndx)
         enddo
 !        if(sumWeight .ne. 0d0) then
-          curBias = curBias/(sumWeight)
-!        else
-!          curBias = Newbias(i)
-!        endif
+        curBias = curBias/(sumWeight)
         TempBias(i) = curBias
         write(*,*) i, NArray, NewBias(i), TempBias(i)
       enddo
