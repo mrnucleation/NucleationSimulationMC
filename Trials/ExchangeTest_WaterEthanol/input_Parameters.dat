@@ -38,10 +38,10 @@
 #-----------------------------------------------------
    Use_WHAM:=                      .true.
    Reference_Cluster:=              0 1
-   Cycles_Per_WHAM_Interval:=       20000
-   Tolereance:=                     1d-6
-   Max_Itterations:=                2000
-   Use_Wham_DG_Interval:=           12
+   Cycles_Per_WHAM_Interval:=       50000
+   Tolereance:=                     1d-7
+   Max_Itterations:=                1000
+   Use_Wham_DG_Interval:=           250
    Equilibration_Cycles:=           10
 #-----------------------------------------------------
 #             Cluster Parameters
