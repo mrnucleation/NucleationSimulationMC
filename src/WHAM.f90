@@ -26,6 +26,7 @@
         BiasStorage = 0d0
         nCurWhamItter = 1
 !        tolLimit = 1d-2
+        open(unit = 97, file="WHAM_Potential.incomp")
       endif
 
       allocate(TempHist(1:umbrellaLimit), STAT = AllocateStatus)      
@@ -198,17 +199,17 @@
               NewBias(i) = NBias(i) - NBias(maxbin2) - log(TempHist(i)/TempHist(maxbin2))
             endif
           enddo
-          maxBias = NBias(maxbin2)
+!          maxBias = NBias(maxbin2)
           do i = 1, umbrellaLimit
             if(TempHist(i) .le. 0d0) then
 !              NBias(i) = NBias(i) + log(3d0)
-              if(ProbArray(i) .gt. 0d0) then
-                NewBias(i) = NBias(i) - maxBias + log(10d0)
-              else
-!                NewBias(i) = NBias(i) - maxBias + nCurWhamItter*log(10d0)
-                NewBias(i) = NBias(i) - maxBias + log(TempHist(maxbin2))
+!              if(ProbArray(i) .gt. 0d0) then
+!                NewBias(i) = NBias(i) - NBias(maxbin2) + log(10d0)
+!              else
+!                NewBias(i) = NBias(i) - NBias(maxbin2) + nCurWhamItter*log(10d0)
+                NewBias(i) = NBias(i) - NBias(maxbin2) + log(TempHist(maxbin2))
 !                write(*,*) i, Newbias(i)
-              endif
+!              endif
             endif
           enddo
 !          call WHAM_CurveSmoothing(NewBias, TempHist)
@@ -219,11 +220,12 @@
         do i = 1, umbrellaLimit
           NewBias(i) = NewBias(i) - refBias
         enddo
+        call WHAM_MidSimOutput
         refBias = FreeEnergyEst(refBin)
         do i = 1, umbrellaLimit
           FreeEnergyEst(i) = FreeEnergyEst(i) - refBias
         enddo
-
+        
       endif
 !     End of processor 0 only block
 
@@ -240,6 +242,39 @@
 
       nCurWhamItter = nCurWhamItter + 1
        
+      end subroutine
+!==================================================================================
+      subroutine WHAM_MidSimOutput
+      use SimParameters
+      use ParallelVar
+      use WHAM_Module
+      implicit none
+      include 'mpif.h' 
+!      integer, parameter :: dp = kind(0.0d0)
+      integer :: arraySize
+      integer :: i,j
+      integer :: NArray(1:nMolTypes)
+      real(dp) :: refBias
+
+!        This block exports the calculated free energy to a file
+      rewind(97)
+      NArray = 0
+      do i = 1, umbrellaLimit
+        if(nMolTypes .gt. 1) then
+          do j = 1,nMolTypes-1
+            if(NArray(nMolTypes - j + 1) .gt. NMAX(nMolTypes - j + 1))then
+             NArray(nMolTypes - j + 1) = 0
+             NArray(nMolTypes - j) = NArray(nMolTypes - j) + 1          
+            endif
+          enddo
+        endif
+        if(i .ne. 1) then
+          write(97, *) (NArray(j),j=1,nMolTypes), NBias(i)
+        endif
+        NArray(nMolTypes) = NArray(nMolTypes) + 1
+      enddo
+      flush(97)
+            
       end subroutine
 !==================================================================================
       subroutine WHAM_Finalize
@@ -280,6 +315,27 @@
           NArray(nMolTypes) = NArray(nMolTypes) + 1
         enddo
         close(92)
+
+!        This block exports the final bias potential to a text file. 
+        open(unit = 92, file="WHAM_FinalBias.txt")
+        NArray = 0
+        refBias = NBias(refBin)
+        do i = 1, umbrellaLimit
+          if(nMolTypes .gt. 1) then
+            do j = 1,nMolTypes-1
+              if(NArray(nMolTypes - j + 1) .gt. NMAX(nMolTypes - j + 1))then
+               NArray(nMolTypes - j + 1) = 0
+               NArray(nMolTypes - j) = NArray(nMolTypes - j) + 1          
+              endif
+            enddo
+          endif
+          if(i .ne. 1) then
+            write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
+          endif
+          NArray(nMolTypes) = NArray(nMolTypes) + 1
+        enddo
+        close(92)
+
 
 !        This block exports the calculated probabilities to a file
         open(unit = 92, file="WHAM_Probabilities.txt")
