@@ -53,7 +53,16 @@
          real(dp), intent(in) :: HistStorage(:)
        end subroutine
       end interface
-!      integer, parameter :: dp = kind(0.0d0)
+
+      interface
+       subroutine WHAM_CurveSmoothing2(NewBias)
+         use SimParameters
+         use UmbrellaFunctions
+         implicit none
+         real(dp), intent(inout) :: NewBias(:)
+       end subroutine
+      end interface
+
       integer :: arraySize, i, j, cnt, maxbin, maxbin2
       integer :: NArray(1:nMolTypes)
       real(dp) :: norm, ratio, maxBias, denomSum
@@ -144,8 +153,8 @@
 !         if there has been a significant change to the F values.
          tol = 0d0
          do j = 1, nCurWhamItter
-!           tol = tol + abs(F_Estimate(j) - F_Old(j))
-           tol = max(tol, abs(F_Estimate(j) - F_Old(j)) )
+           tol = tol + abs(F_Estimate(j) - F_Old(j))
+!           tol = max(tol, abs(F_Estimate(j) - F_Old(j)) )
          enddo
 !         tol = tol/dble(nCurWhamItter)
        enddo
@@ -177,8 +186,8 @@
               FreeEnergyEst(i) = maxBias + 1d0
             endif
           enddo
-          write(*,*) "WHAM Potenial Used"
-          call WHAM_CurveSmoothing(NewBias, HistStorage)
+!          write(*,*) "WHAM Potenial Used"
+!          call WHAM_CurveSmoothing(NewBias, HistStorage)
         else
           maxbin2 = maxloc(TempHist,1)
           do i = 1, umbrellaLimit
@@ -196,19 +205,16 @@
               if(ProbArray(i) .gt. 0d0) then
                 NewBias(i) = NBias(i) - maxBias + log(10d0)
               else
-                NewBias(i) = NBias(i) - maxBias + nCurWhamItter*log(10d0)
+!                NewBias(i) = NBias(i) - maxBias + nCurWhamItter*log(10d0)
+                NewBias(i) = NBias(i) - maxBias + log(TempHist(maxbin2))
+!                write(*,*) i, Newbias(i)
               endif
             endif
           enddo
-          call WHAM_CurveSmoothing(NewBias, TempHist)
+!          call WHAM_CurveSmoothing(NewBias, TempHist)
+!          call WHAM_CurveSmoothing2(NewBias)
         endif
 !        Rescale the pontential such that the reference free energy is set to 0
-!        refBias = NewBias(refBin)
-!        do i = 1, umbrellaLimit
-!          NewBias(i) = NewBias(i) - refBias
-!        enddo
-!        call WHAM_CurveSmoothing(NewBias, HistStorage)
-
         refBias = NewBias(refBin)
         do i = 1, umbrellaLimit
           NewBias(i) = NewBias(i) - refBias
@@ -365,7 +371,8 @@
       real(dp), intent(inout) :: NewBias(:)
       real(dp), intent(in) :: HistStorage(:)
       real(dp), allocatable :: TempBias(:), weightArray(:)
-      real(dp), parameter :: weightLimit = 0.1d0
+      real(dp), parameter :: weightLimit = 0.5d0
+      real(dp), parameter :: gaussPara = log(1d3)
       logical :: arrayCycle
       integer :: arraySize, cnt
       integer :: i,j,k
@@ -385,11 +392,11 @@
       do i = 1, arraySize
 !        if(exp(-1d-2*(1d0-HistStorage(i)/maxHist)) .gt. 0.01d0) then
 !          weightArray(i) = weightLimit*abs(1d0-HistStorage(i)/maxHist)
-          weightArray(i) = weightLimit*exp(-0.5d0*6d0*((HistStorage(i)-maxHist)/sumHist)**2)
+          weightArray(i) = weightLimit*exp(-gaussPara*((HistStorage(i)-maxHist)/sumHist)**2)
 !        else
 !          weightArray(i) = weightLimit*(exp(-1d-2)-0.01d0)
 !        endif
-        write(*,*) i, weightArray(i), HistStorage(i),HistStorage(i)-maxHist
+!        write(*,*) i, weightArray(i), HistStorage(i),(HistStorage(i)-maxHist)/sumHist
       enddo
 
       NArray = 0
@@ -444,7 +451,7 @@
 !        if(sumWeight .ne. 0d0) then
         curBias = curBias/(sumWeight)
         TempBias(i) = curBias
-        write(*,*) i, NArray, NewBias(i), TempBias(i)
+!        write(*,*) i, NArray, NewBias(i), TempBias(i)
       enddo
     
       NewBias = TempBias
