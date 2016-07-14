@@ -27,6 +27,7 @@
         nCurWhamItter = 1
 !        tolLimit = 1d-2
         open(unit = 97, file="WHAM_Potential.incomp")
+        open(unit = 98, file="WHAM_Mid_DG.incomp")
       endif
 
       allocate(TempHist(1:umbrellaLimit), STAT = AllocateStatus)      
@@ -220,12 +221,12 @@
         do i = 1, umbrellaLimit
           NewBias(i) = NewBias(i) - refBias
         enddo
-        call WHAM_MidSimOutput
         refBias = FreeEnergyEst(refBin)
         do i = 1, umbrellaLimit
           FreeEnergyEst(i) = FreeEnergyEst(i) - refBias
         enddo
         
+        call WHAM_MidSimOutput
       endif
 !     End of processor 0 only block
 
@@ -274,7 +275,28 @@
         NArray(nMolTypes) = NArray(nMolTypes) + 1
       enddo
       flush(97)
-            
+ 
+      rewind(98)
+      NArray = 0
+      do i = 1, umbrellaLimit
+        if(nMolTypes .gt. 1) then
+          do j = 1,nMolTypes-1
+            if(NArray(nMolTypes - j + 1) .gt. NMAX(nMolTypes - j + 1))then
+             NArray(nMolTypes - j + 1) = 0
+             NArray(nMolTypes - j) = NArray(nMolTypes - j) + 1
+            endif
+          enddo
+        endif
+        if(i .ne. 1) then
+          if(ProbArray(i) .ne. 0d0 ) then
+            write(98, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i)
+          endif
+        endif
+        NArray(nMolTypes) = NArray(nMolTypes) + 1
+      enddo
+      flush(98)
+
+           
       end subroutine
 !==================================================================================
       subroutine WHAM_Finalize
