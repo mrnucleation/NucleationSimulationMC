@@ -77,3 +77,48 @@
  Initial Energy Table:
 
  Rejection Distance:   1.5000000000000000       0.80000000000000004       0.50000000000000000        1.5000000000000000       0.80000000000000004        2.0000000000000000        2.0000000000000000     
+ Self Consistent Limit Hit
+ Self Consistent Limit Hit
+ Self Consistent Limit Hit
+ Self Consistent Limit Hit
+ Self Consistent Limit Hit
+ Self Consistent Limit Hit
+ Self Consistent Limit Hit
+ Self Consistent Limit Hit
+ Self Consistent Limit Hit
+ Pairlist:
+           6           6   0.0000000000000000     
+           6           7  -2537.9098142972289     
+           6           8  -2315.8027512479457     
+           7           6  -2537.9098142972289     
+           7           7   0.0000000000000000     
+           7           8  -1655.8875863267240     
+           8           6  -2315.8027512479457     
+           8           7  -1655.8875863267240     
+           8           8   0.0000000000000000     
+
+ ---------------------------------
+ Culmative Energy,   Detailed Calc Final Energy
+ Inter:  -6509.6001518694557       -6509.6001518719140     
+ Intra Nonbonded:   0.0000000000000000        0.0000000000000000     
+ Stretch:   0.0000000000000000        0.0000000000000000     
+ Bend:  -189.58395571107570        0.0000000000000000     
+ Torsional:  -786.65145221328021        0.0000000000000000     
+ ---------------------------------
+ Cluster Size Histogram:
+ ---------------------------------
+ Energy Table:
+           6  -4853.7125655451819     
+           7  -4193.7974006239529     
+           8  -3971.6903375746697     
+ NeighborList:
+ Acceptance Rate by Cluster Size:
+           1   6.3794484103199895     
+           2   6.4378490305578211     
+           3  0.85121101567196755     
+           4   2.8042840612470061     
+           5   2.3944346570574808     
+           6   2.0855186344402892     
+           7   1.5465623314532275     
+           8   1.7133354558127603     
+           9   1.7782952241928525     
