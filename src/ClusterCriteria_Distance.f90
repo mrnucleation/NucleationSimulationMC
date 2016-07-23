@@ -12,7 +12,7 @@
       use ParallelVar
       implicit none     
       logical,intent(out) :: rejMove
-      real(kind(0.0d0)),intent(inout) :: PairList(1:maxMol,1:maxMol)
+      real(dp),intent(inout) :: PairList(1:maxMol,1:maxMol)
       
       logical :: ClusterMember(1:maxMol)
       integer :: i,j,h,cnt
@@ -82,7 +82,7 @@
       implicit none     
       
       logical, intent(out) :: rejMove      
-      real(kind(0.0d0)), intent(in) :: PairList(1:maxMol)
+      real(dp), intent(in) :: PairList(1:maxMol)
       integer,intent(in) :: nIndx
       
       logical :: ClusterMember(1:maxMol)      
@@ -252,7 +252,7 @@
       use Coords      
       implicit none     
       integer iType,j,jType,nIndx
-      real(kind(0.0d0)) :: PairList(1:maxMol)
+      real(dp) :: PairList(1:maxMol)
 
 
 !      NeighborList(nIndx,:)=.false.

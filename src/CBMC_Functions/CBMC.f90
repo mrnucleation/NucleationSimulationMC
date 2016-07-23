@@ -150,9 +150,9 @@
       do iAtom = 1,nAtoms(nType)
         if(.not. regrown(iAtom)) then
           nDisp = nDisp + 1
-          disp(nDisp)%molType = int(nType,2)
-          disp(nDisp)%molIndx = int(nMol,2)
-          disp(nDisp)%atmIndx = int(iAtom,2)
+          disp(nDisp)%molType = int(nType,atomIntType)
+          disp(nDisp)%molIndx = int(nMol,atomIntType)
+          disp(nDisp)%atmIndx = int(iAtom,atomIntType)
         
           disp(nDisp)%x_old => MolArray(nType)%mol(nMol)%x(iAtom)
           disp(nDisp)%y_old => MolArray(nType)%mol(nMol)%y(iAtom)

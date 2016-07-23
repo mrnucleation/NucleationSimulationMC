@@ -62,9 +62,9 @@
             Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
             Angle = Angle/(r12*r23)
             if(abs(Angle) .gt. 1d0) then
-              Angle = sign(1d0, Angle)
+              Angle = sign(real(1,dp), Angle)
             endif
-            Angle = dacos(Angle)
+            Angle = acos(Angle)
             E_Harmonic = Harmonic(Angle, k_eq, ang_eq)
             E_Bend = E_Bend + E_Harmonic
           enddo
@@ -206,9 +206,9 @@
         Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
         Angle = Angle/(r12*r23)
         if(abs(Angle) .gt. 1d0) then
-          Angle = sign(1d0, Angle)
+          Angle = sign(real(1,dp), Angle)
         endif
-        Angle = dacos(Angle)
+        Angle = acos(Angle)
         E_Bend = E_Bend + Harmonic(Angle, k_eq, ang_eq)
         
         rx12 = x1_old - x2_old
@@ -224,9 +224,9 @@
         Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
         Angle = Angle/(r12*r23)
         if(abs(Angle) .gt. 1d0) then
-          Angle = sign(1d0, Angle)
+          Angle = sign(real(1,dp), Angle)
         endif
-        Angle = dacos(Angle)
+        Angle = acos(Angle)
         E_Bend = E_Bend - Harmonic(Angle, k_eq, ang_eq)
       enddo
       
@@ -274,9 +274,9 @@
         Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
         Angle = Angle/(r12*r23)
         if(abs(Angle) .gt. 1d0) then
-           Angle = sign(1d0, Angle)
+           Angle = sign(real(1,dp), Angle)
         endif
-        Angle = dacos(Angle)
+        Angle = acos(Angle)
             
         E_Bend = E_Bend + Harmonic(Angle, k_eq, ang_eq)
       enddo
@@ -326,9 +326,9 @@
         Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
         Angle = Angle/(r12*r23)
         if(abs(Angle) .gt. 1d0) then
-           Angle = sign(1d0, Angle)
+           Angle = sign(real(1,dp), Angle)
         endif
-        Angle = dacos(Angle)
+        Angle = acos(Angle)
         E_Bend = E_Bend + Harmonic(Angle, k_eq, ang_eq)
       enddo
 
@@ -374,9 +374,9 @@
       Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
       Angle = Angle/(r12*r23)
       if(abs(Angle) .gt. 1d0) then
-         Angle = sign(1d0, Angle)
+         Angle = sign(real(1,dp), Angle)
       endif
-      Angle = dacos(Angle)
+      Angle = acos(Angle)
             
       E_Bend = E_Bend + Harmonic(Angle, k_eq, ang_eq)
      

@@ -24,12 +24,12 @@
       real(dp) :: E_Ele, E_LJ, E_Morse
       real(dp) :: rmin_ij
 
-      E_Trial = 0d0
+      E_Trial = 0E0
       overlap = .false.
       
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Morse = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Morse = 0E0
 
       atmType1 = atomArray(nType, 1)
       do jType = 1, nMolTypes
@@ -53,19 +53,19 @@
             overlap = .true.
           endif           
 
-          if(repul_C .ne. 0d0) then
-            LJ = ( 1d0/r )**6
+          if(repul_C .ne. 0E0) then
+            LJ = ( 1E0/r )**6
             LJ = repul_C * LJ
             E_LJ = E_LJ + LJ
           endif
 
-          r = dsqrt(r)
+          r = sqrt(r)
           Ele = q/r
           E_Ele = E_Ele + Ele
 
-          if(delta .ne. 0d0) then
+          if(delta .ne. 0E0) then
             Morse = exp(-alpha*(r-r_eq))
-            Morse = delta*(Morse*Morse - 1d0)
+            Morse = delta*(Morse*Morse - 1E0)
             E_Morse = E_Morse + Morse
           endif
         enddo
@@ -96,9 +96,9 @@
       real(dp) :: E_Ele, E_LJ, E_Morse
       real(dp) :: rmin_ij
 
-      E_Trial = 0d0
-      E_LJ = 0d0
-      E_Ele = 0d0      
+      E_Trial = 0E0
+      E_LJ = 0E0
+      E_Ele = 0E0      
 
       atmType1 = atomArray(nType, 1)
       do jType = 1, nMolTypes
@@ -118,19 +118,19 @@
           ry = mol_y(1) - MolArray(jType)%mol(jMol)%y(1)
           rz = mol_z(1) - MolArray(jType)%mol(jMol)%z(1)
           r = rx*rx + ry*ry + rz*rz
-          if(repul_C .ne. 0d0) then
-            LJ = ( 1d0/r )**6
+          if(repul_C .ne. 0E0) then
+            LJ = ( 1E0/r )**6
             LJ = repul_C * LJ
             E_LJ = E_LJ + LJ
           endif
 
-          r = dsqrt(r)
+          r = sqrt(r)
           Ele = q/r
           E_Ele = E_Ele + Ele
 
-          if(delta .ne. 0d0) then
+          if(delta .ne. 0E0) then
             Morse = exp(-alpha*(r-r_eq))
-            Morse = delta*(Morse*Morse - 1d0)
+            Morse = delta*(Morse*Morse - 1E0)
             E_Morse = E_Morse + Morse
           endif
         enddo

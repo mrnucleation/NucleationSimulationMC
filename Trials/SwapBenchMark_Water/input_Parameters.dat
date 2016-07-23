@@ -1,0 +1,51 @@
+#-----------------------------------------------------
+#             Simulation Parameters
+#-----------------------------------------------------
+   RNG_Seed:=                     1224
+   Number_of_Cycles:=             1d3
+   Moves_Per_Cycles:=             1d2
+   Number_of_Mol_Types:=          1
+   Min_Cluster_Size:=             95
+   Max_Cluster_Size:=             100
+   Temperature(K):=               300
+   Echo_To_Screen:=               .true.
+   Use_Umbrela_Bias:=             .true.  fort.25
+   Use_Multiple_Input_Config:=    .false. 
+   Number_Of_RosenTrials:=        8
+   AVBMC_Insertion_R:=            4.0d0
+   Softcut:=                      10.0d0   
+#-----------------------------------------------------
+#             Monte Carlo Move Parameters
+#-----------------------------------------------------
+    Gas_Phase_Density:=           3d-2
+#-----------------------------------------------------
+#             Output Parameters
+#-----------------------------------------------------	
+    Screen_Output_Frequency:=       1000
+    Trajectory_Output_Frequency:=   1500
+    Output_Energy_Units:=           kb
+    Output_Distance_Units:=         ang
+#-----------------------------------------------------
+#             Monte Carlo Move Type Definition
+#-----------------------------------------------------
+   Number_of_Move_Types:=  3
+   avbmc 1
+   rotation 1
+   translation 1
+#-----------------------------------------------------
+#             Weighted Histogram Analysis Variables
+#-----------------------------------------------------
+   Use_WHAM:=                      .false.
+   Reference_Cluster:=              99
+   Cycles_Per_WHAM_Interval:=       5000
+   Tolereance:=                     1d-7
+   Max_Itterations:=                3000
+   Use_Wham_DG_Interval:=           10
+   Equilibration_Cycles:=           10
+#-----------------------------------------------------
+#             Cluster Parameters
+#-----------------------------------------------------
+      Energy Criteria:
+      -260
+      E_Bias_Alpha:=                 
+      0.10d0

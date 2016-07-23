@@ -30,11 +30,11 @@
       real(dp) :: dETable(1:maxMol)
       
 
-      max_distx = 0.1d0
+      max_distx = 0.1E0
       rejMove = .false.
-      atmp_x = atmp_x+1d0
+      atmp_x = atmp_x + 1E0
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
-      nMove = floor(NTotal*grnd() + 1d0)
+      nMove = floor(NTotal*grnd() + 1E0)
 
       call Get_MolIndex(nMove, NPart, nType, nMol)
       if(nType .ne. 1) then
@@ -43,18 +43,18 @@
       nIndx = MolArray(nType)%mol(nMol)%indx
       if(regrowType(nType) .eq. 0) return
       
-      nAtom = floor(nAtoms(nType)*grnd() + 1d0)
+      nAtom = floor(nAtoms(nType)*grnd() + 1E0)
       
 
 !     Generate a random translational displacement             
-      dx = max_distx * (2d0*grnd() - 1d0)
-      dy = max_distx * (2d0*grnd() - 1d0)
-      dz = max_distx * (2d0*grnd() - 1d0)
+      dx = max_distx * (2E0*grnd() - 1E0)
+      dy = max_distx * (2E0*grnd() - 1E0)
+      dz = max_distx * (2E0*grnd() - 1E0)
 
 !     Construct the Displacement Vectors for each atom in the molecule that was chosen.'
-      disp(1)%molType = int(nType,2)
-      disp(1)%molIndx = int(nMol,2)
-      disp(1)%atmIndx = int(nAtom,2)
+      disp(1)%molType = int(nType,atomIntType)
+      disp(1)%molIndx = int(nMol,atomIntType)
+      disp(1)%atmIndx = int(nAtom,atomIntType)
         
       disp(1)%x_old => MolArray(nType)%mol(nMol)%x(nAtom)
       disp(1)%y_old => MolArray(nType)%mol(nMol)%y(nAtom)
@@ -67,21 +67,21 @@
       
 !     Calculate the Energy Associated with this move and ensure it conforms to
 !     the cluster criteria.
-      E_Inter = 0d0
-      E_Intra = 0d0
+      E_Inter = 0E0
+      E_Intra = 0E0
 !      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:1), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:1), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
       E_Diff = E_Inter + E_Intra
 
 !     Calculate Acceptance and determine if the move is accepted or not     
-      if(E_Diff .le. 0d0) then
+      if(E_Diff .le. 0E0) then
         disp(1)%x_old = disp(1)%x_new
         disp(1)%y_old = disp(1)%y_new
         disp(1)%z_old = disp(1)%z_new
         E_T = E_T + E_Diff
         ETable = ETable + dETable
-        acc_x = acc_x + 1d0
+        acc_x = acc_x + 1E0
         if(distCriteria) then
           if(disp(1)%atmIndx .eq. 1) then
             call NeighborUpdate_Distance(PairList,nIndx)        
@@ -97,7 +97,7 @@
         disp(1)%z_old = disp(1)%z_new
         E_T = E_T + E_Diff
         ETable = ETable + dETable
-        acc_x = acc_x + 1d0
+        acc_x = acc_x + 1E0
         if(distCriteria) then
           if(disp(1)%atmIndx .eq. 1) then
             call NeighborUpdate_Distance(PairList,nIndx)        
@@ -141,24 +141,24 @@
       
       rejMove = .false.
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
-      nMove = floor(NTotal*grnd() + 1d0)
+      nMove = floor(NTotal*grnd() + 1E0)
       call Get_MolIndex(nMove, NPart, nType, nMol)
 !      if(nType .ne. 1) then
 !        return
 !      endif
-      atmp_x = atmp_x + 1d0
-      atmpTrans(nType) = atmpTrans(nType) + 1d0
+      atmp_x = atmp_x + 1E0
+      atmpTrans(nType) = atmpTrans(nType) + 1E0
       nIndx = MolArray(nType)%mol(nMol)%indx
 !     Generate a random translational displacement             
-      dx = max_dist(nType) * (2d0*grnd() - 1d0)
-      dy = max_dist(nType) * (2d0*grnd() - 1d0)
-      dz = max_dist(nType) * (2d0*grnd() - 1d0)
+      dx = max_dist(nType) * (2E0*grnd() - 1E0)
+      dy = max_dist(nType) * (2E0*grnd() - 1E0)
+      dz = max_dist(nType) * (2E0*grnd() - 1E0)
 
 !     Construct the Displacement Vectors for each atom in the molecule that was chosen.
       do i=1,nAtoms(nType)
-        disp(i)%molType = int(nType,2)
-        disp(i)%molIndx = int(nMol,2)
-        disp(i)%atmIndx = int(i,2)
+        disp(i)%molType = int(nType,atomIntType)
+        disp(i)%molIndx = int(nMol,atomIntType)
+        disp(i)%atmIndx = int(i,atomIntType)
         
         disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
         disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
@@ -171,14 +171,14 @@
       
 !     Calculate the Energy Associated with this move and ensure it conforms to
 !     the cluster criteria.
-      E_Inter = 0d0
-      E_Intra = 0d0
+      E_Inter = 0E0
+      E_Intra = 0E0
       !call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
       
 !     Calculate Acceptance and determine if the move is accepted or not     
-      if(E_Inter .le. 0d0) then
+      if(E_Inter .le. 0E0) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new
@@ -186,8 +186,8 @@
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
-        acc_x = acc_x + 1d0 
-        acptTrans(nType) = acptTrans(nType) + 1d0
+        acc_x = acc_x + 1E0 
+        acptTrans(nType) = acptTrans(nType) + 1E0
         if(distCriteria) then
           call NeighborUpdate_Distance(PairList,nIndx)        
         else
@@ -203,8 +203,8 @@
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
-        acc_x = acc_x + 1d0
-        acptTrans(nType) = acptTrans(nType) + 1d0
+        acc_x = acc_x + 1E0
+        acptTrans(nType) = acptTrans(nType) + 1E0
         if(distCriteria) then
           call NeighborUpdate_Distance(PairList, nIndx)        
         else
@@ -225,15 +225,15 @@
 
 
       if(NTotal .eq. 1) then
-!       acc_x=acc_x+1d0
+!       acc_x=acc_x+1E0
        return            
       endif      
       
 
       ran_num = grnd()
-      if(ran_num .lt. 1d0/3d0) then
+      if(ran_num .lt. 1E0/3E0) then
          call Rot_xy(E_T, acc_x, atmp_x)      
-      elseif(ran_num .lt. 2d0/3d0) then
+      elseif(ran_num .lt. 2E0/3E0) then
          call Rot_xz(E_T, acc_x, atmp_x)  
       else
          call Rot_yz(E_T, acc_x, atmp_x)  
@@ -271,13 +271,13 @@
       real(dp) :: dETable(1:maxMol)
       
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
-      nMove = floor(NTotal*grnd() + 1d0)
+      nMove = floor(NTotal*grnd() + 1E0)
       call Get_MolIndex(nMove, NPart, nType, nMol)
       if(nAtoms(nType) .eq. 1) then
         return
       endif
-      atmp_x = atmp_x + 1d0
-      atmpRot(nType) = atmpRot(nType) + 1d0
+      atmp_x = atmp_x + 1E0
+      atmpRot(nType) = atmpRot(nType) + 1E0
       nIndx = MolArray(nType)%mol(nMol)%indx
 
 !     Set the Displacement Array 
@@ -292,13 +292,13 @@
       enddo
       
 !     Uniformly choose a random rotational displacement ranging from -max_rot to +max_rot
-      angle = max_rot(nType)*(2d0*grnd()-1d0)
-      c_term = dcos(angle)
-      s_term = dsin(angle)
+      angle = max_rot(nType)*(2E0*grnd()-1E0)
+      c_term = cos(angle)
+      s_term = sin(angle)
 
 !     Determine the center of mass which will act as the pivot point for the rotational motion. 
-      xcm=0d0
-      ycm=0d0
+      xcm=0E0
+      ycm=0E0
       do i=1,nAtoms(nType)
         atmType = atomArray(nType,i)
         xcm = xcm + atomData(atmType)%mass*disp(i)%x_old
@@ -318,15 +318,15 @@
       enddo
 
 !     Calculate the Energy Difference Associated with the move   
-      E_Inter = 0d0
-      E_Intra = 0d0
+      E_Inter = 0E0
+      E_Intra = 0E0
       rejMove = .false.
 !      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
        
 !      Calculate Acceptance and determine if the move is accepted or not       
-      if(E_Inter .le. 0d0) then
+      if(E_Inter .le. 0E0) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new
@@ -334,8 +334,8 @@
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
-        acc_x = acc_x+1d0
-        acptRot(nType) = acptRot(nType) + 1d0
+        acc_x = acc_x+1E0
+        acptRot(nType) = acptRot(nType) + 1E0
         if(distCriteria) then
           call NeighborUpdate_Distance(PairList, nIndx)        
         else
@@ -351,8 +351,8 @@
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
-        acc_x = acc_x+1d0
-        acptRot(nType) = acptRot(nType) + 1d0
+        acc_x = acc_x+1E0
+        acptRot(nType) = acptRot(nType) + 1E0
         if(distCriteria) then
           call NeighborUpdate_Distance(PairList, nIndx)        
         else
@@ -394,20 +394,20 @@
       real(dp) :: dETable(1:maxMol)
       
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
-      nMove = floor(NTotal*grnd() + 1d0)
+      nMove = floor(NTotal*grnd() + 1E0)
       call Get_MolIndex(nMove, NPart, nType, nMol)
       if(nAtoms(nType) .eq. 1) then
         return
       endif
-      atmp_x = atmp_x+1d0
-      atmpRot(nType) = atmpRot(nType) + 1d0
+      atmp_x = atmp_x+1E0
+      atmpRot(nType) = atmpRot(nType) + 1E0
       nIndx = MolArray(nType)%mol(nMol)%indx
 
 !     Set the Displacement Array 
       do i=1,nAtoms(nType)
-        disp(i)%molType = int(nType,2)
-        disp(i)%molIndx = int(nMol,2)
-        disp(i)%atmIndx = int(i,2)
+        disp(i)%molType = int(nType,atomIntType)
+        disp(i)%molIndx = int(nMol,atomIntType)
+        disp(i)%atmIndx = int(i,atomIntType)
         
         disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
         disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
@@ -415,13 +415,13 @@
       enddo
       
 !     Uniformly choose a random rotational displacement ranging from -max_rot to +max_rot
-      angle = max_rot(nType) * (2d0 * grnd() - 1d0)
-      c_term=dcos(angle)
-      s_term=dsin(angle)
+      angle = max_rot(nType) * (2E0 * grnd() - 1E0)
+      c_term=cos(angle)
+      s_term=sin(angle)
 
 !     Determine the center of mass which will act as the pivot point for the rotational motion. 
-      xcm=0d0
-      zcm=0d0
+      xcm=0E0
+      zcm=0E0
       do i=1,nAtoms(nType)
         atmType = atomArray(nType,i)
         xcm = xcm + atomData(atmType)%mass*disp(i)%x_old
@@ -441,15 +441,15 @@
       enddo
 
 !     Calculate the Energy Difference Associated with the move   
-      E_Inter = 0d0
-      E_Intra = 0d0
+      E_Inter = 0E0
+      E_Intra = 0E0
       rejMove = .false.
 !      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
        
 !      Calculate Acceptance and determine if the move is accepted or not       
-      if(E_Inter .le. 0d0) then
+      if(E_Inter .le. 0E0) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new
@@ -457,8 +457,8 @@
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
-        acc_x = acc_x + 1d0
-        acptRot(nType) = acptRot(nType) + 1d0
+        acc_x = acc_x + 1E0
+        acptRot(nType) = acptRot(nType) + 1E0
         if(distCriteria) then
           call NeighborUpdate_Distance(PairList,nIndx)        
         else
@@ -474,8 +474,8 @@
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
-        acc_x = acc_x + 1d0
-        acptRot(nType) = acptRot(nType) + 1d0
+        acc_x = acc_x + 1E0
+        acptRot(nType) = acptRot(nType) + 1E0
         if(distCriteria) then
           call NeighborUpdate_Distance(PairList, nIndx)        
         else
@@ -517,20 +517,20 @@
       real(dp) :: dETable(1:maxMol)
       
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
-      nMove = floor(NTotal*grnd() + 1d0)
+      nMove = floor(NTotal*grnd() + 1E0)
       call Get_MolIndex(nMove, NPart, nType, nMol)
       if(nAtoms(nType) .eq. 1) then
         return
       endif
-      atmp_x = atmp_x + 1d0
-      atmpRot(nType) = atmpRot(nType) + 1d0
+      atmp_x = atmp_x + 1E0
+      atmpRot(nType) = atmpRot(nType) + 1E0
       nIndx = MolArray(nType)%mol(nMol)%indx
 
 !     Set the Displacement Array 
       do i=1,nAtoms(nType)
-        disp(i)%molType = int(nType,2)
-        disp(i)%molIndx = int(nMol,2)
-        disp(i)%atmIndx = int(i,2)
+        disp(i)%molType = int(nType,atomIntType)
+        disp(i)%molIndx = int(nMol,atomIntType)
+        disp(i)%atmIndx = int(i,atomIntType)
         
         disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
         disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
@@ -538,13 +538,13 @@
       enddo
       
 !     Uniformly choose a random rotational displacement ranging from -max_rot to +max_rot
-      angle = max_rot(nType)*(2d0*grnd()-1d0)
-      c_term=dcos(angle)
-      s_term=dsin(angle)
+      angle = max_rot(nType)*(2E0*grnd()-1E0)
+      c_term=cos(angle)
+      s_term=sin(angle)
 
 !     Determine the center of mass which will act as the pivot point for the rotational motion. 
-      ycm=0d0
-      zcm=0d0
+      ycm=0E0
+      zcm=0E0
       do i=1,nAtoms(nType)
         atmType = atomArray(nType,i)
         ycm = ycm + atomData(atmType)%mass*disp(i)%y_old
@@ -564,15 +564,15 @@
       enddo
 
 !     Calculate the Energy Difference Associated with the move   
-      E_Inter = 0d0
-      E_Intra = 0d0
+      E_Inter = 0E0
+      E_Intra = 0E0
       rejMove = .false.
 !      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
        
 !      Calculate Acceptance and determine if the move is accepted or not       
-      if(E_Inter .le. 0d0) then
+      if(E_Inter .le. 0E0) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new
@@ -580,8 +580,8 @@
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
-        acc_x = acc_x+1d0
-        acptRot(nType) = acptRot(nType) + 1d0
+        acc_x = acc_x+1E0
+        acptRot(nType) = acptRot(nType) + 1E0
         if(distCriteria) then
           call NeighborUpdate_Distance(PairList,nIndx)        
         else
@@ -597,8 +597,8 @@
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
-        acc_x = acc_x+1d0
-        acptRot(nType) = acptRot(nType) + 1d0
+        acc_x = acc_x+1E0
+        acptRot(nType) = acptRot(nType) + 1E0
         if(distCriteria) then
           call NeighborUpdate_Distance(PairList,nIndx)        
         else

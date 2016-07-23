@@ -81,7 +81,7 @@
                E_LJ = E_LJ + LJ
              endif
 
-             r = dsqrt(r)
+             r = sqrt(r)
              Ele = q/r
              E_Ele = E_Ele + Ele
 
@@ -199,7 +199,7 @@
                E_LJ = E_LJ + LJ
              endif
 
-             r_new = dsqrt(r_new)
+             r_new = sqrt(r_new)
              Ele = q/r_new
              dETable(iIndx) = dETable(iIndx) + Ele
              dETable(jIndx) = dETable(jIndx) + Ele
@@ -233,7 +233,7 @@
                E_LJ = E_LJ - LJ
              endif
  
-             r_old= dsqrt(r_old)
+             r_old= sqrt(r_old)
              Ele = q/r_old
              dETable(iIndx) = dETable(iIndx) - Ele
              dETable(jIndx) = dETable(jIndx) - Ele
@@ -315,7 +315,7 @@
             E_LJ = E_LJ + LJ
           endif
 
-          r = dsqrt(r)
+          r = sqrt(r)
           Ele = q/r
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
@@ -400,7 +400,7 @@
             E_LJ = E_LJ + LJ
           endif
 
-          r = dsqrt(r)
+          r = sqrt(r)
           Ele = q/r
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
@@ -477,7 +477,7 @@
         E_LJ = E_LJ + LJ
       endif
 
-      r = dsqrt(r)
+      r = sqrt(r)
       Ele = q/r
       E_Ele = E_Ele + Ele
 

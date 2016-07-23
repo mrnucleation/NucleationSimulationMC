@@ -20,10 +20,10 @@
         write(nout,*) "Allocated WHAM Variables"
       
   
-        WHAM_Numerator = 0d0
-        WHAM_Denominator = 0d0
-        HistStorage = 0d0
-        BiasStorage = 0d0
+        WHAM_Numerator = 0E0
+        WHAM_Denominator = 0E0
+        HistStorage = 0E0
+        BiasStorage = 0E0
         nCurWhamItter = 1
 !        tolLimit = 1d-2
         open(unit = 97, file="WHAM_Potential.incomp")
@@ -32,8 +32,8 @@
 
       allocate(TempHist(1:umbrellaLimit), STAT = AllocateStatus)      
       allocate(NewBias(1:umbrellaLimit), STAT = AllocateStatus)
-      NewBias = 0d0
-      TempHist = 0d0
+      NewBias = 0E0
+      TempHist = 0E0
       end subroutine
 
 !=========================================================================
@@ -79,7 +79,7 @@
 !      into one collective array on the root (myid = 0) processor.        
       arraySize = size(NHist)     
       if(myid .eq. 0) then
-        TempHist = 0d0
+        TempHist = 0E0
       endif
       call MPI_REDUCE(NHist, TempHist, arraySize, &
                 MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)       
@@ -90,7 +90,7 @@
         norm = sum(TempHist)
         do i = 1, umbrellaLimit
           BiasStorage(i,nCurWhamItter) = NBias(i) 
-          if(TempHist(i) .ne. 0d0) then
+          if(TempHist(i) .ne. 0E0) then
             WHAM_Numerator(i) = WHAM_Numerator(i) + TempHist(i)*TempHist(i)/norm
             WHAM_Denominator(i, nCurWhamItter) = TempHist(i)*exp(NBias(i))
 !            WHAM_Numerator(i) = WHAM_Numerator(i) + TempHist(i)
@@ -101,9 +101,9 @@
 
 !        This block solves for the free energy terms required by WHAM.  This is done
 !        self-consistently.
-        ProbArray = 0d0
-        F_Estimate = 0d0
-        tol = tolLimit + 1d0
+        ProbArray = 0E0
+        F_Estimate = 0E0
+        tol = tolLimit + 1E0
         cnt = 0
         do while(tol .gt. tolLimit)
           cnt = cnt + 1
@@ -113,25 +113,25 @@
             exit
           endif
 
-          ProbArray = 0d0
+          ProbArray = 0E0
           do j = 1, nCurWhamItter
             F_Old(j) = F_Estimate(j)
           enddo
 !            If bin #i has been sampled at any point in the simulation, estimate the unbiased probability
 !            based on the current guess value for F
           do i = 1, umbrellaLimit
-            if(WHAM_Numerator(i) .ne. 0d0) then
-              denomSum = 0d0
+            if(WHAM_Numerator(i) .ne. 0E0) then
+              denomSum = 0E0
               do j = 1, nCurWhamItter
-                if(WHAM_Denominator(i,j) .gt. 0d0) then
+                if(WHAM_Denominator(i,j) .gt. 0E0) then
                   denomSum = denomSum + WHAM_Denominator(i,j)*exp(-F_Estimate(j))
                 endif
               enddo
-              if(denomSum .ne. 0d0) then
+              if(denomSum .ne. 0E0) then
                 ProbArray(i) = WHAM_Numerator(i)/denomSum
               endif
             else
-              ProbArray(i) = 0d0
+              ProbArray(i) = 0E0
             endif
           enddo 
 
@@ -142,18 +142,18 @@
 !          Once all the unbiased probabilities have been estimated, use these unbiased estimates
 !          to calculate a new estimate for F
           do j = 1, nCurWhamItter
-            fSum = 0d0
+            fSum = 0E0
             do i = 1, umbrellaLimit
-              if(ProbArray(i) .ne. 0d0) then
+              if(ProbArray(i) .ne. 0E0) then
                 fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j))
               endif
             enddo
             F_Estimate(j) = log(fSum)
-            F_Estimate(j) = (F_Estimate(j) + F_Old(j))*0.5d0
+            F_Estimate(j) = (F_Estimate(j) + F_Old(j))*0.5E0
          enddo 
 !         Calculate the average change in F from the previous estimate and determine 
 !         if there has been a significant change to the F values.
-         tol = 0d0
+         tol = 0E0
          do j = 1, nCurWhamItter
            tol = tol + abs(F_Estimate(j) - F_Old(j))
 !           tol = max(tol, abs(F_Estimate(j) - F_Old(j)) )
@@ -163,29 +163,29 @@
 
 !        Using the new estimates for the unbiased probability, calculate the free energy of nucleation
 !        and modify the umbrella sampling bias to
-        NewBias = 0d0
+        NewBias = 0E0
         maxbin = maxloc(HistStorage,1)
         if(mod(nCurWhamItter,whamEstInterval) .eq. 0) then
 !          maxbin = maxloc(HistStorage,1)
           do i = 1, umbrellaLimit
-            if(ProbArray(i) .gt. 0d0) then
+            if(ProbArray(i) .gt. 0E0) then
               FreeEnergyEst(i) = -log(ProbArray(i)/ProbArray(maxbin))
               NewBias(i) = FreeEnergyEst(i)
             endif
           enddo
 !          maxBias = maxval(NewBias)
-          maxBias = -1d40
+          maxBias = -huge(dp)
           do i = 1, umbrellaLimit
-            if(ProbArray(i) .gt. 0d0) then
+            if(ProbArray(i) .gt. 0E0) then
               if(maxBias .lt. FreeEnergyEst(i)) then
                 maxBias = FreeEnergyEst(i)
               endif
             endif
           enddo
           do i = 1, umbrellaLimit
-            if(ProbArray(i) .le. 0d0) then
-              NewBias(i) = maxBias + 1d0
-              FreeEnergyEst(i) = maxBias + 1d0
+            if(ProbArray(i) .le. 0E0) then
+              NewBias(i) = maxBias + 1E0
+              FreeEnergyEst(i) = maxBias + 1E0
             endif
           enddo
 !          write(*,*) "WHAM Potenial Used"
@@ -193,21 +193,21 @@
         else
           maxbin2 = maxloc(TempHist,1)
           do i = 1, umbrellaLimit
-            if(ProbArray(i) .gt. 0d0) then
+            if(ProbArray(i) .gt. 0E0) then
               FreeEnergyEst(i) = -log(ProbArray(i)/ProbArray(maxbin))
             endif
-            if(TempHist(i) .gt. 0d0) then
+            if(TempHist(i) .gt. 0E0) then
               NewBias(i) = NBias(i) - NBias(maxbin2) - log(TempHist(i)/TempHist(maxbin2))
             endif
           enddo
 !          maxBias = NBias(maxbin2)
           do i = 1, umbrellaLimit
-            if(TempHist(i) .le. 0d0) then
-!              NBias(i) = NBias(i) + log(3d0)
-!              if(ProbArray(i) .gt. 0d0) then
-!                NewBias(i) = NBias(i) - NBias(maxbin2) + log(10d0)
+            if(TempHist(i) .le. 0E0) then
+!              NBias(i) = NBias(i) + log(3E0)
+!              if(ProbArray(i) .gt. 0E0) then
+!                NewBias(i) = NBias(i) - NBias(maxbin2) + log(10E0)
 !              else
-!                NewBias(i) = NBias(i) - NBias(maxbin2) + nCurWhamItter*log(10d0)
+!                NewBias(i) = NBias(i) - NBias(maxbin2) + nCurWhamItter*log(10E0)
                 NewBias(i) = NBias(i) - NBias(maxbin2) + log(TempHist(maxbin2))
 !                write(*,*) i, Newbias(i)
 !              endif
@@ -238,7 +238,7 @@
 
       do i = 1, umbrellaLimit
         NBias(i) = NewBias(i)
-        NHist(i) = 0d0
+        NHist(i) = 0E0
       enddo 
 
       nCurWhamItter = nCurWhamItter + 1
@@ -251,7 +251,6 @@
       use WHAM_Module
       implicit none
       include 'mpif.h' 
-!      integer, parameter :: dp = kind(0.0d0)
       integer :: arraySize
       integer :: i,j
       integer :: NArray(1:nMolTypes)
@@ -288,7 +287,7 @@
           enddo
         endif
         if(i .ne. 1) then
-          if(ProbArray(i) .ne. 0d0 ) then
+          if(ProbArray(i) .ne. 0E0 ) then
             write(98, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i)
           endif
         endif
@@ -305,7 +304,7 @@
       use WHAM_Module
       implicit none
       include 'mpif.h' 
-!      integer, parameter :: dp = kind(0.0d0)
+      logical :: goToNext
       integer :: arraySize
       integer :: i,j
       integer :: NArray(1:nMolTypes)
@@ -327,7 +326,7 @@
               endif
             enddo
           endif
-          if(ProbArray(i) .gt. 0d0) then
+          if(ProbArray(i) .gt. 0E0) then
             write(92, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i)
           else
             if(i .ne. 1) then
@@ -372,7 +371,7 @@
               endif
             enddo
           endif
-          if(ProbArray(i) .gt. 0d0) then
+          if(ProbArray(i) .gt. 0E0) then
             write(92, *) (NArray(j),j=1,nMolTypes), ProbArray(i)/probNorm
           endif
           NArray(nMolTypes) = NArray(nMolTypes) + 1
@@ -392,7 +391,7 @@
               endif
             enddo
           endif
-          if(HistStorage(i) .gt. 0d0) then
+          if(HistStorage(i) .gt. 0E0) then
             write(36, *) (NArray(j),j=1,nMolTypes), HistStorage(i)
           endif
           NArray(nMolTypes) = NArray(nMolTypes) + 1
@@ -411,7 +410,7 @@
                 endif
               enddo
             endif
-            if(HistStorage(i) .gt. 0d0) then
+            if(HistStorage(i) .gt. 0E0) then
               write(36, *) (NArray(j),j=1,nMolTypes), WHAM_Numerator(i)
             endif
             NArray(nMolTypes) = NArray(nMolTypes) + 1
@@ -429,7 +428,7 @@
                 endif
               enddo
             endif
-            if(HistStorage(i) .gt. 0d0) then
+            if(HistStorage(i) .gt. 0E0) then
               write(36, *) (NArray(j),j=1,nMolTypes), (WHAM_Denominator(i,j), j=1,nCurWhamItter)
             endif
             NArray(nMolTypes) = NArray(nMolTypes) + 1
@@ -449,7 +448,7 @@
       real(dp), intent(inout) :: NewBias(:)
       real(dp), intent(in) :: HistStorage(:)
       real(dp), allocatable :: TempBias(:), weightArray(:)
-      real(dp), parameter :: weightLimit = 0.5d0
+      real(dp), parameter :: weightLimit = 0.5E0
       real(dp), parameter :: gaussPara = log(1d3)
       logical :: arrayCycle
       integer :: arraySize, cnt
@@ -461,25 +460,25 @@
 
       nNeighCells = 3**nMolTypes 
       arraySize = size(NewBias)
-!      gaussPara = 1d0/dble(ncycle*ncycle2)
+!      gaussPara = 1E0/dble(ncycle*ncycle2)
       allocate( TempBias(1:arraySize) )
       allocate( weightArray(1:arraySize) )
   
       sumHist = sum(HistStorage)
       maxHist = maxval(HistStorage)
       do i = 1, arraySize
-!        if(exp(-1d-2*(1d0-HistStorage(i)/maxHist)) .gt. 0.01d0) then
-!          weightArray(i) = weightLimit*abs(1d0-HistStorage(i)/maxHist)
+!        if(exp(-1d-2*(1E0-HistStorage(i)/maxHist)) .gt. 0.01E0) then
+!          weightArray(i) = weightLimit*abs(1E0-HistStorage(i)/maxHist)
           weightArray(i) = weightLimit*exp(-gaussPara*((HistStorage(i)-maxHist)/sumHist)**2)
 !        else
-!          weightArray(i) = weightLimit*(exp(-1d-2)-0.01d0)
+!          weightArray(i) = weightLimit*(exp(-1d-2)-0.01E0)
 !        endif
 !        write(*,*) i, weightArray(i), HistStorage(i),(HistStorage(i)-maxHist)/sumHist
       enddo
 
       NArray = 0
       do i = 2, arraySize
-        sumWeight = 1d0
+        sumWeight = 1E0
         curBias = NewBias(i)
         NArray(nMolTypes) = NArray(nMolTypes) + 1
         if(nMolTypes .gt. 1) then
@@ -526,7 +525,7 @@
           sumWeight = sumWeight + curWeight
           curBias = curBias + curWeight * NewBias(bIndx)
         enddo
-!        if(sumWeight .ne. 0d0) then
+!        if(sumWeight .ne. 0E0) then
         curBias = curBias/(sumWeight)
         TempBias(i) = curBias
 !        write(*,*) i, NArray, NewBias(i), TempBias(i)

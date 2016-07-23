@@ -240,16 +240,16 @@
       real(dp), intent(out) :: x,y,z
       real(dp) :: u_12_sq, u1, u2, grnd
       
-      u_12_sq = 2d0
+      u_12_sq = 2E0
       do while(u_12_sq .ge. 1)
-       u1 = 2d0 * grnd() - 1d0
-       u2 = 2d0 * grnd() - 1d0
+       u1 = 2E0 * grnd() - 1E0
+       u2 = 2E0 * grnd() - 1E0
        u_12_sq = u1 * u1 + u2 * u2
       enddo
  
-      x = 2d0 * u1 * dsqrt(1d0 - u_12_sq)
-      y = 2d0 * u2 * dsqrt(1d0 - u_12_sq)
-      z = (1d0 - 2d0 * u_12_sq)
+      x = 2E0 * u1 * sqrt(1E0 - u_12_sq)
+      y = 2E0 * u2 * sqrt(1E0 - u_12_sq)
+      z = (1E0 - 2E0 * u_12_sq)
       
       
       end subroutine
@@ -275,16 +275,16 @@
       real(dp) :: r_proj,grnd
 
       r1 = v1%x*v1%x + v1%y*v1%y + v1%z*v1%z
-      r1 = dsqrt(r1)
+      r1 = sqrt(r1)
 
       tors_angle = two_pi*grnd()
         
-      s_term = dsin(tors_angle)
-      c_term = dcos(tors_angle)      
-      r_proj = dsqrt(v1%x*v1%x + v1%y*v1%y)
+      s_term = sin(tors_angle)
+      c_term = cos(tors_angle)      
+      r_proj = sqrt(v1%x*v1%x + v1%y*v1%y)
         
-      coeff1 = (r2/r1)*dcos(bond_ang)
-      coeff2 = (r2/r_proj)*dsin(bond_ang)
+      coeff1 = (r2/r1)*cos(bond_ang)
+      coeff2 = (r2/r_proj)*sin(bond_ang)
       coeff3 = coeff2/r1
 
       v2%x = coeff1*v1%x - coeff2*c_Term*v1%y - coeff3*s_Term*v1%x*v1%z
@@ -317,16 +317,16 @@
       real(dp) :: r_proj,grnd
 
       r1 = v1%x*v1%x + v1%y*v1%y + v1%z*v1%z
-      r1 = dsqrt(r1)
+      r1 = sqrt(r1)
 
       tors_angle = two_pi*grnd()
         
-      s_term = dsin(tors_angle)
-      c_term = dcos(tors_angle)      
-      r_proj = dsqrt(v1%x*v1%x + v1%y*v1%y)
+      s_term = sin(tors_angle)
+      c_term = cos(tors_angle)      
+      r_proj = sqrt(v1%x*v1%x + v1%y*v1%y)
         
-      coeff1 = (r2/r1)*dcos(bond_ang1)
-      coeff2 = (r2/r_proj)*dsin(bond_ang1)
+      coeff1 = (r2/r1)*cos(bond_ang1)
+      coeff2 = (r2/r_proj)*sin(bond_ang1)
       coeff3 = coeff2/r1
 
       v2%x = coeff1*v1%x - coeff2*c_Term*v1%y - coeff3*s_Term*v1%x*v1%z
@@ -334,11 +334,11 @@
       v2%z = coeff1*v1%z                      + coeff3*s_term*(r_proj*r_proj)
 	  
       tors_angle = tors_angle + dihed
-      s_term = dsin(tors_angle)
-      c_term = dcos(tors_angle) 
+      s_term = sin(tors_angle)
+      c_term = cos(tors_angle) 
 
-      coeff1 = (r3/r1)*dcos(bond_ang2)
-      coeff2 = (r3/r_proj)*dsin(bond_ang2)
+      coeff1 = (r3/r1)*cos(bond_ang2)
+      coeff2 = (r3/r_proj)*sin(bond_ang2)
       coeff3 = coeff2/r1
 	  
       v3%x = coeff1*v1%x - coeff2*c_Term*v1%y - coeff3*s_Term*v1%x*v1%z
@@ -369,8 +369,8 @@
       real(dp) :: r_proj
 
       r2 = v2%x*v2%x + v2%y*v2%y + v2%z*v2%z
-      r2 = dsqrt(r2)
-      r_proj = dsqrt(v2%x*v2%x + v2%y*v2%y)
+      r2 = sqrt(r2)
+      r_proj = sqrt(v2%x*v2%x + v2%y*v2%y)
 
 !            
       x1_u =  v1%x - v2%x
@@ -386,23 +386,23 @@
         
 !     Calculate the torsional rotation angle for the new v3 vector from the v1 components
       rot_angle = atan2(z1_s, y1_s)
-!      write(2,*) rot_angle*180d0/pi, tors_angle*180d0/pi, (rot_angle + tors_angle)*180d0/pi
+!      write(2,*) rot_angle*180E0/pi, tors_angle*180E0/pi, (rot_angle + tors_angle)*180E0/pi
       rot_angle = rot_angle + tors_angle
 
 !     Rescale the angle      
-!      do while(rot_angle .lt. 0d0) 
+!      do while(rot_angle .lt. 0E0) 
 !        rot_angle = rot_angle + two_pi
 !      enddo
 !      do while(rot_angle .gt. two_pi) 
 !        rot_angle = rot_angle - two_pi
 !      enddo
         
-      s_term = dsin(rot_angle)
-      c_term = dcos(rot_angle)      
+      s_term = sin(rot_angle)
+      c_term = cos(rot_angle)      
 
         
-      coeff1 = (r3/r2)*dcos(bond_ang)
-      coeff2 = (r3/r_proj)*dsin(bond_ang)
+      coeff1 = (r3/r2)*cos(bond_ang)
+      coeff2 = (r3/r_proj)*sin(bond_ang)
       coeff3 = coeff2/r2
 
       v3%x = coeff1*v2%x - coeff2*c_Term*v2%y - coeff3*s_Term*v2%x*v2%z
@@ -425,27 +425,27 @@
       real(dp) :: normalSigma, grnd,eng
 !      real(dp) ::
 
-      if(k_bond .eq. 0d0) then
+      if(k_bond .eq. 0E0) then
         dist = r_eq
-        ProbGen = 1d0
+        ProbGen = 1E0
         return
       endif
       
-      normalSigma = 1d0/(0.5d0*k_bond*beta)
+      normalSigma = 1E0/(0.5E0*k_bond*beta)
       acpt=.false.         
       do while(.not. acpt)
-         distGen_atmp = distGen_atmp + 1d0
-        dist = -log(1d0-grnd())
-!        dist = sqrt(-2d0*log(grnd())) * cos(two_pi*grnd())
+         distGen_atmp = distGen_atmp + 1E0
+        dist = -log(1E0-grnd())
+!        dist = sqrt(-2E0*log(grnd())) * cos(two_pi*grnd())
 !        dist = dist*normalSigma + r_eq
         eng = Harmonic(dist, k_bond, r_eq)
         ProbGen = dist * dist * exp(-beta*eng+dist)
 !        ProbGen = dist * dist
-        if(ProbGen/3d0 .gt. grnd()) then        
+        if(ProbGen/3E0 .gt. grnd()) then        
           acpt=.true.
         endif
       enddo  
-      distGen_accpt = distGen_accpt + 1d0   
+      distGen_accpt = distGen_accpt + 1E0   
 
       end subroutine
 !==========================================================================           
@@ -467,19 +467,19 @@
 
       k_bend = bendData(bendType)%k_eq
       theta_eq = bendData(bendType)%ang_eq  
-      if(k_bend .eq. 0d0) then
+      if(k_bend .eq. 0E0) then
          angle = theta_eq
-         ProbGen = 1d0
+         ProbGen = 1E0
          return
       endif
       
       
       acpt=.false.  
       do while(acpt .eqv. .false.)
-         angGen_atmp = angGen_atmp + 1d0
+         angGen_atmp = angGen_atmp + 1E0
 
 !         angle = pi*grnd()
-!         angle = acos(1d0-2d0*grnd())
+!         angle = acos(1E0-2E0*grnd())
 
          ranNum = grnd()
           !Since the majority of the probability density will be centered near the equilibrium angle
@@ -504,13 +504,13 @@
          endif
 
          eng = Harmonic(angle, k_bend, theta_eq)
-         ProbGen = dsin(angle)*exp(-beta*eng)/ProbSel
+         ProbGen = sin(angle)*exp(-beta*eng)/ProbSel
          ProbGen = ProbGen*bendData(bendType)%accptConstant
          if(ProbGen .gt. grnd()) then
            acpt=.true.
          endif
       enddo    
-      angGen_accpt = angGen_accpt + 1d0   
+      angGen_accpt = angGen_accpt + 1E0   
 
       end subroutine
 !==========================================================================  
@@ -544,29 +544,29 @@
       k_bend3 = bendData(bendType3)%k_eq
       theta_eq3 = bendData(bendType3)%ang_eq
 	
-      if((k_bend1 .eq. 0d0) .or. (k_bend2 .eq. 0d0) .or. (k_bend3 .eq. 0d0)) then
+      if((k_bend1 .eq. 0E0) .or. (k_bend2 .eq. 0E0) .or. (k_bend3 .eq. 0E0)) then
         ang1 = theta_eq1
         ang2 = theta_eq2
         ang3 = theta_eq3
         dihedral = acos((cos(ang3) - cos(ang1)*cos(ang2))/(sin(ang1)*sin(ang2)))
-        ProbGen = 1d0
+        ProbGen = 1E0
         return
       endif
       
      
       acpt=.false.         
       do while(acpt .eqv. .false.)
-!         eng = 0d0
-         dihedGen_atmp = dihedGen_atmp + 1d0
+!         eng = 0E0
+         dihedGen_atmp = dihedGen_atmp + 1E0
 !         angle = pi*grnd()
-!         ang1 = acos(1d0-2d0*grnd())
-!         ang2 = acos(1d0-2d0*grnd())
+!         ang1 = acos(1E0-2E0*grnd())
+!         ang2 = acos(1E0-2E0*grnd())
          call GenerateBendAngle(ang1, bendType1, ProbTemp)
          call GenerateBendAngle(ang2, bendType2, ProbTemp)
          dihedral = two_pi*grnd()
          ang3 = cos(ang1)*cos(ang2) + sin(ang1)*sin(ang2)*cos(dihedral)
-         if (ang3 .ge. 1d0) ang3 = 1d0
-         if (ang3 .le. -1d0) ang3 = -1d0
+         if (ang3 .ge. 1E0) ang3 = 1E0
+         if (ang3 .le. -1E0) ang3 = -1E0
          ang3 = acos(ang3)
 !         eng = Harmonic(ang1, k_bend1, theta_eq1)
 !         eng = eng + Harmonic(ang2, k_bend2, theta_eq2)
@@ -575,7 +575,7 @@
          ProbGen = exp(-beta*eng)
          if(ProbGen .gt. grnd()) acpt=.true.
       enddo    
-      dihedGen_accpt = dihedGen_accpt + 1d0   
+      dihedGen_accpt = dihedGen_accpt + 1E0   
       end subroutine
 
 !==========================================================================           
@@ -596,7 +596,7 @@
          angle = two_pi*grnd()
          eng = Trappe_CosNx(angle, torsData(torsType)%a)
          ProbGen = exp(-beta*eng)
-         if(0.9999d0*ProbGen .gt. grnd()) acpt=.true.
+         if(0.9999E0*ProbGen .gt. grnd()) acpt=.true.
       enddo    
 
       end subroutine      

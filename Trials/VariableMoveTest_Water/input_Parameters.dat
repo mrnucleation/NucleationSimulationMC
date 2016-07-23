@@ -6,18 +6,18 @@
    Moves_Per_Cycles:=             1d2
    Number_of_Mol_Types:=          1
    Min_Cluster_Size:=             1 
-   Max_Cluster_Size:=             20
+   Max_Cluster_Size:=             10
    Temperature(K):=               230
    Echo_To_Screen:=               .true.
    Use_Umbrela_Bias:=             .true.  fort.25
    Use_Multiple_Input_Config:=    .false. 
    Number_Of_RosenTrials:=        8
-   AVBMC_Insertion_R:=            4.0d0
+   AVBMC_Insertion_R:=            3.2d0
    Softcut:=                      100.0d0   
 #-----------------------------------------------------
 #             Monte Carlo Move Parameters
 #-----------------------------------------------------
-    Gas_Phase_Density:=           3d-2
+    Gas_Phase_Density:=           1d-9
 #-----------------------------------------------------
 #             Output Parameters
 #-----------------------------------------------------	
@@ -46,6 +46,6 @@
 #             Cluster Parameters
 #-----------------------------------------------------
       Energy Criteria:
-      -260
+      -500
       E_Bias_Alpha:=                 
       0.10d0

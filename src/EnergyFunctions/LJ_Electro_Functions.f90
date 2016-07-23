@@ -28,7 +28,7 @@
       real(dp), intent(inOut) :: E_T
       real(dp), intent(inOut) :: PairList(:,:)
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
-      integer(kind=2) :: atmType1,atmType2      
+      integer(kind=atomIntType) :: atmType1,atmType2      
       integer :: iIndx, jIndx, jMolMin
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
@@ -36,11 +36,11 @@
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij      
 
-      E_LJ = 0d0
-      E_Ele = 0d0
-      E_Inter_T = 0d0
-      PairList = 0d0      
-      ETable = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0
+      E_Inter_T = 0E0
+      PairList = 0E0      
+      ETable = 0E0
       do iType = 1,nMolTypes
         do jType = iType, nMolTypes
           do iMol=1,NPART(iType)
@@ -77,10 +77,10 @@
                    stop "ERROR: Overlaping atoms found in the configuration!"
                  endif 
                  LJ = (sig_sq/r)**3
-                 LJ = ep * LJ * (LJ-1d0)              
+                 LJ = ep * LJ * (LJ-1E0)              
                  E_LJ = E_LJ + LJ
               
-                 r = dsqrt(r)
+                 r = sqrt(r)
                  Ele = q/r
                  E_Ele = E_Ele + Ele
                  if(.not. distCriteria) then
@@ -110,7 +110,7 @@
       
       end subroutine
 !======================================================================================      
-      pure subroutine Shift_ECalc_Inter(E_Trial,disp, PairList,dETable,rejMove)
+      subroutine Shift_ECalc_Inter(E_Trial,disp, PairList,dETable,rejMove)
       use ForceField
       use ForceFieldPara_LJ_Q
       use Coords
@@ -124,7 +124,7 @@
 
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp
-      integer(kind=2) :: atmType1,atmType2,iIndx,jIndx
+      integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
       integer :: sizeDisp 
       real(dp) :: rx,ry,rz
       real(dp) :: r_new, r_old
@@ -133,14 +133,17 @@
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij    
+      real(dp) :: time_r, time_LJ, time_Ele
+      real(dp) :: cnt_r, cnt_LJ, cnt_Ele
+      real(dp) :: time1, time2
 
       sizeDisp = size(disp)
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Trial = 0d0
-      PairList = 0d0      
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Trial = 0E0
+      PairList = 0E0      
 
-      dETable = 0d0
+      dETable = 0E0
 !      if(NTotal .eq. 1) return
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
@@ -152,19 +155,21 @@
       do iDisp=1,sizeDisp
         iAtom = disp(iDisp)%atmIndx
         atmType1 = atomArray(iType,iAtom)
-!        r_min1_sq = r_min_sq(atmType1)
+
         do jType = 1, nMolTypes
           do jAtom = 1,nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
-            if(q .eq. 0.0d0) then
-              if(ep .eq. 0.0d0) then
-                cycle
+            rmin_ij = r_min_tab(atmType2,atmType1)
+            if(q .eq. 0E0) then
+              if(ep .eq. 0E0) then
+                if(rmin_ij .eq. 0E0) then
+                  cycle
+                endif
               endif
             endif
             sig_sq = sig_tab(atmType2,atmType1)
-            rmin_ij = r_min_tab(atmType2,atmType1)
             do jMol=1,NPART(jType)
               if(iType .eq. jType) then
                 if(iMol .eq. jMol) then
@@ -177,7 +182,11 @@
               ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = disp(iDisp)%z_new - MolArray(jType)%mol(jMol)%z(jAtom)
               r_new = rx*rx + ry*ry + rz*rz
-              
+!             If r_new is less than r_min reject the move.              
+              if(r_new .lt. rmin_ij) then
+                 rejMove = .true.
+                 return
+              endif    
               if(distCriteria) then
                 if(iAtom .eq. 1) then
                   if(jAtom .eq. 1) then
@@ -185,12 +194,12 @@
                   endif
                 endif
               endif
-!             If r_new is less than r_min reject the move.              
-!              if(r_new .lt. max(r_min1_sq ,r_min_sq(atmType2))) then
-              if(r_new .lt. rmin_ij) then
-                 rejMove = .true.
-                 return
-              endif              
+              if(q .eq. 0E0) then
+                if(ep .eq. 0E0) then
+                  cycle
+                endif
+              endif
+          
 !             Distance for the Old position
               rx = disp(iDisp)%x_old - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = disp(iDisp)%y_old - MolArray(jType)%mol(jMol)%y(jAtom)
@@ -200,10 +209,10 @@
 
 !             Check to see if there is a non-zero Lennard-Jones parmaeter. If so calculate
 !             the Lennard-Jones energy           
-              if(ep .ne. 0d0) then
+              if(ep .ne. 0E0) then
                 LJ = (sig_sq/r_new)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1d0)                
+                LJ = ep * LJ * (LJ-1E0)                
                 E_LJ = E_LJ + LJ
                 if(.not. distCriteria) then
                   PairList(jIndx) = PairList(jIndx) + LJ
@@ -213,14 +222,14 @@
                 
                 LJ = (sig_sq/r_old)
                 LJ = LJ * LJ * LJ
-                LJ = ep * LJ * (LJ-1d0)                
+                LJ = ep * LJ * (LJ-1E0)                
                 E_LJ = E_LJ - LJ
                 dETable(iIndx) = dETable(iIndx) - LJ
                 dETable(jIndx) = dETable(jIndx) - LJ                                
               endif
 !             Check to see if there is a non-zero Electrostatic parmaeter. If so calculate
 !             the electrostatic energy              
-              if(q .ne. 0d0) then
+              if(q .ne. 0E0) then
                 r_new = sqrt(r_new)
                 Ele = q / r_new
                 E_Ele = E_Ele + Ele
@@ -264,7 +273,7 @@
       real(dp), intent(inout) :: PairList(:)
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
-      integer(kind=2) :: atmType1,atmType2, jIndx
+      integer(kind=atomIntType) :: atmType1,atmType2, jIndx
       integer :: sizeDisp 
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
@@ -282,8 +291,8 @@
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
-            if(q .eq. 0d0) then
-              if(ep .eq. 0d0) then
+            if(q .eq. 0E0) then
+              if(ep .eq. 0E0) then
                 cycle
               endif
             endif
@@ -303,15 +312,15 @@
 
 !             Check to see if there is a non-zero Lennard-Jones parmaeter. If so calculate
 !             the Lennard-Jones energy           
-              if(ep .ne. 0d0) then
+              if(ep .ne. 0E0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ - 1d0)                
+                LJ = ep * LJ * (LJ - 1E0)                
                 PairList(jIndx) = PairList(jIndx) + LJ
               endif
 !             Check to see if there is a non-zero Electrostatic parmaeter. If so calculate
 !             the electrostatic energy              
-              if(q .ne. 0d0) then
+              if(q .ne. 0E0) then
                 r = sqrt(r)
                 Ele = q / r
                 PairList(jIndx) = PairList(jIndx) + Ele
@@ -334,16 +343,16 @@
       real(dp), intent(inout) :: dETable(:)
       
       integer :: iAtom,iIndx,jType,jIndx,jMol,jAtom
-      integer(kind=2)  :: atmType1,atmType2
+      integer(kind=atomIntType)  :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
 
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Trial = 0d0
-      dETable = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Trial = 0E0
+      dETable = 0E0
       
       iIndx = MolArray(iType)%mol(iMol)%indx
 
@@ -355,8 +364,8 @@
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
-            if(q .eq. 0d0) then
-              if(ep .eq. 0d0) then
+            if(q .eq. 0E0) then
+              if(ep .eq. 0E0) then
                 cycle
               endif
             endif
@@ -374,15 +383,15 @@
               ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
               r = rx*rx + ry*ry + rz*rz
-              if(ep .ne. 0d0) then
+              if(ep .ne. 0E0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1d0)                
+                LJ = ep * LJ * (LJ-1E0)                
                 E_LJ = E_LJ + LJ
                 dETable(iIndx) = dETable(iIndx) + LJ
                 dETable(jIndx) = dETable(jIndx) + LJ
               endif
-              if(q .ne. 0d0) then            
+              if(q .ne. 0E0) then            
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele + Ele
@@ -410,7 +419,7 @@
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
       integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
@@ -418,11 +427,11 @@
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij
 
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Trial = 0d0
-      dETable = 0d0
-      PairList = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Trial = 0E0
+      dETable = 0E0
+      PairList = 0E0
       rejMove = .false.
       
       iIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
@@ -434,11 +443,6 @@
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
-            if(q .eq. 0.0d0) then
-              if(ep .eq. 0.0d0) then
-                cycle
-              endif
-            endif
             sig_sq = sig_tab(atmType2,atmType1)
             rmin_ij = r_min_tab(atmType2,atmType1)
             do jMol = 1,NPART(jType)
@@ -458,13 +462,13 @@
                   endif
                 endif
               endif              
-              LJ = 0d0
-              Ele = 0d0
+              LJ = 0E0
+              Ele = 0E0
 
-              if(ep .ne. 0d0) then
+              if(ep .ne. 0E0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1d0)                
+                LJ = ep * LJ * (LJ-1E0)                
                 E_LJ = E_LJ + LJ
                 if(.not. distCriteria) then                
                   PairList(jIndx) = PairList(jIndx) + LJ
@@ -472,7 +476,7 @@
                 dETable(jIndx) = dETable(jIndx) + LJ
                 dETable(iIndx) = dETable(iIndx) + LJ
               endif
-              if(q .ne. 0d0) then
+              if(q .ne. 0E0) then
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele + Ele
@@ -505,18 +509,18 @@
       
       integer :: iAtom, newIndx, jType, jIndx, jMol, jAtom
       integer :: iIndx2
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij
 
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Trial = 0d0
-      dETable = 0d0
-      PairList = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Trial = 0E0
+      dETable = 0E0
+      PairList = 0E0
       rejMove = .false.
       
       newIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
@@ -531,8 +535,8 @@
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
-            if(q .eq. 0.0d0) then
-              if(ep .eq. 0.0d0) then
+            if(q .eq. 0.0E0) then
+              if(ep .eq. 0.0E0) then
                 cycle
               endif
             endif
@@ -561,12 +565,12 @@
                   endif
                 endif
               endif              
-              LJ = 0d0
-              Ele = 0d0
-              if(ep .ne. 0d0) then
+              LJ = 0E0
+              Ele = 0E0
+              if(ep .ne. 0E0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1d0)                
+                LJ = ep * LJ * (LJ-1E0)                
                 E_LJ = E_LJ + LJ
                 if(.not. distCriteria) then                
                   PairList(jIndx) = PairList(jIndx) + LJ
@@ -574,7 +578,7 @@
                 dETable(jIndx) = dETable(jIndx) + LJ
                 dETable(newIndx) = dETable(newIndx) + LJ
               endif
-              if(q .ne. 0d0) then
+              if(q .ne. 0E0) then
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele + Ele
@@ -598,8 +602,8 @@
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
-            if(q .eq. 0d0) then
-              if(ep .eq. 0d0) then
+            if(q .eq. 0E0) then
+              if(ep .eq. 0E0) then
                 cycle
               endif
             endif
@@ -615,15 +619,15 @@
               ry = MolArray(nType)%mol(nMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = MolArray(nType)%mol(nMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
               r = rx*rx + ry*ry + rz*rz
-              if(ep .ne. 0d0) then
+              if(ep .ne. 0E0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1d0)                
+                LJ = ep * LJ * (LJ-1E0)                
                 E_LJ = E_LJ - LJ
                 dETable(iIndx2) = dETable(iIndx2) - LJ
                 dETable(jIndx) = dETable(jIndx) - LJ
               endif
-              if(q .ne. 0d0) then            
+              if(q .ne. 0E0) then            
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele - Ele
@@ -652,16 +656,16 @@
       logical, intent(out) :: rejMove
       
       integer :: iAtom,jAtom
-      integer(kind=2)  :: atmType1,atmType2
+      integer(kind=atomIntType)  :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Trial,E_Ele,E_LJ
       real(dp) :: rmin_ij
 
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Trial = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Trial = 0E0
       rejMove = .false.
     
       do iAtom = 1,nAtoms(newMol%molType)
@@ -670,13 +674,16 @@
           atmType2 = atomArray(jType, jAtom)
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)
-          if(q .eq. 0d0) then
-            if(ep .eq. 0d0) then
-              cycle
+          rmin_ij = r_min_tab(atmType2, atmType1)
+          if(q .eq. 0E0) then
+            if(ep .eq. 0E0) then
+              if(rmin_ij .eq. 0E0) then
+                cycle
+              endif
             endif
           endif
           sig_sq = sig_tab(atmType2, atmType1)
-          rmin_ij = r_min_tab(atmType2, atmType1)
+
 !         New Energy Calculation
           rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
           ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
@@ -689,14 +696,13 @@
             return
           endif          
           
-          if(ep .ne. 0d0) then
+          if(ep .ne. 0E0) then
             LJ = (sig_sq/r)
             LJ = LJ * LJ * LJ              
-!            LJ = 4d0 * ep * LJ * (LJ-1d0)
-            LJ = ep * LJ * (LJ-1d0)            
+            LJ = ep * LJ * (LJ - 1E0)            
             E_LJ = E_LJ + LJ
           endif
-          if(q .ne. 0d0) then            
+          if(q .ne. 0E0) then            
             r = sqrt(r)
             Ele = q / r
             E_Ele = E_Ele + Ele

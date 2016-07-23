@@ -34,9 +34,9 @@
         Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
         Angle = Angle/(r12*r23)
         if(abs(Angle) .gt. 1d0) then
-           Angle = sign(1d0, Angle)
+           Angle = sign(real(1, dp), Angle)
         endif
-        Angle = dacos(Angle)
+        Angle = acos(Angle)
         bin = floor(Angle * d_ang)
         HistAngle(bin) = HistAngle(bin) + 1d0
       enddo

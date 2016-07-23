@@ -16,7 +16,7 @@
       end type
 
       type Molecule
-        integer(kind=2) :: indx
+        integer(kind=atomIntType) :: indx
 !        integer :: indx        
         real(dp),allocatable :: x(:), y(:), z(:)
       end type
@@ -26,20 +26,20 @@
       end type
 
       type MolPointers
-        integer(kind=2) :: molType,molIndx
+        integer(kind=atomIntType) :: molType,molIndx
 !        integer :: molType,molIndx        
         type(FloatPointer),allocatable :: x(:), y(:), z(:)
       end type
 
       type Displacement
-        integer(kind=2) :: molType, atmIndx, molIndx
+        integer(kind=atomIntType) :: molType, atmIndx, molIndx
 !        integer :: molType,molIndx,atmIndx        
         real(dp) :: x_new, y_new, z_new
         real(dp),pointer :: x_old, y_old, z_old
       end type
 
       type TrialCoordinates
-        integer(kind=2) :: molType, molIndx
+        integer(kind=atomIntType) :: molType, molIndx
         real(dp), allocatable :: x(:), y(:), z(:)
       end type
 
@@ -112,16 +112,16 @@
       use VarPrecision
 
       type BondNumber
-        integer(kind=2),allocatable :: atom(:)
+        integer(kind=atomIntType),allocatable :: atom(:)
       end type
 
       type Pathing
         integer :: nTerminal, nLinker,nHub      
-        integer(kind=2),allocatable :: termAtoms(:)
-        integer(kind=2),allocatable :: hubAtoms(:) 
+        integer(kind=atomIntType),allocatable :: termAtoms(:)
+        integer(kind=atomIntType),allocatable :: hubAtoms(:) 
         integer :: nPaths
-        integer(kind=2),allocatable :: path(:,:)        
-        integer(kind=2),allocatable :: pathMax(:)
+        integer(kind=atomIntType),allocatable :: path(:,:)        
+        integer(kind=atomIntType),allocatable :: pathMax(:)
       end type      
  
  
@@ -258,7 +258,7 @@
 
       integer(kind=8) :: ncycle,ncycle2       
       logical :: ridgidMolecules, multipleInput
-      integer(kind=2) :: nMolTypes
+      integer(kind=atomIntType) :: nMolTypes
       integer,allocatable :: NPart(:),NMin(:),NMax(:)
       logical,allocatable :: isActive(:)
       integer :: NTotal

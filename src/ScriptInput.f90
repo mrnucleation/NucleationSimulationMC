@@ -11,7 +11,7 @@
       use EnergyTables
       implicit none
       integer :: indx,lineStat
-      real(kind(0.0d0)) :: varValue
+      real(dp) :: varValue
       character(len=50) :: line
       character(len=15) :: command1, command2, dummy
       character(len=50) :: fileName
@@ -109,7 +109,7 @@
       character(len=15) :: fileName      
       logical :: logicValue
       integer :: intValue
-      real(kind(0.0d0)) :: realValue
+      real(dp) :: realValue
       
       read(line,*) dummy, command
       select case(trim(adjustl(command)))
