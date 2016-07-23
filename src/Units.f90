@@ -1,16 +1,17 @@
 !==============================================================
       module Constants
- 
-      real(kind(0.0d0)),parameter :: pi=4d0*datan(1d0) 
-      real(kind(0.0d0)),parameter :: two_pi=8d0*datan(1d0)
+      use VarPrecision
+      real(dp),parameter :: pi=4d0*datan(1d0) 
+      real(dp),parameter :: two_pi=8d0*datan(1d0)
         
       end module
 !===================================================================      
       module Units
+      use VarPrecision
       contains
         
 !     !----------------------------------------------------------
-        double precision function FindEngUnit(unitName)
+        real(dp) function FindEngUnit(unitName)
         implicit none 
         character(len=10), intent(in) :: unitName       
         
@@ -39,7 +40,7 @@
         
         end function
 !    !----------------------------------------------------------
-        double precision function FindLengthUnit(unitName)
+        real(dp) function FindLengthUnit(unitName)
         implicit none 
         character(len=10) :: unitName       
         
@@ -60,7 +61,7 @@
         
         end function
 !     !----------------------------------------------------------
-        double precision function FindAngularUnit(unitName)
+        real(dp) function FindAngularUnit(unitName)
         use Constants         
         implicit none 
         character(len=10), intent(in) :: unitName       

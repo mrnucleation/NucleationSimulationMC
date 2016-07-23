@@ -56,7 +56,7 @@
             LJ = ep * LJ * (LJ-1d0)
             E_LJ = E_LJ + LJ
             
-            r = dsqrt(r)
+            r = sqrt(r)
             Ele = q/r
             E_Ele = E_Ele + Ele            
           enddo
@@ -160,7 +160,7 @@
         LJ = 4d0 * ep * LJ * (LJ-1d0)
         E_LJ = E_LJ + LJ
             
-        r = dsqrt(r)
+        r = sqrt(r)
         Ele = q/r
         E_Ele = E_Ele + Ele            
         
@@ -174,7 +174,7 @@
         LJ = ep * LJ * (LJ-1d0)
         E_LJ = E_LJ - LJ
             
-        r = dsqrt(r)
+        r = sqrt(r)
         Ele = q/r
         E_Ele = E_Ele - Ele           
       enddo
@@ -224,7 +224,7 @@
           E_LJ = E_LJ + LJ
         endif
         if(q .ne. 0d0) then            
-          r = dsqrt(r)
+          r = sqrt(r)
           Ele = q/r
           E_Ele = E_Ele + Ele            
         endif
@@ -275,7 +275,7 @@
           E_LJ = E_LJ + LJ
         endif
         if(q .ne. 0d0) then            
-          r = dsqrt(r)
+          r = sqrt(r)
           Ele = q/r
           E_Ele = E_Ele + Ele            
         endif

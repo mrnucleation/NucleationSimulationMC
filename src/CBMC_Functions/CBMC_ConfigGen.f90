@@ -7,10 +7,10 @@
       integer, intent(in) :: nType
       integer :: i
 
-      real(kind(0.0d0)) :: grnd,rotang
-      real(kind(0.0d0)) :: c_term,s_term
-      real(kind(0.0d0)) :: x_shift,y_shift,z_shift
-      real(kind(0.0d0)) :: x_rid_cm, y_rid_cm,z_rid_cm
+      real(dp) :: grnd,rotang
+      real(dp) :: c_term,s_term
+      real(dp) :: x_shift,y_shift,z_shift
+      real(dp) :: x_rid_cm, y_rid_cm,z_rid_cm
       
       newMol%molType = nType
       newMol%x(1:nAtoms(nType)) = gasConfig(nType)%x(1:nAtoms(nType))
@@ -27,8 +27,8 @@
       
 !     Rotate xz axis
       rotang = two_pi*grnd()
-      c_term = dcos(rotang)
-      s_term = dsin(rotang)
+      c_term = cos(rotang)
+      s_term = sin(rotang)
       do i = 1,nAtoms(nType)
         x_shift = newMol%x(i) - x_rid_cm
         z_shift = newMol%z(i) - z_rid_cm        
@@ -39,8 +39,8 @@
         
 !     Rotate yz axis
       rotang = two_pi*grnd()
-      c_term = dcos(rotang)
-      s_term = dsin(rotang)
+      c_term = cos(rotang)
+      s_term = sin(rotang)
       do i = 1,nAtoms(nType)
         y_shift = newMol%y(i) - y_rid_cm
         z_shift = newMol%z(i) - z_rid_cm        
@@ -50,8 +50,8 @@
   
 !     Rotate xy axis
       rotang = two_pi*grnd()
-      c_term = dcos(rotang)
-      s_term = dsin(rotang)
+      c_term = cos(rotang)
+      s_term = sin(rotang)
       do i = 1,nAtoms(nType)
         x_shift = newMol%x(i) - x_rid_cm
         y_shift = newMol%y(i) - y_rid_cm        
@@ -70,10 +70,10 @@
       integer, intent(in) :: nType
       integer :: bondType, bendType
       integer :: Atm1, Atm2, Atm3
-!      real(kind(0.0d0)) :: grnd
-      real(kind(0.0d0)) :: dx,dy,dz
-      real(kind(0.0d0)) :: k_bond, r_eq, r, Prob
-      real(kind(0.0d0)) :: k_bend, ang_eq, ang
+!      real(dp) :: grnd
+      real(dp) :: dx,dy,dz
+      real(dp) :: k_bond, r_eq, r, Prob
+      real(dp) :: k_bend, ang_eq, ang
       type(SimpleAtomCoords) :: v1, v2
       
       newMol%molType = nType

@@ -1,7 +1,8 @@
 !=======================================================
-      double precision function grnd()
+      real(dp) function grnd()
+      use VarPrecision
       implicit none
-      real(kind(0.0d0)) :: r
+      real(dp) :: r
 
       call RANDOM_NUMBER(r)
       grnd = r

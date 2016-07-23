@@ -59,8 +59,8 @@
         
 !          Rotate xz axis
           rotang = two_pi*grnd()
-          c_term = dcos(rotang)
-          s_term = dsin(rotang)
+          c_term = cos(rotang)
+          s_term = sin(rotang)
           do i = 1,nAtoms(nType)
             x_shift = rosenTrial(iRosen)%x(i) - x_rid_cm
             z_shift = rosenTrial(iRosen)%z(i) - z_rid_cm        
@@ -70,8 +70,8 @@
         
 !          Rotate yz axis
           rotang = two_pi*grnd()
-          c_term = dcos(rotang)
-          s_term = dsin(rotang)
+          c_term = cos(rotang)
+          s_term = sin(rotang)
           do i = 1,nAtoms(nType)
             y_shift = rosenTrial(iRosen)%y(i) - y_rid_cm
             z_shift = rosenTrial(iRosen)%z(i) - z_rid_cm        
@@ -81,8 +81,8 @@
   
 !          Rotate xy axis
           rotang = two_pi*grnd()
-          c_term = dcos(rotang)
-          s_term = dsin(rotang)
+          c_term = cos(rotang)
+          s_term = sin(rotang)
           do i = 1,nAtoms(nType)
             x_shift = rosenTrial(iRosen)%x(i) - x_rid_cm
             y_shift = rosenTrial(iRosen)%y(i) - y_rid_cm        
@@ -198,8 +198,8 @@
         
 !          Rotate xz axis
           rotang = two_pi * grnd()
-          c_term = dcos(rotang)
-          s_term = dsin(rotang)
+          c_term = cos(rotang)
+          s_term = sin(rotang)
           do i = 1,nAtoms(nType)
             x_shift = newMol%x(i) - x_rid_cm
             z_shift = newMol%z(i) - z_rid_cm        
@@ -209,8 +209,8 @@
         
 !          Rotate yz axis
           rotang = two_pi*grnd()
-          c_term = dcos(rotang)
-          s_term = dsin(rotang)
+          c_term = cos(rotang)
+          s_term = sin(rotang)
           do i = 1,nAtoms(nType)
             y_shift = newMol%y(i) - y_rid_cm
             z_shift = newMol%z(i) - z_rid_cm        
@@ -220,8 +220,8 @@
   
 !          Rotate xy axis
           rotang = two_pi*grnd()
-          c_term = dcos(rotang)
-          s_term = dsin(rotang)
+          c_term = cos(rotang)
+          s_term = sin(rotang)
           do i = 1,nAtoms(nType)
             x_shift = newMol%x(i) - x_rid_cm
             y_shift = newMol%y(i) - y_rid_cm        
@@ -397,6 +397,7 @@
           rosenTrial(iRosen)%x(atm4) = rosenTrial(iRosen)%x(atm2) + v3%x 
           rosenTrial(iRosen)%y(atm4) = rosenTrial(iRosen)%y(atm2) + v3%y
           rosenTrial(iRosen)%z(atm4) = rosenTrial(iRosen)%z(atm2) + v3%z
+
         case default
          stop "Error! Molecule has too many atoms for a simple regrowth"
         end select

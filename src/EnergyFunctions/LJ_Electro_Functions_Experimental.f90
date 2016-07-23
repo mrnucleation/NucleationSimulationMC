@@ -23,15 +23,15 @@
       use SimParameters
       use EnergyTables
       implicit none
-      real(kind(0.0d0)), intent(inOut) :: E_T
-      real(kind(0.0d0)), intent(inOut) :: PairList(:,:)
+      real(dp), intent(inOut) :: E_T
+      real(dp), intent(inOut) :: PairList(:,:)
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=2) :: atmType1,atmType2      
       integer :: iIndx, jIndx, jMolMin
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
-      real(kind(0.0d0)) :: E_Ele,E_LJ
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
+      real(dp) :: E_Ele,E_LJ
       
       E_LJ = 0d0
       E_Ele = 0d0
@@ -115,19 +115,19 @@
       implicit none
       
       type(Displacement), intent(in) :: disp(:)      
-      real(kind(0.0d0)), intent(out) :: E_Trial
-      real(kind(0.0d0)), intent(inout) :: PairList(:), dETable(:)
+      real(dp), intent(out) :: E_Trial
+      real(dp), intent(inout) :: PairList(:), dETable(:)
       logical, intent(out) :: rejMove
 
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp
       integer(kind=2) :: atmType1,atmType2,iIndx,jIndx
       integer :: sizeDisp 
-      real(kind(0.0d0)) :: rx,ry,rz
-      real(kind(0.0d0)) :: r_new, r_old
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
-      real(kind(0.0d0)) :: E_Ele,E_LJ
+      real(dp) :: rx,ry,rz
+      real(dp) :: r_new, r_old
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
+      real(dp) :: E_Ele,E_LJ
 
       sizeDisp = size(disp)
       E_LJ = 0d0
@@ -253,14 +253,14 @@
       implicit none
       
       type(Displacement), intent(in) :: disp(:)      
-      real(kind(0.0d0)), intent(inout) :: PairList(:)
+      real(dp), intent(inout) :: PairList(:)
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=2) :: atmType1,atmType2, jIndx
       integer :: sizeDisp 
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
 
       sizeDisp = size(disp)
 
@@ -323,15 +323,15 @@
       use SimParameters
       implicit none
       integer, intent(in) :: iType, iMol     
-      real(kind(0.0d0)), intent(out) :: E_Trial
-      real(kind(0.0d0)), intent(inout) :: dETable(:)
+      real(dp), intent(out) :: E_Trial
+      real(dp), intent(inout) :: dETable(:)
       
       integer :: iAtom,iIndx,jType,jIndx,jMol,jAtom
       integer(kind=2)  :: atmType1,atmType2
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
-      real(kind(0.0d0)) :: E_Ele,E_LJ
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
+      real(dp) :: E_Ele,E_LJ
 
       E_LJ = 0d0
       E_Ele = 0d0      
@@ -397,15 +397,15 @@
       use SimParameters
       implicit none
       logical, intent(out) :: rejMove
-      real(kind(0.0d0)), intent(out) :: E_Trial
-      real(kind(0.0d0)), intent(inout) :: PairList(:), dETable(:)
+      real(dp), intent(out) :: E_Trial
+      real(dp), intent(inout) :: PairList(:), dETable(:)
       
       integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom
       integer(kind=2) :: atmType1,atmType2
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
-      real(kind(0.0d0)) :: E_Ele,E_LJ
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
+      real(dp) :: E_Ele,E_LJ
 
       E_LJ = 0d0
       E_Ele = 0d0      
@@ -489,10 +489,10 @@
       
       integer :: iAtom,jAtom
       integer(kind=2)  :: atmType1,atmType2
-      real(kind(0.0d0)) :: rx,ry,rz,r
-      real(kind(0.0d0)) :: ep,sig_sq,q
-      real(kind(0.0d0)) :: LJ, Ele
-      real(kind(0.0d0)) :: E_Trial,E_Ele,E_LJ
+      real(dp) :: rx,ry,rz,r
+      real(dp) :: ep,sig_sq,q
+      real(dp) :: LJ, Ele
+      real(dp) :: E_Trial,E_Ele,E_LJ
 
       E_LJ = 0d0
       E_Ele = 0d0      

@@ -3,8 +3,8 @@
       use SimParameters
       use Constants	  
       implicit none
-      real(kind(0.0d0)), intent(inout) :: E_T, atmp_x, acc_x
-      real(kind(0.0d0)) :: grnd
+      real(dp), intent(inout) :: E_T, atmp_x, acc_x
+      real(dp) :: grnd
 	  
       atmp_x = atmp_x + 1d0
       if(grnd() .lt. 0.5d0) then
@@ -32,20 +32,20 @@
       use CBMC_Variables
       implicit none
       
-      real(kind(0.0d0)), intent(inout) :: E_T      
-      real(kind(0.0d0)), intent(inout) :: acc_x
+      real(dp), intent(inout) :: E_T      
+      real(dp), intent(inout) :: acc_x
       logical rejMove     
       integer :: NDiff(1:nMolTypes)
       integer :: i, nMove, nTargType, nTargMol, nTargIndx, nTarget
       integer :: nType, nIndx, bIndx, nNei
-      real(kind(0.0d0)) :: grnd
-      real(kind(0.0d0)) :: dx, dy, dz, r
-      real(kind(0.0d0)) :: genProbRatio
-      real(kind(0.0d0)) :: E_Inter, E_Intra, bias_Diff
-      real(kind(0.0d0)) :: biasOld, biasNew
-      real(kind(0.0d0)) :: PairList(1:maxMol)
-      real(kind(0.0d0)) :: dETable(1:maxMol)
-      real(kind(0.0d0)) :: x1, y1, z1
+      real(dp) :: grnd
+      real(dp) :: dx, dy, dz, r
+      real(dp) :: genProbRatio
+      real(dp) :: E_Inter, E_Intra, bias_Diff
+      real(dp) :: biasOld, biasNew
+      real(dp) :: PairList(1:maxMol)
+      real(dp) :: dETable(1:maxMol)
+      real(dp) :: x1, y1, z1
       
       if(NTotal .eq. maxMol) return
 
@@ -178,20 +178,20 @@
       use UmbrellaFunctions
       implicit none
       
-      real(kind(0.0d0)), intent(inout) :: E_T      
-      real(kind(0.0d0)), intent(inout) :: acc_x
+      real(dp), intent(inout) :: E_T      
+      real(dp), intent(inout) :: acc_x
       
       logical :: rejMove  
       integer :: nTarget, nIndx, bIndx, iType, nNei
       integer :: nSel,nType, nMol,nTargMol,nTargType
       integer :: NDiff(1:nMolTypes)      
-      real(kind(0.0d0)) :: grnd
-      real(kind(0.0d0)) :: genProbRatio
-      real(kind(0.0d0)) :: bias_diff       
-      real(kind(0.0d0)) :: biasOld, biasNew      
-      real(kind(0.0d0)) :: E_Inter, E_Intra
-      real(kind(0.0d0)) :: dETable(1:maxMol)
-      real(kind(0.0d0)) :: rx, ry, rz, dist
+      real(dp) :: grnd
+      real(dp) :: genProbRatio
+      real(dp) :: bias_diff       
+      real(dp) :: biasOld, biasNew      
+      real(dp) :: E_Inter, E_Intra
+      real(dp) :: dETable(1:maxMol)
+      real(dp) :: rx, ry, rz, dist
       
       if(NTotal .eq. 1) return
       
@@ -295,7 +295,7 @@
       integer, intent(out) :: nSel, nNei
       integer :: i,j
       integer :: ListCur(1:60)
-      real(kind(0.0d0)) :: grnd	  
+      real(dp) :: grnd	  
 	  
         
       nNei = 0

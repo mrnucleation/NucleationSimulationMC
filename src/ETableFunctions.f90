@@ -12,14 +12,14 @@
       real(dp) :: EMax, ETab
       real(dp) :: biasOld, biasNew
 
-      NeiETable=0d0
+      NeiETable=0E0
 !      return
  
       if(NTotal .eq. 1) return
       iLowIndx = 0      
       do iType = 1,nMolTypes
         do i = ilowIndx+1, ilowIndx+NPART(iType)
-          EMax = -1d40
+          EMax = -huge(dp)
           jLowIndx = 0
           do jType = 1,nMolTypes
             do j = jlowIndx+1,jlowIndx+NPART(jType)
@@ -76,7 +76,7 @@
        
       
       
-      newNeiTable = 0d0
+      newNeiTable = 0E0
 !      return
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
 
@@ -85,7 +85,7 @@
       iLowIndx = 0      
       do iType = 1,nMolTypes
         do i = ilowIndx+1,ilowIndx+NPART(iType)
-          EMax = -1d40
+          EMax = -huge(dp)
           jLowIndx = 0
           do jType = 1,nMolTypes
             do j = jlowIndx+1,jlowIndx+NPART(jType)
@@ -112,7 +112,7 @@
       enddo
 
       jLowIndx = 0
-      EMax = -1d40
+      EMax = -huge(dp)
       do jType = 1,nMolTypes
         do j = jlowIndx+1,jlowIndx+NPART(jType)
 !	  write(2,*) nindx, j
@@ -151,8 +151,9 @@
       
       
       do i=1,maxMol
-       newNeiTable(i) = 0d0
-       EMax = -1d40
+       newNeiTable(i) = 0E0
+
+       EMax = -huge(dp)
        if(isActive(i) .eqv. .false.) then
          if(i .ne. nIndx) then
             cycle

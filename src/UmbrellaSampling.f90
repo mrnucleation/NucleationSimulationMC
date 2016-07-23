@@ -41,7 +41,7 @@
       integer,allocatable :: arrayIndx(:)   
       integer :: curIndx
       character(len=30) :: fileName   
-      real(kind(0.0d0)) :: curValue, defaultVal
+      real(dp) :: curValue, defaultVal
         
       umbrellaLimit = 1
       do i=1,nMolTypes
@@ -63,7 +63,7 @@
       do i = 1,umbrellaLimit
 !      do i = 1,nint(1d7)
          read(25,*,end=30) (arrayIndx(j), j=1,nMolTypes), curValue
-         write(35,*) (arrayIndx(j), j=1,nMolTypes), curValue
+!         write(35,*) (arrayIndx(j), j=1,nMolTypes), curValue
          curIndx = getBiasIndex(arrayIndx,NMAX)
          if(curIndx .le. umbrellaLimit) then
            if(curIndx .gt. 0) then
@@ -85,7 +85,7 @@
       implicit none
       integer :: i, sizeN
       integer :: curIndx,maxIndx
-      real(kind(0.0d0)),intent(inout) :: E_T
+      real(dp),intent(inout) :: E_T
       
       sizeN = size(NPART)
 !       curIndx = 0
@@ -111,7 +111,7 @@
       implicit none
       include 'mpif.h'  
       integer :: i, arraySize, lowerBound, upperBound
-      real(kind(0.0d0)), allocatable :: Hist_temp(:)
+      real(dp), allocatable :: Hist_temp(:)
 
 
       lowerBound = lbound(NHist,1)

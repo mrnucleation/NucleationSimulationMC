@@ -5,7 +5,7 @@
       implicit none
       integer :: i, bin, sizeN
       integer :: curIndx,maxIndx
-      real(kind(0.0d0)),intent(inout) :: E_T
+      real(dp),intent(inout) :: E_T
       
       sizeN = size(NPART)
 !       curIndx = 0
@@ -30,7 +30,7 @@
       implicit none
       include 'mpif.h'  
       integer :: i, j, arraySize, lowerBound(1:2), upperBound(1:2)
-      real(kind(0.0d0)), allocatable :: Hist_temp(:)
+      real(dp), allocatable :: Hist_temp(:)
 
 
       lowerBound = lbound(NR_Hist)

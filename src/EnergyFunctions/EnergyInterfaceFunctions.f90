@@ -38,7 +38,7 @@
       integer :: i,j
       real(dp) :: PairList(1:maxMol,1:maxMol)
       
-      E_T = 0d0
+      E_T = 0E0
       call Detailed_ECalc_Inter(E_T,PairList)
 
       if(distCriteria) then
@@ -103,20 +103,20 @@
 
       nDisp = size(disp)
       rejMove = .false.
-      E_Inter = 0d0
-      E_Intra = 0d0
-      E_NonBond = 0d0
-      E_Stretch = 0d0
-      E_Bend = 0d0
-      E_Torsion = 0d0
-      E_Improper = 0d0
-      dETable = 0d0
+      E_Inter = 0E0
+      E_Intra = 0E0
+      E_NonBond = 0E0
+      E_Stretch = 0E0
+      E_Bend = 0E0
+      E_Torsion = 0E0
+      E_Improper = 0E0
+      dETable = 0E0
 
-      E_Inter_Diff = 0d0
-      E_NBond_Diff = 0d0
-      E_Strch_Diff = 0d0
-      E_Bend_Diff = 0d0
-      E_Tors_Diff = 0d0
+      E_Inter_Diff = 0E0
+      E_NBond_Diff = 0E0
+      E_Strch_Diff = 0E0
+      E_Bend_Diff = 0E0
+      E_Tors_Diff = 0E0
 
       if(present(useInter)) then
         interSwitch = useInter
@@ -126,12 +126,13 @@
 
 
 !     Begin by calculating the intermolecular potential. If any atoms overlap the move will be rejected
-!     immediately.      
+!     immediately. If the calling function has specfied that useInter is .false. then this part will be
+!     skipped and only the intra molecular potential will be calculated. 
       if(interSwitch) then
         if(NTotal .gt. 1) then
-          dETable = 0d0
-          PairList = 0d0
-          call Shift_ECalc_Inter(E_Inter,disp, PairList, dETable, rejMove)
+          dETable = 0E0
+          PairList = 0E0
+          call Shift_ECalc_Inter(E_Inter, disp, PairList, dETable, rejMove)
 
           if(rejMove) then
             return
@@ -217,21 +218,21 @@
         interSwitch = .true.
       endif
       
-      E_Inter = 0d0
-      E_Intra = 0d0
-      E_NonBond = 0d0
-      E_Stretch = 0d0
-      E_Bend = 0d0      
-      E_Torsion = 0d0      
-      E_Improper = 0d0            
-      PairList = 0d0
-      dETable = 0d0
+      E_Inter = 0E0
+      E_Intra = 0E0
+      E_NonBond = 0E0
+      E_Stretch = 0E0
+      E_Bend = 0E0      
+      E_Torsion = 0E0      
+      E_Improper = 0E0            
+      PairList = 0E0
+      dETable = 0E0
 
-      E_Inter_Diff = 0d0
-      E_NBond_Diff = 0d0
-      E_Strch_Diff = 0d0
-      E_Bend_Diff = 0d0
-      E_Tors_Diff = 0d0
+      E_Inter_Diff = 0E0
+      E_NBond_Diff = 0E0
+      E_Strch_Diff = 0E0
+      E_Bend_Diff = 0E0
+      E_Tors_Diff = 0E0
 
       if(interSwitch) then
         call NewMol_ECalc_Inter(E_Inter, PairList, dETable, rejMove)
@@ -284,20 +285,20 @@
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
       
-      E_Inter = 0d0
-      E_Intra = 0d0
-      E_NonBond = 0d0
-      E_Stretch = 0d0
-      E_Bend = 0d0      
-      E_Torsion = 0d0      
-      E_Improper = 0d0            
+      E_Inter = 0E0
+      E_Intra = 0E0
+      E_NonBond = 0E0
+      E_Stretch = 0E0
+      E_Bend = 0E0      
+      E_Torsion = 0E0      
+      E_Improper = 0E0            
 
-      E_Inter_Diff = 0d0
-      E_NBond_Diff = 0d0
-      E_Strch_Diff = 0d0
-      E_Bend_Diff = 0d0
-      E_Tors_Diff = 0d0
-      dETable = 0d0
+      E_Inter_Diff = 0E0
+      E_NBond_Diff = 0E0
+      E_Strch_Diff = 0E0
+      E_Bend_Diff = 0E0
+      E_Tors_Diff = 0E0
+      dETable = 0E0
 
       if(present(useInter)) then
         interSwitch = useInter
@@ -344,11 +345,11 @@
       E_Bend_T = E_Bend_T + E_Bend_Diff
       E_Torsion_T = E_Torsion_T + E_Tors_Diff      
       
-      E_Inter_Diff = 0d0
-      E_NBond_Diff = 0d0
-      E_Strch_Diff = 0d0
-      E_Bend_Diff = 0d0
-      E_Tors_Diff = 0d0
+      E_Inter_Diff = 0E0
+      E_NBond_Diff = 0E0
+      E_Strch_Diff = 0E0
+      E_Bend_Diff = 0E0
+      E_Tors_Diff = 0E0
 
       end subroutine
 !=============================================================================      

@@ -9,18 +9,18 @@
       interface
         subroutine AVBMC_EBias_In(E_T, acc_x)
           implicit none        
-          real(kind(0.0d0)), intent(inout) :: E_T, acc_x
+          real(dp), intent(inout) :: E_T, acc_x
         end subroutine
       end interface
       interface
         subroutine AVBMC_EBias_Out(E_T, acc_x)
           implicit none        
-          real(kind(0.0d0)), intent(inout) :: E_T, acc_x
+          real(dp), intent(inout) :: E_T, acc_x
         end subroutine
       end interface
 
-      real(kind(0.0d0)), intent(inout) :: E_T, atmp_x, acc_x
-      real(kind(0.0d0)) :: grnd
+      real(dp), intent(inout) :: E_T, atmp_x, acc_x
+      real(dp) :: grnd
         
       atmp_x = atmp_x + 1d0
       if(grnd() .lt. 0.5d0) then
@@ -53,7 +53,7 @@
           implicit none        
           integer , intent(in) :: nInsType
           integer, intent(out) :: nTarget, nTargType, nMol
-          real(kind(0.0d0)), intent(out) :: ProbSel
+          real(dp), intent(out) :: ProbSel
         end subroutine
       end interface
 
@@ -61,8 +61,8 @@
         subroutine EBias_Insert_ReverseProbTarget(nTarget,nType,newNeiETable, ProbRev)
           implicit none        
           integer, intent(in) :: nTarget,nType
-          real(kind(0.0d0)), intent(in) :: newNeiETable(:)
-          real(kind(0.0d0)), intent(out) :: ProbRev      
+          real(dp), intent(in) :: newNeiETable(:)
+          real(dp), intent(out) :: ProbRev      
         end subroutine
       end interface
 
@@ -70,8 +70,8 @@
         subroutine EBias_Insert_ReverseProbSel(nTarget, nType, dE, ProbRev)
          implicit none
          integer, intent(in) :: nTarget, nType
-         real(kind(0.0d0)), intent(in) :: dE(:)
-         real(kind(0.0d0)), intent(out) :: ProbRev
+         real(dp), intent(in) :: dE(:)
+         real(dp), intent(out) :: ProbRev
         end subroutine
       end interface
       
@@ -79,8 +79,8 @@
         subroutine Insert_NewNeiETable_Distance(nType,PairList,dE,newNeiTable)
           implicit none
           integer, intent(in) :: nType
-          real(kind(0.0d0)), intent(in) :: PairList(:)
-          real(kind(0.0d0)), intent(inout) :: dE(:), newNeiTable(:)
+          real(dp), intent(in) :: PairList(:)
+          real(dp), intent(inout) :: dE(:), newNeiTable(:)
         end subroutine
       end interface      
       
@@ -88,29 +88,29 @@
         subroutine Insert_NewNeiETable(nType,PairList,dE,newNeiTable)
           implicit none
           integer, intent(in) :: nType
-          real(kind(0.0d0)), intent(in) :: PairList(:)
-          real(kind(0.0d0)), intent(inout) :: dE(:), newNeiTable(:)
+          real(dp), intent(in) :: PairList(:)
+          real(dp), intent(inout) :: dE(:), newNeiTable(:)
         end subroutine
       end interface
       
-      real(kind(0.0d0)), intent(inout) :: E_T      
-      real(kind(0.0d0)), intent(inout) :: acc_x
+      real(dp), intent(inout) :: E_T      
+      real(dp), intent(inout) :: acc_x
       logical rejMove     
       integer :: NDiff(1:nMolTypes)
       integer :: i, nTargType, nTargMol, nTargIndx, nTarget
       integer :: nType, nIndx, bIndx
       integer :: atmType1, atmType2      
-      real(kind(0.0d0)) :: grnd
-      real(kind(0.0d0)) :: dx, dy, dz, r
-      real(kind(0.0d0)) :: genProbRatio
-      real(kind(0.0d0)) :: E_Inter, E_Intra, bias_Diff
-      real(kind(0.0d0)) :: biasOld, biasNew
-      real(kind(0.0d0)) :: PairList(1:maxMol)
-      real(kind(0.0d0)) :: dETable(1:maxMol)
-      real(kind(0.0d0)) :: newNeiETable(1:maxMol)      
-      real(kind(0.0d0)) :: x1, y1, z1
-      real(kind(0.0d0)) :: ProbTarg_In, ProbTarg_Out, ProbSel_Out
-      real(kind(0.0d0)) :: rmin_ij
+      real(dp) :: grnd
+      real(dp) :: dx, dy, dz, r
+      real(dp) :: genProbRatio
+      real(dp) :: E_Inter, E_Intra, bias_Diff
+      real(dp) :: biasOld, biasNew
+      real(dp) :: PairList(1:maxMol)
+      real(dp) :: dETable(1:maxMol)
+      real(dp) :: newNeiETable(1:maxMol)      
+      real(dp) :: x1, y1, z1
+      real(dp) :: ProbTarg_In, ProbTarg_Out, ProbSel_Out
+      real(dp) :: rmin_ij
       
       if(NTotal .eq. maxMol) return
 
@@ -253,9 +253,9 @@
       interface
         subroutine EBias_Remove_ChooseNeighbor(nTarget, biasArray, nSel, ProbTarget)
           integer, intent(in) :: nTarget 
-          real(kind(0.0d0)), intent(in) :: biasArray(:)  
+          real(dp), intent(in) :: biasArray(:)  
           integer, intent(out) ::  nSel
-          real(kind(0.0d0)), intent(out) :: ProbTarget
+          real(dp), intent(out) :: ProbTarget
         end subroutine
       end interface  
       
@@ -264,27 +264,27 @@
          implicit none
          integer, intent(in) :: nSel, nType
          integer, intent(in) :: nTarget
-         real(kind(0.0d0)), intent(in) :: dE(:)
-         real(kind(0.0d0)), intent(out) :: ProbSel
+         real(dp), intent(in) :: dE(:)
+         real(dp), intent(out) :: ProbSel
         end subroutine
       end interface      
       
-      real(kind(0.0d0)), intent(inout) :: E_T      
-      real(kind(0.0d0)), intent(inout) :: acc_x
+      real(dp), intent(inout) :: E_T      
+      real(dp), intent(inout) :: acc_x
       
       logical :: rejMove  
       integer :: nTarget, nIndx, bIndx, iType
       integer :: nSel,nType, nMol,nTargMol,nTargType
       integer :: NDiff(1:nMolTypes)      
-      real(kind(0.0d0)) :: grnd
-      real(kind(0.0d0)) :: genProbRatio
-      real(kind(0.0d0)) :: bias_diff       
-      real(kind(0.0d0)) :: biasOld, biasNew      
-      real(kind(0.0d0)) :: E_Inter, E_Intra
-      real(kind(0.0d0)) :: dETable(1:maxMol)
-      real(kind(0.0d0)) :: ProbTargOut, ProbSel, ProbTargIn
-      real(kind(0.0d0)) :: rx, ry, rz, dist
-      real(kind(0.0d0)) :: biasArray(1:nMolTypes)
+      real(dp) :: grnd
+      real(dp) :: genProbRatio
+      real(dp) :: bias_diff       
+      real(dp) :: biasOld, biasNew      
+      real(dp) :: E_Inter, E_Intra
+      real(dp) :: dETable(1:maxMol)
+      real(dp) :: ProbTargOut, ProbSel, ProbTargIn
+      real(dp) :: rx, ry, rz, dist
+      real(dp) :: biasArray(1:nMolTypes)
       
       if(NTotal .eq. 1) return
       
@@ -376,14 +376,14 @@
       implicit none
       integer , intent(in) :: nInsType
       integer, intent(out) :: nTarget, nTargType, nMol
-      real(kind(0.0d0)), intent(out) :: ProbSel
+      real(dp), intent(out) :: ProbSel
       
       integer :: i, iType
       integer :: cnt(1:nMolTypes)
-      real(kind(0.0d0)) :: avgE(1:nMolTypes)
-      real(kind(0.0d0)) :: ProbTable(1:maxMol)
-      real(kind(0.0d0)) :: grnd, norm       
-      real(kind(0.0d0)) :: ranNum, sumInt   
+      real(dp) :: avgE(1:nMolTypes)
+      real(dp) :: ProbTable(1:maxMol)
+      real(dp) :: grnd, norm       
+      real(dp) :: ranNum, sumInt   
       
       ProbTable = 0d0
       avgE = 0d0
@@ -434,13 +434,13 @@
       use EnergyTables
       implicit none
       integer, intent(in) :: nTarget,nType
-      real(kind(0.0d0)), intent(in) :: newNeiETable(:)
-      real(kind(0.0d0)), intent(out) :: ProbRev
+      real(dp), intent(in) :: newNeiETable(:)
+      real(dp), intent(out) :: ProbRev
       
       integer :: i, nIndx
       integer :: cnt(1:nMolTypes)
-      real(kind(0.0d0)) :: ProbTable(1:maxMol)
-      real(kind(0.0d0)) :: norm, EMax
+      real(dp) :: ProbTable(1:maxMol)
+      real(dp) :: norm, EMax
   
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
       ProbTable = 0d0
@@ -466,13 +466,13 @@
       use UmbrellaFunctions
       implicit none
       integer, intent(in) :: nTarget, nType
-      real(kind(0.0d0)), intent(in) :: dE(:)
-      real(kind(0.0d0)), intent(out) :: ProbRev
+      real(dp), intent(in) :: dE(:)
+      real(dp), intent(out) :: ProbRev
       
       integer :: i, iType, nIndx, bIndx
       integer :: NDiff(1:nMolTypes)
-      real(kind(0.0d0)) :: biasArray(1:nMolTypes)
-      real(kind(0.0d0)) :: norm, bias_diff, biasOld, biasNew       
+      real(dp) :: biasArray(1:nMolTypes)
+      real(dp) :: norm, bias_diff, biasOld, biasNew       
 
 
 !      biasArray = 0d0
@@ -518,13 +518,13 @@
       use EnergyTables
       implicit none
       integer, intent(out) :: nTarget, nType, nMol
-      real(kind(0.0d0)), intent(out) :: ProbTarget
+      real(dp), intent(out) :: ProbTarget
       
       integer :: i
-      real(kind(0.0d0)) :: ProbTable(1:maxMol)
-      real(kind(0.0d0)) :: scaleE
-      real(kind(0.0d0)) :: grnd, norm
-      real(kind(0.0d0)) :: ranNum, sumInt   
+      real(dp) :: ProbTable(1:maxMol)
+      real(dp) :: scaleE
+      real(dp) :: grnd, norm
+      real(dp) :: ranNum, sumInt   
         
       ProbTable = 0d0
       scaleE = 0d0
@@ -568,15 +568,15 @@
       use EnergyTables
       implicit none
       integer, intent(in) :: nTarget
-      real(kind(0.0d0)), intent(in) :: biasArray(:)       
+      real(dp), intent(in) :: biasArray(:)       
       integer, intent(out) ::  nSel
-      real(kind(0.0d0)), intent(out) :: ProbTarget
+      real(dp), intent(out) :: ProbTarget
       
       integer :: i, iType
-      real(kind(0.0d0)) :: ProbTable(1:maxMol)
-      real(kind(0.0d0)) :: grnd, norm       
-      real(kind(0.0d0)) :: ranNum, sumInt   
-      real(kind(0.0d0)) :: dummy
+      real(dp) :: ProbTable(1:maxMol)
+      real(dp) :: grnd, norm       
+      real(dp) :: ranNum, sumInt   
+      real(dp) :: dummy
 
       ProbTable = 0d0
       dummy = biasArray(1)
@@ -614,16 +614,16 @@
       implicit none
       integer, intent(in) :: nSel, nType
       integer, intent(in) :: nTarget
-      real(kind(0.0d0)), intent(in) :: dE(:)
-      real(kind(0.0d0)), intent(out) :: ProbSel
+      real(dp), intent(in) :: dE(:)
+      real(dp), intent(out) :: ProbSel
 
       
       integer :: i, iType
       integer :: cnt(1:nMolTypes)
 
-      real(kind(0.0d0)) :: avgE(1:nMolTypes)
-      real(kind(0.0d0)) :: ProbTable(1:maxMol)
-      real(kind(0.0d0)) :: grnd, norm       
+      real(dp) :: avgE(1:nMolTypes)
+      real(dp) :: ProbTable(1:maxMol)
+      real(dp) :: grnd, norm       
         
       if(NTotal .eq. 2) then
          ProbSel=1d0

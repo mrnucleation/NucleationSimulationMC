@@ -28,7 +28,7 @@
       implicit none
       real(dp), intent(inout) :: E_T
       integer ::  iType,iMol,iTors
-      integer(kind=2) :: torsType      
+      integer(kind=atomIntType) :: torsType      
       integer :: memb1, memb2, memb3, memb4
       real(dp) :: x12,y12,z12
       real(dp) :: x23,y23,z23
@@ -84,14 +84,14 @@
             
             r1 = vx1**2 + vy1**2 + vz1**2
             r3 = vx3**2 + vy3**2 + vz3**2
-            r1 = dsqrt(r1)
-            r3 = dsqrt(r3)
+            r1 = sqrt(r1)
+            r3 = sqrt(r3)
 
             dot1 = vx1*vx2 + vy1*vy2 + vz1*vz2
             dot2 = vx2*vx3 + vy2*vy3 + vz2*vz3            
             dot1 = dot1/(r1)
             dot2 = dot2/(r3)    
-            angle = datan2(dot2,dot1)
+            angle = atan2(dot2,dot1)
             E_Tors = E_Tors + Trappe_CosNx(Angle, torsData(torsType)%a)
 !            write(2,*) Angle*180d0/pi,Trappe_CosNx(Angle, torsData(torsType)%a), torsData(torsType)%a
           enddo
@@ -206,14 +206,14 @@
             
         r1 = vx1**2 + vy1**2 + vz1**2
         r3 = vx3**2 + vy3**2 + vz3**2
-        r1 = dsqrt(r1)
-        r3 = dsqrt(r3)
+        r1 = sqrt(r1)
+        r3 = sqrt(r3)
 
         dot1 = vx1*vx2 + vy1*vy2 + vz1*vz2
         dot2 = vx2*vx3 + vy2*vy3 + vz2*vz3            
         dot1 = dot1/(r1)
         dot2 = dot2/(r3)    
-        angle = datan2(dot2,dot1)        
+        angle = atan2(dot2,dot1)        
             
 	eng = Trappe_CosNx(Angle, torsData(torsType)%a)
         E_Tors = E_Tors + eng
@@ -248,14 +248,14 @@
             
         r1 = vx1**2 + vy1**2 + vz1**2
         r3 = vx3**2 + vy3**2 + vz3**2
-        r1 = dsqrt(r1)
-        r3 = dsqrt(r3)
+        r1 = sqrt(r1)
+        r3 = sqrt(r3)
 
         dot1 = vx1*vx2 + vy1*vy2 + vz1*vz2
         dot2 = vx2*vx3 + vy2*vy3 + vz2*vz3            
         dot1 = dot1/(r1)
         dot2 = dot2/(r3)    
-        angle = datan2(dot2,dot1)         
+        angle = atan2(dot2,dot1)         
             
 	eng = Trappe_CosNx(Angle, torsData(torsType)%a)
         E_Tors = E_Tors - eng
@@ -272,7 +272,7 @@
       real(dp), intent(out) :: E_Tors
       integer, intent(in) :: iType,iMol
       integer :: iTors
-      integer(kind=2) :: torsType      
+      integer(kind=atomIntType) :: torsType      
       integer :: memb1, memb2, memb3, memb4
       real(dp) :: x12,y12,z12
       real(dp) :: x23,y23,z23
@@ -325,13 +325,13 @@
             
         r1 = vx1**2 + vy1**2 + vz1**2
         r3 = vx3**2 + vy3**2 + vz3**2
-        r1 = dsqrt(r1)
-        r3 = dsqrt(r3)
+        r1 = sqrt(r1)
+        r3 = sqrt(r3)
         dot1 = vx1*vx2 + vy1*vy2 + vz1*vz2
         dot2 = vx2*vx3 + vy2*vy3 + vz2*vz3            
         dot1 = dot1/(r1)
         dot2 = dot2/(r3)        
-        angle = datan2(dot2,dot1)            
+        angle = atan2(dot2,dot1)            
             
         E_Tors = E_Tors + Trappe_CosNx(Angle, torsData(torsType)%a)
       enddo
@@ -346,7 +346,7 @@
       implicit none
       real(dp), intent(out) :: E_Tors
       integer :: iType,iTors
-      integer(kind=2) :: torsType      
+      integer(kind=atomIntType) :: torsType      
       integer :: memb1, memb2, memb3, memb4
       real(dp) :: x12,y12,z12
       real(dp) :: x23,y23,z23
@@ -400,13 +400,13 @@
             
         r1 = vx1**2 + vy1**2 + vz1**2
         r3 = vx3**2 + vy3**2 + vz3**2
-        r1 = dsqrt(r1)
-        r3 = dsqrt(r3)
+        r1 = sqrt(r1)
+        r3 = sqrt(r3)
         dot1 = vx1*vx2 + vy1*vy2 + vz1*vz2
         dot2 = vx2*vx3 + vy2*vy3 + vz2*vz3            
         dot1 = dot1/(r1)
         dot2 = dot2/(r3)        
-        angle = datan2(dot2,dot1)            
+        angle = atan2(dot2,dot1)            
             
         E_Tors = E_Tors + Trappe_CosNx(Angle, torsData(torsType)%a)
       enddo

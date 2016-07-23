@@ -17,18 +17,18 @@
       real(dp), intent(out) :: E_Trial
       
       integer :: iAtom, jType, jIndx, jMol, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind = atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij
 
-      E_Trial = 0d0
+      E_Trial = 0E0
       overlap = .false.
       
-      E_LJ = 0d0
-      E_Ele = 0d0      
+      E_LJ = 0E0
+      E_Ele = 0E0      
 
       do iAtom = 1,nAtoms(nType)
         atmType1 = atomArray(nType, iAtom)
@@ -42,8 +42,8 @@
               atmType2 = atomArray(jType, jAtom)
               ep = ep_tab(atmType2, atmType1)
               q = q_tab(atmType2, atmType1)
-              if(q .eq. 0.0d0) then              
-                if(ep .eq. 0.0d0) then              
+              if(q .eq. 0.0E0) then              
+                if(ep .eq. 0.0E0) then              
                   cycle
                 endif
               endif
@@ -57,15 +57,15 @@
               if(r .lt. rmin_ij) then
                 overlap = .true.
               endif              
-              LJ = 0d0
-              Ele = 0d0
-              if(ep .ne. 0d0) then
+              LJ = 0E0
+              Ele = 0E0
+              if(ep .ne. 0E0) then
                 LJ = (sig_sq / r)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ - 1d0)                
+                LJ = ep * LJ * (LJ - 1E0)                
                 E_LJ = E_LJ + LJ
               endif
-              if(q .ne. 0d0) then
+              if(q .ne. 0E0) then
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele + Ele
@@ -93,16 +93,16 @@
       real(dp), intent(out) :: E_Trial
       
       integer :: iAtom, jType, jIndx, jMol, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij
 
-      E_Trial = 0d0
-      E_LJ = 0d0
-      E_Ele = 0d0      
+      E_Trial = 0E0
+      E_LJ = 0E0
+      E_Ele = 0E0      
 
 
       do iAtom = 1,nAtoms(nType)
@@ -112,11 +112,11 @@
             atmType2 = atomArray(jType, jAtom)
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
-            if(q .eq. 0.0d0) then              
-              if(ep .eq. 0.0d0) then              
-                cycle
-              endif
-            endif
+!            if(q .eq. 0.0E0) then              
+!              if(ep .eq. 0.0E0) then              
+!                cycle
+!              endif
+!            endif
             sig_sq = sig_tab(atmType2, atmType1)
             rmin_ij = r_min_tab(atmType2, atmType1)
             do jMol = 1,NPART(jType)
@@ -128,15 +128,15 @@
               ry = mol_y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = mol_z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
               r = rx*rx + ry*ry + rz*rz
-              LJ = 0d0
-              Ele = 0d0
-              if(ep .ne. 0d0) then
+              LJ = 0E0
+              Ele = 0E0
+              if(ep .ne. 0E0) then
                 LJ = (sig_sq / r)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ - 1d0)                
+                LJ = ep * LJ * (LJ - 1E0)                
                 E_LJ = E_LJ + LJ
               endif
-              if(q .ne. 0d0) then
+              if(q .ne. 0E0) then
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele + Ele
@@ -167,7 +167,7 @@
       real(dp), intent(out) :: E_Trial
       
       integer :: jType, jIndx, jMol, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
@@ -175,9 +175,9 @@
       real(dp) :: rmin_ij
 
       
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Trial = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Trial = 0E0
       overlap = .false.
 
       atmType1 = atomArray(nType, nAtom)
@@ -186,11 +186,7 @@
           atmType2 = atomArray(jType, jAtom)
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)
-          if(q .eq. 0.0d0) then              
-            if(ep .eq. 0.0d0) then              
-              cycle
-            endif
-          endif
+
           sig_sq = sig_tab(atmType2, atmType1)
           rmin_ij = r_min_tab(atmType2, atmType1)
           do jMol = 1,NPART(jType)
@@ -205,19 +201,20 @@
             r = rx*rx + ry*ry + rz*rz
             if(r .lt. rmin_ij) then
               overlap = .true.
-            endif              
-!            if(r .ge. 25d0) then
+            endif          
+   
+!            if(r .ge. 25E0) then
 !              cycle
 !            endif
-            LJ = 0d0
-            Ele = 0d0
-            if(ep .ne. 0d0) then
+            LJ = 0E0
+            Ele = 0E0
+            if(ep .ne. 0E0) then
               LJ = (sig_sq / r)
               LJ = LJ * LJ * LJ              
-              LJ = ep * LJ * (LJ - 1d0)                
+              LJ = ep * LJ * (LJ - 1E0)                
               E_LJ = E_LJ + LJ
             endif
-            if(q .ne. 0d0) then
+            if(q .ne. 0E0) then
               r = sqrt(r)
               Ele = q / r
               E_Ele = E_Ele + Ele
@@ -242,7 +239,7 @@
       real(dp), intent(out) :: E_Trial
       
       integer :: iAtom, jType, jIndx, jMol, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
@@ -250,9 +247,9 @@
       real(dp) :: rmin_ij
 
       
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Trial = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Trial = 0E0
 
       atmType1 = atomArray(nType, nAtom)
       do jType = 1, nMolTypes
@@ -265,8 +262,8 @@
             atmType2 = atomArray(jType, jAtom)
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
-            if(q .eq. 0.0d0) then              
-              if(ep .eq. 0.0d0) then              
+            if(q .eq. 0.0E0) then              
+              if(ep .eq. 0.0E0) then              
                 cycle
               endif
             endif
@@ -277,18 +274,18 @@
             ry = MolArray(nType)%mol(nMol)%y(nAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
             rz = MolArray(nType)%mol(nMol)%z(nAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
             r = rx*rx + ry*ry + rz*rz
-!            if(r .ge. 25d0) then
+!            if(r .ge. 25E0) then
 !              cycle
 !            endif
-            LJ = 0d0
-            Ele = 0d0
-            if(ep .ne. 0d0) then
+            LJ = 0E0
+            Ele = 0E0
+            if(ep .ne. 0E0) then
               LJ = (sig_sq / r)
               LJ = LJ * LJ * LJ              
-              LJ = ep * LJ * (LJ - 1d0)                
+              LJ = ep * LJ * (LJ - 1E0)                
               E_LJ = E_LJ + LJ
             endif
-            if(q .ne. 0d0) then
+            if(q .ne. 0E0) then
               r = sqrt(r)
               Ele = q / r
               E_Ele = E_Ele + Ele
@@ -318,16 +315,16 @@
       real(dp), intent(out) :: E_Trial
       
       integer :: temp, iPair, jIndx, iAtom, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij
 
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Trial = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Trial = 0E0
       
       do iPair = 1,nIntraNonBond(nType)
         if(all(nonBondArray(nType,iPair)%nonMembr .ne. nAtom)) then
@@ -356,13 +353,13 @@
         ry = trialPos%y - newMol%y(jAtom)
         rz = trialPos%z - newMol%z(jAtom) 
         r = rx*rx + ry*ry + rz*rz
-        if(ep .ne. 0d0) then
+        if(ep .ne. 0E0) then
           LJ = (sig_sq/r)
           LJ = LJ * LJ * LJ
-          LJ = ep * LJ * (LJ-1d0)
+          LJ = ep * LJ * (LJ-1E0)
           E_LJ = E_LJ + LJ
         endif
-        if(q .ne. 0d0) then            
+        if(q .ne. 0E0) then            
           r = sqrt(r)
           Ele = q/r
           E_Ele = E_Ele + Ele            
@@ -386,16 +383,16 @@
       real(dp), intent(out) :: E_Trial
       
       integer :: temp, iPair, jIndx, iAtom, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij
 
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Trial = 0d0
+      E_LJ = 0E0
+      E_Ele = 0E0      
+      E_Trial = 0E0
       
       do iPair = 1,nIntraNonBond(nType)
         if(all(nonBondArray(nType,iPair)%nonMembr .ne. nAtom)) then
@@ -424,13 +421,13 @@
         ry = MolArray(nType)%mol(nMol)%y(iAtom) - MolArray(nType)%mol(nMol)%y(jAtom)
         rz = MolArray(nType)%mol(nMol)%z(iAtom) - MolArray(nType)%mol(nMol)%z(jAtom)
         r = rx*rx + ry*ry + rz*rz
-        if(ep .ne. 0d0) then
+        if(ep .ne. 0E0) then
           LJ = (sig_sq/r)
           LJ = LJ * LJ * LJ
-          LJ = ep * LJ * (LJ-1d0)
+          LJ = ep * LJ * (LJ-1E0)
           E_LJ = E_LJ + LJ
         endif
-        if(q .ne. 0d0) then            
+        if(q .ne. 0E0) then            
           r = sqrt(r)
           Ele = q/r
           E_Ele = E_Ele + Ele            
