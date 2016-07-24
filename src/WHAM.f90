@@ -250,7 +250,6 @@
       use ParallelVar
       use WHAM_Module
       implicit none
-      include 'mpif.h' 
       integer :: arraySize
       integer :: i,j
       integer :: NArray(1:nMolTypes)
