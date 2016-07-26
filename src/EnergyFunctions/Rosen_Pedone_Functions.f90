@@ -50,7 +50,9 @@
           rz = rosenTrial(nRosen)%z(1) - MolArray(jType)%mol(jMol)%z(1)
           r = rx*rx + ry*ry + rz*rz
           if(r .lt. rmin_ij) then
+            E_Trial = huge(dp)
             overlap = .true.
+            return
           endif           
 
           if(repul_C .ne. 0E0) then
@@ -64,8 +66,8 @@
           E_Ele = E_Ele + Ele
 
           if(delta .ne. 0E0) then
-            Morse = exp(-alpha*(r-r_eq))
-            Morse = delta*(Morse*Morse - 1E0)
+            Morse = 1d0-exp(-alpha*(r-r_eq))
+            Morse = delta*(Morse*Morse - 1d0)
             E_Morse = E_Morse + Morse
           endif
         enddo
@@ -118,6 +120,10 @@
           ry = mol_y(1) - MolArray(jType)%mol(jMol)%y(1)
           rz = mol_z(1) - MolArray(jType)%mol(jMol)%z(1)
           r = rx*rx + ry*ry + rz*rz
+          if(r .lt. rmin_ij) then
+            E_Trial = huge(dp)
+            return
+          endif
           if(repul_C .ne. 0E0) then
             LJ = ( 1E0/r )**6
             LJ = repul_C * LJ
@@ -129,8 +135,8 @@
           E_Ele = E_Ele + Ele
 
           if(delta .ne. 0E0) then
-            Morse = exp(-alpha*(r-r_eq))
-            Morse = delta*(Morse*Morse - 1E0)
+            Morse = 1d0-exp(-alpha*(r-r_eq))
+            Morse = delta*(Morse*Morse - 1d0)
             E_Morse = E_Morse + Morse
           endif
         enddo

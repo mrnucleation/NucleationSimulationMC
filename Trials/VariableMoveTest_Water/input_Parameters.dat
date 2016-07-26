@@ -2,7 +2,7 @@
 #             Simulation Parameters
 #-----------------------------------------------------
    RNG_Seed:=                     1224
-   Number_of_Cycles:=             5d5
+   Number_of_Cycles:=             1d5
    Moves_Per_Cycles:=             1d2
    Number_of_Mol_Types:=          1
    Min_Cluster_Size:=             1 
@@ -11,7 +11,7 @@
    Echo_To_Screen:=               .true.
    Use_Umbrela_Bias:=             .true.  fort.25
    Use_Multiple_Input_Config:=    .false. 
-   Number_Of_RosenTrials:=        8
+   Number_Of_RosenTrials:=        16
    AVBMC_Insertion_R:=            3.2d0
    Softcut:=                      100.0d0   
 #-----------------------------------------------------

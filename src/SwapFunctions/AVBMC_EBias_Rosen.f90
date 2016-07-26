@@ -12,16 +12,15 @@
       real(dp), intent(inout) :: E_T, atmp_x, acc_x
       real(dp) :: grnd
         
-      atmp_x = atmp_x + 1d0
       if(grnd() .lt. 0.5d0) then
-        call AVBMC_EBias_Rosen_In(E_T, acc_x)     
+        call AVBMC_EBias_Rosen_In(E_T, acc_x, atmp_x)     
       else
-        call AVBMC_EBias_Rosen_Out(E_T, acc_x)    
+        call AVBMC_EBias_Rosen_Out(E_T, acc_x, atmp_x)    
       endif
 
       end subroutine
 !===================================================================================
-      subroutine AVBMC_EBias_Rosen_In(E_T, acc_x)
+      subroutine AVBMC_EBias_Rosen_In(E_T, acc_x, atmp_x)
       use AcceptRates
       use AVBMC_RejectionVar
       use AVBMC_CBMC
@@ -63,7 +62,7 @@
 !      end interface
       
       real(dp), intent(inout) :: E_T      
-      real(dp), intent(inout) :: acc_x
+      real(dp), intent(inout) :: acc_x, atmp_x
       logical :: rejMove
       logical :: isIncluded(1:maxMol)
       integer :: NDiff(1:nMolTypes)
@@ -104,6 +103,7 @@
          totalRej = totalRej + 1d0
          return
       endif
+      atmp_x = atmp_x + 1d0
       atmpSwapIn(nType) = atmpSwapIn(nType) + 1d0
       atmpInSize(NTotal) = atmpInSize(NTotal) + 1d0
 
@@ -225,7 +225,7 @@
        endif
        end subroutine
 !===================================================================================            
-      subroutine AVBMC_EBias_Rosen_Out(E_T, acc_x)
+      subroutine AVBMC_EBias_Rosen_Out(E_T, acc_x, atmp_x)
       use AVBMC_CBMC
       use AVBMC_RejectionVar
       use SimParameters
@@ -246,7 +246,7 @@
       implicit none
       
       real(dp), intent(inout) :: E_T      
-      real(dp), intent(inout) :: acc_x
+      real(dp), intent(inout) :: acc_x, atmp_x
       
       logical :: rejMove  
       integer :: i, nTarget, nIndx, bIndx, iType
@@ -288,7 +288,7 @@
       call EBias_Remove_ChooseNeighbor(nTarget, biasArray, nSel, ProbSel)
       nType = typeList(nSel)
       nMol = subIndxList(nSel)
-     
+      atmp_x = atmp_x + 1d0
       atmpSwapOut(nType) = atmpSwapOut(nType) + 1d0      
       if(NPART(nType) .eq. NMIN(nType)) then
         boundaryRej_out = boundaryRej_out + 1d0
@@ -306,6 +306,7 @@
         rz = molArray(nTargType)%mol(nTargMol)%z(1) - molArray(nType)%mol(nMol)%z(1)
         dist = rx*rx + ry*ry + rz*rz
         if(dist .gt. Dist_Critr_sq) then
+          critriaRej_out = critriaRej_out + 1d0
           totalRej_out = totalRej_out + 1d0
           return
         endif
@@ -315,7 +316,7 @@
       rejMove=.false.
       call SwapOut_EnergyCriteria(nSel, rejMove)
       if(rejMove) then
-        clusterCritRej = clusterCritRej + 1d0
+        critriaRej_out = critriaRej_out + 1d0
         totalRej_out = totalRej_out + 1d0
         return
       endif
@@ -365,6 +366,7 @@
          call Update_SubEnergies
 !         call DEBUG_Output_NeighborList
        else
+         dbalRej_out = dbalRej_out + 1d0
          totalRej_out = totalRej_out + 1d0
        endif
        end subroutine
