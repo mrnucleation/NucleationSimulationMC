@@ -115,6 +115,9 @@
         call Rosen_Mol_New(iRosen, nType, isIncluded, E_Trial(iRosen), overlap(iRosen))
       enddo
 
+!      To prevent overflow errors the energies are scaled with respect to the most negative energy
+!      or in other words the energy with the largest boltzmann weight. This rescaling naturally cancels
+!      out when the probability is normalized. 
       E_Max = minval(E_Trial)
       ProbRosen = 0d0
       do iRosen = 1, nRosenTrials(nType)
@@ -253,10 +256,13 @@
       enddo
 
       E_Max = minval(E_Trial)
+      write(2,*) NPART
       do iRosen = 1, nRosenTrials(nType)
         ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen) - E_Max))
+        write(2,*) iRosen, E_Trial(iRosen), ProbRosen(iRosen)
       enddo
-
+      write(2,*)
+      flush(2)
       rosenNorm = sum(ProbRosen)
       rosenRatio = (ProbRosen(1)*dble(nRosenTrials(nType)))/rosenNorm
       
@@ -821,6 +827,7 @@
       regrown(Atm3) = .true.
       nRegrown = nRegrown + 1
       newMol%x(Atm3) = trialPos(nSel)%x 
+
       newMol%y(Atm3) = trialPos(nSel)%y 
       newMol%z(Atm3) = trialPos(nSel)%z
 

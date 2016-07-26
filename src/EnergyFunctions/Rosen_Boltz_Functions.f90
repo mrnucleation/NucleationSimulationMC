@@ -42,11 +42,7 @@
               atmType2 = atomArray(jType, jAtom)
               ep = ep_tab(atmType2, atmType1)
               q = q_tab(atmType2, atmType1)
-              if(q .eq. 0.0E0) then              
-                if(ep .eq. 0.0E0) then              
-                  cycle
-                endif
-              endif
+
               sig_sq = sig_tab(atmType2, atmType1)
               rmin_ij = r_min_tab(atmType2, atmType1)
         
@@ -55,8 +51,15 @@
               rz = rosenTrial(nRosen)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
               r = rx*rx + ry*ry + rz*rz
               if(r .lt. rmin_ij) then
+                E_Trial = huge(dp)
                 overlap = .true.
-              endif              
+                return
+              endif       
+!              if(q .eq. 0.0E0) then              
+!                if(ep .eq. 0.0E0) then              
+!                  cycle
+!                endif
+!              endif       
               LJ = 0E0
               Ele = 0E0
               if(ep .ne. 0E0) then
@@ -112,11 +115,11 @@
             atmType2 = atomArray(jType, jAtom)
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
-!            if(q .eq. 0.0E0) then              
-!              if(ep .eq. 0.0E0) then              
-!                cycle
-!              endif
-!            endif
+            if(q .eq. 0.0E0) then              
+              if(ep .eq. 0.0E0) then              
+                cycle
+              endif
+            endif
             sig_sq = sig_tab(atmType2, atmType1)
             rmin_ij = r_min_tab(atmType2, atmType1)
             do jMol = 1,NPART(jType)
@@ -128,6 +131,10 @@
               ry = mol_y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = mol_z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
               r = rx*rx + ry*ry + rz*rz
+              if(r .lt. rmin_ij) then
+                E_Trial = huge(dp)
+                return
+              endif
               LJ = 0E0
               Ele = 0E0
               if(ep .ne. 0E0) then
@@ -200,12 +207,11 @@
             rz = trialPos%z - MolArray(jType)%mol(jMol)%z(jAtom)
             r = rx*rx + ry*ry + rz*rz
             if(r .lt. rmin_ij) then
+              E_Trial = huge(dp)
               overlap = .true.
+              return
             endif          
    
-!            if(r .ge. 25E0) then
-!              cycle
-!            endif
             LJ = 0E0
             Ele = 0E0
             if(ep .ne. 0E0) then
@@ -262,21 +268,23 @@
             atmType2 = atomArray(jType, jAtom)
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
-            if(q .eq. 0.0E0) then              
-              if(ep .eq. 0.0E0) then              
-                cycle
-              endif
-            endif
+!            if(q .eq. 0.0E0) then              
+!              if(ep .eq. 0.0E0) then              
+!                cycle
+!              endif
+!            endif
             sig_sq = sig_tab(atmType2, atmType1)
             rmin_ij = r_min_tab(atmType2, atmType1)
-             
+
+            
             rx = MolArray(nType)%mol(nMol)%x(nAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
             ry = MolArray(nType)%mol(nMol)%y(nAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
             rz = MolArray(nType)%mol(nMol)%z(nAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
             r = rx*rx + ry*ry + rz*rz
-!            if(r .ge. 25E0) then
-!              cycle
-!            endif
+            if(r .lt. rmin_ij) then
+              E_Trial = huge(dp)
+              return
+            endif
             LJ = 0E0
             Ele = 0E0
             if(ep .ne. 0E0) then

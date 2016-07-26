@@ -11,7 +11,7 @@
    Echo_To_Screen:=               .true.
    Use_Umbrela_Bias:=             .true.  fort.25
    Use_Multiple_Input_Config:=    .false.
-   Number_Of_RosenTrials:=        12 12
+   Number_Of_RosenTrials:=        20 20
    AVBMC_Insertion_R:=            4d0
    Softcut:=                      100.0d0   
 #-----------------------------------------------------

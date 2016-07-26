@@ -128,6 +128,8 @@
       boundaryRej = 0E0
 
       totalRej_out = 0E0
+      dbalRej_out = 0E0
+      critriaRej_out = 0E0
       boundaryRej_out = 0E0      
 !      Maximum Displacement used by the translational move
       max_dist = 0.5E0
@@ -418,6 +420,8 @@
         write(nout,*) "Percent of Moves Rejected due to Cluster Criteria:", 1E2*critriaRej/totalRej
         write(nout,*) "Percent of Moves Rejected due to Boundary Condition:", 1E2*boundaryRej/totalRej
         write(nout,*) "********** AVBMC Deletion Rejection Breakdown ********"
+        write(nout,*) "Percent of Moves Rejected due to Detailed Balance:", 1E2*dbalRej_out/totalRej_out
+        write(nout,*) "Percent of Moves Rejected due to Cluster Criteria:", 1E2*critriaRej_out/totalRej_out
         write(nout,*) "Percent of Moves Rejected due to Boundary Condition:", 1E2*boundaryRej_out/totalRej_out
         write(nout,*) "**********"
         write(nout,*) "Acceptance Swap In (Mol Type):", (1E2*acptSwapIn(j)/atmpSwapIn(j),j=1,nMolTypes)
