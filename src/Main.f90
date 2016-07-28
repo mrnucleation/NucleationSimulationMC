@@ -472,12 +472,12 @@
           cycle
         endif
         do j = 1, maxMol
-          if( .not. isActive(i) ) then
+          if( .not. isActive(j) ) then
             cycle
           endif
           if(FinalNeighborList(i,j) .neqv. NeighborList(i,j))then
             if(i .ne. j) then       
-              write(35,*) i, j, NeighborList(i,j), FinalNeighborList(i,j) 
+              write(35,*) "Error", i, j, NeighborList(i,j), FinalNeighborList(i,j) 
             endif
           else
             if(i .ne. j) then       

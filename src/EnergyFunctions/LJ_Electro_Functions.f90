@@ -159,16 +159,16 @@
         do jType = 1, nMolTypes
           do jAtom = 1,nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
-            ep = ep_tab(atmType2,atmType1)
-            q = q_tab(atmType2,atmType1)
-            rmin_ij = r_min_tab(atmType2,atmType1)
-            if(q .eq. 0E0) then
-              if(ep .eq. 0E0) then
-                if(rmin_ij .eq. 0E0) then
-                  cycle
-                endif
-              endif
-            endif
+            ep = ep_tab(atmType2, atmType1)
+            q = q_tab(atmType2, atmType1)
+            rmin_ij = r_min_tab(atmType2, atmType1)
+!            if(q .eq. 0E0) then
+!              if(ep .eq. 0E0) then
+!                if(rmin_ij .eq. 0E0) then
+!                  cycle
+!                endif
+!              endif
+!            endif
             sig_sq = sig_tab(atmType2,atmType1)
             do jMol=1,NPART(jType)
               if(iType .eq. jType) then
@@ -176,7 +176,7 @@
                   cycle
                 endif
               endif  
-              jIndx = MolArray(jType)%mol(jMol)%indx
+
 !               Distance for the New position
               rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
@@ -194,11 +194,11 @@
                   endif
                 endif
               endif
-              if(q .eq. 0E0) then
-                if(ep .eq. 0E0) then
-                  cycle
-                endif
-              endif
+!              if(q .eq. 0E0) then
+!                if(ep .eq. 0E0) then
+!                  cycle
+!                endif
+!              endif
           
 !             Distance for the Old position
               rx = disp(iDisp)%x_old - MolArray(jType)%mol(jMol)%x(jAtom)
@@ -206,7 +206,7 @@
               rz = disp(iDisp)%z_old - MolArray(jType)%mol(jMol)%z(jAtom)
               r_old = rx*rx + ry*ry + rz*rz              
 
-
+              jIndx = MolArray(jType)%mol(jMol)%indx
 !             Check to see if there is a non-zero Lennard-Jones parmaeter. If so calculate
 !             the Lennard-Jones energy           
               if(ep .ne. 0E0) then
@@ -416,6 +416,7 @@
       implicit none
       logical, intent(out) :: rejMove
       real(dp), intent(out) :: E_Trial
+
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
       integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom
@@ -462,9 +463,6 @@
                   endif
                 endif
               endif              
-              LJ = 0E0
-              Ele = 0E0
-
               if(ep .ne. 0E0) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
@@ -672,30 +670,19 @@
         atmType1 = atomArray(newMol%molType, iAtom)
         do jAtom = 1,nAtoms(jType)        
           atmType2 = atomArray(jType, jAtom)
-          ep = ep_tab(atmType2, atmType1)
-          q = q_tab(atmType2, atmType1)
           rmin_ij = r_min_tab(atmType2, atmType1)
-          if(q .eq. 0E0) then
-            if(ep .eq. 0E0) then
-              if(rmin_ij .eq. 0E0) then
-                cycle
-              endif
-            endif
-          endif
-          sig_sq = sig_tab(atmType2, atmType1)
-
-!         New Energy Calculation
           rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
           ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
           rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
           r = rx*rx + ry*ry + rz*rz
 
-!          if(r .lt. max(r_min_sq(atmType1),r_min_sq(atmType2))) then
           if(r .lt. rmin_ij) then
             rejMove = .true.
             return
           endif          
-          
+          sig_sq = sig_tab(atmType2, atmType1)
+          ep = ep_tab(atmType2, atmType1)
+          q = q_tab(atmType2, atmType1)
           if(ep .ne. 0E0) then
             LJ = (sig_sq/r)
             LJ = LJ * LJ * LJ              
@@ -715,7 +702,7 @@
       if( E_Trial .gt. Eng_Critr(newMol%molType,jType) ) then
         rejMove = .true.
       endif
-!      write(2,*) "E:",E_Trial , rejMove
+
       
       end subroutine
 !======================================================================================

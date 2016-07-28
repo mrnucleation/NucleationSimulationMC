@@ -256,13 +256,13 @@
       enddo
 
       E_Max = minval(E_Trial)
-      write(2,*) NPART
+!      write(2,*) NPART
       do iRosen = 1, nRosenTrials(nType)
         ProbRosen(iRosen) = exp(-beta*(E_Trial(iRosen) - E_Max))
-        write(2,*) iRosen, E_Trial(iRosen), ProbRosen(iRosen)
+!        write(2,*) iRosen, E_Trial(iRosen), ProbRosen(iRosen)
       enddo
-      write(2,*)
-      flush(2)
+!      write(2,*)
+!      flush(2)
       rosenNorm = sum(ProbRosen)
       rosenRatio = (ProbRosen(1)*dble(nRosenTrials(nType)))/rosenNorm
       

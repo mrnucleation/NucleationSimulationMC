@@ -130,8 +130,8 @@
       integer, allocatable :: regrowType(:)
       integer, allocatable :: regrowOrder(:,:)
       real(dp), allocatable :: probTypeCBMC(:)
-      type(BondNumber),allocatable :: topolArray(:)
-      type(Pathing),allocatable :: pathArray(:)
+      type(BondNumber), allocatable :: topolArray(:)
+      type(Pathing), allocatable :: pathArray(:)
       
       integer, allocatable :: usedByPath(:,:)
       integer, allocatable :: atomPathIndex(:,:)
@@ -259,7 +259,7 @@
       integer(kind=8) :: ncycle,ncycle2       
       logical :: ridgidMolecules, multipleInput
       integer(kind=atomIntType) :: nMolTypes
-      integer,allocatable :: NPart(:),NMin(:),NMax(:)
+      integer,allocatable :: NPart(:), NMin(:), NMax(:)
       logical,allocatable :: isActive(:)
       integer :: NTotal
       integer :: maxMol, maxAtoms, vmdAtoms
@@ -272,7 +272,6 @@
       real(dp),allocatable :: max_rot(:)
         
       real(dp) :: temperature, beta
-!      real(dp) :: r_min, r_min_sq
       real(dp) :: global_r_min
 
       real(dp) :: softCutoff

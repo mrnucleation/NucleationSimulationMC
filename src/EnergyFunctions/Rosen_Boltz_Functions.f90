@@ -40,12 +40,7 @@
             endif              
             do jAtom = 1,nAtoms(jType)        
               atmType2 = atomArray(jType, jAtom)
-              ep = ep_tab(atmType2, atmType1)
-              q = q_tab(atmType2, atmType1)
-
-              sig_sq = sig_tab(atmType2, atmType1)
               rmin_ij = r_min_tab(atmType2, atmType1)
-        
               rx = rosenTrial(nRosen)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = rosenTrial(nRosen)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = rosenTrial(nRosen)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
@@ -55,20 +50,18 @@
                 overlap = .true.
                 return
               endif       
-!              if(q .eq. 0.0E0) then              
-!                if(ep .eq. 0.0E0) then              
-!                  cycle
-!                endif
-!              endif       
-              LJ = 0E0
-              Ele = 0E0
+              ep = ep_tab(atmType2, atmType1)
+              q = q_tab(atmType2, atmType1)
+              sig_sq = sig_tab(atmType2, atmType1)
               if(ep .ne. 0E0) then
+                LJ = 0E0
                 LJ = (sig_sq / r)
                 LJ = LJ * LJ * LJ              
                 LJ = ep * LJ * (LJ - 1E0)                
                 E_LJ = E_LJ + LJ
               endif
               if(q .ne. 0E0) then
+                Ele = 0E0
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele + Ele
@@ -92,7 +85,6 @@
       logical, intent(in) :: included(:)
       integer, intent(in) :: nType
       real(dp), intent(in) :: mol_x(:), mol_y(:), mol_z(:)
-      
       real(dp), intent(out) :: E_Trial
       
       integer :: iAtom, jType, jIndx, jMol, jAtom
@@ -115,13 +107,16 @@
             atmType2 = atomArray(jType, jAtom)
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
-            if(q .eq. 0.0E0) then              
-              if(ep .eq. 0.0E0) then              
-                cycle
-              endif
-            endif
-            sig_sq = sig_tab(atmType2, atmType1)
             rmin_ij = r_min_tab(atmType2, atmType1)
+!            if(rmin_ij .eq. 0.0E0) then     
+!              if(q .eq. 0.0E0) then              
+!                if(ep .eq. 0.0E0) then              
+!                  cycle
+!                endif
+!              endif
+!            endif
+            sig_sq = sig_tab(atmType2, atmType1)
+
             do jMol = 1,NPART(jType)
               jIndx = molArray(jType)%mol(jMol)%indx              
               if(included(jIndx) .eqv. .false.) then
@@ -135,15 +130,16 @@
                 E_Trial = huge(dp)
                 return
               endif
-              LJ = 0E0
-              Ele = 0E0
+
               if(ep .ne. 0E0) then
+!                LJ = 0E0
                 LJ = (sig_sq / r)
                 LJ = LJ * LJ * LJ              
                 LJ = ep * LJ * (LJ - 1E0)                
                 E_LJ = E_LJ + LJ
               endif
               if(q .ne. 0E0) then
+!                Ele = 0E0
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele + Ele
@@ -189,19 +185,14 @@
 
       atmType1 = atomArray(nType, nAtom)
       do jType = 1, nMolTypes
-        do jAtom = 1,nAtoms(jType)        
-          atmType2 = atomArray(jType, jAtom)
-          ep = ep_tab(atmType2, atmType1)
-          q = q_tab(atmType2, atmType1)
-
-          sig_sq = sig_tab(atmType2, atmType1)
-          rmin_ij = r_min_tab(atmType2, atmType1)
-          do jMol = 1,NPART(jType)
-            jIndx = molArray(jType)%mol(jMol)%indx              
-            if(included(jIndx) .eqv. .false.) then
-              cycle
-            endif              
-
+        do jMol = 1,NPART(jType)
+          jIndx = molArray(jType)%mol(jMol)%indx              
+          if(included(jIndx) .eqv. .false.) then
+            cycle
+          endif      
+          do jAtom = 1,nAtoms(jType)        
+            atmType2 = atomArray(jType, jAtom)
+            rmin_ij = r_min_tab(atmType2, atmType1)
             rx = trialPos%x - MolArray(jType)%mol(jMol)%x(jAtom)
             ry = trialPos%y - MolArray(jType)%mol(jMol)%y(jAtom)
             rz = trialPos%z - MolArray(jType)%mol(jMol)%z(jAtom)
@@ -211,16 +202,18 @@
               overlap = .true.
               return
             endif          
-   
-            LJ = 0E0
-            Ele = 0E0
+            ep = ep_tab(atmType2, atmType1)
+            q = q_tab(atmType2, atmType1)
+            sig_sq = sig_tab(atmType2, atmType1)   
             if(ep .ne. 0E0) then
+              LJ = 0E0
               LJ = (sig_sq / r)
               LJ = LJ * LJ * LJ              
               LJ = ep * LJ * (LJ - 1E0)                
               E_LJ = E_LJ + LJ
             endif
             if(q .ne. 0E0) then
+              Ele = 0E0
               r = sqrt(r)
               Ele = q / r
               E_Ele = E_Ele + Ele
@@ -266,17 +259,7 @@
           endif              
           do jAtom = 1,nAtoms(jType)        
             atmType2 = atomArray(jType, jAtom)
-            ep = ep_tab(atmType2, atmType1)
-            q = q_tab(atmType2, atmType1)
-!            if(q .eq. 0.0E0) then              
-!              if(ep .eq. 0.0E0) then              
-!                cycle
-!              endif
-!            endif
-            sig_sq = sig_tab(atmType2, atmType1)
             rmin_ij = r_min_tab(atmType2, atmType1)
-
-            
             rx = MolArray(nType)%mol(nMol)%x(nAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
             ry = MolArray(nType)%mol(nMol)%y(nAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
             rz = MolArray(nType)%mol(nMol)%z(nAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
@@ -285,15 +268,18 @@
               E_Trial = huge(dp)
               return
             endif
-            LJ = 0E0
-            Ele = 0E0
+            ep = ep_tab(atmType2, atmType1)
+            q = q_tab(atmType2, atmType1)
+            sig_sq = sig_tab(atmType2, atmType1)
             if(ep .ne. 0E0) then
+              LJ = 0E0
               LJ = (sig_sq / r)
               LJ = LJ * LJ * LJ              
               LJ = ep * LJ * (LJ - 1E0)                
               E_LJ = E_LJ + LJ
             endif
             if(q .ne. 0E0) then
+              Ele = 0E0
               r = sqrt(r)
               Ele = q / r
               E_Ele = E_Ele + Ele
