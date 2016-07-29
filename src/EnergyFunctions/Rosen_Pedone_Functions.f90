@@ -72,7 +72,7 @@
           endif
         enddo
       enddo
-     
+
       E_Trial = E_LJ + E_Ele + E_Morse
       
       end subroutine 

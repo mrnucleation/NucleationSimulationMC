@@ -2,8 +2,7 @@
       module ScriptInput
       contains
 !========================================================            
-      subroutine ReadParameters(seed,ncycle,nmoves,outFreq_Traj, &
-                                outFreq_Screen,outFreq_GCD,screenEcho)
+      subroutine ReadParameters(seed,ncycle,nmoves,outFreq_Traj, outFreq_Screen, outFreq_GCD, screenEcho)
       use SimParameters
       use Constants
       use ForceField
@@ -109,7 +108,7 @@
       character(len=15) :: stringValue
       character(len=15) :: fileName      
       logical :: logicValue
-      integer :: intValue, intArray(:)
+      integer :: intValue
       real(dp) :: realValue
       
       read(line,*) dummy, command
@@ -144,7 +143,6 @@
           nRosenTrials = 1
           allocate( Eng_Critr(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus )
           allocate( biasAlpha(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus )
-          allocate( intArray(1:nMolTypes), STAT = AllocateStatus )
         case("molmin")        
           if(.not. allocated(NMIN)) then
             write(*,*) "INPUT ERROR! molmin is called before the number of molecular types has been assigned"
@@ -160,7 +158,14 @@
           read(line,*) dummy, command, (NMAX(j), j=1, nMolTypes)
           maxMol = sum(NMAX)        
 
-        
+        case("rosentrials")        
+          if(.not. allocated(nRosenTrials)) then
+            write(*,*) "INPUT ERROR! molmax is called before the number of molecular types has been assigned"
+            stop
+          endif
+          read(line,*) dummy, command, (nRosenTrials(j), j=1, nMolTypes)
+          maxRosenTrial = maxval(nRosenTrials)
+          allocate(rosenTrial(1:maxRosenTrial))
         case("temperature")        
           read(line,*) dummy, command, realValue        
           temperature = realValue
@@ -169,25 +174,26 @@
         case("screenecho")
           read(line,*) dummy, command, logicValue
           screenEcho = logicValue
-        
-   
+        case("seed")
+          read(line,*) dummy, command, intValue
+          seed = intValue
         case("softcutoff")
           read(line,*) dummy, command, realValue
           softCutoff = realValue
       
-        case("screen_outputfrequency")
+        case("screen_outfreq")
           read(line,*) dummy, command, intValue
           outFreq_Screen = intValue             
-        case("trajectory_outputfrequency")     
+        case("trajectory_outfreq")     
           read(line,*) dummy, command, intValue
           outFreq_Traj = intValue  
         case("multipleinputconfig")
           read(line,*) dummy, command, logicValue
           multipleInput = logicValue  
-        case("output_energyunits")
+        case("out_energyunits")
           read(line,*) labelField, outputEngUnits
           outputEConv = FindEngUnit(outputEngUnits)
-        case("output_lengthunits")
+        case("out_distunits")
           read(line,*) labelField, outputLenUnits   
           outputLenConv = FindLengthUnit(outputLenUnits) 
         case("umbrellasampling")

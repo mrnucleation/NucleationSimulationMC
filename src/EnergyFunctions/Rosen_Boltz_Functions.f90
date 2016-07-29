@@ -54,14 +54,15 @@
               q = q_tab(atmType2, atmType1)
               sig_sq = sig_tab(atmType2, atmType1)
               if(ep .ne. 0E0) then
-                LJ = 0E0
-                LJ = (sig_sq / r)
-                LJ = LJ * LJ * LJ              
+!                LJ = 0E0
+!                LJ = (sig_sq / r)
+!                LJ = LJ * LJ * LJ              
+                LJ = (sig_sq / r)**3
                 LJ = ep * LJ * (LJ - 1E0)                
                 E_LJ = E_LJ + LJ
               endif
               if(q .ne. 0E0) then
-                Ele = 0E0
+!                Ele = 0E0
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele + Ele
@@ -70,7 +71,7 @@
           enddo
         enddo
       enddo
-     
+!      write(*,*) E_Trial
       E_Trial = E_LJ + E_Ele
       
       end subroutine 
@@ -206,14 +207,14 @@
             q = q_tab(atmType2, atmType1)
             sig_sq = sig_tab(atmType2, atmType1)   
             if(ep .ne. 0E0) then
-              LJ = 0E0
+!              LJ = 0E0
               LJ = (sig_sq / r)
               LJ = LJ * LJ * LJ              
               LJ = ep * LJ * (LJ - 1E0)                
               E_LJ = E_LJ + LJ
             endif
             if(q .ne. 0E0) then
-              Ele = 0E0
+!              Ele = 0E0
               r = sqrt(r)
               Ele = q / r
               E_Ele = E_Ele + Ele
@@ -272,14 +273,14 @@
             q = q_tab(atmType2, atmType1)
             sig_sq = sig_tab(atmType2, atmType1)
             if(ep .ne. 0E0) then
-              LJ = 0E0
+!              LJ = 0E0
               LJ = (sig_sq / r)
               LJ = LJ * LJ * LJ              
               LJ = ep * LJ * (LJ - 1E0)                
               E_LJ = E_LJ + LJ
             endif
             if(q .ne. 0E0) then
-              Ele = 0E0
+!              Ele = 0E0
               r = sqrt(r)
               Ele = q / r
               E_Ele = E_Ele + Ele
