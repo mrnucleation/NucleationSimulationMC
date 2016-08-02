@@ -122,6 +122,7 @@
           do i = 1, umbrellaLimit
             if(WHAM_Numerator(i) .ne. 0E0) then
               denomSum = 0E0
+!              maxBias = minval(F_Estimate)
               do j = 1, nCurWhamItter
                 if(WHAM_Denominator(i,j) .gt. 0E0) then
                   denomSum = denomSum + WHAM_Denominator(i,j)*exp(-F_Estimate(j))
@@ -143,12 +144,15 @@
 !          to calculate a new estimate for F
           do j = 1, nCurWhamItter
             fSum = 0E0
+            maxBias = maxval(BiasStorage(:,j))
             do i = 1, umbrellaLimit
               if(ProbArray(i) .ne. 0E0) then
-                fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j))
+!                fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j))
+                fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j) - maxBias)
               endif
             enddo
-            F_Estimate(j) = log(fSum)
+!            F_Estimate(j) = log(fSum)
+            F_Estimate(j) = log(fSum)*maxBias
             F_Estimate(j) = (F_Estimate(j) + F_Old(j))*0.5E0
          enddo 
 !         Calculate the average change in F from the previous estimate and determine 

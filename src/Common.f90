@@ -177,27 +177,27 @@
  
 !     ----------------------------------------------------
       subroutine Get_MolIndex(nMove,NPart,molType,molIndx)
-       implicit none
-       integer,intent(in) :: nMove, NPart(:)
-       integer,intent(inout) :: molIndx, molType       
-       integer :: i, sizeN,curLimit
+        implicit none
+        integer,intent(in) :: nMove, NPart(:)
+        integer,intent(inout) :: molIndx, molType       
+        integer :: i, sizeN,curLimit
        
-       sizeN = size(NPART)
+        sizeN = size(NPART)
 !       curLimit = NPART(1)
-       curLimit = 0
-       molIndx = 1
+        curLimit = 0
+        molIndx = 1
 
-       molType = 1
-       do i=1,sizeN
-         curLimit = curLimit + NPART(i)  
-         if(nMove .le. curLimit) then       
-           molIndx = nMove - curLimit + NPART(i)  
-           molType = i
-           return
-         endif
-       enddo
+        molType = 1
+        do i=1,sizeN
+          curLimit = curLimit + NPART(i)  
+          if(nMove .le. curLimit) then       
+            molIndx = nMove - curLimit + NPART(i)  
+            molType = i
+            return
+          endif
+        enddo
 
-      write(35,*) "NotFound", nMove, molType,molIndx
+        write(35,*) "NotFound", nMove, molType,molIndx
       end subroutine
 !     ----------------------------------------------------
       pure subroutine Get_SubIndex(nIndx,nType,NMAX)
@@ -305,8 +305,8 @@
        curIndx = NPart(sizeN)
        maxIndx = NMAX(sizeN) + 1 
        do i=1,sizeN-1
-           curIndx = curIndx + maxIndx*NPart(sizeN-i)
-           maxIndx = maxIndx * (NMAX(sizeN-i) + 1)
+         curIndx = curIndx + maxIndx*NPart(sizeN-i)
+         maxIndx = maxIndx * (NMAX(sizeN-i) + 1)
        enddo
        getBiasIndex = curIndx + 1
        
@@ -323,8 +323,8 @@
        curIndx = NPart(sizeN) + increment(sizeN)
        maxIndx = NMAX(sizeN) + 1 
        do i=1,sizeN-1
-           curIndx = curIndx + maxIndx*(NPart(sizeN-i) + increment(sizeN-i))
-           maxIndx = maxIndx * (NMAX(sizeN-i) + 1)
+         curIndx = curIndx + maxIndx*(NPart(sizeN-i) + increment(sizeN-i))
+         maxIndx = maxIndx * (NMAX(sizeN-i) + 1)
        enddo
        getNewBiasIndex = curIndx + 1
        
