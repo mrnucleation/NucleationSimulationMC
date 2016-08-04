@@ -17,7 +17,7 @@ OPTIMIZE_FLAGS := -O3
 #DEBUGFLAGS := -check bounds
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
-DEBUGFLAGS += -pg 
+#DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
@@ -75,8 +75,10 @@ MOD_FILES := $(MODS)/acceptrates.mod\
 		$(MODS)/umbrellafunctions.mod\
 		$(MODS)/units.mod
 MOD_SRC := $(SRC)/Common.f90 \
+ 		$(SRC)/VariablePrecision.f90\
  		$(SRC)/Units.f90 \
- 		$(SRC)/ForceFieldFunctions.f90
+ 		$(SRC)/ForceFieldFunctions.f90\
+ 		$(SRC)/DistanceStorage.f90
 SRC_ENERGY := $(ESUB)/Bending_Functions.f90 \
             $(ESUB)/BondStretch_Functions.f90 \
             $(ESUB)/LJ_Electro_Functions.f90 \
@@ -115,7 +117,7 @@ SRC_SWAP := $(SWAP)/AVBMC_EBias_Rosen.f90\
             $(SWAP)/Exchange.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90
-SRC_COMPLETE:= $(SRC_ENERGY) $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT) $(MOD_SRC) $(SRC_MAIN) 
+SRC_COMPLETE:= $(SRC_ENERGY) $(MOD_SRC) $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT)  $(SRC_MAIN) 
 # ====================================
 #        Object Files
 # ====================================
@@ -213,6 +215,8 @@ createMods: $(MOD_SRC)
 		@$(FC) -c $(SRC)/ForceFieldFunctions.f90 $(COMPFLAGS) $(MODFLAGS) -o $(OBJ)/ForceFieldFunctions.o				
 		@echo  -------- Compiling Common.f90
 		@$(FC) -c $(SRC)/Common.f90  $(COMPFLAGS) $(MODFLAGS) -o $(OBJ)/Common.o
+		@echo  -------- Compiling DistanceStorage.f90
+		@$(FC) -c $(SRC)/DistanceStorage.f90 $(COMPFLAGS) $(MODFLAGS) -o $(OBJ)/ForceFieldFunctions.o		
 		@echo =============================================
 		@echo            Creating Object Files
 		@echo =============================================	

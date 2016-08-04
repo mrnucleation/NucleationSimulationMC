@@ -20,7 +20,8 @@
     
     integer :: nGeometry
     integer :: nHistArrays
-    type(Geometry), allocatable  :: miscGeometry(:)
+    type(Geometry), allocatable  :: miscCoord(:)
+    type(Geometry), allocatable  :: miscCoord_New(:)
     type(Histograms), allocatable :: miscHist(:)
 
     contains

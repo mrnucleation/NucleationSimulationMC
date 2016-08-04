@@ -1,6 +1,5 @@
 !========================================================            
-      subroutine ReadParameters(seed,outFreq_Traj, &
-                                outFreq_Screen,outFreq_GCD,screenEcho)
+      subroutine ReadParameters(seed,outFreq_Traj,outFreq_Screen,outFreq_GCD,screenEcho)
       use CBMC_Variables
       use Constants
       use Coords
@@ -272,14 +271,15 @@
 !     The second half of this routine deals with defining the molecule configuration using
 !     the atoms, angles, etc. defined in the first section of the routine.
       subroutine ReadForcefield_LJ_Q
-      use SimParameters
+      use CBMC_Variables
       use Constants
       use Coords
       use ForceField
       use ForceFieldPara_LJ_Q
       use ForceFieldFunctions
+      use PairStorage
+      use SimParameters
       use Units
-      use CBMC_Variables
       implicit none
       logical :: custom
       integer i,j,h,AllocateStatus,nParam
@@ -615,6 +615,8 @@
         enddo
       enddo
       
+
+      call createDistArrays
       call IntegrateBendAngleProb
 
       close(55)
@@ -637,9 +639,10 @@
       use ForceFieldFunctions
       use Units
       use CBMC_Variables
+      use PairStorage
       implicit none
       logical :: custom
-      integer i,j,h,AllocateStatus,nParam
+      integer :: i,j,h,AllocateStatus,nParam
       integer :: nAtomsMax, nBondsMax,nAnglesMax    
       integer :: nTorsMax, nImpropMax, nNonBondMax
       character(len=15) :: labelField 
@@ -788,6 +791,8 @@
           totalMass(i) = totalMass(i) + atomData(atomArray(i,j))%mass
         enddo
       enddo
+
+      call createDistArrays
 
       flush(35)
 

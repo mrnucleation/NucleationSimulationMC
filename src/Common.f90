@@ -17,7 +17,7 @@
 
       type Molecule
         integer(kind=atomIntType) :: indx
-!        integer :: indx        
+        integer, allocatable :: globalIndx(:)
         real(dp),allocatable :: x(:), y(:), z(:)
       end type
 
@@ -27,13 +27,11 @@
 
       type MolPointers
         integer(kind=atomIntType) :: molType,molIndx
-!        integer :: molType,molIndx        
         type(FloatPointer),allocatable :: x(:), y(:), z(:)
       end type
 
       type Displacement
         integer(kind=atomIntType) :: molType, atmIndx, molIndx
-!        integer :: molType,molIndx,atmIndx        
         real(dp) :: x_new, y_new, z_new
         real(dp),pointer :: x_old, y_old, z_old
       end type
@@ -350,14 +348,14 @@
 
       integer :: nWhamItter, nCurWhamItter
 
-      real(dp),allocatable :: WHAM_Numerator(:)
-      real(dp),allocatable :: WHAM_Denominator(:,:)
-      real(dp),allocatable :: HistStorage(:)
-      real(dp),allocatable :: FreeEnergyEst(:)
-      real(dp),allocatable :: BiasStorage(:,:)
-      real(dp),allocatable :: NewBias(:)
-      real(dp),allocatable :: ProbArray(:)      
-      real(dp),allocatable :: TempHist(:)
+      real(dp), allocatable :: WHAM_Numerator(:)
+      real(dp), allocatable :: WHAM_Denominator(:,:)
+      real(dp), allocatable :: HistStorage(:)
+      real(dp), allocatable :: FreeEnergyEst(:)
+      real(dp), allocatable :: BiasStorage(:,:)
+      real(dp), allocatable :: NewBias(:)
+      real(dp), allocatable :: ProbArray(:)      
+      real(dp), allocatable :: TempHist(:)
         
       end module  
 !================================================================   

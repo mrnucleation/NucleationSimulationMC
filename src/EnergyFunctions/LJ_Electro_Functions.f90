@@ -24,12 +24,13 @@
       use Coords
       use SimParameters
       use EnergyTables
+      use PairStorage, only: rPair, distStorage, nTotalAtoms
       implicit none
       real(dp), intent(inOut) :: E_T
       real(dp), intent(inOut) :: PairList(:,:)
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1,atmType2      
-      integer :: iIndx, jIndx, jMolMin
+      integer :: iIndx, jIndx, globIndx1, globIndx2, jMolMin
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
@@ -50,16 +51,18 @@
              jMolMin = 1        
            endif
            do jMol = jMolMin,NPART(jType)
+             iIndx = MolArray(iType)%mol(iMol)%indx
+             jIndx = MolArray(jType)%mol(jMol)%indx  
              do iAtom = 1,nAtoms(iType)
                atmType1 = atomArray(iType,iAtom)
+               globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
                do jAtom = 1,nAtoms(jType)        
                  atmType2 = atomArray(jType,jAtom)
                  ep = ep_tab(atmType1,atmType2)
                  q = q_tab(atmType1,atmType2)
                  sig_sq = sig_tab(atmType1,atmType2)          
                  rmin_ij = r_min_tab(atmType1,atmType2)          
-                 iIndx = MolArray(iType)%mol(iMol)%indx
-                 jIndx = MolArray(jType)%mol(jMol)%indx  
+                 globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
 
                  rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
                  ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
@@ -74,8 +77,9 @@
                    endif
                  endif
                  if(r .lt. rmin_ij) then
-                   stop "ERROR: Overlaping atoms found in the configuration!"
+                   stop "ERROR! Overlaping atoms found in the current configuration!"
                  endif 
+                 rPair(globIndx1, globIndx2)%p%r_sq = r
                  LJ = (sig_sq/r)**3
                  LJ = ep * LJ * (LJ-1E0)              
                  E_LJ = E_LJ + LJ
@@ -83,6 +87,7 @@
                  r = sqrt(r)
                  Ele = q/r
                  E_Ele = E_Ele + Ele
+                 rPair(globIndx1, globIndx2)%p%E_Pair = Ele + LJ
                  if(.not. distCriteria) then
                    PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ
                    PairList(jIndx, iIndx) = PairList(iIndx, jIndx)
@@ -103,9 +108,12 @@
 !      do iMol=1,maxMol
 !        write(35,*) iMol, PairList(iMol)
 !      enddo
+
+!      do iAtom = 1, size(distStorage) - 1
+!        write(35,*) distStorage(iAtom)%indx1, distStorage(iAtom)%indx2, distStorage(iAtom)%r_sq, distStorage(iAtom)%E_Pair
+!      enddo
       
       E_T = E_T + E_Ele + E_LJ    
-
       E_Inter_T = E_Ele + E_LJ   
       
       end subroutine
@@ -126,6 +134,7 @@
       integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp
       integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
       integer :: sizeDisp 
+      integer :: gloIndx1, gloIndx2
       real(dp) :: rx,ry,rz
       real(dp) :: r_new, r_old
       real(dp) :: r_min1_sq      
@@ -155,13 +164,14 @@
       do iDisp=1,sizeDisp
         iAtom = disp(iDisp)%atmIndx
         atmType1 = atomArray(iType,iAtom)
-
+        gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
         do jType = 1, nMolTypes
           do jAtom = 1,nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
             rmin_ij = r_min_tab(atmType2, atmType1)
+
 !            if(q .eq. 0E0) then
 !              if(ep .eq. 0E0) then
 !                if(rmin_ij .eq. 0E0) then
@@ -176,7 +186,7 @@
                   cycle
                 endif
               endif  
-
+              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
 !               Distance for the New position
               rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
@@ -194,12 +204,7 @@
                   endif
                 endif
               endif
-!              if(q .eq. 0E0) then
-!                if(ep .eq. 0E0) then
-!                  cycle
-!                endif
-!              endif
-          
+
 !             Distance for the Old position
               rx = disp(iDisp)%x_old - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = disp(iDisp)%y_old - MolArray(jType)%mol(jMol)%y(jAtom)

@@ -5,7 +5,7 @@
       use Coords
       use EnergyTables
       implicit none
-      integer :: i,j,cnt,AllocationStatus
+      integer :: i,j,k,cnt,AllocationStatus
       
       allocate( MolArray(1:nMolTypes), stat=AllocationStatus)
       do i=1,nMolTypes
@@ -14,6 +14,17 @@
           allocate( MolArray(i)%mol(j)%x(1:nAtoms(i)), stat=AllocationStatus)
           allocate( MolArray(i)%mol(j)%y(1:nAtoms(i)), stat=AllocationStatus)
           allocate( MolArray(i)%mol(j)%z(1:nAtoms(i)), stat=AllocationStatus)
+          allocate( MolArray(i)%mol(j)%globalIndx(1:nAtoms(i)), stat=AllocationStatus)
+        enddo
+      enddo
+
+      cnt = 0
+      do i = 1, nMolTypes
+        do j = 1, NMAX(i)
+          do k = 1, nAtoms(i)
+            cnt = cnt + 1
+            MolArray(i)%mol(j)%globalIndx(k) = cnt
+          enddo
         enddo
       enddo
 
@@ -52,16 +63,7 @@
       allocate(newMol2%y(1:maxAtoms), stat=AllocationStatus)
       allocate(newMol2%z(1:maxAtoms), stat=AllocationStatus)
 
-!       allocate( JointArray(1:NMaxMol), stat=AllocationStatus)
-!       do i = 1,NMaxMol
-!         allocate( JointArray(i)%x(1:maxAtoms),
-!      &           stat=AllocationStatus)
-!         allocate( JointArray(i)%y(1:maxAtoms),
-!      &           stat=AllocationStatus)
-!         allocate( JointArray(i)%z(1:maxAtoms),
-!      &           stat=AllocationStatus)
-!       enddo
-      
+     
       
       end subroutine
 !=============================================================================
