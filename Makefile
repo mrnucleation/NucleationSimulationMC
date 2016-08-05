@@ -4,11 +4,13 @@ CUR_DIR := $(shell pwd)
 #        Compiler Options
 # ====================================
 FC := mpif90
+#FC := /opt/openmpi/bin/mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
 #OPTIMIZE_FLAGS := -O3 -xHost -ipo
-OPTIMIZE_FLAGS := -O3
+OPTIMIZE_FLAGS := -O3 -xHost
+#OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
@@ -117,7 +119,7 @@ SRC_SWAP := $(SWAP)/AVBMC_EBias_Rosen.f90\
             $(SWAP)/Exchange.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90
-SRC_COMPLETE:= $(SRC_ENERGY) $(MOD_SRC) $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT)  $(SRC_MAIN) 
+SRC_COMPLETE:= $(SRC_ENERGY)  $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT) $(MOD_SRC)  $(SRC_MAIN) 
 # ====================================
 #        Object Files
 # ====================================
@@ -216,7 +218,7 @@ createMods: $(MOD_SRC)
 		@echo  -------- Compiling Common.f90
 		@$(FC) -c $(SRC)/Common.f90  $(COMPFLAGS) $(MODFLAGS) -o $(OBJ)/Common.o
 		@echo  -------- Compiling DistanceStorage.f90
-		@$(FC) -c $(SRC)/DistanceStorage.f90 $(COMPFLAGS) $(MODFLAGS) -o $(OBJ)/ForceFieldFunctions.o		
+		@$(FC) -c $(SRC)/DistanceStorage.f90 $(COMPFLAGS) $(MODFLAGS) -o $(OBJ)/DistanceStorage.o		
 		@echo =============================================
 		@echo            Creating Object Files
 		@echo =============================================	

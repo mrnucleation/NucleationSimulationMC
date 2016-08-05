@@ -277,7 +277,7 @@
       use ForceField
       use ForceFieldPara_LJ_Q
       use ForceFieldFunctions
-      use PairStorage
+      use PairStorage, only:createDistArrays
       use SimParameters
       use Units
       implicit none
@@ -616,7 +616,7 @@
       enddo
       
 
-      call createDistArrays
+      call CreateDistArrays
       call IntegrateBendAngleProb
 
       close(55)
@@ -639,7 +639,7 @@
       use ForceFieldFunctions
       use Units
       use CBMC_Variables
-      use PairStorage
+      use PairStorage, only: CreateDistArrays
       implicit none
       logical :: custom
       integer :: i,j,h,AllocateStatus,nParam

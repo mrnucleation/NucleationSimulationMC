@@ -109,9 +109,9 @@
 !        write(35,*) iMol, PairList(iMol)
 !      enddo
 
-!      do iAtom = 1, size(distStorage) - 1
-!        write(35,*) distStorage(iAtom)%indx1, distStorage(iAtom)%indx2, distStorage(iAtom)%r_sq, distStorage(iAtom)%E_Pair
-!      enddo
+      do iAtom = 1, size(distStorage) - 1
+        write(35,*) distStorage(iAtom)%indx1, distStorage(iAtom)%indx2, distStorage(iAtom)%r_sq, distStorage(iAtom)%E_Pair
+      enddo
       
       E_T = E_T + E_Ele + E_LJ    
       E_Inter_T = E_Ele + E_LJ   
