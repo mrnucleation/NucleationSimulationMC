@@ -61,13 +61,10 @@
                  ep = ep_tab(atmType1,atmType2)
                  q = q_tab(atmType1,atmType2)
                  sig_sq = sig_tab(atmType1,atmType2)          
-                 rmin_ij = r_min_tab(atmType1,atmType2)          
                  globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
 
-                 rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-                 ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-                 rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom) 
-                 r = rx**2 + ry**2 + rz**2
+
+                 r = rPair(globIndx1, globIndx2)%p%r_sq
                  if(distCriteria) then
                    if(iAtom .eq. 1) then
                      if(jAtom .eq. 1) then
@@ -76,10 +73,6 @@
                      endif
                    endif
                  endif
-                 if(r .lt. rmin_ij) then
-                   stop "ERROR! Overlaping atoms found in the current configuration!"
-                 endif 
-                 rPair(globIndx1, globIndx2)%p%r_sq = r
                  LJ = (sig_sq/r)**3
                  LJ = ep * LJ * (LJ-1E0)              
                  E_LJ = E_LJ + LJ
@@ -131,7 +124,7 @@
       logical, intent(out) :: rejMove
 
       
-      integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp
+      integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp, iPair
       integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
       integer :: sizeDisp 
       integer :: gloIndx1, gloIndx2
@@ -161,31 +154,14 @@
 !      !This section calculates the Intermolecular interaction between the atoms that
 !      !have been modified in this trial move with the atoms that have remained stationary
 
-      do iDisp=1,sizeDisp
+      do iPair = 1, nNewDist
         iAtom = disp(iDisp)%atmIndx
         atmType1 = atomArray(iType,iAtom)
         gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
-        do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
-            atmType2 = atomArray(jType,jAtom)
-            ep = ep_tab(atmType2, atmType1)
-            q = q_tab(atmType2, atmType1)
-            rmin_ij = r_min_tab(atmType2, atmType1)
-
-!            if(q .eq. 0E0) then
-!              if(ep .eq. 0E0) then
-!                if(rmin_ij .eq. 0E0) then
-!                  cycle
-!                endif
-!              endif
-!            endif
-            sig_sq = sig_tab(atmType2,atmType1)
-            do jMol=1,NPART(jType)
-              if(iType .eq. jType) then
-                if(iMol .eq. jMol) then
-                  cycle
-                endif
-              endif  
+        atmType2 = atomArray(jType,jAtom)
+        ep = ep_tab(atmType2, atmType1)
+        q = q_tab(atmType2, atmType1)
+        sig_sq = sig_tab(atmType2,atmType1)
               gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
 !               Distance for the New position
               rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
