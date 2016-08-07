@@ -20,6 +20,7 @@
      !Variable defintion for storing trial distances
     type DistArrayNew
       integer :: oldPos
+      integer :: nType2, nMol2, nAtom2
       real(dp) :: r_sq
       real(dp) :: E_Pair
     end type
@@ -109,8 +110,9 @@
                   rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom) 
                   r = rx*rx + ry*ry + rz*rz
                   if(r .lt. rmin_ij) then
-                    if(
-                    stop "ERROR! Overlaping atoms found in the current configuration!"
+                    if(iMol .ne. jMol) then
+                      stop "ERROR! Overlaping atoms found in the current configuration!"
+                    endif
                   endif 
                   rPair(globIndx1, globIndx2)%p%r_sq = r
                 enddo
@@ -168,7 +170,10 @@
               nNewDist = nNewDist + 1
               oldIndx = rPair(gloIndx1, gloIndx2)%p%arrayIndx
               newDist(nNewDist)%oldIndx = oldIndx
-              newDist(globIndx1, globIndx2)%r_sq = r_new
+              newDist(nNewDist)%nType2 = jType
+              newDist(nNewDist)%nMol2 = jMol
+              newDist(nNewDist)%nAtm2 = jAtom
+              newDist(nNewDist)%r_sq = r_new
             enddo
           enddo
         enddo
