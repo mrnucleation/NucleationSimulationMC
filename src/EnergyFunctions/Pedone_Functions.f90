@@ -15,7 +15,19 @@
 !                      Intended for use in Rosenbluth Sampling, Swap In, etc.
 !*********************************************************************************************************************
       module InterEnergy_Pedone
+      use VarPrecision
+
+      real(dp), parameter :: dieletric = 6d0
+
       contains
+!======================================================================================      
+      pure real(dp) function solventFunction(r,q, born1, born2) 
+        real(dp), intent(in) :: r, q, born1, born2
+        real(dp) :: f
+
+        f = sqrt(r*r + born1*born2*exp(-r*r/(4d0*born1*born2) ) ) 
+        solventFunction = -0.5d0*(1d0-1d0/dieletric)*q / f
+      end function
 !======================================================================================      
       subroutine Detailed_ECalc_Inter(E_T, PairList)
       use ParallelVar
@@ -33,13 +45,15 @@
       real(dp) :: rx,ry,rz,r
       real(dp) :: r_eq, repul_C, q
       real(dp) :: alpha, delta
-      real(dp) :: Morse, LJ, Ele
-      real(dp) :: E_Ele, E_LJ, E_Morse
+      real(dp) :: Morse, LJ, Ele, Solvent
+      real(dp) :: E_Ele, E_LJ, E_Morse, E_Solvent
       real(dp) :: rmin_ij      
+      real(dp) :: born1, born2
 
       E_LJ = 0d0
       E_Ele = 0d0
       E_Morse = 0d0
+      E_Solvent = 0d0
       PairList = 0d0      
       ETable = 0d0
 
@@ -83,6 +97,12 @@
 
              r = sqrt(r)
              Ele = q/r
+             if(implcSolvent) then
+               born1 = bornRad(atmType1)
+               born2 = bornRad(atmType2)
+               Solvent = solventFunction(r, q, born1, born2)
+               E_Solvent = E_Solvent + Solvent
+             endif
              E_Ele = E_Ele + Ele
 
              if(delta .ne. 0d0) then
@@ -91,27 +111,39 @@
                E_Morse = E_Morse + Morse
              endif
              if(.not. distCriteria) then            
-               PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ + Morse
+               PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ + Morse + Solvent
                PairList(jIndx, iIndx) = PairList(iIndx, jIndx)
              endif
-             ETable(iIndx) = ETable(iIndx) + Ele + LJ + Morse
-             ETable(jIndx) = ETable(jIndx) + Ele + LJ + Morse
+             ETable(iIndx) = ETable(iIndx) + Ele + LJ + Morse + Solvent
+             ETable(jIndx) = ETable(jIndx) + Ele + LJ + Morse + Solvent
             enddo
           enddo
         enddo
       enddo
 
+!      if(implcSolvent) then
+!        do iType = 1, nMolTypes
+!          atmType1 = atomArray(iType, 1)
+!          do iMol=1, NPART(iType)
+!            q = q_tab(atmType1, atmType1)
+!            born1 = bornRad(atmType1)
+!            E_Solvent = E_Solvent - 0.5d0*(1d0-1d0/dieletric)*q/(born1*born1)
+!          enddo
+!        enddo
+!      endif
+
       write(nout,*) "Lennard-Jones Energy:", E_LJ
       write(nout,*) "Eletrostatic Energy:", E_Ele
       write(nout,*) "Morse Energy:", E_Morse
+      write(nout,*) "Solvent Energy:", E_Solvent
 
 !      write(35,*) "Pair List:"
 !      do iMol=1,maxMol
 !        write(35,*) iMol, PairList(iMol)
 !      enddo
       
-      E_T = E_T + E_Ele + E_LJ + E_Morse
-      E_Inter_T = E_Ele + E_LJ + E_Morse  
+      E_T = E_T + E_Ele + E_LJ + E_Morse + E_Solvent
+      E_Inter_T = E_Ele + E_LJ + E_Morse + E_Solvent
       
       end subroutine
 !======================================================================================      
@@ -139,6 +171,7 @@
       real(dp) :: Morse, LJ, Ele
       real(dp) :: E_Ele,E_LJ, E_Morse
       real(dp) :: rmin_ij    
+      real(dp) :: born1, born2
 
       sizeDisp = size(disp)
       E_LJ = 0d0
@@ -201,12 +234,18 @@
 
              r_new = sqrt(r_new)
              Ele = q/r_new
+             if(implcSolvent) then
+               born1 = bornRad(atmType1)
+               born2 = bornRad(atmType2)
+               Ele = Ele + solventFunction(r_new, q, born1, born2)
+             endif
              dETable(iIndx) = dETable(iIndx) + Ele
              dETable(jIndx) = dETable(jIndx) + Ele
              if(.not. distCriteria) then   
                PairList(jIndx) = PairList(jIndx) + Ele
              endif
              E_Ele = E_Ele + Ele
+
 
              if(delta .ne. 0d0) then
                Morse = 1d0-exp(-alpha*(r_new-r_eq))
@@ -235,6 +274,11 @@
  
              r_old= sqrt(r_old)
              Ele = q/r_old
+             if(implcSolvent) then
+               born1 = bornRad(atmType1)
+               born2 = bornRad(atmType2)
+               Ele = Ele + solventFunction(r_old, q, born1, born2)
+             endif
              dETable(iIndx) = dETable(iIndx) - Ele
              dETable(jIndx) = dETable(jIndx) - Ele
              E_Ele = E_Ele - Ele
@@ -246,9 +290,10 @@
                dETable(jIndx) = dETable(jIndx) - Morse
                E_Morse = E_Morse - Morse
              endif
-         enddo
-       enddo
-     enddo
+          enddo
+        enddo
+      enddo
+
 
      
       E_Trial = E_LJ + E_Ele + E_Morse
@@ -273,11 +318,9 @@
       real(dp) :: r_eq, repul_C, q
       real(dp) :: alpha, delta
       real(dp) :: LJ, Ele, Morse
-      real(dp) :: E_Ele, E_LJ, E_Morse
-
+      real(dp) :: E_Ele, E_LJ, E_Morse, E_Solvent
+      real(dp) :: born1, born2
       
-
-
       E_LJ = 0d0
       E_Ele = 0d0      
       E_Morse = 0d0
@@ -317,6 +360,11 @@
 
           r = sqrt(r)
           Ele = q/r
+          if(implcSolvent) then
+            born1 = bornRad(atmType1)
+            born2 = bornRad(atmType2)
+            Ele = Ele + solventFunction(r, q, born1, born2)
+          endif
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
           E_Ele = E_Ele + Ele
@@ -330,8 +378,14 @@
           endif
         enddo
       enddo
+
+!      if(implcSolvent) then
+!        q = q_tab(atmType1, atmType1)
+!        born1 = bornRad(atmType1)
+!        E_Solvent = -(1d0-1d0/dieletric)*q/(born1*born1)
+!      endif
      
-      E_Trial = E_LJ + E_Ele + E_Morse
+      E_Trial = E_LJ + E_Ele + E_Morse + E_Solvent
       
       
       end subroutine
@@ -356,8 +410,9 @@
       real(dp) :: r_eq, repul_C, q
       real(dp) :: alpha, delta
       real(dp) :: LJ, Ele, Morse
-      real(dp) :: E_Ele,E_LJ, E_Morse
+      real(dp) :: E_Ele,E_LJ, E_Morse, E_Solvent
       real(dp) :: rmin_ij    
+      real(dp) :: born1, born2
 
       E_LJ = 0d0
       E_Ele = 0d0      
@@ -402,6 +457,11 @@
 
           r = sqrt(r)
           Ele = q/r
+          if(implcSolvent) then
+            born1 = bornRad(atmType1)
+            born2 = bornRad(atmType2)
+            Ele = Ele + solventFunction(r, q, born1, born2)
+          endif
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
           if(.not. distCriteria) then  
@@ -422,8 +482,15 @@
         enddo
       enddo
 
+
+!      if(implcSolvent) then
+!        q = q_tab(atmType1, atmType1)
+!        born1 = bornRad(atmType1)
+!        E_Solvent = -(1d0-1d0/dieletric)*q/(born1*born1)
+!      endif
      
-      E_Trial = E_LJ + E_Ele + E_Morse
+     
+      E_Trial = E_LJ + E_Ele + E_Morse + E_Solvent
       
       
       end subroutine    
@@ -445,6 +512,7 @@
       real(dp) :: LJ, Ele, Morse
       real(dp) :: E_Trial, E_Ele, E_LJ, E_Morse
       real(dp) :: rmin_ij
+      real(dp) :: born1, born2
 
       E_LJ = 0d0
       E_Ele = 0d0      
@@ -479,6 +547,11 @@
 
       r = sqrt(r)
       Ele = q/r
+      if(implcSolvent) then
+        born1 = bornRad(atmType1)
+        born2 = bornRad(atmType2)
+        Ele = Ele + solventFunction(r, q, born1, born2)
+      endif
       E_Ele = E_Ele + Ele
 
       if(delta .ne. 0d0) then
