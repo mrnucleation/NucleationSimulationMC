@@ -81,7 +81,7 @@
 
       NDiff = 0
       NDiff(nType) = 1
-      rejMove = boundaryFunction(NDiff)
+      rejMove = boundaryFunction(NPART, NDiff)
       if(rejMove) then
          boundaryRej = boundaryRej + 1d0
          totalRej = totalRej + 1d0
@@ -279,7 +279,7 @@
  
       NDiff = 0
       NDiff(nType) = -1
-      rejMove = boundaryFunction(NDiff)
+      rejMove = boundaryFunction(NPART, NDiff)
       if(rejMove) then
          boundaryRej = boundaryRej + 1d0
          totalRej = totalRej + 1d0
