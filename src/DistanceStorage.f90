@@ -19,7 +19,7 @@
 
      !Variable defintion for storing trial distances
     type DistArrayNew
-      integer :: oldPos
+      integer :: oldIndx
       integer :: nType2, nMol2, nAtom2
       real(dp) :: r_sq
       real(dp) :: E_Pair
@@ -82,12 +82,12 @@
 !=====================================================================
      subroutine CalcAllDistPairs
       use Coords
-      use ForceField, only: nAtoms
-      use SimParameters, only: NMAX, nMolTypes, maxAtoms
+      use ForceField
+      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
       implicit none
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
-      integer(kind=atomIntType) :: atmType1,atmType2      
-      integer :: globIndx1, globIndx2
+      integer(kind=atomIntType) :: atmType1, atmType2      
+      integer :: globIndx1, globIndx2, jMolMin
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
@@ -125,43 +125,47 @@
 
      end subroutine
 !=====================================================================
-     subroutine CalcNewDistPairs(disp)
+     subroutine CalcNewDistPairs(disp, rejMove)
       use Coords
-      use ForceField, only: nAtoms
-      use SimParameters, only: NMAX, nMolTypes, maxAtoms
+      use ForceField
+      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
       implicit none
+      type(Displacement), intent(in) :: disp(:)
+      logical, intent(out) :: rejMove
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1,atmType2      
-      integer :: globIndx1, globIndx2, oldIndx
+      integer :: iDisp, sizeDisp, gloIndx1, gloIndx2, oldIndx
+      integer :: jMolMin
       real(dp) :: rx,ry,rz,r
       real(dp) :: rmin_ij   
+
    
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
+      sizeDisp = size(disp)
       
-!      !This section calculates the Intermolecular interaction between the atoms that
-!      !have been modified in this trial move with the atoms that have remained stationary
+
       nNewDist = 0
-      do iDisp=1,sizeDisp
+      do iDisp = 1, sizeDisp
         iAtom = disp(iDisp)%atmIndx
-        atmType1 = atomArray(iType,iAtom)
+        atmType1 = atomArray(iType, iAtom)
         gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
         do jType = 1, nMolTypes
           do jAtom = 1,nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
-            sig_sq = sig_tab(atmType2,atmType1)
-            do jMol=1,NPART(jType)
+            rmin_ij = r_min_tab(atmType1,atmType2)     
+            do jMol = 1, NPART(jType)
               gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-              if(globIndx1 .eq. globIndx2 ) then
+              if(gloIndx1 .eq. gloIndx2 ) then
                 cycle
               endif
 !               Distance for the New position
               rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = disp(iDisp)%z_new - MolArray(jType)%mol(jMol)%z(jAtom)
-              r_new = rx*rx + ry*ry + rz*rz
+              r = rx*rx + ry*ry + rz*rz
 !             If r_new is less than r_min reject the move.              
-              if(r_new .lt. rmin_ij) then
+              if(r .lt. rmin_ij) then
                 if(jMol .ne. iMol) then
                   rejMove = .true.
                   return
@@ -172,8 +176,8 @@
               newDist(nNewDist)%oldIndx = oldIndx
               newDist(nNewDist)%nType2 = jType
               newDist(nNewDist)%nMol2 = jMol
-              newDist(nNewDist)%nAtm2 = jAtom
-              newDist(nNewDist)%r_sq = r_new
+              newDist(nNewDist)%nAtom2 = jAtom
+              newDist(nNewDist)%r_sq = r
             enddo
           enddo
         enddo
