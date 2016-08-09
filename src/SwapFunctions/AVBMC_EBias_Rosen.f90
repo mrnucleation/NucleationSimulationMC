@@ -30,7 +30,6 @@
       use Coords
       use SimParameters
       use ForceField
-!      use E_Interface
       use EnergyPointers, only: SwapIn_ECalc, Update_SubEnergies, Quick_Nei_ECalc
       use UmbrellaFunctions
       use ForceField
@@ -40,26 +39,8 @@
       use InterEnergy_LJ_Electro
       use EnergyTables
       use NeighborTable
-
+      use SwapBoundary
       implicit none
-
-!      interface      
-!        subroutine Insert_NewNeiETable_Distance(nType,PairList,dE,newNeiTable)
-!          implicit none
-!          integer, intent(in) :: nType
-!          real(dp), intent(in) :: PairList(:)
-!          real(dp), intent(inout) :: dE(:), newNeiTable(:)
-!        end subroutine
-!      end interface      
-      
-!      interface      
-!        subroutine Insert_NewNeiETable(nType,PairList,dE,newNeiTable)
-!          implicit none
-!          integer, intent(in) :: nType
-!          real(dp), intent(in) :: PairList(:)
-!          real(dp), intent(inout) :: dE(:), newNeiTable(:)
-!        end subroutine
-!      end interface
       
       real(dp), intent(inout) :: E_T      
       real(dp), intent(inout) :: acc_x, atmp_x
@@ -98,11 +79,15 @@
         nType = floor(nMolTypes*grnd() + 1d0)
       endif
 
-      if(NPART(nType) .eq. NMAX(nType)) then
+      NDiff = 0
+      NDiff(nType) = 1
+      rejMove = boundaryFunction(NPART, NDiff)
+      if(rejMove) then
          boundaryRej = boundaryRej + 1d0
          totalRej = totalRej + 1d0
          return
       endif
+
       atmp_x = atmp_x + 1d0
       atmpSwapIn(nType) = atmpSwapIn(nType) + 1d0
       atmpInSize(NTotal) = atmpInSize(NTotal) + 1d0
@@ -243,6 +228,7 @@
       use UmbrellaFunctions
       use CBMC_Variables
       use NeighborTable
+      use SwapBoundary
       implicit none
       
       real(dp), intent(inout) :: E_T      
@@ -289,13 +275,16 @@
       nType = typeList(nSel)
       nMol = subIndxList(nSel)
       atmp_x = atmp_x + 1d0
-      atmpSwapOut(nType) = atmpSwapOut(nType) + 1d0      
-      if(NPART(nType) .eq. NMIN(nType)) then
-        boundaryRej_out = boundaryRej_out + 1d0
-        totalRej_out = totalRej_out + 1d0
-        return
-      endif
-      
+      atmpSwapOut(nType) = atmpSwapOut(nType) + 1d0     
+ 
+      NDiff = 0
+      NDiff(nType) = -1
+      rejMove = boundaryFunction(NPART, NDiff)
+      if(rejMove) then
+         boundaryRej = boundaryRej + 1d0
+         totalRej = totalRej + 1d0
+         return
+      endif      
 
 !     Check to see that the appropriate atoms are within the insertion distance
 !     in order to ensure the move is reversible. If not reject the move since

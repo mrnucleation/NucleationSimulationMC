@@ -221,6 +221,7 @@
       subroutine ReadForcefield
       use ForceField, only: ForceFieldName
       use EnergyPointers
+      use SwapBoundary
       use ParallelVar, only: nout
       implicit none
       character(len=15) :: labelField 
@@ -245,6 +246,7 @@
         Rosen_Mol_New => Rosen_BoltzWeight_Molecule_New
         Rosen_Mol_Old => Rosen_BoltzWeight_Molecule_Old
         Quick_Nei_ECalc => QuickNei_ECalc_Inter_LJ_Q
+        boundaryFunction => Bound_MaxMin
       case("Pedone")
         write(nout,*) "Forcefield Type: Pedone"
         ForceFieldName = "Pedone"
@@ -256,6 +258,7 @@
         Rosen_Mol_New => Rosen_BoltzWeight_Pedone_New
         Rosen_Mol_Old => Rosen_BoltzWeight_Pedone_Old
         Quick_Nei_ECalc => QuickNei_ECalc_Inter_Pedone
+        boundaryFunction => Bound_PedoneChargeBalance
       case default
         stop "Unknown potential type given in forcefield input"
       end select
@@ -792,8 +795,16 @@
         enddo
       enddo
 
-      call createDistArrays
+      ALLOCATE (bornRad(1:nMolTypes), STAT = AllocateStatus)
+      read(55,*)
+      read(55,*) labelField, implcSolvent 
+      do i = 1, nAtomTypes
+        read(55,*) labelField, bornRad(i)
+      enddo
 
+
+
+      call createDistArrays
       flush(35)
 
       end subroutine
@@ -866,6 +877,7 @@
       ALLOCATE (pedoneData(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (atomData(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (nAtoms(1:nMolTypes), STAT = AllocateStatus)
+
       nAtoms = 1
 
       ALLOCATE (r_min(1:nMolTypes), STAT = AllocateStatus)

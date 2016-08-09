@@ -130,9 +130,12 @@
         real(dp) :: repul, rEq, q, alpha, delta, mass
       end type
 
+      logical :: implcSolvent
+
       type(AtomDefPedone), allocatable :: pedoneData(:)
       real(dp), allocatable :: repul_tab(:,:), rEq_tab(:,:)
       real(dp), allocatable :: q_tab(:,:), alpha_Tab(:,:), D_Tab(:,:)
+      real(dp), allocatable :: bornRad(:)
       
       end module
 !==============================================================

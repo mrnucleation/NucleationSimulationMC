@@ -253,15 +253,18 @@
       use SimParameters
       use ParallelVar
       use WHAM_Module
+      use SwapBoundary
       implicit none
+      logical :: goToNext
       integer :: arraySize
       integer :: i,j
-      integer :: NArray(1:nMolTypes)
+      integer :: NArray(1:nMolTypes), NDiff(1:nMolTypes)
       real(dp) :: refBias
 
 !        This block exports the calculated free energy to a file
       rewind(97)
       NArray = 0
+      NDiff = 0
       do i = 1, umbrellaLimit
         if(nMolTypes .gt. 1) then
           do j = 1,nMolTypes-1
@@ -270,6 +273,11 @@
              NArray(nMolTypes - j) = NArray(nMolTypes - j) + 1          
             endif
           enddo
+        endif
+        goToNext = BoundaryFunction(NArray, NDiff)
+        if(goToNext) then
+          NArray(nMolTypes) = NArray(nMolTypes) + 1
+          cycle
         endif
         if(i .ne. 1) then
           write(97, *) (NArray(j),j=1,nMolTypes), NBias(i)
@@ -289,6 +297,11 @@
             endif
           enddo
         endif
+        goToNext = BoundaryFunction(NArray, NDiff)
+        if(goToNext) then
+          NArray(nMolTypes) = NArray(nMolTypes) + 1
+          cycle
+        endif
         if(i .ne. 1) then
           if(ProbArray(i) .ne. 0E0 ) then
             write(98, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i)
@@ -305,12 +318,14 @@
       use SimParameters
       use ParallelVar
       use WHAM_Module
+      use SwapBoundary
       implicit none
       include 'mpif.h' 
       logical :: goToNext
       integer :: arraySize
       integer :: i,j
       integer :: NArray(1:nMolTypes)
+      integer :: nDiff(1:nMolTypes)
       real(dp) :: norm, ratio, maxBias, refBias, probNorm
 
 !      call WHAM_AdjustHist
@@ -319,6 +334,7 @@
 !        This block exports the calculated free energy to a file
         open(unit = 92, file="WHAM_DG_Output.txt")
         NArray = 0
+        nDiff = 0
         refBias = FreeEnergyEst(refBin)
         do i = 1, umbrellaLimit
           if(nMolTypes .gt. 1) then
@@ -328,6 +344,11 @@
                NArray(nMolTypes - j) = NArray(nMolTypes - j) + 1          
               endif
             enddo
+          endif
+          goToNext = BoundaryFunction(NArray, NDiff)
+          if(goToNext) then
+            NArray(nMolTypes) = NArray(nMolTypes) + 1
+            cycle
           endif
           if(ProbArray(i) .gt. 0E0) then
             write(92, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i)
@@ -353,6 +374,11 @@
               endif
             enddo
           endif
+          goToNext = BoundaryFunction(NArray, NDiff)
+          if(goToNext) then
+            NArray(nMolTypes) = NArray(nMolTypes) + 1
+            cycle
+          endif
           if(i .ne. 1) then
             write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
           endif
@@ -374,6 +400,11 @@
               endif
             enddo
           endif
+          goToNext = BoundaryFunction(NArray, NDiff)
+          if(goToNext) then
+            NArray(nMolTypes) = NArray(nMolTypes) + 1
+            cycle
+          endif
           if(ProbArray(i) .gt. 0E0) then
             write(92, *) (NArray(j),j=1,nMolTypes), ProbArray(i)/probNorm
           endif
@@ -393,6 +424,11 @@
                 NArray(nMolTypes - j) = NArray(nMolTypes - j) + 1          
               endif
             enddo
+          endif
+          goToNext = BoundaryFunction(NArray, NDiff)
+          if(goToNext) then
+            NArray(nMolTypes) = NArray(nMolTypes) + 1
+            cycle
           endif
           if(HistStorage(i) .gt. 0E0) then
             write(36, *) (NArray(j),j=1,nMolTypes), HistStorage(i)

@@ -115,8 +115,9 @@ SRC_CBMC := $(CBMC)/CBMC.f90\
             $(CBMC)/CBMC_Utility.f90\
             $(CBMC)/CBMC_PartialRegrowth.f90\
             $(CBMC)/CBMC_Rosen_AVBMC_ConfigGen.f90
-SRC_SWAP := $(SWAP)/AVBMC_EBias_Rosen.f90\
-            $(SWAP)/Exchange.f90
+SRC_SWAP := $(SWAP)/SwapBoundaries.f90\
+            $(SWAP)/Exchange.f90\
+            $(SWAP)/AVBMC_EBias_Rosen.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90
 SRC_COMPLETE:= $(SRC_ENERGY)  $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT) $(MOD_SRC)  $(SRC_MAIN) 
