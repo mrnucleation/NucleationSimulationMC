@@ -8,9 +8,9 @@
       integer :: i,j,k,cnt,AllocationStatus
       
       allocate( MolArray(1:nMolTypes), stat=AllocationStatus)
-      do i=1,nMolTypes
+      do i = 1, nMolTypes
         allocate( MolArray(i)%mol(1:NMAX(i)), stat=AllocationStatus)   
-        do j=1,NMAX(i)
+        do j = 1, NMAX(i)
           allocate( MolArray(i)%mol(j)%x(1:nAtoms(i)), stat=AllocationStatus)
           allocate( MolArray(i)%mol(j)%y(1:nAtoms(i)), stat=AllocationStatus)
           allocate( MolArray(i)%mol(j)%z(1:nAtoms(i)), stat=AllocationStatus)
@@ -18,12 +18,21 @@
         enddo
       enddo
 
+      nTotalAtoms = 0
+      do iType = 1, nMolTypes
+        nTotalAtoms = nTotalAtoms + NMAX(iType)*nAtoms(iType)
+      enddo
+
+      allocate(atomIndicies(1:nTotalAtoms), stat=AllocationStatus)
       cnt = 0
       do i = 1, nMolTypes
         do j = 1, NMAX(i)
           do k = 1, nAtoms(i)
             cnt = cnt + 1
             MolArray(i)%mol(j)%globalIndx(k) = cnt
+            atomIndicies(cnt)%nType = i
+            atomIndicies(cnt)%nMol = j
+            atomIndicies(cnt)%nAtom = k
           enddo
         enddo
       enddo
@@ -83,7 +92,7 @@
           cnt = cnt+1
 !          JointArray(cnt)%molType = i          
           MolArray(i)%mol(j)%indx = cnt
-          write(35,*) i, j, cnt
+!          write(35,*) i, j, cnt
 !          do jj=1,nAtoms(i)
 !            JointArray(cnt)%x(jj) => MolArray(i)%mol(j)%x(jj)
 !            JointArray(cnt)%y(jj) => MolArray(i)%mol(j)%y(jj)

@@ -20,7 +20,7 @@
      !Variable defintion for storing trial distances
     type DistArrayNew
       integer :: oldIndx
-      integer :: nType2, nMol2, nAtom2
+      integer :: indx1, indx2
       real(dp) :: r_sq
       real(dp) :: E_Pair
     end type
@@ -45,11 +45,6 @@
       integer :: iType, AllocationStat
       integer :: i, j, cnt
 
-      nTotalAtoms = 0
-      do iType = 1, nMolTypes
-        nTotalAtoms = nTotalAtoms + NMAX(iType)*nAtoms(iType)
-      enddo
-
       nPairs = nint( dble(nTotalAtoms * (nTotalAtoms - 1)) / 2d0 )
       allocate(distStorage(0:nPairs), stat = AllocationStat)
       allocate(rPair(1:nTotalAtoms, 1:nTotalAtoms), stat = AllocationStat)
@@ -69,7 +64,7 @@
         enddo
       enddo
 
-      distStorage(cnt)%arrayIndx = 0
+      distStorage(0)%arrayIndx = 0
       distStorage(0)%indx1 = 0
       distStorage(0)%indx2 = 0
       distStorage(0)%r_sq = 0d0
@@ -178,6 +173,57 @@
               newDist(nNewDist)%nMol2 = jMol
               newDist(nNewDist)%nAtom2 = jAtom
               newDist(nNewDist)%r_sq = r
+            enddo
+          enddo
+        enddo
+      enddo
+
+
+     end subroutine
+!=====================================================================
+     subroutine CalcSwapInDistPairs(rejMove)
+      use Coords
+      use ForceField
+      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+      implicit none
+      type(Displacement), intent(in) :: disp(:)
+      logical, intent(out) :: rejMove
+      integer :: iType,jType,iMol,jMol,iAtom,jAtom
+      integer(kind=atomIntType) :: atmType1,atmType2      
+      integer :: iDisp, sizeDisp, gloIndx1, gloIndx2, oldIndx
+      integer :: jMolMin
+      real(dp) :: rx,ry,rz,r_sq
+      real(dp) :: rmin_ij   
+
+   
+      iType = disp(1)%molType
+      iMol = disp(1)%molIndx
+      sizeDisp = size(disp)
+      
+
+      nNewDist = 0
+      do iAtom = 1,nAtoms(newMol%molType)
+        atmType1 = atomArray(newMol%molType,iAtom)
+        do jType = 1, nMolTypes
+          do jAtom = 1,nAtoms(jType)        
+            atmType2 = atomArray(jType,jAtom)
+            rmin_ij = r_min_tab(atmType2,atmType1)
+            do jMol = 1,NPART(jType)
+              rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
+              ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
+              rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
+              r_sq = rx*rx + ry*ry + rz*rz
+              if(r_sq .lt. rmin_ij) then
+                rejMove = .true.
+                return
+              endif
+              nNewDist = nNewDist + 1
+              oldIndx = rPair(gloIndx1, gloIndx2) % p % arrayIndx
+              newDist(nNewDist)%oldIndx = oldIndx
+              newDist(nNewDist)%nType2 = jType
+              newDist(nNewDist)%nMol2 = jMol
+              newDist(nNewDist)%nAtom2 = jAtom
+              newDist(nNewDist)%r_sq = r_sq
             enddo
           enddo
         enddo

@@ -15,6 +15,10 @@
         real(dp) :: x, y, z
       end type
 
+      type GlobalAtomIndex
+        integer(kind=atomIntType) :: nType, nMol, nAtom
+      end type
+
       type Molecule
         integer(kind=atomIntType) :: indx
         integer, allocatable :: globalIndx(:)
@@ -91,9 +95,11 @@
         
       type(MolArrayType), allocatable, target :: MolArray(:)
       type(MolPointers), allocatable :: JointArray(:) 
+      type(GlobalAtomIndex), allocatable :: atomIndicies(:)
       
       type(TrialCoordinates) :: newMol, newMol2
       type(SimpleMolCoords),allocatable :: rosenTrial(:)
+
       
       logical, allocatable :: NeighborList(:,:)
       integer, allocatable :: NumNei(:)   

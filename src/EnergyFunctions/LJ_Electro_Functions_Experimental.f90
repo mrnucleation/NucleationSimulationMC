@@ -17,14 +17,24 @@
       module InterEnergy_LJ_Electro
       contains
 !======================================================================================      
-      real(dp) function LJ_Funtion(r_sq, ep, sig) 
+      function LJ_Func(r_sq, ep, sig) result(LJ)
       implicit none
       real(dp), intent(in) :: r_sq, eq, sig
       real(dp) :: LJ  
  
       LJ = (sig/r_sq)
       LJ = LJ * LJ * LJ
-      LJ_Function = ep * LJ * (LJ-1E0)  
+      LJ = ep * LJ * (LJ-1E0)  
+
+      end function
+!======================================================================================      
+      function Ele_Func(r_sq, q) result(Ele)
+      implicit none
+      real(dp), intent(in) :: r_sq, q
+      real(dp) :: r, Ele  
+ 
+      r = sqrt(r_sq)
+      Ele = q/r
 
       end function
 !======================================================================================      
@@ -82,12 +92,10 @@
                      endif
                    endif
                  endif
-                 LJ = (sig_sq/r)**3
-                 LJ = ep * LJ * (LJ-1E0)              
+                 LJ = LJ_Func(r, ep, sig)             
                  E_LJ = E_LJ + LJ
               
-                 r = sqrt(r)
-                 Ele = q/r
+                 Ele = Ele_Func(r, q)
                  E_Ele = E_Ele + Ele
                  rPair(globIndx1, globIndx2)%p%E_Pair = Ele + LJ
                  if(.not. distCriteria) then
@@ -178,9 +186,7 @@
 
         jIndx = MolArray(jType)%mol(jMol)%indx
         if(ep .ne. 0E0) then
-          LJ = (sig_sq/r_new)
-          LJ = LJ * LJ * LJ              
-          LJ = ep * LJ * (LJ-1E0)                
+          LJ = LJ_Func(r_new, ep, sig_sq)             
           E_LJ = E_LJ + LJ
           if(.not. distCriteria) then
             PairList(jIndx) = PairList(jIndx) + LJ
@@ -188,25 +194,21 @@
           dETable(iIndx) = dETable(iIndx) + LJ
           dETable(jIndx) = dETable(jIndx) + LJ
                 
-          LJ = (sig_sq/r_old)
-          LJ = LJ * LJ * LJ
-          LJ = ep * LJ * (LJ-1E0)                
+          LJ = LJ_Func(r_old, ep, sig)             
           E_LJ = E_LJ - LJ
           dETable(iIndx) = dETable(iIndx) - LJ
           dETable(jIndx) = dETable(jIndx) - LJ                                
         endif
         if(q .ne. 0E0) then
-          r_new = sqrt(r_new)
-          Ele = q / r_new
+          Ele = Ele_Func(r_new, q)                
           E_Ele = E_Ele + Ele
           if(.not. distCriteria) then                
             PairList(jIndx) = PairList(jIndx) + Ele
           endif
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
-                
-          r_old = sqrt(r_old)
-          Ele = q / r_old
+          
+          Ele = Ele_Func(r_old, q)                
           E_Ele = E_Ele - Ele
           dETable(iIndx) = dETable(iIndx) - Ele
           dETable(jIndx) = dETable(jIndx) - Ele                                
@@ -246,53 +248,6 @@
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
 
-      do iAtom=1,nAtoms(iType)
-        if(any(disp%atmIndx .eq. iAtom)) cycle
-        atmType1 = atomArray(iType,iAtom)
-        do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
-            atmType2 = atomArray(jType,jAtom)
-            ep = ep_tab(atmType2,atmType1)
-            q = q_tab(atmType2,atmType1)
-            if(q .eq. 0E0) then
-              if(ep .eq. 0E0) then
-                cycle
-              endif
-            endif
-            sig_sq = sig_tab(atmType2,atmType1)
-            do jMol=1, NPART(jType)
-              if(iType .eq. jType) then
-                if(iMol .eq. jMol) then
-                  cycle
-                endif
-              endif  
-              jIndx = MolArray(jType)%mol(jMol)%indx              
-!             Distance for the New position
-              rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
-              r = rx*rx + ry*ry + rz*rz
-
-!             Check to see if there is a non-zero Lennard-Jones parmaeter. If so calculate
-!             the Lennard-Jones energy           
-              if(ep .ne. 0E0) then
-                LJ = (sig_sq/r)
-                LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ - 1E0)                
-                PairList(jIndx) = PairList(jIndx) + LJ
-              endif
-!             Check to see if there is a non-zero Electrostatic parmaeter. If so calculate
-!             the electrostatic energy              
-              if(q .ne. 0E0) then
-                r = sqrt(r)
-                Ele = q / r
-                PairList(jIndx) = PairList(jIndx) + Ele
-              endif
-            enddo
-          enddo
-        enddo
-      enddo
-      
       end subroutine      
 !======================================================================================      
       pure subroutine Mol_ECalc_Inter(iType, iMol, dETable, E_Trial)
@@ -311,7 +266,6 @@
 
       E_Trial = 0E0
       dETable = 0E0
-      
       iIndx = MolArray(iType)%mol(iMol)%indx
 
       do iAtom = 1,nAtoms(iType)
@@ -347,7 +301,6 @@
       implicit none
       logical, intent(out) :: rejMove
       real(dp), intent(out) :: E_Trial
-
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
       integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom
@@ -395,9 +348,7 @@
                 endif
               endif              
               if(ep .ne. 0E0) then
-                LJ = (sig_sq/r)
-                LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1E0)                
+                LJ = LJ_Func(r, ep, sig_sq)
                 E_LJ = E_LJ + LJ
                 if(.not. distCriteria) then                
                   PairList(jIndx) = PairList(jIndx) + LJ
@@ -406,8 +357,7 @@
                 dETable(iIndx) = dETable(iIndx) + LJ
               endif
               if(q .ne. 0E0) then
-                r = sqrt(r)
-                Ele = q / r
+                Ele = Ele_Func(r, q)
                 E_Ele = E_Ele + Ele
                 if(.not. distCriteria) then                
                   PairList(jIndx) = PairList(jIndx) + Ele
@@ -615,14 +565,11 @@
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)
           if(ep .ne. 0E0) then
-            LJ = (sig_sq/r)
-            LJ = LJ * LJ * LJ              
-            LJ = ep * LJ * (LJ - 1E0)            
+            LJ = LJ_Func(r, ep, sig_sq)
             E_LJ = E_LJ + LJ
           endif
           if(q .ne. 0E0) then            
-            r = sqrt(r)
-            Ele = q / r
+            Ele = Ele_Func(r, q)
             E_Ele = E_Ele + Ele
           endif
         enddo
