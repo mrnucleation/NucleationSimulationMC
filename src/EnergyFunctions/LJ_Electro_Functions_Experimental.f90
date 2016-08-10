@@ -73,8 +73,6 @@
                  q = q_tab(atmType1,atmType2)
                  sig_sq = sig_tab(atmType1,atmType2)          
                  globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-
-
                  r = rPair(globIndx1, globIndx2)%p%r_sq
                  if(distCriteria) then
                    if(iAtom .eq. 1) then
