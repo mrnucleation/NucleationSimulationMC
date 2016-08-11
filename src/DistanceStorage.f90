@@ -233,9 +233,6 @@
      end subroutine
 !=====================================================================
      subroutine UpdateDistArray
-      use Coords
-      use ForceField
-      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
       implicit none
       integer :: iPair
       integer :: oldIndx
@@ -252,7 +249,6 @@
 !=====================================================================
      subroutine UpdateDistArray_SwapOut(nType, nMol)
       use Coords
-      use ForceField
       use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
       implicit none
       integer, intent(in) :: nType, nMol
