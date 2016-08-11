@@ -15,11 +15,12 @@
 !           Exchange - Combines the Mol and New Mol routines for moves that simultaniously add and remove a particle at the same time.
 !*********************************************************************************************************************
       module InterEnergy_LJ_Electro
+      use VarPrecision
       contains
 !======================================================================================      
-      function LJ_Func(r_sq, ep, sig) result(LJ)
+      pure function LJ_Func(r_sq, ep, sig) result(LJ)
       implicit none
-      real(dp), intent(in) :: r_sq, eq, sig
+      real(dp), intent(in) :: r_sq, ep, sig
       real(dp) :: LJ  
  
       LJ = (sig/r_sq)
@@ -28,7 +29,7 @@
 
       end function
 !======================================================================================      
-      function Ele_Func(r_sq, q) result(Ele)
+      pure function Ele_Func(r_sq, q) result(Ele)
       implicit none
       real(dp), intent(in) :: r_sq, q
       real(dp) :: r, Ele  
@@ -52,11 +53,13 @@
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1,atmType2      
       integer :: iIndx, jIndx, globIndx1, globIndx2, jMolMin
-      real(dp) :: rx,ry,rz,r
+      real(dp) :: rx,ry,rz,r_sq
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij      
+
+
 
       E_LJ = 0E0
       E_Ele = 0E0
@@ -83,20 +86,22 @@
                  q = q_tab(atmType1,atmType2)
                  sig_sq = sig_tab(atmType1,atmType2)          
                  globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-                 r = rPair(globIndx1, globIndx2)%p%r_sq
+
+                 r_sq = rPair(globIndx1, globIndx2)%p%r_sq
                  if(distCriteria) then
                    if(iAtom .eq. 1) then
                      if(jAtom .eq. 1) then
-                       PairList(iIndx, jIndx) = r
+                       PairList(iIndx, jIndx) = r_sq
                        PairList(jIndx, iIndx) = PairList(iIndx,jIndx)                    
                      endif
                    endif
                  endif
-                 LJ = LJ_Func(r, ep, sig)             
+                 LJ = LJ_Func(r_sq, ep, sig_sq)             
                  E_LJ = E_LJ + LJ
               
-                 Ele = Ele_Func(r, q)
+                 Ele = Ele_Func(r_sq, q)
                  E_Ele = E_Ele + Ele
+
                  rPair(globIndx1, globIndx2)%p%E_Pair = Ele + LJ
                  if(.not. distCriteria) then
                    PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ
@@ -119,9 +124,11 @@
 !        write(35,*) iMol, PairList(iMol)
 !      enddo
 
-      do iAtom = 1, size(distStorage) - 1
-        write(35,*) distStorage(iAtom)%indx1, distStorage(iAtom)%indx2, distStorage(iAtom)%r_sq, distStorage(iAtom)%E_Pair
-      enddo
+
+!      do iAtom = 1, size(distStorage) - 1
+!        write(35,*) distStorage(iAtom)%indx1, distStorage(iAtom)%indx2, distStorage(iAtom)%r_sq, distStorage(iAtom)%E_Pair
+!      enddo
+!      flush(35)
       
       E_T = E_T + E_Ele + E_LJ    
       E_Inter_T = E_Ele + E_LJ   
@@ -133,6 +140,7 @@
       use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
+      use PairStorage
       implicit none
       
       type(Displacement), intent(in) :: disp(:)      
@@ -143,13 +151,12 @@
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp, iPair
       integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
-      integer :: sizeDisp 
+      integer :: sizeDisp, oldIndx 
       integer :: gloIndx1, gloIndx2
-      real(dp) :: rx,ry,rz
-      real(dp) :: r_new, r_old
+      real(dp) :: r_new
       real(dp) :: r_min1_sq      
       real(dp) :: ep,sig_sq,q
-      real(dp) :: LJ, Ele
+      real(dp) :: LJ, Ele, E_PairOld, E_Old
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij    
       real(dp) :: time_r, time_LJ, time_Ele
@@ -160,8 +167,9 @@
       E_LJ = 0E0
       E_Ele = 0E0      
       E_Trial = 0E0
+      E_Old = 0E0
       PairList = 0E0      
-
+      rejMove = .false.
       dETable = 0E0
 !      if(NTotal .eq. 1) return
       iType = disp(1)%molType
@@ -172,20 +180,37 @@
 !      !have been modified in this trial move with the atoms that have remained stationary
 
       do iPair = 1, nNewDist
-        iAtom = disp(iDisp)%atmIndx
+        oldIndx = newDist(iPair)%oldIndx
+        gloIndx1 = newDist(iPair)%indx1
+        gloIndx2 = newDist(iPair)%indx2
+
+        jMol  = atomIndicies(gloIndx2)%nMol
+        if(iMol .eq. jMol) then
+          cycle
+        endif
+
+        iAtom = atomIndicies(gloIndx1)%nAtom
+        jType = atomIndicies(gloIndx2)%nType
+        jAtom = atomIndicies(gloIndx2)%nAtom
+        
         atmType1 = atomArray(iType,iAtom)
-        gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
         atmType2 = atomArray(jType,jAtom)
 
         ep = ep_tab(atmType2, atmType1)
-        q = q_tab(atmType2, atmType1)
-        sig_sq = sig_tab(atmType2,atmType1)
-        gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+        q  = q_tab(atmType2, atmType1)
 
-!        Distance for the Old position
-
+        r_new = newDist(iPair)%r_sq
         jIndx = MolArray(jType)%mol(jMol)%indx
+        if(distCriteria) then
+          if(iAtom .eq. 1) then
+            if(jAtom .eq. 1) then
+              PairList(jIndx) = r_new
+            endif
+          endif
+        endif
+
         if(ep .ne. 0E0) then
+          sig_sq = sig_tab(atmType2,atmType1)
           LJ = LJ_Func(r_new, ep, sig_sq)             
           E_LJ = E_LJ + LJ
           if(.not. distCriteria) then
@@ -193,11 +218,7 @@
           endif
           dETable(iIndx) = dETable(iIndx) + LJ
           dETable(jIndx) = dETable(jIndx) + LJ
-                
-          LJ = LJ_Func(r_old, ep, sig)             
-          E_LJ = E_LJ - LJ
-          dETable(iIndx) = dETable(iIndx) - LJ
-          dETable(jIndx) = dETable(jIndx) - LJ                                
+          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
         endif
         if(q .ne. 0E0) then
           Ele = Ele_Func(r_new, q)                
@@ -207,13 +228,16 @@
           endif
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
-          
-          Ele = Ele_Func(r_old, q)                
-          E_Ele = E_Ele - Ele
-          dETable(iIndx) = dETable(iIndx) - Ele
-          dETable(jIndx) = dETable(jIndx) - Ele                                
+          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + Ele
         endif
+        E_PairOld = distStorage(oldIndx)%E_Pair
+        dETable(iIndx) = dETable(iIndx) - E_PairOld
+        dETable(jIndx) = dETable(jIndx) - E_PairOld  
+        E_Old = E_Old + E_PairOld
       enddo
+
+
+
 
      
       if(.not. distCriteria) then      
@@ -222,7 +246,7 @@
         endif
       endif
      
-      E_Trial = E_LJ + E_Ele
+      E_Trial = E_LJ + E_Ele - E_Old
       
       
       end subroutine
@@ -232,6 +256,7 @@
       use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
+      use PairStorage
       implicit none
       
       type(Displacement), intent(in) :: disp(:)      
@@ -240,13 +265,32 @@
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1,atmType2, jIndx
       integer :: sizeDisp 
-      real(dp) :: rx,ry,rz,r
-      real(dp) :: ep,sig_sq,q
-      real(dp) :: LJ, Ele
+      integer :: gloIndx1, gloIndx2
+      real(dp) :: E_Pair
 
       sizeDisp = size(disp)
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
+
+      do iAtom=1,nAtoms(iType)
+        if(any(disp%atmIndx .eq. iAtom)) cycle
+        gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
+        do jType = 1, nMolTypes
+          do jAtom = 1,nAtoms(jType)        
+            do jMol=1, NPART(jType)
+              if(iType .eq. jType) then
+                if(iMol .eq. jMol) then
+                  cycle
+                endif
+              endif  
+              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+              jIndx = MolArray(jType)%mol(jMol)%indx
+              E_Pair = rPair(gloIndx1, gloIndx2) % p % E_Pair    
+              PairList(jIndx) = PairList(jIndx) + E_Pair
+            enddo
+          enddo
+        enddo
+      enddo
 
       end subroutine      
 !======================================================================================      
@@ -255,6 +299,7 @@
       use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
+      use PairStorage
       implicit none
       integer, intent(in) :: iType, iMol     
       real(dp), intent(out) :: E_Trial
@@ -293,19 +338,22 @@
       
       end subroutine
 !======================================================================================      
-      pure subroutine NewMol_ECalc_Inter(E_Trial, PairList, dETable, rejMove)
+      subroutine NewMol_ECalc_Inter(E_Trial, PairList, dETable, rejMove)
       use ForceField
       use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
+      use PairStorage
       implicit none
       logical, intent(out) :: rejMove
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
-      integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom
+      integer :: iPair
+      integer :: iType, iMol, iAtom, iIndx, jType, jIndx, jMol, jAtom
       integer(kind=atomIntType) :: atmType1,atmType2
-      real(dp) :: rx,ry,rz,r
+      integer :: gloIndx1, gloIndx2
+      real(dp) :: r_sq
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
 
@@ -319,55 +367,46 @@
       PairList = 0E0
       rejMove = .false.
       
-      iIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
-  
-      do iAtom = 1,nAtoms(newMol%molType)
-        atmType1 = atomArray(newMol%molType,iAtom)
-        do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
-            atmType2 = atomArray(jType,jAtom)
-            ep = ep_tab(atmType2,atmType1)
-            q = q_tab(atmType2,atmType1)
-            sig_sq = sig_tab(atmType2,atmType1)
-            rmin_ij = r_min_tab(atmType2,atmType1)
-            do jMol = 1,NPART(jType)
-              rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
-              r = rx*rx + ry*ry + rz*rz
-              if(r .lt. rmin_ij) then
-                rejMove = .true.
-                return
-              endif
-              jIndx = molArray(jType)%mol(jMol)%indx  
-              if(distCriteria) then              
-                if(iAtom .eq. 1) then
-                  if(jAtom .eq. 1) then
-                    PairList(jIndx) = r
-                  endif
-                endif
-              endif              
-              if(ep .ne. 0E0) then
-                LJ = LJ_Func(r, ep, sig_sq)
-                E_LJ = E_LJ + LJ
-                if(.not. distCriteria) then                
-                  PairList(jIndx) = PairList(jIndx) + LJ
-                endif
-                dETable(jIndx) = dETable(jIndx) + LJ
-                dETable(iIndx) = dETable(iIndx) + LJ
-              endif
-              if(q .ne. 0E0) then
-                Ele = Ele_Func(r, q)
-                E_Ele = E_Ele + Ele
-                if(.not. distCriteria) then                
-                  PairList(jIndx) = PairList(jIndx) + Ele
-                endif
-                dETable(jIndx) = dETable(jIndx) + Ele
-                dETable(iIndx) = dETable(iIndx) + Ele
-              endif
-            enddo
-          enddo
-        enddo
+      iType = newMol%molType
+      iMol = NPART(newMol%molType)+1
+      iIndx = molArray(iType)%mol(iMol)%indx
+      do iPair = 1, nNewDist
+        gloIndx1 = newDist(iPair)%indx1
+        gloIndx2 = newDist(iPair)%indx2
+
+        iAtom = atomIndicies(gloIndx1)%nAtom
+        jType = atomIndicies(gloIndx2)%nType
+        jMol = atomIndicies(gloIndx2)%nMol
+        jAtom = atomIndicies(gloIndx2)%nAtom
+
+        atmType1 = atomArray(iType,iAtom)
+        atmType2 = atomArray(jType,jAtom)
+
+        ep = ep_tab(atmType2, atmType1)
+        q = q_tab(atmType2, atmType1)
+        r_sq = newDist(iPair)%r_sq
+        jIndx = MolArray(jType)%mol(jMol)%indx
+        if(ep .ne. 0E0) then
+          sig_sq = sig_tab(atmType2,atmType1)
+          LJ = LJ_Func(r_sq, ep, sig_sq)             
+          E_LJ = E_LJ + LJ
+          if(.not. distCriteria) then
+            PairList(jIndx) = PairList(jIndx) + LJ
+          endif
+          dETable(iIndx) = dETable(iIndx) + LJ
+          dETable(jIndx) = dETable(jIndx) + LJ
+          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
+        endif
+        if(q .ne. 0E0) then
+          Ele = Ele_Func(r_sq, q)                
+          E_Ele = E_Ele + Ele
+          if(.not. distCriteria) then                
+            PairList(jIndx) = PairList(jIndx) + Ele
+          endif
+          dETable(iIndx) = dETable(iIndx) + Ele
+          dETable(jIndx) = dETable(jIndx) + Ele
+          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
+        endif
       enddo
      
       E_Trial = E_LJ + E_Ele

@@ -619,7 +619,7 @@
       enddo
       
 
-      call CreateDistArrays
+
       call IntegrateBendAngleProb
 
       close(55)

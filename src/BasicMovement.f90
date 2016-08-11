@@ -13,6 +13,7 @@
       use DistanceCriteria      
       use EnergyTables
       use CBMC_Variables      
+      use PairStorage, only: UpdateDistArray
       implicit none
       
       real(dp),intent(inout) :: E_T,acc_x,atmp_x      
@@ -90,6 +91,7 @@
           call NeighborUpdate(PairList, nIndx)
         endif  
 !        call Create_NeiETable
+        call UpdateDistArray
         call Update_SubEnergies
       elseif(exp(-beta*E_Diff) .gt. grnd()) then
         disp(1)%x_old = disp(1)%x_new
@@ -98,6 +100,7 @@
         E_T = E_T + E_Diff
         ETable = ETable + dETable
         acc_x = acc_x + 1E0
+        call UpdateDistArray
         if(distCriteria) then
           if(disp(1)%atmIndx .eq. 1) then
             call NeighborUpdate_Distance(PairList,nIndx)        
@@ -106,6 +109,7 @@
           call NeighborUpdate(PairList, nIndx)
         endif  
 !        call Create_NeiETable
+        call UpdateDistArray
         call Update_SubEnergies        
       endif
 
@@ -123,6 +127,7 @@
       use EnergyCriteria
       use DistanceCriteria      
       use EnergyTables
+      use PairStorage, only: UpdateDistArray
       implicit none
       
       real(dp),intent(inout) :: E_T, acc_x, atmp_x      
@@ -177,7 +182,7 @@
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
       
-!      write(8,*) E_Inter
+      write(2,*) E_Inter
 
 !     Calculate Acceptance and determine if the move is accepted or not     
       if(E_Inter .le. 0E0) then
@@ -196,6 +201,7 @@
           call NeighborUpdate(PairList, nIndx)
         endif    
 !        call Create_NeiETable
+        call UpdateDistArray
         call Update_SubEnergies        
       elseif(exp(-beta*E_Inter) .gt. grnd()) then
         do i=1,nAtoms(nType)      
@@ -213,6 +219,7 @@
           call NeighborUpdate(PairList, nIndx)
         endif  
 !        call Create_NeiETable
+        call UpdateDistArray
         call Update_SubEnergies        
       endif
 
@@ -255,6 +262,7 @@
       use EnergyCriteria
       use DistanceCriteria      
       use EnergyTables
+      use PairStorage, only: UpdateDistArray
       implicit none
 
       real(dp), intent(inout) :: E_T,acc_x,atmp_x
@@ -344,6 +352,7 @@
           call NeighborUpdate(PairList, nIndx)
         endif  
 !        call Create_NeiETable
+        call UpdateDistArray
         call Update_SubEnergies        
       elseif(exp(-beta*E_Inter) .gt. grnd()) then
         do i=1,nAtoms(nType)      
@@ -361,6 +370,7 @@
           call NeighborUpdate(PairList, nIndx)
         endif  
 !        call Create_NeiETable
+        call UpdateDistArray
         call Update_SubEnergies        
       endif
       end subroutine
@@ -376,6 +386,7 @@
       use EnergyCriteria
       use DistanceCriteria      
       use EnergyTables      
+      use PairStorage, only: UpdateDistArray
       implicit none
 
       real(dp), intent(inout) :: E_T,acc_x,atmp_x
@@ -468,6 +479,7 @@
         endif  
 !        call Create_NeiETable
         call Update_SubEnergies        
+        call UpdateDistArray
       elseif(exp(-beta*E_Inter) .gt. grnd()) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
@@ -484,9 +496,10 @@
           call NeighborUpdate(PairList, nIndx)
         endif  
 !        call Create_NeiETable
+        call UpdateDistArray
         call Update_SubEnergies        
-
       endif
+
       end subroutine
 !=======================================================      
       subroutine Rot_yz(E_T,acc_x,atmp_x)
@@ -500,6 +513,7 @@
       use EnergyCriteria
       use DistanceCriteria
       use EnergyTables
+      use PairStorage, only: UpdateDistArray
       implicit none
       
       real(dp), intent(inout) :: E_T,acc_x,atmp_x
@@ -590,6 +604,7 @@
           call NeighborUpdate(PairList, nIndx)
         endif  
 !        call Create_NeiETable
+        call UpdateDistArray
         call Update_SubEnergies        
       elseif(exp(-beta*E_Inter) .gt. grnd()) then
         do i=1,nAtoms(nType)      
@@ -607,6 +622,7 @@
           call NeighborUpdate(PairList, nIndx)
         endif  
 !        call Create_NeiETable
+        call UpdateDistArray
         call Update_SubEnergies        
       endif
       end subroutine

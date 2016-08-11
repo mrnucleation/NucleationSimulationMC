@@ -19,7 +19,7 @@ OPTIMIZE_FLAGS := -O3
 #DEBUGFLAGS := -check bounds
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
-#DEBUGFLAGS += -pg 
+DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
@@ -83,14 +83,14 @@ MOD_SRC := $(SRC)/Common.f90 \
  		$(SRC)/DistanceStorage.f90
 SRC_ENERGY := $(ESUB)/Bending_Functions.f90 \
             $(ESUB)/BondStretch_Functions.f90 \
-            $(ESUB)/LJ_Electro_Functions.f90 \
+            $(ESUB)/LJ_Electro_Functions_Experimental.f90 \
             $(ESUB)/Pedone_Functions.f90 \
             $(ESUB)/Intra_LJ_Electro_Functions.f90\
             $(ESUB)/Torsional_Functions.f90 \
             $(ESUB)/Improper_Functions.f90 \
             $(ESUB)/Rosen_Boltz_Functions.f90\
             $(ESUB)/Rosen_Pedone_Functions.f90\
-            $(ESUB)/EnergyInterfaceFunctions.f90\
+            $(ESUB)/EnergyInterfaceFunctions_LJ_Experimental.f90\
             $(ESUB)/EnergyInterfaceFunctions_Pedone.f90\
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\

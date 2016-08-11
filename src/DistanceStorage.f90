@@ -82,17 +82,14 @@
       implicit none
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1, atmType2      
-      integer :: globIndx1, globIndx2, jMolMin
-      real(dp) :: rx,ry,rz,r
-      real(dp) :: ep,sig_sq,q
-      real(dp) :: LJ, Ele
-      real(dp) :: E_Ele,E_LJ
+      integer :: globIndx1, globIndx2 
+      real(dp) :: rx, ry, rz, r_sq
       real(dp) :: rmin_ij   
-   
+
       do iType = 1,nMolTypes
         do jType = iType, nMolTypes
           do iMol=1,NPART(iType)
-            do jMol = jMolMin,NPART(jType)
+            do jMol = 1,NPART(jType)
               do iAtom = 1,nAtoms(iType)
                 atmType1 = atomArray(iType,iAtom)
                 globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
@@ -103,13 +100,13 @@
                   rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
                   ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
                   rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom) 
-                  r = rx*rx + ry*ry + rz*rz
-                  if(r .lt. rmin_ij) then
+                  r_sq = rx*rx + ry*ry + rz*rz
+                  if(r_sq .lt. rmin_ij) then
                     if(iMol .ne. jMol) then
                       stop "ERROR! Overlaping atoms found in the current configuration!"
                     endif
                   endif 
-                  rPair(globIndx1, globIndx2)%p%r_sq = r
+                  rPair(globIndx1, globIndx2) % p % r_sq = r_sq
                 enddo
               enddo
             enddo
@@ -118,70 +115,10 @@
       enddo
 
 
+
      end subroutine
 !=====================================================================
      subroutine CalcNewDistPairs(disp, rejMove)
-      use Coords
-      use ForceField
-      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
-      implicit none
-      type(Displacement), intent(in) :: disp(:)
-      logical, intent(out) :: rejMove
-      integer :: iType,jType,iMol,jMol,iAtom,jAtom
-      integer(kind=atomIntType) :: atmType1,atmType2      
-      integer :: iDisp, sizeDisp, gloIndx1, gloIndx2, oldIndx
-      integer :: jMolMin
-      real(dp) :: rx,ry,rz,r
-      real(dp) :: rmin_ij   
-
-   
-      iType = disp(1)%molType
-      iMol = disp(1)%molIndx
-      sizeDisp = size(disp)
-      
-
-      nNewDist = 0
-      do iDisp = 1, sizeDisp
-        iAtom = disp(iDisp)%atmIndx
-        atmType1 = atomArray(iType, iAtom)
-        gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
-        do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
-            atmType2 = atomArray(jType,jAtom)
-            rmin_ij = r_min_tab(atmType1,atmType2)     
-            do jMol = 1, NPART(jType)
-              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-              if(gloIndx1 .eq. gloIndx2 ) then
-                cycle
-              endif
-!               Distance for the New position
-              rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = disp(iDisp)%z_new - MolArray(jType)%mol(jMol)%z(jAtom)
-              r = rx*rx + ry*ry + rz*rz
-!             If r_new is less than r_min reject the move.              
-              if(r .lt. rmin_ij) then
-                if(jMol .ne. iMol) then
-                  rejMove = .true.
-                  return
-                endif
-              endif    
-              nNewDist = nNewDist + 1
-              oldIndx = rPair(gloIndx1, gloIndx2)%p%arrayIndx
-              newDist(nNewDist)%oldIndx = oldIndx
-              newDist(nNewDist)%nType2 = jType
-              newDist(nNewDist)%nMol2 = jMol
-              newDist(nNewDist)%nAtom2 = jAtom
-              newDist(nNewDist)%r_sq = r
-            enddo
-          enddo
-        enddo
-      enddo
-
-
-     end subroutine
-!=====================================================================
-     subroutine CalcSwapInDistPairs(rejMove)
       use Coords
       use ForceField
       use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
@@ -199,16 +136,76 @@
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
       sizeDisp = size(disp)
-      
-
+      rejMove = .false.
       nNewDist = 0
-      do iAtom = 1,nAtoms(newMol%molType)
-        atmType1 = atomArray(newMol%molType,iAtom)
+
+      do iDisp = 1, sizeDisp
+        iAtom = disp(iDisp)%atmIndx
+        atmType1 = atomArray(iType, iAtom)
+        gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
         do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
+          do jAtom = 1, nAtoms(jType)        
+            atmType2 = atomArray(jType,jAtom)
+            rmin_ij = r_min_tab(atmType1,atmType2)     
+            do jMol = 1, NPART(jType)
+              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+              if(gloIndx1 .eq. gloIndx2 ) then
+                cycle
+              endif
+!               Distance for the New position
+              rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
+              ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
+              rz = disp(iDisp)%z_new - MolArray(jType)%mol(jMol)%z(jAtom)
+              r_sq = rx*rx + ry*ry + rz*rz
+!             If r_new is less than r_min reject the move.              
+              if(r_sq .lt. rmin_ij) then
+                if(jMol .ne. iMol) then
+                  rejMove = .true.
+                  return
+                endif
+              endif    
+              nNewDist = nNewDist + 1
+              oldIndx = rPair(gloIndx1, gloIndx2)%p%arrayIndx
+              newDist(nNewDist)%oldIndx = oldIndx
+              newDist(nNewDist)%indx1 = gloIndx1
+              newDist(nNewDist)%indx2 = gloIndx2
+              newDist(nNewDist)%r_sq = r_sq
+              newDist(nNewDist)%E_Pair = 0d0
+            enddo
+          enddo
+        enddo
+      enddo
+
+
+     end subroutine
+!=====================================================================
+     subroutine CalcSwapInDistPairs(rejMove)
+      use Coords
+      use ForceField
+      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+      implicit none
+      logical, intent(out) :: rejMove
+      integer :: iType,jType,iMol,jMol,iAtom,jAtom
+      integer(kind=atomIntType) :: atmType1,atmType2      
+      integer :: iDisp, gloIndx1, gloIndx2, oldIndx
+      integer :: jMolMin
+      real(dp) :: rx,ry,rz,r_sq
+      real(dp) :: rmin_ij   
+
+   
+      iType = newMol%molType
+      iMol = NPART(newMol%molType)+1
+      rejMove = .false.
+      nNewDist = 0
+      do iAtom = 1, nAtoms(iType)
+        atmType1 = atomArray(iType, iAtom)
+        gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
+        do jType = 1, nMolTypes
+          do jAtom = 1, nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
             rmin_ij = r_min_tab(atmType2,atmType1)
-            do jMol = 1,NPART(jType)
+            do jMol = 1, NPART(jType)
+              gloIndx1 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
               rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
@@ -220,12 +217,56 @@
               nNewDist = nNewDist + 1
               oldIndx = rPair(gloIndx1, gloIndx2) % p % arrayIndx
               newDist(nNewDist)%oldIndx = oldIndx
-              newDist(nNewDist)%nType2 = jType
-              newDist(nNewDist)%nMol2 = jMol
-              newDist(nNewDist)%nAtom2 = jAtom
+              newDist(nNewDist)%indx1 = gloIndx1
+              newDist(nNewDist)%indx2 = gloIndx2
+!              newDist(nNewDist)%nType2 = jType
+!              newDist(nNewDist)%nMol2 = jMol
+!              newDist(nNewDist)%nAtom2 = jAtom
               newDist(nNewDist)%r_sq = r_sq
+              newDist(nNewDist)%E_Pair = 0d0
             enddo
           enddo
+        enddo
+      enddo
+
+
+     end subroutine
+!=====================================================================
+     subroutine UpdateDistArray
+      use Coords
+      use ForceField
+      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+      implicit none
+      integer :: iPair
+      integer :: oldIndx
+
+
+      do iPair = 1, nNewDist
+        oldIndx = newDist(iPair)%oldIndx
+        distStorage(oldIndx)%r_sq = newDist(iPair)%r_sq
+        distStorage(oldIndx)%E_Pair = newDist(iPair)%E_Pair
+      enddo
+
+
+     end subroutine
+!=====================================================================
+     subroutine UpdateDistArray_SwapOut(nType, nMol)
+      use Coords
+      use ForceField
+      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+      implicit none
+      integer, intent(in) :: nType, nMol
+      integer :: iAtom, nMol2
+      integer :: gloIndx1, gloIndx2, gloIndx3
+
+     
+      nMol2 = NPART(nType)
+      do iAtom = 1, nAtoms(nType)
+        gloIndx1 = molArray(nType)%mol(nMol)%globalIndx(iAtom)
+        gloIndx2 = molArray(nType)%mol(nMol2)%globalIndx(iAtom)
+        do gloIndx3 = 1, nTotalAtoms
+          rPair(gloIndx1, gloIndx3)%p%r_sq = rPair(gloIndx2, gloIndx3)%p%r_sq
+          rPair(gloIndx1, gloIndx3)%p%E_Pair = rPair(gloIndx2, gloIndx3)%p%E_Pair
         enddo
       enddo
 

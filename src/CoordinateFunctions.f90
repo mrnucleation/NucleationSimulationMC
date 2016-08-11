@@ -4,9 +4,11 @@
       use SimParameters
       use Coords
       use EnergyTables
+      use PairStorage
       implicit none
       integer :: i,j,k,cnt,AllocationStatus
-      
+      integer :: iType
+
       allocate( MolArray(1:nMolTypes), stat=AllocationStatus)
       do i = 1, nMolTypes
         allocate( MolArray(i)%mol(1:NMAX(i)), stat=AllocationStatus)   
@@ -22,6 +24,7 @@
       do iType = 1, nMolTypes
         nTotalAtoms = nTotalAtoms + NMAX(iType)*nAtoms(iType)
       enddo
+      write(35,*) "Total Atoms in the System:", nTotalAtoms
 
       allocate(atomIndicies(1:nTotalAtoms), stat=AllocationStatus)
       cnt = 0
@@ -33,8 +36,13 @@
             atomIndicies(cnt)%nType = i
             atomIndicies(cnt)%nMol = j
             atomIndicies(cnt)%nAtom = k
+
           enddo
         enddo
+      enddo
+
+      do i = 1, size(atomIndicies)
+        write(35,*) i, atomIndicies(i)%nType, atomIndicies(i)%nMol, atomIndicies(i)%nAtom
       enddo
 
       allocate( gasConfig(1:nMolTypes), stat=AllocationStatus)                
@@ -72,7 +80,7 @@
       allocate(newMol2%y(1:maxAtoms), stat=AllocationStatus)
       allocate(newMol2%z(1:maxAtoms), stat=AllocationStatus)
 
-     
+      call CreateDistArrays
       
       end subroutine
 !=============================================================================
@@ -85,8 +93,8 @@
       
       
       cnt=0
-      write(35,*) "Molecular Index List"
-      write(35,*) "Type, Mol, Index"      
+!      write(35,*) "Molecular Index List"
+!      write(35,*) "Type, Mol, Index"      
       do i=1,nMolTypes
         do j=1,NMAX(i)
           cnt = cnt+1

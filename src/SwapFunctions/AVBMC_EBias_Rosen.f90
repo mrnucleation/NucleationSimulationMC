@@ -40,6 +40,7 @@
       use EnergyTables
       use NeighborTable
       use SwapBoundary
+      use PairStorage, only: UpdateDistArray
       implicit none
       
       real(dp), intent(inout) :: E_T      
@@ -204,6 +205,7 @@
          ETable = ETable + dETable         
          NPART(nType) = NPART(nType) + 1 
          call Update_SubEnergies
+         call UpdateDistArray
        else
          totalRej = totalRej + 1d0
          dbalRej = dbalRej + 1d0
@@ -229,6 +231,7 @@
       use CBMC_Variables
       use NeighborTable
       use SwapBoundary
+      use PairStorage, only: UpdateDistArray_SwapOut
       implicit none
       
       real(dp), intent(inout) :: E_T      
@@ -353,6 +356,7 @@
          NTotal = NTotal - 1         
          acc_x = acc_x + 1d0 
          call Update_SubEnergies
+         call UpdateDistArray_SwapOut(nType, nMol)
 !         call DEBUG_Output_NeighborList
        else
          dbalRej_out = dbalRej_out + 1d0
