@@ -31,7 +31,7 @@
       type(DistArray), pointer :: p      
     end type
 
-    integer :: nPairs, nTotalAtoms, nNewDist
+    integer :: nMaxPairs, nTotalAtoms, nNewDist
     type(DistArray), allocatable, target :: distStorage(:)
     type(DistPointer), allocatable :: rPair(:,:)
     type(DistArrayNew), allocatable :: newDist(:)
@@ -45,10 +45,10 @@
       integer :: iType, AllocationStat
       integer :: i, j, cnt
 
-      nPairs = nint( dble(nTotalAtoms * (nTotalAtoms - 1)) / 2d0 )
-      allocate(distStorage(0:nPairs), stat = AllocationStat)
+      nMaxPairs = nint( dble(nTotalAtoms * (nTotalAtoms - 1)) / 2d0 )
+      allocate(distStorage(0:nMaxPairs), stat = AllocationStat)
       allocate(rPair(1:nTotalAtoms, 1:nTotalAtoms), stat = AllocationStat)
-      allocate(newDist(1:nPairs), stat = AllocationStat) 
+      allocate(newDist(1:nMaxPairs), stat = AllocationStat) 
 
       cnt = 0
       do i = 1, nTotalAtoms-1
