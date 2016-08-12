@@ -144,15 +144,15 @@
 !          to calculate a new estimate for F
           do j = 1, nCurWhamItter
             fSum = 0E0
-            maxBias = maxval(BiasStorage(:,j))
+!            maxBias = maxval(BiasStorage(:,j))
             do i = 1, umbrellaLimit
               if(ProbArray(i) .ne. 0E0) then
-!                fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j))
-                fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j) - maxBias)
+                fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j))
+!                fSum = fSum + ProbArray(i)*exp(BiasStorage(i,j) - maxBias)
               endif
             enddo
 !            F_Estimate(j) = log(fSum)
-            F_Estimate(j) = log(fSum)*maxBias
+            F_Estimate(j) = log(fSum)
             F_Estimate(j) = (F_Estimate(j) + F_Old(j))*0.5E0
          enddo 
 !         Calculate the average change in F from the previous estimate and determine 
@@ -352,10 +352,10 @@
           endif
           if(ProbArray(i) .gt. 0E0) then
             write(92, *) (NArray(j),j=1,nMolTypes), FreeEnergyEst(i)
-          else
-            if(i .ne. 1) then
-              write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
-            endif
+!          else
+!            if(i .ne. 1) then
+!              write(92, *) (NArray(j),j=1,nMolTypes), NBias(i)
+!            endif
           endif
           NArray(nMolTypes) = NArray(nMolTypes) + 1
         enddo

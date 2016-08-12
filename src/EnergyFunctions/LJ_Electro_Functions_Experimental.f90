@@ -32,7 +32,7 @@
       pure function Ele_Func(r_sq, q) result(Ele)
       implicit none
       real(dp), intent(in) :: r_sq, q
-      real(dp) :: r, Ele  
+      real(dp) :: Ele, r
  
       r = sqrt(r_sq)
       Ele = q/r
