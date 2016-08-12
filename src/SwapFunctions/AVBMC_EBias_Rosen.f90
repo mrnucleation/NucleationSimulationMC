@@ -346,6 +346,7 @@
          molArray(nType)%mol(nMol)%y(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%y(1:nAtoms(nType))
          molArray(nType)%mol(nMol)%z(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%z(1:nAtoms(nType))
          E_T = E_T + E_Inter + E_Intra
+         call UpdateDistArray_SwapOut(nType, nMol)
          nIndx = molArray(nType)%mol(nMol)%indx
          call NeighborUpdate_Delete(nIndx)
          isActive(molArray(nType)%mol(NPART(nType))%indx) = .false.         
@@ -356,7 +357,7 @@
          NTotal = NTotal - 1         
          acc_x = acc_x + 1d0 
          call Update_SubEnergies
-         call UpdateDistArray_SwapOut(nType, nMol)
+
 !         call DEBUG_Output_NeighborList
        else
          dbalRej_out = dbalRej_out + 1d0

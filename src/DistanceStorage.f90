@@ -194,7 +194,7 @@
 
    
       iType = newMol%molType
-      iMol = NPART(newMol%molType)+1
+      iMol = NPART(iType)+1
       rejMove = .false.
       nNewDist = 0
       do iAtom = 1, nAtoms(iType)
@@ -205,7 +205,7 @@
             atmType2 = atomArray(jType,jAtom)
             rmin_ij = r_min_tab(atmType2,atmType1)
             do jMol = 1, NPART(jType)
-              gloIndx1 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
               rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
@@ -219,9 +219,6 @@
               newDist(nNewDist)%oldIndx = oldIndx
               newDist(nNewDist)%indx1 = gloIndx1
               newDist(nNewDist)%indx2 = gloIndx2
-!              newDist(nNewDist)%nType2 = jType
-!              newDist(nNewDist)%nMol2 = jMol
-!              newDist(nNewDist)%nAtom2 = jAtom
               newDist(nNewDist)%r_sq = r_sq
               newDist(nNewDist)%E_Pair = 0d0
             enddo
@@ -249,14 +246,20 @@
 !=====================================================================
      subroutine UpdateDistArray_SwapOut(nType, nMol)
       use Coords
+      use Forcefield, only: nAtoms
       use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
       implicit none
       integer, intent(in) :: nType, nMol
       integer :: iAtom, nMol2
       integer :: gloIndx1, gloIndx2, gloIndx3
 
-     
+
       nMol2 = NPART(nType)
+      if(nMol .eq. nMol2) then
+        return
+      endif
+
+
       do iAtom = 1, nAtoms(nType)
         gloIndx1 = molArray(nType)%mol(nMol)%globalIndx(iAtom)
         gloIndx2 = molArray(nType)%mol(nMol2)%globalIndx(iAtom)

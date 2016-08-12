@@ -185,55 +185,53 @@
         gloIndx2 = newDist(iPair)%indx2
 
         jMol  = atomIndicies(gloIndx2)%nMol
-        if(iMol .eq. jMol) then
-          cycle
-        endif
-
-        iAtom = atomIndicies(gloIndx1)%nAtom
-        jType = atomIndicies(gloIndx2)%nType
-        jAtom = atomIndicies(gloIndx2)%nAtom
+        if(iMol .ne. jMol) then
+          iAtom = atomIndicies(gloIndx1)%nAtom
+          jType = atomIndicies(gloIndx2)%nType
+          jAtom = atomIndicies(gloIndx2)%nAtom
         
-        atmType1 = atomArray(iType,iAtom)
-        atmType2 = atomArray(jType,jAtom)
+          atmType1 = atomArray(iType,iAtom)
+          atmType2 = atomArray(jType,jAtom)
 
-        ep = ep_tab(atmType2, atmType1)
-        q  = q_tab(atmType2, atmType1)
+          ep = ep_tab(atmType2, atmType1)
+          q  = q_tab(atmType2, atmType1)
 
-        r_new = newDist(iPair)%r_sq
-        jIndx = MolArray(jType)%mol(jMol)%indx
-        if(distCriteria) then
-          if(iAtom .eq. 1) then
-            if(jAtom .eq. 1) then
-              PairList(jIndx) = r_new
+          r_new = newDist(iPair)%r_sq
+          jIndx = MolArray(jType)%mol(jMol)%indx
+          if(distCriteria) then
+            if(iAtom .eq. 1) then
+              if(jAtom .eq. 1) then
+                PairList(jIndx) = r_new
+              endif
             endif
           endif
-        endif
 
-        if(ep .ne. 0E0) then
-          sig_sq = sig_tab(atmType2,atmType1)
-          LJ = LJ_Func(r_new, ep, sig_sq)             
-          E_LJ = E_LJ + LJ
-          if(.not. distCriteria) then
-            PairList(jIndx) = PairList(jIndx) + LJ
+          if(ep .ne. 0E0) then
+            sig_sq = sig_tab(atmType2,atmType1)
+            LJ = LJ_Func(r_new, ep, sig_sq)             
+            E_LJ = E_LJ + LJ
+            if(.not. distCriteria) then
+              PairList(jIndx) = PairList(jIndx) + LJ
+            endif
+            dETable(iIndx) = dETable(iIndx) + LJ
+            dETable(jIndx) = dETable(jIndx) + LJ
+            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
           endif
-          dETable(iIndx) = dETable(iIndx) + LJ
-          dETable(jIndx) = dETable(jIndx) + LJ
-          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
-        endif
-        if(q .ne. 0E0) then
-          Ele = Ele_Func(r_new, q)                
-          E_Ele = E_Ele + Ele
-          if(.not. distCriteria) then                
-            PairList(jIndx) = PairList(jIndx) + Ele
+          if(q .ne. 0E0) then
+            Ele = Ele_Func(r_new, q)                
+            E_Ele = E_Ele + Ele
+            if(.not. distCriteria) then                
+              PairList(jIndx) = PairList(jIndx) + Ele
+            endif
+            dETable(iIndx) = dETable(iIndx) + Ele
+            dETable(jIndx) = dETable(jIndx) + Ele
+            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + Ele
           endif
-          dETable(iIndx) = dETable(iIndx) + Ele
-          dETable(jIndx) = dETable(jIndx) + Ele
-          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + Ele
+          E_PairOld = distStorage(oldIndx)%E_Pair
+          dETable(iIndx) = dETable(iIndx) - E_PairOld
+          dETable(jIndx) = dETable(jIndx) - E_PairOld  
+          E_Old = E_Old + E_PairOld
         endif
-        E_PairOld = distStorage(oldIndx)%E_Pair
-        dETable(iIndx) = dETable(iIndx) - E_PairOld
-        dETable(jIndx) = dETable(jIndx) - E_PairOld  
-        E_Old = E_Old + E_PairOld
       enddo
 
 
@@ -263,7 +261,7 @@
       real(dp), intent(inout) :: PairList(:)
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
-      integer(kind=atomIntType) :: atmType1,atmType2, jIndx
+      integer(kind=atomIntType) :: atmType1,atmType2, jIndx, iIndx
       integer :: sizeDisp 
       integer :: gloIndx1, gloIndx2
       real(dp) :: E_Pair
@@ -271,6 +269,7 @@
       sizeDisp = size(disp)
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
+      iIndx = molArray(iType)%mol(iMol)%indx
 
       do iAtom=1,nAtoms(iType)
         if(any(disp%atmIndx .eq. iAtom)) cycle
@@ -278,15 +277,12 @@
         do jType = 1, nMolTypes
           do jAtom = 1,nAtoms(jType)        
             do jMol=1, NPART(jType)
-              if(iType .eq. jType) then
-                if(iMol .eq. jMol) then
-                  cycle
-                endif
-              endif  
-              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
               jIndx = MolArray(jType)%mol(jMol)%indx
-              E_Pair = rPair(gloIndx1, gloIndx2) % p % E_Pair    
-              PairList(jIndx) = PairList(jIndx) + E_Pair
+              if(iIndx .ne. jIndx) then
+                gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+                E_Pair = rPair(gloIndx1, gloIndx2) % p % E_Pair    
+                PairList(jIndx) = PairList(jIndx) + E_Pair
+              endif
             enddo
           enddo
         enddo
@@ -294,7 +290,7 @@
 
       end subroutine      
 !======================================================================================      
-      pure subroutine Mol_ECalc_Inter(iType, iMol, dETable, E_Trial)
+      subroutine Mol_ECalc_Inter(iType, iMol, dETable, E_Trial)
       use ForceField
       use ForceFieldPara_LJ_Q
       use Coords
@@ -317,24 +313,21 @@
         gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom) 
         do jType = 1, nMolTypes
           do jAtom = 1,nAtoms(jType)        
-            do jMol=1,NPART(jType)
-              if(iType .eq. jType) then
-                if(iMol .eq. jMol) then
-                  cycle
-                endif
+            do jMol=1, NPART(jType)
+              jIndx = MolArray(jType)%mol(jMol)%indx  
+              if(iIndx .ne. jIndx) then
+                gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom) 
+                E_Pair = rPair(gloIndx1, gloIndx2)%p%E_Pair
+                E_Trial = E_Trial + E_Pair
+                dETable(iIndx) = dETable(iIndx) + E_Pair
+                dETable(jIndx) = dETable(jIndx) + E_Pair
               endif
-              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom) 
-              jIndx = MolArray(jType)%mol(jMol)%indx               
-              E_Pair = rPair(gloIndx1, gloIndx2)%p%E_Pair
-              E_Trial = E_Trial + E_Pair
-              dETable(iIndx) = dETable(iIndx) + E_Pair
-              dETable(jIndx) = dETable(jIndx) + E_Pair
             enddo
           enddo
         enddo
       enddo
-     
-     
+
+  
       
       end subroutine
 !======================================================================================      
@@ -368,45 +361,48 @@
       rejMove = .false.
       
       iType = newMol%molType
-      iMol = NPART(newMol%molType)+1
+      iMol = NPART(iType)+1
       iIndx = molArray(iType)%mol(iMol)%indx
       do iPair = 1, nNewDist
         gloIndx1 = newDist(iPair)%indx1
         gloIndx2 = newDist(iPair)%indx2
 
-        iAtom = atomIndicies(gloIndx1)%nAtom
-        jType = atomIndicies(gloIndx2)%nType
         jMol = atomIndicies(gloIndx2)%nMol
-        jAtom = atomIndicies(gloIndx2)%nAtom
+        if(jMol .ne. iMol) then
+          iAtom = atomIndicies(gloIndx1)%nAtom
+          jType = atomIndicies(gloIndx2)%nType
+          jAtom = atomIndicies(gloIndx2)%nAtom
 
-        atmType1 = atomArray(iType,iAtom)
-        atmType2 = atomArray(jType,jAtom)
+          atmType1 = atomArray(iType,iAtom)
+          atmType2 = atomArray(jType,jAtom)
 
-        ep = ep_tab(atmType2, atmType1)
-        q = q_tab(atmType2, atmType1)
-        r_sq = newDist(iPair)%r_sq
-        jIndx = MolArray(jType)%mol(jMol)%indx
-        if(ep .ne. 0E0) then
-          sig_sq = sig_tab(atmType2,atmType1)
-          LJ = LJ_Func(r_sq, ep, sig_sq)             
-          E_LJ = E_LJ + LJ
-          if(.not. distCriteria) then
-            PairList(jIndx) = PairList(jIndx) + LJ
+          ep = ep_tab(atmType2, atmType1)
+          q = q_tab(atmType2, atmType1)
+          r_sq = newDist(iPair)%r_sq
+          jIndx = MolArray(jType)%mol(jMol)%indx
+          LJ = 0d0
+          Ele = 0d0
+          if(ep .ne. 0E0) then
+            sig_sq = sig_tab(atmType2,atmType1)
+            LJ = LJ_Func(r_sq, ep, sig_sq)             
+            E_LJ = E_LJ + LJ
+            if(.not. distCriteria) then
+              PairList(jIndx) = PairList(jIndx) + LJ
+            endif
+            dETable(iIndx) = dETable(iIndx) + LJ
+            dETable(jIndx) = dETable(jIndx) + LJ
           endif
-          dETable(iIndx) = dETable(iIndx) + LJ
-          dETable(jIndx) = dETable(jIndx) + LJ
-          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
-        endif
-        if(q .ne. 0E0) then
-          Ele = Ele_Func(r_sq, q)                
-          E_Ele = E_Ele + Ele
-          if(.not. distCriteria) then                
-            PairList(jIndx) = PairList(jIndx) + Ele
+          if(q .ne. 0E0) then
+            Ele = Ele_Func(r_sq, q)                
+            E_Ele = E_Ele + Ele
+            if(.not. distCriteria) then                
+              PairList(jIndx) = PairList(jIndx) + Ele
+            endif
+            dETable(iIndx) = dETable(iIndx) + Ele
+            dETable(jIndx) = dETable(jIndx) + Ele
           endif
-          dETable(iIndx) = dETable(iIndx) + Ele
-          dETable(jIndx) = dETable(jIndx) + Ele
-          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
-        endif
+          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ + Ele
+        endif 
       enddo
      
       E_Trial = E_LJ + E_Ele

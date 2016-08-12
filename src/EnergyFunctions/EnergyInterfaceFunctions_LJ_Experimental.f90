@@ -232,8 +232,8 @@
       E_Bend = 0E0      
       E_Torsion = 0E0      
       E_Improper = 0E0            
-      PairList = 0E0
-      dETable = 0E0
+!      PairList = 0E0
+!      dETable = 0E0
 
       E_Inter_Diff = 0E0
       E_NBond_Diff = 0E0
