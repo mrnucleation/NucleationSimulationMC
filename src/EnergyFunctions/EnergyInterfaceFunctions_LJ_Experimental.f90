@@ -139,7 +139,7 @@
           endif
           dETable = 0E0 
           PairList = 0E0
-          call Shift_ECalc_Inter(E_Inter, disp, PairList, dETable, rejMove)
+          call Shift_ECalc_Inter(E_Inter, disp,newDist, PairList, dETable, rejMove)
           if(rejMove) then
             return
           endif

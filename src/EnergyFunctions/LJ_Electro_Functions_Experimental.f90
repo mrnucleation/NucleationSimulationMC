@@ -135,15 +135,16 @@
       
       end subroutine
 !======================================================================================      
-      subroutine Shift_ECalc_Inter(E_Trial,disp, PairList,dETable,rejMove)
+      pure subroutine Shift_ECalc_Inter(E_Trial,disp,newDist, PairList,dETable,rejMove)
       use ForceField
       use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
-      use PairStorage
+      use PairStorage, only: distStorage, DistArrayNew, nNewDist
       implicit none
       
-      type(Displacement), intent(in) :: disp(:)      
+      type(Displacement), intent(in) :: disp(:)  
+      type(DistArrayNew), intent(inout) :: newDist(:)
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       logical, intent(out) :: rejMove
@@ -163,14 +164,14 @@
       real(dp) :: cnt_r, cnt_LJ, cnt_Ele
       real(dp) :: time1, time2
 
-      sizeDisp = size(disp)
+
       E_LJ = 0E0
       E_Ele = 0E0      
       E_Trial = 0E0
       E_Old = 0E0
       PairList = 0E0      
       rejMove = .false.
-      dETable = 0E0
+!      dETable = 0E0
 !      if(NTotal .eq. 1) return
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
@@ -180,7 +181,7 @@
 !      !have been modified in this trial move with the atoms that have remained stationary
 
       do iPair = 1, nNewDist
-        oldIndx = newDist(iPair)%oldIndx
+
         gloIndx1 = newDist(iPair)%indx1
         gloIndx2 = newDist(iPair)%indx2
 
@@ -206,6 +207,8 @@
             endif
           endif
 
+          LJ = 0d0
+          Ele = 0d0
           if(ep .ne. 0E0) then
             sig_sq = sig_tab(atmType2,atmType1)
             LJ = LJ_Func(r_new, ep, sig_sq)             
@@ -213,8 +216,8 @@
             if(.not. distCriteria) then
               PairList(jIndx) = PairList(jIndx) + LJ
             endif
-            dETable(iIndx) = dETable(iIndx) + LJ
-            dETable(jIndx) = dETable(jIndx) + LJ
+!            dETable(iIndx) = dETable(iIndx) + LJ
+!            dETable(jIndx) = dETable(jIndx) + LJ
             newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
           endif
           if(q .ne. 0E0) then
@@ -223,13 +226,14 @@
             if(.not. distCriteria) then                
               PairList(jIndx) = PairList(jIndx) + Ele
             endif
-            dETable(iIndx) = dETable(iIndx) + Ele
-            dETable(jIndx) = dETable(jIndx) + Ele
+!            dETable(iIndx) = dETable(iIndx) + Ele
+!            dETable(jIndx) = dETable(jIndx) + Ele
             newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + Ele
           endif
+          oldIndx = newDist(iPair)%oldIndx
           E_PairOld = distStorage(oldIndx)%E_Pair
-          dETable(iIndx) = dETable(iIndx) - E_PairOld
-          dETable(jIndx) = dETable(jIndx) - E_PairOld  
+          dETable(iIndx) = dETable(iIndx) + LJ + Ele - E_PairOld
+          dETable(jIndx) = dETable(jIndx) + LJ + Ele - E_PairOld  
           E_Old = E_Old + E_PairOld
         endif
       enddo
@@ -237,7 +241,7 @@
 
 
 
-     
+      sizeDisp = size(disp)
       if(.not. distCriteria) then      
         if(sizeDisp .lt. nAtoms(iType)) then
           call Shift_PairList_Correct(disp, PairList)
@@ -290,7 +294,7 @@
 
       end subroutine      
 !======================================================================================      
-      subroutine Mol_ECalc_Inter(iType, iMol, dETable, E_Trial)
+      pure subroutine Mol_ECalc_Inter(iType, iMol, dETable, E_Trial)
       use ForceField
       use ForceFieldPara_LJ_Q
       use Coords
