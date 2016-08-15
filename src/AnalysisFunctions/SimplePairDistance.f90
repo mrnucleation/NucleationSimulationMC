@@ -2,24 +2,32 @@
 !      This module contains the functions nessisary to initalize and 
 !      perform radial distribution studies
       module SimpleDistPair
-        type PairData
-          integer :: type1, mol1, atom1
-          integer :: type2, mol2, atom2
-        end type
+        use PairStorage
 
         integer :: nDistPair
-        integer, allocatable :: distPairIndx(:)
-        type(PairData), allocatable :: distPairData(:)
-  
+        integer, allocatable :: pairArrayIndx(:)
+        integer, allocatable :: pairGloIndx1(:), pairGloIndx2(:)
+        integer, allocatable :: molIndx1(:), molIndx2(:)  
+
         contains
      !--------------------------------------------------------------------------------
         subroutine Initialize_DistPair
            use MiscelaniousVars
            implicit none 
            integer :: AllocationStatus
+           integer :: startIndx, endIndx, iPair
 
-           allocate(distPairIndx(1:nDistPair), STAT = AllocationStatus)
-           allocate(distPairData(1:nDistPair), STAT = AllocationStatus)
+           allocate(pairArrayIndx(1:nDistPair), STAT = AllocationStatus)
+           allocate(pairGloIndx1(1:nDistPair), STAT = AllocationStatus)
+           allocate(pairGloIndx2(1:nDistPair), STAT = AllocationStatus)
+           allocate(molIndx1(1:nDistPair), STAT = AllocationStatus)
+           allocate(molIndx2(1:nDistPair), STAT = AllocationStatus)
+           
+           call ReserveSpace_Coord(nDistPair, startIndx, endIndx)
+
+           do iPair = 1, nDistPair
+             pairArrayIndx(i) = startIndx + iPair - 1
+           enddo
         end subroutine
      !--------------------------------------------------------------------------------
         subroutine CalcDistPairs
@@ -27,22 +35,14 @@
           use Coords
           implicit none 
           integer :: iDistPair
-          integer :: type1, mol1, atom1
-          integer :: type2, mol2, atom2
-          real(dp) :: rx, ry, rz, r
+          integer :: gloIndx1, gloIndx2
+          real(dp) :: r, r_sq
 
           do iDistPair =1, nDistPair
-            type1 = distPairData(iDistPair)%type1
-            type2 = distPairData(iDistPair)%type2
-            mol1 = distPairData(iDistPair)%mol1
-            mol2 = distPairData(iDistPair)%mol2
-            atom1 = distPairData(iDistPair)%atom1
-            atom2 = distPairData(iDistPair)%atom2
-            rx = MolArray(type1)%mol(mol1)%x(atom1) - MolArray(type2)%mol(mol2)%x(atom2)
-            ry = MolArray(type1)%mol(mol1)%y(atom1) - MolArray(type2)%mol(mol2)%y(atom2)
-            rz = MolArray(type1)%mol(mol1)%z(atom1) - MolArray(type2)%mol(mol2)%z(atom2)
-            r = rx*rx + ry*ry + rz*rz
-            r = dsqrt(r)
+            gloIndx1 = pairGloIndx1(iDistPair)
+            gloIndx2 = pairGloIndx2(iDistPair)
+            r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq           
+            r = dsqrt(r_sq)
             miscCoord(distPairIndx(iDistPair))%varValue = r
           enddo
 
@@ -54,28 +54,18 @@
           use Coords
           implicit none 
           type(Displacement), intent(in) :: disp(:)
-          integer :: nDisp, iDistPair
+          logical :: 
+          integer :: sizeDisp, iDistPair, iDisp
           integer :: type1, mol1, atom1
-          integer :: type2, mol2, atom2
           integer :: dispIndx, indx1, indx2
           real(dp) :: rx, ry, rz, r
 
           dispIndx = disp(1)%molIndx
-
-          nDisp = size(disp)
+          sizeDisp = size(disp)
 
           do iDistPair = 1, nDistPair
-            if(dispIndx .ne. iIndx) then
-              if(dispIndx .ne. jIndx) then
-                miscCoord_New(distPairIndx(iDistPair))%varValue = r  
-              endif
-            endif
-            type1 = distPairData(iDistPair)%type1
-            type2 = distPairData(iDistPair)%type2
-            mol1 = distPairData(iDistPair)%mol1
-            mol2 = distPairData(iDistPair)%mol2
-            atom1 = distPairData(iDistPair)%atom1
-            atom2 = distPairData(iDistPair)%atom2
+            if(molIndx1(iDistPair) .eq. 
+
             rx = MolArray(type1)%mol(mol1)%x(atom1) - MolArray(type2)%mol(mol2)%x(atom2)
             ry = MolArray(type1)%mol(mol1)%y(atom1) - MolArray(type2)%mol(mol2)%y(atom2)
             rz = MolArray(type1)%mol(mol1)%z(atom1) - MolArray(type2)%mol(mol2)%z(atom2)
