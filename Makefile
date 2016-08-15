@@ -118,9 +118,12 @@ SRC_CBMC := $(CBMC)/CBMC.f90\
 SRC_SWAP := $(SWAP)/SwapBoundaries.f90\
             $(SWAP)/Exchange.f90\
             $(SWAP)/AVBMC_EBias_Rosen.f90
+SRC_ANALYSIS :=             $(ANALYSIS_SUB)/MiscelaniousVariables.f90\
+            $(ANALYSIS_SUB)/SimplePairDistance.f90\
+            $(ANALYSIS_SUB)/RadialDistributionFunction.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90
-SRC_COMPLETE:= $(SRC_ENERGY)  $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT) $(MOD_SRC)  $(SRC_MAIN) 
+SRC_COMPLETE:= $(SRC_ENERGY) $(SRC_ANALYSIS) $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT) $(MOD_SRC) $(SRC_MAIN) 
 # ====================================
 #        Object Files
 # ====================================
@@ -144,6 +147,9 @@ OBJ_SWAP:=$(patsubst $(SWAP)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 
 OBJ_TEMP:=$(patsubst $(SRC)/%.f,$(OBJ)/%.o,$(SRC_CRIT))
 OBJ_CRIT:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
+
+OBJ_TEMP:=$(patsubst $(ANALYSIS_SUB)/%.f,$(OBJ)/%.o,$(SRC_ANALYSIS))
+OBJ_ANALYSIS:=$(patsubst $(ANALYSIS_SUB)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 # ====================================
 #        Compile Commands
 # ====================================
@@ -182,6 +188,13 @@ $(OBJ)/%.o: $(SWAP)/%.f
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 $(OBJ)/%.o: $(SWAP)/%.f90
+		@echo Creating $<
+		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
+
+$(OBJ)/%.o: $(ANALYSIS_SUB)/%.f 
+		@echo Creating $<
+		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
+$(OBJ)/%.o: $(ANALYSIS_SUB)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
             
@@ -230,7 +243,7 @@ energyFunctions: $(OBJ_CRIT) $(OBJ_ENERGY)
 		@$(FC) $(COMPFLAGS)  $< -c
       
         
-generalNucleation:  $(OBJ_CRIT) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_MOD) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
+generalNucleation:  $(OBJ_CRIT) $(OBJ_ANALYSIS) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_MOD) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
 		@echo =============================================
 		@echo     Compiling and Linking Source Files
 		@echo =============================================	

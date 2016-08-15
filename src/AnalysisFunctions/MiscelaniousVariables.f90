@@ -13,8 +13,8 @@
       real(dp), allocatable :: binValue(:)      
     end type
     
-    integer :: nGeometry
-    integer :: nHistArrays
+    integer :: nGeometry = 0
+    integer :: nHistArrays = 0
     real(dp), allocatable  :: miscCoord(:)
     real(dp), allocatable  :: miscCoord_New(:)
     type(Histograms), allocatable :: miscHist(:)
@@ -27,8 +27,8 @@
     integer, intent(out) :: startIndx, endIndx
 
     startIndx = nReserve + 1
-    nGeometry = nGeometry + nReserve
-    endIndx = nGeometry
+    nHistArrays = nHistArrays + nReserve
+    endIndx = nHistArrays
 
     end subroutine
 
