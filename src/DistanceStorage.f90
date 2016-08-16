@@ -64,6 +64,9 @@
         enddo
       enddo
 
+!     To avoid problems with unassocaited pointers, the diagonal of the pair array pointer
+!     is set to reference the 0-th value of the array.  This will hopefully make errors
+!     with 
       distStorage(0)%arrayIndx = 0
       distStorage(0)%indx1 = 0
       distStorage(0)%indx2 = 0

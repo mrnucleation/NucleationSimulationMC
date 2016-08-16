@@ -21,12 +21,12 @@
 
       contains
 !======================================================================================      
-      pure real(dp) function solventFunction(r,q, born1, born2) 
-        real(dp), intent(in) :: r, q, born1, born2
+      pure real(dp) function solventFunction(r, q_ij, born1, born2) 
+        real(dp), intent(in) :: r, q_ij, born1, born2
         real(dp) :: f
 
         f = sqrt(r*r + born1*born2*exp(-r*r/(4d0*born1*born2) ) ) 
-        solventFunction = -0.5d0*(1d0-1d0/dieletric)*q / f
+        solventFunction = -0.5d0*(1d0-1d0/dieletric)*q_ij / f
       end function
 !======================================================================================      
       subroutine Detailed_ECalc_Inter(E_T, PairList)
@@ -43,7 +43,7 @@
       integer(kind=2) :: atmType1,atmType2      
       integer :: iIndx, jIndx, jMolMin
       real(dp) :: rx,ry,rz,r
-      real(dp) :: r_eq, repul_C, q
+      real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
       real(dp) :: Morse, LJ, Ele, Solvent
       real(dp) :: E_Ele, E_LJ, E_Morse, E_Solvent
@@ -63,7 +63,7 @@
         do jType = iType, nMolTypes
           atmType2 = atomArray(jType, 1)
           r_eq = rEq_tab(atmType1, atmType2)
-          q = q_tab(atmType1, atmType2)
+          q_ij = q_tab(atmType1, atmType2)
           alpha = alpha_Tab(atmType1, atmType2)
           delta = D_Tab(atmType1, atmType2)
           repul_C = repul_tab(atmType1, atmType2)          
@@ -96,11 +96,11 @@
              endif
 
              r = sqrt(r)
-             Ele = q/r
+             Ele = q_ij/r
              if(implcSolvent) then
                born1 = bornRad(atmType1)
                born2 = bornRad(atmType2)
-               Solvent = solventFunction(r, q, born1, born2)
+               Solvent = solventFunction(r, q_ij, born1, born2)
                E_Solvent = E_Solvent + Solvent
              endif
              E_Ele = E_Ele + Ele
@@ -125,7 +125,7 @@
 !        do iType = 1, nMolTypes
 !          atmType1 = atomArray(iType, 1)
 !          do iMol=1, NPART(iType)
-!            q = q_tab(atmType1, atmType1)
+!            q_ij = q_tab(atmType1, atmType1)
 !            born1 = bornRad(atmType1)
 !            E_Solvent = E_Solvent - 0.5d0*(1d0-1d0/dieletric)*q/(born1*born1)
 !          enddo
@@ -166,7 +166,7 @@
       real(dp) :: rx,ry,rz
       real(dp) :: r_new, r_old
       real(dp) :: r_min1_sq      
-      real(dp) :: r_eq, repul_C, q
+      real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
       real(dp) :: Morse, LJ, Ele
       real(dp) :: E_Ele,E_LJ, E_Morse
@@ -192,7 +192,7 @@
          do jType = 1, nMolTypes
            atmType2 = atomArray(jType, 1)
            r_eq = rEq_tab(atmType1, atmType2)
-           q = q_tab(atmType1, atmType2)
+           q_ij = q_tab(atmType1, atmType2)
            alpha = alpha_Tab(atmType1, atmType2)
            delta = D_Tab(atmType1, atmType2)
            repul_C = repul_tab(atmType1, atmType2)          
@@ -233,11 +233,11 @@
              endif
 
              r_new = sqrt(r_new)
-             Ele = q/r_new
+             Ele = q_ij/r_new
              if(implcSolvent) then
                born1 = bornRad(atmType1)
                born2 = bornRad(atmType2)
-               Ele = Ele + solventFunction(r_new, q, born1, born2)
+               Ele = Ele + solventFunction(r_new, q_ij, born1, born2)
              endif
              dETable(iIndx) = dETable(iIndx) + Ele
              dETable(jIndx) = dETable(jIndx) + Ele
@@ -273,11 +273,11 @@
              endif
  
              r_old= sqrt(r_old)
-             Ele = q/r_old
+             Ele = q_ij/r_old
              if(implcSolvent) then
                born1 = bornRad(atmType1)
                born2 = bornRad(atmType2)
-               Ele = Ele + solventFunction(r_old, q, born1, born2)
+               Ele = Ele + solventFunction(r_old, q_ij, born1, born2)
              endif
              dETable(iIndx) = dETable(iIndx) - Ele
              dETable(jIndx) = dETable(jIndx) - Ele
@@ -315,7 +315,7 @@
       integer :: iIndx,jType,jIndx,jMol
       integer(kind=2)  :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
-      real(dp) :: r_eq, repul_C, q
+      real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
       real(dp) :: LJ, Ele, Morse
       real(dp) :: E_Ele, E_LJ, E_Morse, E_Solvent
@@ -334,7 +334,7 @@
       do jType = 1, nMolTypes
         atmType2 = atomArray(jType, 1)
         r_eq = rEq_tab(atmType1, atmType2)
-        q = q_tab(atmType1, atmType2)
+        q_ij = q_tab(atmType1, atmType2)
         alpha = alpha_Tab(atmType1, atmType2)
         delta = D_Tab(atmType1, atmType2)
         repul_C = repul_tab(atmType1, atmType2)          
@@ -359,11 +359,11 @@
           endif
 
           r = sqrt(r)
-          Ele = q/r
+          Ele = q_ij/r
           if(implcSolvent) then
             born1 = bornRad(atmType1)
             born2 = bornRad(atmType2)
-            Ele = Ele + solventFunction(r, q, born1, born2)
+            Ele = Ele + solventFunction(r, q_ij, born1, born2)
           endif
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
@@ -380,7 +380,7 @@
       enddo
 
 !      if(implcSolvent) then
-!        q = q_tab(atmType1, atmType1)
+!        q_ij = q_tab(atmType1, atmType1)
 !        born1 = bornRad(atmType1)
 !        E_Solvent = -(1d0-1d0/dieletric)*q/(born1*born1)
 !      endif
@@ -407,7 +407,7 @@
       real(dp) :: rx,ry,rz
       real(dp) :: r
       real(dp) :: r_min1_sq      
-      real(dp) :: r_eq, repul_C, q
+      real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
       real(dp) :: LJ, Ele, Morse
       real(dp) :: E_Ele,E_LJ, E_Morse, E_Solvent
@@ -426,7 +426,7 @@
       do jType = 1, nMolTypes
         atmType2 = atomArray(jType, 1)
         r_eq = rEq_tab(atmType1, atmType2)
-        q = q_tab(atmType1, atmType2)
+        q_ij = q_tab(atmType1, atmType2)
         alpha = alpha_Tab(atmType1, atmType2)
         delta = D_Tab(atmType1, atmType2)
         repul_C = repul_tab(atmType1, atmType2)          
@@ -456,11 +456,11 @@
           endif
 
           r = sqrt(r)
-          Ele = q/r
+          Ele = q_ij/r
           if(implcSolvent) then
             born1 = bornRad(atmType1)
             born2 = bornRad(atmType2)
-            Ele = Ele + solventFunction(r, q, born1, born2)
+            Ele = Ele + solventFunction(r, q_ij, born1, born2)
           endif
           dETable(iIndx) = dETable(iIndx) + Ele
           dETable(jIndx) = dETable(jIndx) + Ele
@@ -484,7 +484,7 @@
 
 
 !      if(implcSolvent) then
-!        q = q_tab(atmType1, atmType1)
+!        q_ij = q_tab(atmType1, atmType1)
 !        born1 = bornRad(atmType1)
 !        E_Solvent = -(1d0-1d0/dieletric)*q/(born1*born1)
 !      endif
@@ -507,7 +507,7 @@
       integer :: iAtom,jAtom
       integer(kind=2)  :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
-      real(dp) :: r_eq, repul_C, q
+      real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
       real(dp) :: LJ, Ele, Morse
       real(dp) :: E_Trial, E_Ele, E_LJ, E_Morse
@@ -523,7 +523,7 @@
       atmType1 = atomArray(newMol%molType, 1)
       atmType2 = atomArray(jType, 1)
       r_eq = rEq_tab(atmType1, atmType2)
-      q = q_tab(atmType1, atmType2)
+      q_ij = q_tab(atmType1, atmType2)
       alpha = alpha_Tab(atmType1, atmType2)
       delta = D_Tab(atmType1, atmType2)
       repul_C = repul_tab(atmType1, atmType2)          
@@ -546,11 +546,11 @@
       endif
 
       r = sqrt(r)
-      Ele = q/r
+      Ele = q_ij/r
       if(implcSolvent) then
         born1 = bornRad(atmType1)
         born2 = bornRad(atmType2)
-        Ele = Ele + solventFunction(r, q, born1, born2)
+        Ele = Ele + solventFunction(r, q_ij, born1, born2)
       endif
       E_Ele = E_Ele + Ele
 

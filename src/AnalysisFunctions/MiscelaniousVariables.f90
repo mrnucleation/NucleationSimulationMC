@@ -8,8 +8,8 @@
     type Histograms
       character(len=10) :: histName
       integer :: nBins
-      integer :: binSize
-      real(dp), allocatable :: binIndex(:)
+      real(dp) :: binSize, varMax
+      real(dp), allocatable :: binCount(:)
       real(dp), allocatable :: binValue(:)      
     end type
     
