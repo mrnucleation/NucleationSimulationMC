@@ -7,10 +7,10 @@
 
     type Histograms
       character(len=10) :: histName
+      character(len=50) :: fileName
       integer :: nBins
-      real(dp) :: binSize, varMax
+      real(dp) :: binSize
       real(dp), allocatable :: binCount(:)
-      real(dp), allocatable :: binValue(:)      
     end type
     
     integer :: nGeometry = 0

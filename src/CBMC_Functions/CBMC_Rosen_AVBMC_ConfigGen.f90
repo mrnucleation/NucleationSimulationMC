@@ -675,13 +675,6 @@
       rejMove = .false.
       nRegrown = 0
 
-
-!      Atm1 = 1
-!      Atm2 = regrowOrder(nType, 2) 
-!
-!      q1 = 
-!      q2 = 
-
 !      Begin the regrowth process by choosing an insertion site for the first atom in the chain
       
       E_Trial = 0d0

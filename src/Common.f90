@@ -94,7 +94,7 @@
       use CoordinateTypes
         
       type(MolArrayType), allocatable, target :: MolArray(:)
-      type(MolPointers), allocatable :: JointArray(:) 
+!      type(MolPointers), allocatable :: JointArray(:) 
       type(GlobalAtomIndex), allocatable :: atomIndicies(:)
       
       type(TrialCoordinates) :: newMol, newMol2

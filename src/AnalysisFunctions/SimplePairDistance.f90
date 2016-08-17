@@ -50,28 +50,57 @@
         end subroutine
      !--------------------------------------------------------------------------------
         subroutine CalcDistPairs_New(disp)
+          use SimParameters, only: maxAtoms
           use MiscelaniousVars
           use Coords
           implicit none 
           type(Displacement), intent(in) :: disp(:)
-!          logical :: 
+          logical :: changed
           integer :: sizeDisp, iDistPair, iDisp
-          integer :: type1, mol1, atom1
-          integer :: dispIndx, indx1, indx2
+          integer :: nType, nMol, nAtom
+          integer :: dispIndx, gloIndx1, gloIndx2
+          integer :: gloList(1:maxAtoms)
           real(dp) :: rx, ry, rz, r
 
           sizeDisp = size(disp)
-          dispIndx = disp(1)%molIndx
+          do iDisp = 1, sizeDisp
+            nType = disp(iDisp)%molType
+            nMol = disp(iDisp)%molIndx
+            nAtom = disp(iDisp)%atmIndx
+            gloList(iDisp) = molArray(nType)%mol(nMol)%globalIndx(nAtom)
+          enddo
 
           do iDistPair = 1, nDistPair
-!            if(molIndx1(iDistPair) .eq. 
-
-!            rx = MolArray(type1)%mol(mol1)%x(atom1) - MolArray(type2)%mol(mol2)%x(atom2)
-!            ry = MolArray(type1)%mol(mol1)%y(atom1) - MolArray(type2)%mol(mol2)%y(atom2)
-!            rz = MolArray(type1)%mol(mol1)%z(atom1) - MolArray(type2)%mol(mol2)%z(atom2)
+            gloIndx1 = pairGloIndx1(iDistPair)
+            gloIndx2 = pairGloIndx2(iDistPair)
+            changed = .false.
+            do iDisp = 1, sizeDisp
+              if( gloList(iDisp) .eq. gloIndx1 ) then
+                nType = atomIndicies(gloIndx1)%nType
+                nMol = atomIndicies(gloIndx1)%nMol
+                nAtom = atomIndicies(gloIndx1)%nAtom
+                dispIndx = iDisp
+                changed = .true.
+                exit
+              elseif( gloList(iDisp) .eq. gloIndx2 ) then
+                nType = atomIndicies(gloIndx2)%nType
+                nMol = atomIndicies(gloIndx2)%nMol
+                nAtom = atomIndicies(gloIndx2)%nAtom
+                dispIndx = iDisp
+                changed = .true.
+                exit
+              endif
+            enddo
+            if(.not. changed) then
+              miscCoord_New(pairArrayIndx(iDistPair)) = miscCoord(pairArrayIndx(iDistPair))
+              cycle
+            endif
+            rx = disp(dispIndx)%x_new - molArray(nType)%mol(nMol)%x(nAtom)
+            ry = disp(dispIndx)%y_new - molArray(nType)%mol(nMol)%y(nAtom)
+            rz = disp(dispIndx)%z_new - molArray(nType)%mol(nMol)%z(nAtom)
             r = rx*rx + ry*ry + rz*rz
-            r = dsqrt(r)
-            miscCoord_New(pairArrayIndx(iDistPair)) = r            
+            r = sqrt(r)
+            miscCoord_New(pairArrayIndx(iDistPair)) = r          
           enddo
 
 
