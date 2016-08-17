@@ -59,5 +59,20 @@
 
     end subroutine
 !===========================================================
+    subroutine AllocateHistArrays
+    implicit none
+    integer :: AllocationStat
+
+    if(nGeometry .ne. 0) then
+      allocate(miscCoord(1:nGeometry), Stat = AllocationStat)
+      allocate(miscCoord_New(1:nGeometry), Stat = AllocationStat)
+    endif
+
+    if(nHistArrays .ne. 0) then
+      allocate(miscHist(1:nHistArrays), Stat = AllocationStat)
+    endif
+
+    end subroutine
+!===========================================================
     end module
 !===========================================================
