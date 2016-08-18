@@ -7,11 +7,11 @@
       use PairStorage
       use MiscelaniousVars
       
-      private
+!      private
       integer :: nRadialDist
       integer, allocatable :: radHistIndx(:)
-      integer, allocatable :: type1(:), atom1(:)
-      integer, allocatable :: type2(:), atom2(:)
+      integer, allocatable :: radType1(:), radAtom1(:)
+      integer, allocatable :: radType2(:), radAtom2(:)
 
       public :: Initialize_RadialDist
       public :: Calc_RadialDist
@@ -26,16 +26,17 @@
       integer :: AllocationStatus
       integer :: startIndx, endIndx
 
-      allocate( type1(1:nRadialDist), stat = AllocationStatus )
-      allocate( type2(1:nRadialDist), stat = AllocationStatus )
-      allocate( atom1(1:nRadialDist), stat = AllocationStatus )
-      allocate( atom2(1:nRadialDist), stat = AllocationStatus )
+      allocate( radType1(1:nRadialDist), stat = AllocationStatus )
+      allocate( radType2(1:nRadialDist), stat = AllocationStatus )
+      allocate( radAtom1(1:nRadialDist), stat = AllocationStatus )
+      allocate( radAtom2(1:nRadialDist), stat = AllocationStatus )
       allocate( radHistIndx(1:nRadialDist), stat = AllocationStatus )
 
       call ReserveSpace_Histograms(nRadialDist, startIndx, endIndx)
 
       do iRadial = 1, nRadialDist
         radHistIndx(iRadial) = startIndx + iRadial - 1
+        write(*,*) iRadial, radHistIndx(iRadial)
       enddo
 
       end subroutine
@@ -45,7 +46,7 @@
         use Coords
         implicit none
         integer :: iRadial
-        integer :: bin
+        integer :: bin, nBins
         integer :: nType1, nType2, nAtom1, nAtom2
         integer :: jMol, iMol
         integer :: radialIndx
@@ -53,23 +54,26 @@
         real(dp) :: r_sq, r
 
         do iRadial = 1, nRadialDist
-          nType1 = type1(iRadial)
-          nType2 = type2(iRadial)
-          nAtom1 = atom1(iRadial) 
-          nAtom2 = atom2(iRadial) 
+          nType1 = radType1(iRadial)
+          nType2 = radType2(iRadial)
+          nAtom1 = radAtom1(iRadial) 
+          nAtom2 = radAtom2(iRadial) 
           radialIndx = radHistIndx(iRadial)
+!          write(*,*) iRadial, radialIndx
           if(nType1 .eq. nType2) then
             do iMol = 1, NPART(nType1) - 1
               do jMol = iMol+1, NPART(nType1)
                 gloIndx1 = molArray(nType1)%mol(iMol)%globalIndx(nAtom1)
-                gloIndx2 = molArray(nType2)%mol(iMol)%globalIndx(nAtom2)
+                gloIndx2 = molArray(nType2)%mol(jMol)%globalIndx(nAtom2)
                 r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
                 r = sqrt(r_sq)
-                bin = floor(miscHist(radialIndx)%binSize * r)
-                if(bin .le. miscHist(radialIndx)%nBins) then
+                bin = floor(r * miscHist(radialIndx)%sizeInv)
+                nBins = miscHist(radialIndx)%nBins
+!                write(*,*) radialIndx, r, r_sq, bin
+                if(bin .le. nBins) then
                   miscHist(radialIndx)%binCount(bin) = miscHist(radialIndx)%binCount(bin) + 2d0
                 else 
-                  miscHist(radialIndx)%binCount(bin) = miscHist(radialIndx)%binCount(bin) + 2d0
+                  miscHist(radialIndx)%binCount(nBins+1) = miscHist(radialIndx)%binCount(nBins+1) + 2d0
                 endif
               enddo
             enddo
@@ -77,14 +81,15 @@
             do iMol = 1, NPART(nType1)
               do jMol = 1, NPART(nType2)
                 gloIndx1 = molArray(nType1)%mol(iMol)%globalIndx(nAtom1)
-                gloIndx2 = molArray(nType2)%mol(iMol)%globalIndx(nAtom2)
+                gloIndx2 = molArray(nType2)%mol(jMol)%globalIndx(nAtom2)
                 r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
                 r = sqrt(r_sq)
-                bin = floor(miscHist(radialIndx)%binSize * r)
-                if(bin .le. miscHist(radialIndx)%nBins) then
+                bin = floor(r * miscHist(radialIndx)%sizeInv)
+                nBins = miscHist(radialIndx)%nBins
+                if(bin .le. nBins) then
                   miscHist(radialIndx)%binCount(bin) = miscHist(radialIndx)%binCount(bin) + 2d0
                 else 
-                  miscHist(radialIndx)%binCount(bin) = miscHist(radialIndx)%binCount(bin) + 2d0
+                  miscHist(radialIndx)%binCount(nBins+1) = miscHist(radialIndx)%binCount(nBins+1) + 2d0
                 endif
               enddo
             enddo
@@ -109,7 +114,7 @@
           write(80,*) "Number of Bins:", miscHist(iRadial)%nBins
           write(80,*) "Bin Size:", d_bin
           write(80,*)
-          do iBin = 1, miscHist(iRadial)%nBins
+          do iBin = 0, miscHist(iRadial)%nBins
             write(80,*) iBin * d_bin, miscHist(iRadial)%binCount(iBin)
           enddo
           close(80)

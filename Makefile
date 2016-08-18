@@ -19,7 +19,7 @@ OPTIMIZE_FLAGS := -O3
 #DEBUGFLAGS := -check bounds
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
-#DEBUGFLAGS += -pg 
+DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
@@ -118,9 +118,10 @@ SRC_CBMC := $(CBMC)/CBMC.f90\
 SRC_SWAP := $(SWAP)/SwapBoundaries.f90\
             $(SWAP)/Exchange.f90\
             $(SWAP)/AVBMC_EBias_Rosen.f90
-SRC_ANALYSIS :=             $(ANALYSIS_SUB)/MiscelaniousVariables.f90\
+SRC_ANALYSIS := $(ANALYSIS_SUB)/MiscelaniousVariables.f90\
             $(ANALYSIS_SUB)/SimplePairDistance.f90\
-            $(ANALYSIS_SUB)/RadialDistributionFunction.f90
+            $(ANALYSIS_SUB)/RadialDistributionFunction.f90\
+            $(ANALYSIS_SUB)/AnalysisMain.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90
 SRC_COMPLETE:= $(SRC_ENERGY) $(SRC_ANALYSIS) $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT) $(MOD_SRC) $(SRC_MAIN) 

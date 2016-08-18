@@ -10,6 +10,7 @@
 !========================================================================================
       program Swaper
       use AcceptRates
+      use AnalysisMain
       use AVBMC_RejectionVar
       use CBMC_Variables
       use Coords
@@ -19,7 +20,8 @@
       use EnergyTables
       use Forcefield
       use Histogram
-!      use MPI
+      use MPI
+      use MiscelaniousVars, only: CollectHistograms
       use MoveTypeModule
       use ParallelVar
       use SimParameters
@@ -27,7 +29,7 @@
       use WHAM_Module
       implicit none
 
-      include 'mpif.h'
+!      include 'mpif.h'
       
       logical :: errRtn
       logical :: screenEcho      
@@ -61,7 +63,8 @@
       integer status(MPI_STATUS_SIZE)
       call MPI_INIT(ierror)
       call MPI_COMM_SIZE(MPI_COMM_WORLD, p_size, ierror)
-      call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierror)      
+      call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierror)  
+!      if(ierror .eq    
 !      This section of code generates the file number for each MPI thread's files
       if (myid .lt. 10) then
         format_string = "(A,I1,A)"
@@ -142,10 +145,10 @@
       rot_limit = pi
       
 !      Histogram Initialization
-      d_ang = dble(nBin_Hist)/pi
-      d_r = dble(nBin_Hist)/(1.4E0)
-      HistAngle = 0E0
-      HistDist = 0E0
+!      d_ang = dble(nBin_Hist)/pi
+!      d_r = dble(nBin_Hist)/(1.4E0)
+!      HistAngle = 0E0
+!      HistDist = 0E0
 
 !      AVBMC related volume variables
       Dist_Critr_sq = Dist_Critr*Dist_Critr
@@ -252,10 +255,7 @@
       write(nout,*) "------------------------------------------------"
       write(nout,*) "Cycle # ", "Particles ",  "Energy ", "Acceptance Rates"
 !"
-      atmp_1=0.00001E0
-      atmp_2=0.00001E0      
-      atmp_3=0.00001E0
-      atmp_4=0.00001E0
+      call DummyAnalysisTest
       flush(35)
       call CPU_TIME(TimeStart)      
 !--------------------------------------------------------------------------------------------------      
@@ -289,6 +289,9 @@
              endif
            else
              call NHistAdd(E_T) 
+           endif
+           if(useAnalysis) then
+             call PostMoveAnalysis
            endif
          enddo
 
@@ -441,9 +444,15 @@
       endif
       write(nout,*) "Histogram Outputted...."
 !     Output Final Configuration to a visualization file that can be opened by a program like VMD or Avagadro.    
+
+      call CollectHistograms
       if(myid .eq. 0) then
         call Output_VMD_Final
+        if(useAnalysis) then
+          call OutputAnalysis
+        endif
       endif
+
 
       
       write(35,*) "Energy Table:"
