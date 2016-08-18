@@ -32,15 +32,15 @@
      nRadialDist = 1
      call Initialize_RadialDist
      call AllocateArrays
-     miscHist(1)%binSize = 0.1E0
+     miscHist(1)%binSize = 0.01E0
      miscHist(1)%sizeInv = 1E0/miscHist(1)%binSize
-     miscHist(1)%nBins = 500
+     miscHist(1)%nBins = 1000
      miscHist(1)%fileName = "RadialDistribution.txt"
      call AllocateHistBins
      radType1(1) = 1
      radType2(1) = 1
      radAtom1(1) = 1
-     radAtom2(1) = 2
+     radAtom2(1) = 1
 
 
      end subroutine
@@ -65,6 +65,7 @@
      end subroutine
 !======================================================
      subroutine OutputAnalysis
+     use ParallelVar
      implicit none
      integer :: iOutput
 

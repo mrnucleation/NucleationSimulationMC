@@ -79,23 +79,19 @@
     include 'mpif.h'
     integer :: iHist, iBin, AllocationStat, nBins 
     real(dp), allocatable :: TempHist(:)
+
     call MPI_BARRIER(MPI_COMM_WORLD, ierror)
-
-
-    do iHist = 1, nHistArrays
-      nBins = miscHist(iHist)%nBins
-
-    enddo
+!    write(*,*) "Collecting General Histogram Data"
 
     do iHist = 1, nHistArrays
       nBins = miscHist(iHist)%nBins
-      allocate(TempHist(0:nBins+1) )
+      allocate( TempHist(0:nBins+1) )
       call MPI_REDUCE(miscHist(iHist)%binCount, TempHist, nBins+2, &
                        MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)  
       if(myid .eq. 0) then
-       do iBin= 0, nBins+1
-        miscHist(iHist)%binCount(iBin) = TempHist(iBin)
-       enddo
+        do iBin= 0, nBins+1
+          miscHist(iHist)%binCount(iBin) = TempHist(iBin)
+        enddo
       endif
       deallocate(TempHist)
     enddo

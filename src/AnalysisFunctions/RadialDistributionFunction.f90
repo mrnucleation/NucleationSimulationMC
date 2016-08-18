@@ -36,7 +36,7 @@
 
       do iRadial = 1, nRadialDist
         radHistIndx(iRadial) = startIndx + iRadial - 1
-        write(*,*) iRadial, radHistIndx(iRadial)
+!        write(*,*) iRadial, radHistIndx(iRadial)
       enddo
 
       end subroutine
@@ -100,22 +100,26 @@
       end subroutine  
 !======================================================================================    
       subroutine Output_RadialDist
+        use Constants
         implicit none
         integer :: iRadial, iBin
-        integer :: bin
         integer :: radialIndx
         integer :: gloIndx1, gloIndx2
         real(dp) :: d_bin
-        real(dp) :: r_sq, r
+        real(dp) :: r, norm, rFactor
 
         do iRadial = 1, nRadialDist
           open(unit = 80, file = miscHist(iRadial)%fileName)
           d_bin = miscHist(iRadial)%binSize
+          norm = sum(miscHist(iRadial)%binCount)
+!          write(*,*) norm
           write(80,*) "Number of Bins:", miscHist(iRadial)%nBins
           write(80,*) "Bin Size:", d_bin
           write(80,*)
           do iBin = 0, miscHist(iRadial)%nBins
-            write(80,*) iBin * d_bin, miscHist(iRadial)%binCount(iBin)
+            r = iBin * d_bin
+            rFactor = norm * 4E0/3E0 * pi * ( (r+d_bin)**3 - r**3 )
+            write(80,*) r, miscHist(iRadial)%binCount(iBin)/rFactor
           enddo
           close(80)
         enddo
