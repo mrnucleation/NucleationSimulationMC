@@ -95,8 +95,8 @@
 
      do iType = 1,nMolTypes
        do jType = iType, nMolTypes
-         do iMol=1,NPART(iType)
-           do jMol = 1,NPART(jType)
+         do iMol=1,NMAX(iType)
+           do jMol = 1,NMAX(jType)
              do iAtom = 1,nAtoms(iType)
                atmType1 = atomArray(iType,iAtom)
                globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
@@ -124,6 +124,7 @@
       use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
       implicit none
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
+      integer :: iIndx, jIndx
       integer(kind=atomIntType) :: atmType1, atmType2      
       integer :: globIndx1, globIndx2 
       real(dp) :: rx, ry, rz, r_sq, q_ij
@@ -132,7 +133,9 @@
       do iType = 1,nMolTypes
         do jType = iType, nMolTypes
           do iMol=1,NPART(iType)
+            iIndx = molArray(iType)%mol(iMol)%indx
             do jMol = 1,NPART(jType)
+              jIndx = molArray(iType)%mol(iMol)%indx
               do iAtom = 1,nAtoms(iType)
                 atmType1 = atomArray(iType,iAtom)
                 globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
@@ -145,7 +148,7 @@
                   rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom) 
                   r_sq = rx*rx + ry*ry + rz*rz
                   if(r_sq .lt. rmin_ij) then
-                    if(iMol .ne. jMol) then
+                    if(iIndx .ne. jIndx) then
                       stop "ERROR! Overlaping atoms found in the current configuration!"
                     endif
                   endif 
@@ -170,6 +173,7 @@
       type(Displacement), intent(in) :: disp(:)
       logical, intent(out) :: rejMove
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
+      integer :: iIndx, jIndx
       integer(kind=atomIntType) :: atmType1,atmType2      
       integer :: iDisp, sizeDisp, gloIndx1, gloIndx2, oldIndx
       integer :: jMolMin
@@ -179,6 +183,7 @@
    
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
+      iIndx = molArray(iType)%mol(iMol)%indx
       sizeDisp = size(disp)
       rejMove = .false.
       nNewDist = 0
@@ -196,6 +201,7 @@
               if(gloIndx1 .eq. gloIndx2 ) then
                 cycle
               endif
+              jIndx = molArray(jType)%mol(jMol)%indx
 !               Distance for the New position
               rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
@@ -203,7 +209,7 @@
               r_sq = rx*rx + ry*ry + rz*rz
 !             If r_new is less than r_min reject the move.              
               if(r_sq .lt. rmin_ij) then
-                if(jMol .ne. iMol) then
+                if(iIndx .ne. jIndx) then
                   rejMove = .true.
                   return
                 endif
@@ -249,7 +255,7 @@
         do jType = 1, nMolTypes
           do jAtom = 1, nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
-            rmin_ij = r_min_tab(atmType2,atmType1)
+            rmin_ij = r_min_tab(atmType1, atmType2)
             do jMol = 1, NPART(jType)
               gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
               rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
@@ -258,6 +264,9 @@
               r_sq = rx*rx + ry*ry + rz*rz
               if(r_sq .lt. rmin_ij) then
                 rejMove = .true.
+!                write(*,*) iType, iMol, iAtom
+!                write(*,*) jType, jMol, jAtom
+!                write(*,*) sqrt(r_sq), sqrt(rmin_ij)
                 return
               endif
               nNewDist = nNewDist + 1

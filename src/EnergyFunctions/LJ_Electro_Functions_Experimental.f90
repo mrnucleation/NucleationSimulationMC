@@ -189,24 +189,24 @@
         gloIndx1 = newDist(iPair)%indx1
         gloIndx2 = newDist(iPair)%indx2
 
+        jType = atomIndicies(gloIndx2)%nType
         jMol  = atomIndicies(gloIndx2)%nMol
-        if(iMol .ne. jMol) then
-          iAtom = atomIndicies(gloIndx1)%nAtom
-          jType = atomIndicies(gloIndx2)%nType
+        jIndx = MolArray(jType)%mol(jMol)%indx
+        if(jIndx .ne. iIndx) then
           jAtom = atomIndicies(gloIndx2)%nAtom
+          iAtom = atomIndicies(gloIndx1)%nAtom
+
         
           atmType1 = atomArray(iType,iAtom)
           atmType2 = atomArray(jType,jAtom)
 
           ep = ep_tab(atmType2, atmType1)
           q  = q_tab(atmType2, atmType1)
-
-          r_new_sq = newDist(iPair)%r_sq
-          jIndx = MolArray(jType)%mol(jMol)%indx
+         
           if(distCriteria) then
             if(iAtom .eq. 1) then
               if(jAtom .eq. 1) then
-                PairList(jIndx) = r_new_sq
+                PairList(jIndx) = newDist(iPair)%r_sq
               endif
             endif
           endif
@@ -215,6 +215,7 @@
           Ele = 0d0
           if(ep .ne. 0E0) then
             sig_sq = sig_tab(atmType2,atmType1)
+            r_new_sq = newDist(iPair)%r_sq
             LJ = LJ_Func(r_new_sq, ep, sig_sq)             
             E_LJ = E_LJ + LJ
             if(.not. distCriteria) then
@@ -377,10 +378,11 @@
         gloIndx1 = newDist(iPair)%indx1
         gloIndx2 = newDist(iPair)%indx2
 
+        jType = atomIndicies(gloIndx2)%nType
         jMol = atomIndicies(gloIndx2)%nMol
-        if(jMol .ne. iMol) then
+        jIndx = MolArray(jType)%mol(jMol)%indx
+        if(iIndx .ne. jIndx) then
           iAtom = atomIndicies(gloIndx1)%nAtom
-          jType = atomIndicies(gloIndx2)%nType
           jAtom = atomIndicies(gloIndx2)%nAtom
 
           atmType1 = atomArray(iType,iAtom)
@@ -388,19 +390,19 @@
 
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)
-          r_sq = newDist(iPair)%r_sq
-          jIndx = MolArray(jType)%mol(jMol)%indx
+
           LJ = 0d0
           Ele = 0d0
           if(ep .ne. 0E0) then
+            r_sq = newDist(iPair)%r_sq
             sig_sq = sig_tab(atmType2,atmType1)
             LJ = LJ_Func(r_sq, ep, sig_sq)             
             E_LJ = E_LJ + LJ
             if(.not. distCriteria) then
               PairList(jIndx) = PairList(jIndx) + LJ
             endif
-            dETable(iIndx) = dETable(iIndx) + LJ
-            dETable(jIndx) = dETable(jIndx) + LJ
+!            dETable(iIndx) = dETable(iIndx) + LJ
+!            dETable(jIndx) = dETable(jIndx) + LJ
           endif
           if(q .ne. 0E0) then
             r = newDist(iPair)%r
@@ -415,7 +417,7 @@
           endif
           dETable(iIndx) = dETable(iIndx) + LJ + Ele
           dETable(jIndx) = dETable(jIndx) + LJ + Ele
-          newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ + Ele
+          newDist(iPair)%E_Pair = LJ + Ele
         endif 
       enddo
      

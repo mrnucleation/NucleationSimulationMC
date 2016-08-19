@@ -108,11 +108,13 @@
       distGen_accpt = 0E0
       angGen_accpt = 0E0
       dihedGen_accpt = 0E0
+      acptRot = 0E0
 !  Counter for the number of Attempted Monte Carlo Moves  
       movesAttempt = 1E-30
       distGen_atmp = 0E0
       angGen_atmp = 0E0
       dihedGen_atmp = 0E0
+      atmpRot = -huge(dp)
 !  Counter for the number of moves rejected due to the cluster criteria
       NeighRej=0E0
       NHist=0E0
@@ -255,7 +257,7 @@
       write(nout,*) "------------------------------------------------"
       write(nout,*) "Cycle # ", "Particles ",  "Energy ", "Acceptance Rates"
 !"
-      call DummyAnalysisTest
+      call DummyAnalysisTest2
       flush(35)
       call CPU_TIME(TimeStart)      
 !--------------------------------------------------------------------------------------------------      
@@ -400,10 +402,10 @@
           write(nout,"(1x,A,1x,A,A,F8.2)") "Acceptance Rate", trim(adjustl(moveName(i))), ": ", 1E2*movesAccepted(i)/movesAttempt(i)
         endif
       enddo
-      if(any(atmpTrans .ne. 0E0)) then
+      if(any(atmpTrans .gt. 1E0)) then
         write(nout,*) "Acceptance Translate (Mol Type):", (1E2*acptTrans(j)/atmpTrans(j),j=1,nMolTypes) 
       endif
-      if(any(atmpRot .ne. 0E0)) then
+      if(any(atmpRot .gt. 1E0)) then
         write(nout,*) "Acceptance Rotate (Mol Type):", (1E2*acptRot(j)/atmpRot(j),j=1,nMolTypes) 
       endif
       if(distGen_atmp .ne. 0E0) then
@@ -541,7 +543,7 @@
       real(dp), intent(in) :: acc_x,atmp_x,limit
       real(dp), intent(inout):: max_x
       
-      if(atmp_x .eq. 0E0) then
+      if(atmp_x .lt. 1E0) then
         return
       endif
 

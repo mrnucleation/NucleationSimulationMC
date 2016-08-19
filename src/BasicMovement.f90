@@ -180,9 +180,12 @@
       E_Intra = 0E0
       !call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
-      if(rejMove) return
+
+      if(rejMove) then
+        return
+      endif
       
-!      write(2,*) E_Inter
+
 
 !     Calculate Acceptance and determine if the move is accepted or not     
       if(E_Inter .le. 0E0) then

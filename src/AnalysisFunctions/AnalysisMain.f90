@@ -4,17 +4,29 @@
      use SimpleDistPair
      use MiscelaniousVars
 
+     interface 
+       subroutine TrialFunction(disp)
+        use CoordinateTypes
+        type(Displacement), intent(in) :: disp(:)
+       end subroutine
+     end interface
+
+     type TrialFunctionArray
+       procedure(TrialFunction), pointer, nopass :: func
+     end type
+
      type AnalysisFunctionArray
        procedure(), pointer, nopass :: func
      end type
 
      private
      logical :: useAnalysis
-     integer :: nPostMove, nMidMove, nOutput
+     integer :: nPostMove, nMidMove, nOutput, nTrialVar
+     type(TrialFunctionArray), allocatable :: TrialArray(:)
      type(AnalysisFunctionArray), allocatable :: postMoveArray(:)
      type(AnalysisFunctionArray), allocatable :: outputArray(:)
 
-     public :: useAnalysis, DummyAnalysisTest, PostMoveAnalysis, OutputAnalysis
+     public :: useAnalysis, DummyAnalysisTest2, PostMoveAnalysis, OutputAnalysis
 
 !======================================================
      contains
@@ -48,6 +60,21 @@
 
      end subroutine
 !======================================================
+     subroutine DummyAnalysisTest2
+     implicit none
+
+     useAnalysis = .true.
+     nPostMove = 1
+     nOutput = 0
+     allocate(postMoveArray(1:nPostMove))
+     postMoveArray(1)%func => CalcDistPairs
+     nDistPair = 1
+     call Initialize_DistPair
+     call AllocateArrays
+     call SetPairVariables(1, 2, 1, 1, 3, 1, 1)
+
+     end subroutine
+!======================================================
 !     subroutine ReadAnalysisInput(fileUnit)
 !     implicit none
 !     integer, intent(in) :: fileUnit
@@ -56,6 +83,18 @@
 !
 !     end subroutine
 !======================================================
+     subroutine TrialPositionAnalysis(disp)
+     use CoordinateTypes
+     implicit none
+     type(Displacement), intent(in) :: disp(:)
+     integer :: iTrialVar
+
+     do iTrialVar = 1, nTrialVar
+       call TrialArray(iTrialVar)%func(disp)
+     enddo
+
+     end subroutine
+!======================================================
      subroutine PostMoveAnalysis
      implicit none
      integer :: iPostMove
@@ -63,7 +102,6 @@
      do iPostMove = 1, nPostMove
        call postMoveArray(iPostMove)%func
      enddo
-
 
      end subroutine
 !======================================================

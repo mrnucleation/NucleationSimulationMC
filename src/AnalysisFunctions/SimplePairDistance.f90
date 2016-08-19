@@ -1,15 +1,47 @@
 !======================================================================================    
 !      This module contains the functions nessisary to initalize and 
-!      perform radial distribution studies
+!      perform single pair calculations.  This can be used
+!      in the Umbrella Sampling algorithms or be used to study
+!      di
       module SimpleDistPair
         use PairStorage
 
+        private
         integer :: nDistPair
         integer, allocatable :: pairArrayIndx(:)
         integer, allocatable :: pairGloIndx1(:), pairGloIndx2(:)
         integer, allocatable :: molIndx1(:), molIndx2(:)  
 
+        public :: nDistPair
+        public :: Initialize_DistPair
+        public :: SetPairVariables
+        public :: CalcDistPairs
+        public :: CalcDistPairs_New
+
         contains
+     !--------------------------------------------------------------------------------
+        subroutine SetPairVariables(nPair, nType1, nMol1, nAtom1, nType2, nMol2, nAtom2)
+           use MiscelaniousVars
+           use Coords, only: molArray
+           implicit none 
+           integer, intent(in) :: nPair 
+           integer, intent(in) :: nType1, nMol1, nAtom1
+           integer, intent(in) :: nType2, nMol2, nAtom2
+           integer :: gloIndx1, gloIndx2, indx1, indx2
+
+           gloIndx1 = molArray(nType1)%mol(nMol1)%globalIndx(nAtom1)
+           gloIndx2 = molArray(nType2)%mol(nMol2)%globalIndx(nAtom2)
+           indx1 = molArray(nType1)%mol(nMol1)%indx
+           indx2 = molArray(nType2)%mol(nMol2)%indx
+
+           pairGloIndx1(nPair) = gloIndx1
+           pairGloIndx2(nPair) = gloIndx2
+           molIndx1(nPair) = indx1
+           molIndx2(nPair) = indx2
+           
+           rPair(gloIndx1, gloIndx2)%p%storeRValue = .true.
+
+        end subroutine
      !--------------------------------------------------------------------------------
         subroutine Initialize_DistPair
            use MiscelaniousVars
@@ -36,14 +68,15 @@
           implicit none 
           integer :: iDistPair
           integer :: gloIndx1, gloIndx2
-          real(dp) :: r, r_sq
+!          real(dp) :: r, r_sq
 
           do iDistPair =1, nDistPair
             gloIndx1 = pairGloIndx1(iDistPair)
             gloIndx2 = pairGloIndx2(iDistPair)
-            r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq           
-            r = dsqrt(r_sq)
-            miscCoord(pairArrayIndx(iDistPair)) = r
+!            r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq           
+!            r = dsqrt(r_sq)
+!            r = rPair(gloIndx1, gloIndx2) % p % r
+            miscCoord(pairArrayIndx(iDistPair)) = rPair(gloIndx1, gloIndx2) % p % r
           enddo
 
 
@@ -76,16 +109,16 @@
             changed = .false.
             do iDisp = 1, sizeDisp
               if( gloList(iDisp) .eq. gloIndx1 ) then
-                nType = atomIndicies(gloIndx1)%nType
-                nMol = atomIndicies(gloIndx1)%nMol
-                nAtom = atomIndicies(gloIndx1)%nAtom
+                nType = atomIndicies(gloIndx2)%nType
+                nMol = atomIndicies(gloIndx2)%nMol
+                nAtom = atomIndicies(gloIndx2)%nAtom
                 dispIndx = iDisp
                 changed = .true.
                 exit
               elseif( gloList(iDisp) .eq. gloIndx2 ) then
-                nType = atomIndicies(gloIndx2)%nType
-                nMol = atomIndicies(gloIndx2)%nMol
-                nAtom = atomIndicies(gloIndx2)%nAtom
+                nType = atomIndicies(gloIndx1)%nType
+                nMol = atomIndicies(gloIndx1)%nMol
+                nAtom = atomIndicies(gloIndx1)%nAtom
                 dispIndx = iDisp
                 changed = .true.
                 exit

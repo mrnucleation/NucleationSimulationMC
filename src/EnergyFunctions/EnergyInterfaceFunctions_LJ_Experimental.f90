@@ -152,7 +152,6 @@
             return
           endif
         endif
-
 !        Using the data collected from the intermolecular function, check to see that the new position
 !        satisfies the cluster criteria.      
         nIndx = MolArray( disp(1)%molType )%mol( disp(1)%molIndx )%indx
