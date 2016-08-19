@@ -11,17 +11,17 @@
 
      !Primary distance/energy pair storage variable defintinio
     type DistArray
+      logical :: storeRValue
       integer :: arrayIndx
       integer :: indx1, indx2
-      real(dp) :: r_sq
+      real(dp) :: r_sq, r
       real(dp) :: E_Pair
     end type
 
      !Variable defintion for storing trial distances
     type DistArrayNew
-      integer :: oldIndx
       integer :: indx1, indx2
-      real(dp) :: r_sq
+      real(dp) :: r_sq, r
       real(dp) :: E_Pair
     end type
 
@@ -32,6 +32,7 @@
     end type
 
     integer :: nMaxPairs, nTotalAtoms, nNewDist
+    integer, allocatable, target :: oldIndxArray(:)
     type(DistArray), allocatable, target :: distStorage(:)
     type(DistPointer), allocatable :: rPair(:,:)
     type(DistArrayNew), allocatable :: newDist(:)
@@ -49,6 +50,7 @@
       allocate(distStorage(0:nMaxPairs), stat = AllocationStat)
       allocate(rPair(1:nTotalAtoms, 1:nTotalAtoms), stat = AllocationStat)
       allocate(newDist(1:nMaxPairs), stat = AllocationStat) 
+      allocate(oldIndxArray(1:nMaxPairs), stat = AllocationStat) 
 
       cnt = 0
       do i = 1, nTotalAtoms-1
@@ -58,7 +60,9 @@
           distStorage(cnt)%indx1 = i
           distStorage(cnt)%indx2 = j
           distStorage(cnt)%r_sq = 0d0
+          distStorage(cnt)%r = 0d0
           distStorage(cnt)%E_Pair = 0d0
+          distStorage(cnt)%storeRValue = .false.
           rPair(i,j)%p => distStorage(cnt)
           rPair(j,i)%p => distStorage(cnt)
         enddo
@@ -78,6 +82,42 @@
 
      end subroutine
 !=====================================================================
+     subroutine SetStorageFlags(q_tab)
+     use Coords
+     use ForceField
+     use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+     implicit none
+     real(dp), intent(in) :: q_tab(:,:)
+     integer :: iType,jType,iMol,jMol,iAtom,jAtom
+     integer(kind=atomIntType) :: atmType1, atmType2      
+     integer :: globIndx1, globIndx2 
+     real(dp) :: q_ij
+
+     do iType = 1,nMolTypes
+       do jType = iType, nMolTypes
+         do iMol=1,NPART(iType)
+           do jMol = 1,NPART(jType)
+             do iAtom = 1,nAtoms(iType)
+               atmType1 = atomArray(iType,iAtom)
+               globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
+               do jAtom = 1,nAtoms(jType)       
+                 globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+                 atmType2 = atomArray(jType, jAtom)
+                 q_ij = q_tab(atmType1, atmType2)
+                 if(q_ij .ne. 0E0) then
+                   rPair(globIndx1, globIndx2) % p % storeRValue = .true.
+                 else
+                   rPair(globIndx1, globIndx2) % p % storeRValue = .false.
+                 endif
+                enddo
+              enddo
+            enddo
+          enddo
+        enddo
+      enddo
+
+     end subroutine
+!=====================================================================
      subroutine CalcAllDistPairs
       use Coords
       use ForceField
@@ -86,7 +126,7 @@
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1, atmType2      
       integer :: globIndx1, globIndx2 
-      real(dp) :: rx, ry, rz, r_sq
+      real(dp) :: rx, ry, rz, r_sq, q_ij
       real(dp) :: rmin_ij   
 
       do iType = 1,nMolTypes
@@ -110,6 +150,7 @@
                     endif
                   endif 
                   rPair(globIndx1, globIndx2) % p % r_sq = r_sq
+                  rPair(globIndx1, globIndx2) % p % r = sqrt(r_sq)
                 enddo
               enddo
             enddo
@@ -168,12 +209,14 @@
                 endif
               endif    
               nNewDist = nNewDist + 1
-              oldIndx = rPair(gloIndx1, gloIndx2)%p%arrayIndx
-              newDist(nNewDist)%oldIndx = oldIndx
+              oldIndxArray(nNewDist) = rPair(gloIndx1, gloIndx2)%p%arrayIndx
               newDist(nNewDist)%indx1 = gloIndx1
               newDist(nNewDist)%indx2 = gloIndx2
               newDist(nNewDist)%r_sq = r_sq
-              newDist(nNewDist)%E_Pair = 0d0
+!              newDist(nNewDist)%E_Pair = 0d0
+              if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
+                newDist(nNewDist)%r = sqrt(r_sq)
+              endif
             enddo
           enddo
         enddo
@@ -218,12 +261,14 @@
                 return
               endif
               nNewDist = nNewDist + 1
-              oldIndx = rPair(gloIndx1, gloIndx2) % p % arrayIndx
-              newDist(nNewDist)%oldIndx = oldIndx
+              oldIndxArray(nNewDist) = rPair(gloIndx1, gloIndx2) % p % arrayIndx
               newDist(nNewDist)%indx1 = gloIndx1
               newDist(nNewDist)%indx2 = gloIndx2
               newDist(nNewDist)%r_sq = r_sq
-              newDist(nNewDist)%E_Pair = 0d0
+!              newDist(nNewDist)%E_Pair = 0d0
+              if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
+                newDist(nNewDist)%r = sqrt(r_sq)
+              endif
             enddo
           enddo
         enddo
@@ -235,13 +280,16 @@
      subroutine UpdateDistArray
       implicit none
       integer :: iPair
-      integer :: oldIndx
+!      integer :: oldIndx
+!      integer :: oldIndx
 
 
       do iPair = 1, nNewDist
-        oldIndx = newDist(iPair)%oldIndx
-        distStorage(oldIndx)%r_sq = newDist(iPair)%r_sq
-        distStorage(oldIndx)%E_Pair = newDist(iPair)%E_Pair
+        distStorage(oldIndxArray(iPair))%r_sq = newDist(iPair)%r_sq
+        distStorage(oldIndxArray(iPair))%E_Pair = newDist(iPair)%E_Pair
+        if( distStorage(oldIndxArray(iPair))%storeRValue ) then
+          distStorage(oldIndxArray(iPair))%r = newDist(iPair)%r
+        endif
       enddo
 
 
@@ -269,6 +317,10 @@
         do gloIndx3 = 1, nTotalAtoms
           rPair(gloIndx1, gloIndx3)%p%r_sq = rPair(gloIndx2, gloIndx3)%p%r_sq
           rPair(gloIndx1, gloIndx3)%p%E_Pair = rPair(gloIndx2, gloIndx3)%p%E_Pair
+          rPair(gloIndx1, gloIndx3)%p%storeRValue = rPair(gloIndx2, gloIndx3)%p%storeRValue
+          if( rPair(gloIndx2, gloIndx3)%p%storeRValue ) then
+            rPair(gloIndx1, gloIndx3)%p%r = rPair(gloIndx2, gloIndx3)%p%r
+          endif
         enddo
       enddo
 

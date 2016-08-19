@@ -7,15 +7,17 @@
       use PairStorage
       use MiscelaniousVars
       
-!      private
+      private
       integer :: nRadialDist
       integer, allocatable :: radHistIndx(:)
       integer, allocatable :: radType1(:), radAtom1(:)
       integer, allocatable :: radType2(:), radAtom2(:)
 
+      public :: nRadialDist
       public :: Initialize_RadialDist
       public :: Calc_RadialDist
       public :: Output_RadialDist
+      public :: SetRadialParameters
 
       contains
 
@@ -38,6 +40,40 @@
         radHistIndx(iRadial) = startIndx + iRadial - 1
 !        write(*,*) iRadial, radHistIndx(iRadial)
       enddo
+
+      end subroutine
+!======================================================================================    
+      subroutine SetRadialParameters(iRadial, type1, type2, atom1, atom2)
+      use PairStorage, only: distStorage, rPair
+      use SimParameters, only: NMAX
+      use Coords
+      implicit none 
+      integer, intent(in) :: iRadial, type1, type2, atom1, atom2
+      integer :: iMol, jMol
+      integer :: gloIndx1, gloIndx2
+
+      radType1(iRadial) = type1
+      radType2(iRadial) = type2
+      radAtom1(iRadial) = atom1
+      radAtom2(iRadial) = atom2
+
+      if(type1 .eq. type2) then
+        do iMol = 1, NMAX(type1) - 1
+          gloIndx1 = molArray(type1)%mol(iMol)%globalIndx(atom1)
+          do jMol = iMol+1, NMAX(type1)
+            gloIndx2 = molArray(type2)%mol(jMol)%globalIndx(atom2)            
+            rPair(gloIndx1, gloIndx2)%p%storeRValue = .true.
+          enddo
+        enddo
+      else
+        do iMol = 1, NMAX(type1)
+          gloIndx1 = molArray(type1)%mol(iMol)%globalIndx(atom1)
+          do jMol = 1, NMAX(type2)
+            gloIndx2 = molArray(type2)%mol(jMol)%globalIndx(atom2)
+            rPair(gloIndx1, gloIndx2)%p%storeRValue = .true.
+          enddo
+        enddo
+      endif
 
       end subroutine
 !======================================================================================    
@@ -65,9 +101,11 @@
               do jMol = iMol+1, NPART(nType1)
                 gloIndx1 = molArray(nType1)%mol(iMol)%globalIndx(nAtom1)
                 gloIndx2 = molArray(nType2)%mol(jMol)%globalIndx(nAtom2)
-                r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
-                r = sqrt(r_sq)
-                bin = floor(r * miscHist(radialIndx)%sizeInv)
+!                r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
+!                r = sqrt(r_sq)
+!                r = rPair(gloIndx1, gloIndx2)%p%r
+!                bin = floor(r * miscHist(radialIndx)%sizeInv)
+                bin = floor(rPair(gloIndx1, gloIndx2)%p%r * miscHist(radialIndx)%sizeInv)
                 nBins = miscHist(radialIndx)%nBins
 !                write(*,*) radialIndx, r, r_sq, bin
                 if(bin .le. nBins) then
@@ -82,8 +120,9 @@
               do jMol = 1, NPART(nType2)
                 gloIndx1 = molArray(nType1)%mol(iMol)%globalIndx(nAtom1)
                 gloIndx2 = molArray(nType2)%mol(jMol)%globalIndx(nAtom2)
-                r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
-                r = sqrt(r_sq)
+!                r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
+!                r = sqrt(r_sq)
+                r = rPair(gloIndx1, gloIndx2)%p%r
                 bin = floor(r * miscHist(radialIndx)%sizeInv)
                 nBins = miscHist(radialIndx)%nBins
                 if(bin .le. nBins) then

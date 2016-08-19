@@ -31,7 +31,8 @@
       use EnergyCriteria
       use DistanceCriteria      
       use SimParameters
-      use PairStorage, only: CalcAllDistPairs
+      use ForceFieldPara_LJ_Q, only: q_tab
+      use PairStorage, only: CalcAllDistPairs, SetStorageFlags
       implicit none
       
       logical , intent(inout) :: rejMove
@@ -40,6 +41,7 @@
       real(dp) :: PairList(1:maxMol,1:maxMol)
       
       E_T = 0E0
+      call SetStorageFlags(q_tab)
       call CalcAllDistPairs
       call Detailed_ECalc_Inter(E_T, PairList)
 

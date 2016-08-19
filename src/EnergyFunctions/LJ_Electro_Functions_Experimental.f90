@@ -29,12 +29,12 @@
 
       end function
 !======================================================================================      
-      pure function Ele_Func(r_sq, q) result(Ele)
+      pure function Ele_Func(r, q) result(Ele)
       implicit none
-      real(dp), intent(in) :: r_sq, q
-      real(dp) :: Ele, r
+      real(dp), intent(in) :: r, q
+      real(dp) :: Ele
  
-      r = sqrt(r_sq)
+!      r = sqrt(r_sq)
       Ele = q/r
 
       end function
@@ -53,7 +53,7 @@
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1,atmType2      
       integer :: iIndx, jIndx, globIndx1, globIndx2, jMolMin
-      real(dp) :: rx,ry,rz,r_sq
+      real(dp) :: rx,ry,rz,r_sq, r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
@@ -98,8 +98,11 @@
                  endif
                  LJ = LJ_Func(r_sq, ep, sig_sq)             
                  E_LJ = E_LJ + LJ
-              
-                 Ele = Ele_Func(r_sq, q)
+                   
+!                 r = rPair(globIndx1, globIndx2)%p%r
+                 r = sqrt(r_sq)
+                 Ele = q / r
+!                 Ele = Ele_Func(r, q)
                  E_Ele = E_Ele + Ele
 
                  rPair(globIndx1, globIndx2)%p%E_Pair = Ele + LJ
@@ -140,7 +143,7 @@
       use ForceFieldPara_LJ_Q
       use Coords
       use SimParameters
-      use PairStorage, only: distStorage, DistArrayNew, nNewDist
+      use PairStorage, only: distStorage, DistArrayNew, nNewDist, oldIndxArray
       implicit none
       
       type(Displacement), intent(in) :: disp(:)  
@@ -152,9 +155,10 @@
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp, iPair
       integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
-      integer :: sizeDisp, oldIndx 
+      integer :: sizeDisp
+!      integer, pointer :: oldIndx 
       integer :: gloIndx1, gloIndx2
-      real(dp) :: r_new
+      real(dp) :: r_new, r_new_sq
       real(dp) :: r_min1_sq      
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele, E_PairOld, E_Old
@@ -197,12 +201,12 @@
           ep = ep_tab(atmType2, atmType1)
           q  = q_tab(atmType2, atmType1)
 
-          r_new = newDist(iPair)%r_sq
+          r_new_sq = newDist(iPair)%r_sq
           jIndx = MolArray(jType)%mol(jMol)%indx
           if(distCriteria) then
             if(iAtom .eq. 1) then
               if(jAtom .eq. 1) then
-                PairList(jIndx) = r_new
+                PairList(jIndx) = r_new_sq
               endif
             endif
           endif
@@ -211,17 +215,19 @@
           Ele = 0d0
           if(ep .ne. 0E0) then
             sig_sq = sig_tab(atmType2,atmType1)
-            LJ = LJ_Func(r_new, ep, sig_sq)             
+            LJ = LJ_Func(r_new_sq, ep, sig_sq)             
             E_LJ = E_LJ + LJ
             if(.not. distCriteria) then
               PairList(jIndx) = PairList(jIndx) + LJ
             endif
 !            dETable(iIndx) = dETable(iIndx) + LJ
 !            dETable(jIndx) = dETable(jIndx) + LJ
-            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
+!            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
           endif
           if(q .ne. 0E0) then
-            Ele = Ele_Func(r_new, q)                
+            r_new = newDist(iPair)%r
+            Ele = q/r_new
+!            Ele = Ele_Func(r_new, q)                
             E_Ele = E_Ele + Ele
             if(.not. distCriteria) then                
               PairList(jIndx) = PairList(jIndx) + Ele
@@ -230,8 +236,8 @@
 !            dETable(jIndx) = dETable(jIndx) + Ele
             newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + Ele
           endif
-          oldIndx = newDist(iPair)%oldIndx
-          E_PairOld = distStorage(oldIndx)%E_Pair
+          newDist(iPair)%E_Pair = Ele + LJ
+          E_PairOld = distStorage(oldIndxArray(iPair))%E_Pair
           dETable(iIndx) = dETable(iIndx) + LJ + Ele - E_PairOld
           dETable(jIndx) = dETable(jIndx) + LJ + Ele - E_PairOld  
           E_Old = E_Old + E_PairOld
@@ -350,7 +356,7 @@
       integer :: iType, iMol, iAtom, iIndx, jType, jIndx, jMol, jAtom
       integer(kind=atomIntType) :: atmType1,atmType2
       integer :: gloIndx1, gloIndx2
-      real(dp) :: r_sq
+      real(dp) :: r_sq, r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
 
@@ -397,14 +403,18 @@
             dETable(jIndx) = dETable(jIndx) + LJ
           endif
           if(q .ne. 0E0) then
-            Ele = Ele_Func(r_sq, q)                
+            r = newDist(iPair)%r
+            Ele = q/r
+!            Ele = Ele_Func(r_sq, q)                
             E_Ele = E_Ele + Ele
             if(.not. distCriteria) then                
               PairList(jIndx) = PairList(jIndx) + Ele
             endif
-            dETable(iIndx) = dETable(iIndx) + Ele
-            dETable(jIndx) = dETable(jIndx) + Ele
+!            dETable(iIndx) = dETable(iIndx) + Ele
+!            dETable(jIndx) = dETable(jIndx) + Ele
           endif
+          dETable(iIndx) = dETable(iIndx) + LJ + Ele
+          dETable(jIndx) = dETable(jIndx) + LJ + Ele
           newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ + Ele
         endif 
       enddo
