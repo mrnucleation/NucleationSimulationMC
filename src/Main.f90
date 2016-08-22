@@ -533,18 +533,18 @@
       real(dp), intent(in) :: acc_x,atmp_x,limit
       real(dp), intent(inout):: max_x
       
-      if(atmp_x .lt. 1E0) then
+      if(atmp_x .lt. 1E0_dp) then
         return
       endif
 
-      if(acc_x/atmp_x .gt. 0.5E0) then
-        if(max_x*1.01E0 .lt. limit) then
-          max_x=max_x*1.01E0
+      if(acc_x/atmp_x .gt. 0.5E0_dp) then
+        if(max_x*1.01E0_dp .lt. limit) then
+          max_x=max_x*1.01E0_dp
         else 
           max_x=limit       
         endif
       else
-        max_x=max_x*0.99E0      
+        max_x=max_x*0.99E0_dp
       endif
 
  
@@ -564,9 +564,9 @@
       real(dp) :: xcm,ycm,zcm
 
 
-      xcm = 0E0
-      ycm = 0E0
-      zcm = 0E0
+      xcm = 0E0_dp
+      ycm = 0E0_dp
+      zcm = 0E0_dp
       cnt = 0
       do iType = 1,nMolTypes
         do iMol = 1,NPART(iType)
@@ -596,7 +596,7 @@
         do iMol = NPART(iType)+1, NMAX(iType)
           do iAtom = 1, nAtoms(iType)
             atmType = atomArray(iType,iAtom)
-            write(30,*) atomData(atmType)%Symb, 1d7, 1d7, 1d7
+            write(30,*) atomData(atmType)%Symb, 1E7_dp, 1E7_dp, 1E7_dp
           enddo
         enddo
       enddo
@@ -613,8 +613,8 @@
       use Coords
       use Forcefield
       implicit none
-      real(dp), parameter :: xOffset = 50E0
-      real(dp), parameter :: yOffset = 20E0     
+      real(dp), parameter :: xOffset = 50E0_dp
+      real(dp), parameter :: yOffset = 20E0_dp
       integer :: iType, iMol, iAtom
       integer :: atmType
       integer :: cnt      
