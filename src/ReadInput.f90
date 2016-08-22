@@ -128,6 +128,7 @@
       allocate(moveProbability(1:nMoveTypes), STAT = AllocateStatus)
       allocate(movesAccepted(1:nMoveTypes), STAT = AllocateStatus)
       allocate(movesAttempt(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(accptRate(1:nMoveTypes), STAT = AllocateStatus)
       allocate(moveName(1:nMoveTypes), STAT = AllocateStatus)
       norm = 0d0
       avbmcUsed = .false.
@@ -921,3 +922,4 @@
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
   
       end subroutine
+

@@ -34,7 +34,7 @@
       logical :: errRtn
       logical :: screenEcho      
 
-      integer(kind=8) :: indx, indx2    
+      integer(kind=8) :: iCycle, iMove
       integer :: i,j,seed,AllocateStatus
       integer :: outFreq_Traj,outFreq_Screen,outFreq_GCD      
       integer :: nSel    
@@ -78,7 +78,7 @@
         format_string = "(A,I5,A)"      
       endif      
 !     Assign screen output for each thread to fort.(100+myid)      
-      nout = 100+myid
+      nout = 100 + myid
 
       write(fl_name,format_string) "Final_Report_", myid,".txt"      
       open( unit=35, file=trim(adjustl(fl_name)) ) 
@@ -116,9 +116,9 @@
       dihedGen_atmp = 0E0
       atmpRot = -huge(dp)
 !  Counter for the number of moves rejected due to the cluster criteria
-      NeighRej=0E0
-      NHist=0E0
-      E_Avg=0E0      
+      NeighRej = 0E0
+      NHist = 0E0
+      E_Avg = 0E0      
 !      Detailed Counters for the swap move
       acptSwapIn = 0E0
       acptSwapOut = 0E0
@@ -139,7 +139,7 @@
 !      Maximum Displacement used by the translational move
       max_dist = 0.5E0
 !      Maximum Displacement used by the rotation move      
-      max_rot = 0.5E0*pi
+      max_rot = 0.5E0 * pi
       max_dist_single = 0.01E0
 !      Maximum Displacements allowed by the auto-tuning function. Failure to use this can result in
 !      critical simulation errors in the auto-tuning function.
@@ -198,7 +198,7 @@
 !      Print Dummy frame to VMD so VMD will correctly display varying cluster sizes.       
       call InitialTrajOutput
 !      This function outputs current config to the trajectory visualization file.       
-      call TrajOutput(indx)
+      call TrajOutput(iCycle)
 
 !      Initialize the variables which keep track of the different energy types during the simulation.  
       E_Inter_T = 0E0
@@ -262,31 +262,18 @@
       call CPU_TIME(TimeStart)      
 !--------------------------------------------------------------------------------------------------      
 !      !**Begin simulation**!      
-       do indx=1,nCycle
-         do indx2=1,nCycle2
-           ran_num=grnd()
-!           if(ran_num .lt. 1E0/4E0) then
-!             call AVBMC(E_T, acc_3, atmp_3)
-!           elseif(ran_num .lt. 2E0/4E0) then
-!             call CBMC(E_T, acc_2, atmp_2)
-!             call SingleAtom_Translation(E_T,acc_2,atmp_2)
-!           elseif(ran_num .lt. 3E0/4E0) then
-!             call Rotation(E_T,acc_4,atmp_4)  
-!           else
-!             call Translation(E_T,acc_1,atmp_1)
-!           endif
-
+       do iCycle = 1, nCycle
+         do iMove = 1, nCycle2
+            !This portion of the main loop is where the type of monte carlo move is selected.
+           ran_num = grnd()
            nSel = 1
            do while(moveProbability(nSel) .lt. ran_num)
              nSel = nSel + 1
            enddo
            call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
 
-!           call Calc_BendAngle(1, 1)
-!           call Calc_BondStretch(1, 1)
-!           call Calc_BondStretch(1, 2)           
            if(useWham) then
-             if(mod(indx,intervalWham) .gt. equilInterval) then
+             if(mod(iCycle, intervalWham) .gt. equilInterval) then
                call NHistAdd(E_T) 
              endif
            else
@@ -295,11 +282,12 @@
            if(useAnalysis) then
              call PostMoveAnalysis
            endif
+
          enddo
 
 
             
-         if(mod(indx,100) .eq. 0 ) then
+         if(mod(iCycle, 100) .eq. 0 ) then
            do i = 1, nMolTypes
              call AdjustMax(acptTrans(i), atmpTrans(i), max_dist(i), dist_limit)
 !             call AdjustMax(acc_2,atmp_2,max_dist_single, 0.1E0)
@@ -307,23 +295,25 @@
            enddo
          endif      
 
-!         call TrajOutput(indx)
+!         call TrajOutput(iCycle)
 !        Mid Simulation Output Block
-        if(mod(indx,outFreq_GCD) .eq. 0) then
-          if(mod(indx,outFreq_Screen) .eq. 0) then
+        if(mod(iCycle, outFreq_GCD) .eq. 0) then
+          if(mod(iCycle, outFreq_Screen) .eq. 0) then
             if(abs(E_T) .lt. 1d6) then
-!             write(nout,outFormat2) indx,NPART, E_T,1E2*acc_1/atmp_1, 1E2*acc_3/atmp_3
-             write(nout,outFormat2) indx,NPART, E_T, (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
+!             write(nout,outFormat2) iCycle,NPART, E_T,1E2*acc_1/atmp_1, 1E2*acc_3/atmp_3
+             write(nout,outFormat2) iCycle,NPART, E_T, (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             else
-!             write(nout,outFormat1) indx,NPART, E_T,1E2*acc_1/atmp_1, 1E2*acc_3/atmp_3
-             write(nout,outFormat1) indx,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
+!             write(nout,outFormat1) iCycle,NPART, E_T,1E2*acc_1/atmp_1, 1E2*acc_3/atmp_3
+             write(nout,outFormat1) iCycle,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             endif
           endif
-          if(mod(indx,outFreq_Traj) .eq. 0) call TrajOutput(indx)
+          if(mod(iCycle,outFreq_Traj) .eq. 0) then
+            call TrajOutput(iCycle)
+          endif
         endif
 
         if(useWham) then
-          if(mod(indx,intervalWHAM) .eq. 0) then
+          if(mod(iCycle,intervalWHAM) .eq. 0) then
             call WHAM_AdjustHist
           endif
         endif
@@ -361,7 +351,7 @@
       call Detailed_ECalc(E_Final,errRtn)
       
 !      Output final trajectory      
-      call TrajOutput(indx)
+      call TrajOutput(iCycle)
       close(30)    
   
       write(35,*) "---------------------------------"
@@ -561,13 +551,13 @@
       end subroutine
 !===========================================================
 
-      subroutine TrajOutput(indx)
+      subroutine TrajOutput(iCycle)
       use VarPrecision
       use SimParameters
       use Coords
       use Forcefield
       implicit none
-      integer(kind=8), intent(in) :: indx
+      integer(kind=8), intent(in) :: iCycle
       integer :: iType, iMol, iAtom
       integer ::  atmType
       integer :: cnt      

@@ -71,7 +71,7 @@
      nDistPair = 1
      call Initialize_DistPair
      call AllocateArrays
-     call SetPairVariables(1, 2, 1, 1, 3, 1, 1)
+     call SetPairVariables(1, 1, 1, 1, 1, 2, 1)
 
      end subroutine
 !======================================================

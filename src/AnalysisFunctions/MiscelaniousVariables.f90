@@ -15,8 +15,8 @@
     
     integer :: nGeometry = 0
     integer :: nHistArrays = 0
-    real(dp), allocatable  :: miscCoord(:)
-    real(dp), allocatable  :: miscCoord_New(:)
+    real(dp), allocatable, target  :: miscCoord(:)
+    real(dp), allocatable, target  :: miscCoord_New(:)
     type(Histograms), allocatable :: miscHist(:)
 
     contains
