@@ -36,7 +36,6 @@
     integer :: i,j
     integer :: AllocateStatus
     integer :: curIndx
-    character(len=30) :: fileName   
     real(dp) :: curValue, defaultVal
         
     allocate(VarMin(1:nBiasVariables), STAT = AllocateStatus)
@@ -48,7 +47,7 @@
     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
     end subroutine
 !==========================================================================================
-    subroutine AllocateUmbrellaBias(fileName)
+    subroutine AllocateUmbrellaArray(fileName)
     use UmbrellaFunctions
     use SimParameters
     use WHAM_Module
