@@ -21,7 +21,7 @@
 
       contains
 !======================================================================================      
-      pure real(dp) function solventFunction(r, q_ij, born1, born2) 
+      pure real(dp) function SolventFunction(r, q_ij, born1, born2) 
         real(dp), intent(in) :: r, q_ij, born1, born2
         real(dp) :: f
 

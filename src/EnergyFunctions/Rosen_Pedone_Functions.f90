@@ -6,6 +6,7 @@
       pure subroutine Rosen_BoltzWeight_Pedone_New(nRosen, nType, included,  E_Trial, overlap)
       use ForceField
       use ForceFieldPara_Pedone
+      use InterEnergy_Pedone, only: SolventFunction
       use Coords
       use SimParameters
       implicit none
@@ -23,6 +24,7 @@
       real(dp) :: LJ, Ele, Morse
       real(dp) :: E_Ele, E_LJ, E_Morse
       real(dp) :: rmin_ij
+      real(dp) :: born1, born2
 
       E_Trial = 0E0
       overlap = .false.
@@ -63,6 +65,11 @@
 
           r = sqrt(r)
           Ele = q/r
+          if(implcSolvent) then
+            born1 = bornRad(atmType1)
+            born2 = bornRad(atmType2)
+            Ele = Ele + solventFunction(r, q, born1, born2)
+          endif
           E_Ele = E_Ele + Ele
 
           if(delta .ne. 0E0) then
@@ -80,6 +87,7 @@
       pure subroutine Rosen_BoltzWeight_Pedone_Old(mol_x, mol_y, mol_z, nType, included,  E_Trial)
       use ForceField
       use ForceFieldPara_Pedone
+      use InterEnergy_Pedone, only: SolventFunction
       use Coords
       use SimParameters
       implicit none
@@ -97,6 +105,7 @@
       real(dp) :: LJ, Ele, Morse
       real(dp) :: E_Ele, E_LJ, E_Morse
       real(dp) :: rmin_ij
+      real(dp) :: born1, born2
 
       E_Trial = 0E0
       E_LJ = 0E0
@@ -132,6 +141,11 @@
 
           r = sqrt(r)
           Ele = q/r
+          if(implcSolvent) then
+            born1 = bornRad(atmType1)
+            born2 = bornRad(atmType2)
+            Ele = Ele + solventFunction(r, q, born1, born2)
+          endif
           E_Ele = E_Ele + Ele
 
           if(delta .ne. 0E0) then

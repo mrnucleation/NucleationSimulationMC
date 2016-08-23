@@ -661,6 +661,8 @@
 
       call Allocate_Common_Variables_Pedone
 
+      nAtoms = 1
+
       nAtomTypes = nMolTypes
 
       read(55,*) 
@@ -805,7 +807,7 @@
 
 
 
-      call createDistArrays
+!      call createDistArrays
       flush(35)
 
       end subroutine
