@@ -36,12 +36,12 @@
       atmType1 = atomArray(nType, 1)
       do jType = 1, nMolTypes
         atmType2 = atomArray(jType, 1)
-        r_eq = rEq_tab(atmType1, atmType2)
-        q = q_tab(atmType1, atmType2)
-        alpha = alpha_Tab(atmType1, atmType2)
-        delta = D_Tab(atmType1, atmType2)
-        repul_C = repul_tab(atmType1, atmType2)          
-        rmin_ij = r_min_tab(atmType1, atmType2)  
+        r_eq = rEq_tab(atmType2, atmType1)
+        q = q_tab(atmType2, atmType1)
+        alpha = alpha_Tab(atmType2, atmType1)
+        delta = D_Tab(atmType2, atmType1)
+        repul_C = repul_tab(atmType2, atmType1)
+        rmin_ij = r_min_tab(atmType2, atmType1)
         do jMol = 1,NPART(jType)
           jIndx = molArray(jType)%mol(jMol)%indx              
           if(included(jIndx) .eqv. .false.) then
@@ -73,8 +73,8 @@
           E_Ele = E_Ele + Ele
 
           if(delta .ne. 0E0) then
-            Morse = 1d0-exp(-alpha*(r-r_eq))
-            Morse = delta*(Morse*Morse - 1d0)
+            Morse = 1E0 - exp( -alpha*(r-r_eq) )
+            Morse = delta*(Morse*Morse - 1E0)
             E_Morse = E_Morse + Morse
           endif
         enddo
