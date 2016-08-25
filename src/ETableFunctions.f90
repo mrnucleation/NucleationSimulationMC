@@ -100,12 +100,12 @@
             jLowIndx = jLowIndx + NMAX(jType)
           enddo    
 !          write(2,*) i, nIndx
-	  if(PairList(i) .le. Eng_Critr(iType, nType)) then
+          if(PairList(i) .le. Eng_Critr(iType, nType)) then
             ETab = ETable(nIndx) + dE(nIndx) - biasArray(nType)/beta
             if(ETab .gt. EMax) then
               EMax = ETab
             endif		
-	  endif
+          endif
           newNeiTable(i) = EMax       
         enddo
         iLowIndx = iLowIndx + NMAX(iType)

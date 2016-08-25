@@ -306,6 +306,7 @@
 !             write(nout,outFormat1) iCycle,NPART, E_T,1E2*acc_1/atmp_1, 1E2*acc_3/atmp_3
              write(nout,outFormat1) iCycle,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             endif
+            flush(nout)
           endif
           if(mod(iCycle,outFreq_Traj) .eq. 0) then
             call TrajOutput(iCycle)

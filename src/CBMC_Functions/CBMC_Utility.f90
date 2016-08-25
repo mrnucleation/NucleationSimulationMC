@@ -25,7 +25,7 @@
            cycle
          endif
          if(NeighborList(nTarget, jIndx)) then
-            inc_firstPass(jIndx) = .true.
+!            inc_firstPass(jIndx) = .true.
             included(jIndx) = .true.         
          endif
       enddo
@@ -80,7 +80,7 @@
             if(jIndx .eq. nIndx) then
               cycle
             endif                   
-            inc_firstPass(jIndx) = .true.
+!            inc_firstPass(jIndx) = .true.
             included(jIndx) = .true.         
          endif
       enddo

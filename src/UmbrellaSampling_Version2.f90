@@ -8,6 +8,10 @@
       real(dp), pointer :: var
     end type
 
+    type DispUmbrellaArray
+      procedure(), pointer, nopass :: func
+    end type
+
     logical :: useUmbrella
     integer :: nBiasVariables, umbrellaLimit
     integer, allocatable :: binIndx(:)
@@ -19,20 +23,18 @@
     type(BiasVariablePointer), allocatable :: biasvar(:)
     type(BiasVariablePointer), allocatable :: biasvarnew(:)
 
+    type(DispUmbrellaArray), allocatable :: DispUmbrella(:)
+    type(DispUmbrellaArray), allocatable :: SwapInUmbrella(:)
+    type(DispUmbrellaArray), allocatable :: SwapOutUmbrella(:)
+
     public :: AllocateUmbrellaBias
 
 !==========================================================================
     contains
 !==========================================================================================
     subroutine AllocateUmbrellaVariables
-    use UmbrellaFunctions
-    use SimParameters
-    use WHAM_Module
     implicit none
-    integer :: i, j
     integer :: AllocateStatus
-    integer :: curIndx
-    real(dp) :: curValue, defaultVal
         
     allocate( VarMin(1:nBiasVariables), STAT = AllocateStatus )
     allocate( VarMax(1:nBiasVariables), STAT = AllocateStatus )
@@ -41,6 +43,10 @@
     allocate( biasvarnew(1:nBiasVariables), STAT = AllocateStatus )
     allocate( binIndx(1:nBiasVariables), STAT = AllocateStatus )
     allocate( indexCoeff(1:nBiasVariables), STAT = AllocateStatus )
+
+    allocate( DispUmbrella(1:nBiasVariables), STAT = AllocateStatus )
+    allocate( SwapInUmbrella(1:nBiasVariables), STAT = AllocateStatus )
+    allocate( SwapOutUmbrella(1:nBiasVariables), STAT = AllocateStatus )
 
     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
     end subroutine
@@ -128,13 +134,13 @@
       
 
      do iBias = 1, nBiasVariables
-       binIndx(iBias) = biasvar(iBias) * binSize(iBias)
+       binIndx(iBias) = nint( biasvar(iBias) * binSize(iBias) )
      enddo
 
 
      biasIndx = 1
      do iBias = 1, nBiasVariables
-       biasIndx = indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
+       biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
      enddo
      
 
@@ -147,13 +153,13 @@
       
 
      do iBias = 1, nBiasVariables
-       binIndx(iBias) = newArray(iBias) * binSize(iBias)
+       binIndx(iBias) = nint( newArray(iBias) * binSize(iBias) )
      enddo
 
 
      biasIndx = 1
      do iBias = 1, nBiasVariables
-       biasIndx = indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
+       biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
      enddo
      
 
@@ -161,4 +167,5 @@
 !==========================================================================
     end module
 !==========================================================================
+
 
