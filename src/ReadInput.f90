@@ -213,6 +213,10 @@
             biasAlpha(i,j) = biasAlpha(i,j)/temperature
          enddo         
       enddo      
+      read(54,*)
+      read(54,*)
+      read(54,*)
+      call 
 
 
       

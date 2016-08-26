@@ -12,7 +12,7 @@
         integer, allocatable :: pairGloIndx1(:), pairGloIndx2(:)
         integer, allocatable :: molIndx1(:), molIndx2(:)  
 
-        public :: nDistPair
+        public :: nDistPair, pairArrayIndx
         public :: Initialize_DistPair
         public :: SetPairVariables
         public :: CalcDistPairs

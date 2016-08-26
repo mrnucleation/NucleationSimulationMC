@@ -106,6 +106,7 @@ SRC_MAIN := $(SRC)/BasicMovement.f90\
  		$(SRC)/OutputFunctions.f90\
  		$(SRC)/Input_Ultility.f90\
  		$(SRC)/UmbrellaSampling.f\
+ 		$(SRC)/UmbrellaSampling_Version2.f90\
  		$(SRC)/AngleIntegration.f90\
  		$(SRC)/CoordinateFunctions.f90\
 		$(SRC)/ReadInput.f90

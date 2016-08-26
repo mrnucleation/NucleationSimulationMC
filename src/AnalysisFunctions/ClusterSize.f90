@@ -43,5 +43,19 @@
           enddo
         end subroutine
      !--------------------------------------------------------------------------------
+        subroutine CalcClusterSize
+          use MiscelaniousVars
+          use Coords
+          use SimParameters, only: NPART
+          implicit none 
+          integer :: iCluster, iType, iIndx
+
+          do iCluster =1, nClusterVar
+            iType = typeIndxArray(iCluster)
+            iIndx = clusterArrayIndx(iCluster)
+            miscVar(iIndx) = real(NPART(iType), dp)
+          enddo
+        end subroutine
+     !--------------------------------------------------------------------------------
      end module
 !==========================================================================

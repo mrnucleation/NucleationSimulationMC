@@ -263,7 +263,9 @@
       integer(kind=8) :: ncycle,ncycle2       
       logical :: ridgidMolecules, multipleInput
       integer(kind=atomIntType) :: nMolTypes
-      integer,allocatable :: NPart(:), NMin(:), NMax(:)
+      integer,allocatable :: NMin(:), NMax(:)
+      integer,allocatable, target :: NPart(:)
+      integer,allocatable, target :: NPart_New(:)
       logical,allocatable :: isActive(:)
       integer :: NTotal
       integer :: maxMol, maxAtoms, vmdAtoms
