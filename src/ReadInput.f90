@@ -229,7 +229,7 @@
       character(len=15) :: labelField 
       character(len=10) :: potenType
 
-      open(unit=55,file="input_forcefield.dat",status='OLD')
+      open(unit=55, file="input_forcefield.dat", status='OLD')
       read(55,*) 
       read(55,*) labelField, potenType
       write(35,*) "-------------------------"
@@ -432,6 +432,10 @@
       if(custom) then           
         do i = 1,nAtomTypes
           read(55,*) (r_min_tab(i,j), j=1,nAtomTypes)
+          if(echoInput) then
+            write(35,*) (r_min_tab(i,j), j=1,nAtomTypes)
+            flush(35)
+           endif
         enddo
         do i = 1,nAtomTypes
           do j = 1,nAtomTypes

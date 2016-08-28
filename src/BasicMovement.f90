@@ -116,7 +116,7 @@
       	  
       end subroutine
 !===========================================================================================
-      subroutine Translation(E_T,acc_x,atmp_x)
+      subroutine Translation(E_T, acc_x, atmp_x)
       use AcceptRates
       use SimParameters
       use IndexingFunctions
@@ -133,7 +133,7 @@
       real(dp),intent(inout) :: E_T, acc_x, atmp_x      
       logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
       
-      logical rejMove      
+      logical :: rejMove      
       integer :: i, nType, nMol, nIndx, nMove
       real(dp) :: grnd 
       real(dp) :: dx, dy, dz      
@@ -180,7 +180,6 @@
       E_Intra = 0E0
       !call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
-
       if(rejMove) then
         return
       endif

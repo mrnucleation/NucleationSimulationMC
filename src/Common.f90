@@ -257,7 +257,7 @@
       module SimParameters
       use VarPrecision
       logical, parameter :: echoInput = .false.      
-      logical, parameter :: distCriteria = .true.
+      logical, parameter :: distCriteria = .false.
 
 
       integer(kind=8) :: ncycle,ncycle2       

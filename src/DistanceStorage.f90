@@ -147,7 +147,7 @@
                 do jAtom = 1,nAtoms(jType)       
                   globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
                   atmType2 = atomArray(jType, jAtom) 
-                  rmin_ij = r_min_tab(atmType1,atmType2)          
+                  rmin_ij = r_min_tab(atmType2, atmType1)
                   rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
                   ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
                   rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom) 
@@ -200,13 +200,16 @@
         do jType = 1, nMolTypes
           do jAtom = 1, nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
-            rmin_ij = r_min_tab(atmType1,atmType2)     
+            rmin_ij = r_min_tab(atmType1, atmType2)     
             do jMol = 1, NPART(jType)
               gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
               if(gloIndx1 .eq. gloIndx2 ) then
                 cycle
               endif
               jIndx = molArray(jType)%mol(jMol)%indx
+              if(iIndx .eq. jIndx) then
+                cycle
+              endif
 !               Distance for the New position
               rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
@@ -216,6 +219,9 @@
               if(r_sq .lt. rmin_ij) then
                 if(iIndx .ne. jIndx) then
                   rejMove = .true.
+                  write(2,*) iType, iMol, iAtom
+                  write(2,*) jType, jMol, jAtom
+                  write(2,*) r_sq, rmin_ij
                   return
                 endif
               endif    
@@ -226,7 +232,6 @@
               newDist(nNewDist)%r_sq = r_sq
 !              newDist(nNewDist)%E_Pair = 0d0
               if( rPair(gloIndx1, gloIndx2)%p%storeRValue .eqv. .true.) then
-!                write(2,*) gloIndx1, gloIndx2, rPair(gloIndx1, gloIndx2)%p%storeRValue, r_sq
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif
             enddo

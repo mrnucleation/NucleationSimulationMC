@@ -185,18 +185,15 @@
 !      !have been modified in this trial move with the atoms that have remained stationary
 
       do iPair = 1, nNewDist
-
-        gloIndx1 = newDist(iPair)%indx1
         gloIndx2 = newDist(iPair)%indx2
-
         jType = atomIndicies(gloIndx2)%nType
         jMol  = atomIndicies(gloIndx2)%nMol
         jIndx = MolArray(jType)%mol(jMol)%indx
         if(jIndx .ne. iIndx) then
+          gloIndx1 = newDist(iPair)%indx1
           jAtom = atomIndicies(gloIndx2)%nAtom
           iAtom = atomIndicies(gloIndx1)%nAtom
-
-        
+       
           atmType1 = atomArray(iType,iAtom)
           atmType2 = atomArray(jType,jAtom)
 
@@ -211,8 +208,8 @@
             endif
           endif
 
-          LJ = 0d0
-          Ele = 0d0
+          LJ = 0E0
+          Ele = 0E0
           if(ep .ne. 0E0) then
             sig_sq = sig_tab(atmType2,atmType1)
             r_new_sq = newDist(iPair)%r_sq

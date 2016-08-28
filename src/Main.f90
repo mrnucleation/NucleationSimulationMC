@@ -395,6 +395,7 @@
       if(any(atmpRot .gt. 1E0)) then
         write(nout,*) "Acceptance Rotate (Mol Type):", (1E2*acptRot(j)/atmpRot(j),j=1,nMolTypes) 
       endif
+
       if(distGen_atmp .ne. 0E0) then
         write(nout,*) "Distance Generation Success Rate:", 1E2*distGen_accpt/distGen_atmp
       endif
@@ -548,7 +549,6 @@
  
       end subroutine
 !===========================================================
-
       subroutine TrajOutput(iCycle)
       use VarPrecision
       use SimParameters

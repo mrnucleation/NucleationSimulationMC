@@ -7,7 +7,7 @@
       use VarPrecision
 !     This block defines custom variable types for forcefield
       type AtomDef
-        character(len=4) :: Symb
+        character(len=5) :: Symb
         real(dp) :: sig, ep, q, mass
       end type
         
@@ -126,7 +126,7 @@
       use VarPrecision
 
       type AtomDefPedone
-        character(len=4) :: Symb
+        character(len=5) :: Symb
         real(dp) :: repul, rEq, q, alpha, delta, mass
       end type
 
