@@ -38,9 +38,9 @@
       nMove = floor(NTotal*grnd() + 1E0)
 
       call Get_MolIndex(nMove, NPart, nType, nMol)
-      if(nType .ne. 1) then
-        return
-      endif
+!      if(nType .ne. 1) then
+!        return
+!      endif
       nIndx = MolArray(nType)%mol(nMol)%indx
       if(regrowType(nType) .eq. 0) return
       
@@ -629,5 +629,6 @@
         call Update_SubEnergies        
       endif
       end subroutine
+
 !===========================================================================================
       end module

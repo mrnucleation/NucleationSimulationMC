@@ -265,7 +265,7 @@
         stop "Unknown potential type given in forcefield input"
       end select
  
-      call AllocateCoordinateArrays
+
       call ReadAnalysisInput(54)
       close(54)                
 
@@ -284,7 +284,7 @@
       use ForceField
       use ForceFieldPara_LJ_Q
       use ForceFieldFunctions
-      use PairStorage, only:createDistArrays
+      use PairStorage, only:createDistArrays, SetStorageFlags
       use SimParameters
       use Units
       implicit none
@@ -622,8 +622,9 @@
         enddo
       enddo
       
-
-
+      call AllocateCoordinateArrays
+      call CreateJointArray  
+      call SetStorageFlags(q_tab)
       call IntegrateBendAngleProb
 
       close(55)
@@ -646,7 +647,7 @@
       use ForceFieldFunctions
       use Units
       use CBMC_Variables
-      use PairStorage, only: CreateDistArrays
+      use PairStorage, only: CreateDistArrays, SetStorageFlags
       implicit none
       logical :: custom
       integer :: i,j,h,AllocateStatus,nParam
@@ -808,8 +809,9 @@
         read(55,*) labelField, bornRad(i)
       enddo
 
-
-
+      call AllocateCoordinateArrays
+      call CreateJointArray  
+      call SetStorageFlags(q_tab)
 !      call createDistArrays
       flush(35)
 

@@ -93,7 +93,7 @@
 
       read(fileUnit, *) labelField, nAnalysisVar
       if(nAnalysisVar .lt. 0) then
-        write(*,*) "ERROR! The user has specified an invalid number of Umbrella Sampling Variables"
+        write(*,*) "ERROR! The user has specified an invalid number of Analysis Variables"
         write(*,*) labelField, nAnalysisVar
         stop
       endif
@@ -165,7 +165,7 @@
           read(inputLines(iAnalysis), *)  analysisName, type1, atom1, type2, atom2, binSize, nBins, fileName
           call SetRadialParameters(iRadial, type1, type2, atom1, atom2)
           miscHist(iRadial)%binSize = binSize
-          miscHist(iRadial)%sizeInv = 1E0/miscHist(1)%binSize
+          miscHist(iRadial)%sizeInv = 1E0_dp/binSize
           miscHist(iRadial)%nBins = nBins
           miscHist(iRadial)%fileName = fileName
           if(iRadial .eq. 1) then

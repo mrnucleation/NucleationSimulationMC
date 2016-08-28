@@ -88,10 +88,15 @@
      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
      implicit none
      real(dp), intent(in) :: q_tab(:,:)
-     integer :: iType,jType,iMol,jMol,iAtom,jAtom
+     integer :: i, iType,jType,iMol,jMol,iAtom,jAtom
      integer(kind=atomIntType) :: atmType1, atmType2      
      integer :: globIndx1, globIndx2 
      real(dp) :: q_ij
+
+     do i = 1, nMaxPairs
+       distStorage(i) % storeRValue = .false.
+     enddo 
+
 
      do iType = 1,nMolTypes
        do jType = iType, nMolTypes
@@ -220,7 +225,8 @@
               newDist(nNewDist)%indx2 = gloIndx2
               newDist(nNewDist)%r_sq = r_sq
 !              newDist(nNewDist)%E_Pair = 0d0
-              if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
+              if( rPair(gloIndx1, gloIndx2)%p%storeRValue .eqv. .true.) then
+!                write(2,*) gloIndx1, gloIndx2, rPair(gloIndx1, gloIndx2)%p%storeRValue, r_sq
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif
             enddo
@@ -276,6 +282,7 @@
               newDist(nNewDist)%r_sq = r_sq
 !              newDist(nNewDist)%E_Pair = 0d0
               if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
+                write(*,*) 
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif
             enddo

@@ -82,6 +82,7 @@
       end subroutine
 !======================================================================================    
       subroutine Calc_RadialDist
+        use ParallelVar, only: nout
         use SimParameters, only: NPART
         use Coords
         implicit none
@@ -102,43 +103,35 @@
 !          write(*,*) iRadial, radialIndx
           if(nType1 .eq. nType2) then
             do iMol = 1, NPART(nType1) - 1
+              gloIndx1 = molArray(nType1)%mol(iMol)%globalIndx(nAtom1)
               do jMol = iMol+1, NPART(nType1)
-                gloIndx1 = molArray(nType1)%mol(iMol)%globalIndx(nAtom1)
                 gloIndx2 = molArray(nType2)%mol(jMol)%globalIndx(nAtom2)
-!                r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
-!                r = sqrt(r_sq)
-!                r = rPair(gloIndx1, gloIndx2)%p%r
-!                bin = floor(r * miscHist(radialIndx)%sizeInv)
                 bin = floor(rPair(gloIndx1, gloIndx2)%p%r * miscHist(radialIndx)%sizeInv)
-                nBins = miscHist(radialIndx)%nBins
-!                write(*,*) radialIndx, r, r_sq, bin
-                if(bin .le. nBins) then
+                if(bin .le. miscHist(radialIndx)%nBins) then
                   miscHist(radialIndx)%binCount(bin) = miscHist(radialIndx)%binCount(bin) + 2d0
                 else 
+                  nBins = miscHist(radialIndx)%nBins
                   miscHist(radialIndx)%binCount(nBins+1) = miscHist(radialIndx)%binCount(nBins+1) + 2d0
                 endif
               enddo
             enddo
           else
             do iMol = 1, NPART(nType1)
+              gloIndx1 = molArray(nType1)%mol(iMol)%globalIndx(nAtom1)
               do jMol = 1, NPART(nType2)
-                gloIndx1 = molArray(nType1)%mol(iMol)%globalIndx(nAtom1)
                 gloIndx2 = molArray(nType2)%mol(jMol)%globalIndx(nAtom2)
-!                r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
-!                r = sqrt(r_sq)
-                r = rPair(gloIndx1, gloIndx2)%p%r
-                bin = floor(r * miscHist(radialIndx)%sizeInv)
-                nBins = miscHist(radialIndx)%nBins
-                if(bin .le. nBins) then
+                bin = floor(rPair(gloIndx1, gloIndx2)%p%r * miscHist(radialIndx)%sizeInv)
+                if(bin .le. miscHist(radialIndx)%nBins) then
                   miscHist(radialIndx)%binCount(bin) = miscHist(radialIndx)%binCount(bin) + 2d0
                 else 
+                  nBins = miscHist(radialIndx)%nBins
                   miscHist(radialIndx)%binCount(nBins+1) = miscHist(radialIndx)%binCount(nBins+1) + 2d0
                 endif
               enddo
             enddo
           endif
         enddo
-        
+        write(2,*) "------------------------------"
       
       end subroutine  
 !======================================================================================    
@@ -154,7 +147,10 @@
         do iRadial = 1, nRadialDist
           open(unit = 80, file = miscHist(iRadial)%fileName)
           d_bin = miscHist(iRadial)%binSize
-          norm = sum(miscHist(iRadial)%binCount)
+          norm = 0E0
+          do iBin = 0, miscHist(iRadial)%nBins
+            norm = norm + miscHist(iRadial)%binCount(iBin)
+          enddo
 !          write(*,*) norm
           write(80,*) "Number of Bins:", miscHist(iRadial)%nBins
           write(80,*) "Bin Size:", d_bin

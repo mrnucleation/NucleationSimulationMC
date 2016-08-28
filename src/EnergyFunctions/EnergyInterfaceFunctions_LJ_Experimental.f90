@@ -41,7 +41,7 @@
       real(dp) :: PairList(1:maxMol,1:maxMol)
       
       E_T = 0E0
-      call SetStorageFlags(q_tab)
+!      call SetStorageFlags(q_tab)
       call CalcAllDistPairs
       call Detailed_ECalc_Inter(E_T, PairList)
 
@@ -141,7 +141,7 @@
           endif
           dETable = 0E0 
           PairList = 0E0
-          call Shift_ECalc_Inter(E_Inter, disp,newDist, PairList, dETable, rejMove)
+          call Shift_ECalc_Inter(E_Inter, disp, newDist, PairList, dETable, rejMove)
           if(rejMove) then
             return
           endif

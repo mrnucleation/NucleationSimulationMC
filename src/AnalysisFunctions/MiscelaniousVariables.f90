@@ -24,6 +24,17 @@
 
     contains
 !===========================================================
+    subroutine ReserveSpace_Integers(nReserve, startIndx, endIndx)
+    implicit none
+    integer, intent(in) :: nReserve
+    integer, intent(out) :: startIndx, endIndx
+
+    startIndx = nIntegers + 1
+    nIntegers = nIntegers + nReserve
+    endIndx = nIntegers
+
+    end subroutine
+!===========================================================
     subroutine ReserveSpace_Histograms(nReserve, startIndx, endIndx)
     implicit none
     integer, intent(in) :: nReserve
@@ -91,6 +102,7 @@
     do iHist = 1, nHistArrays
       nBins = miscHist(iHist)%nBins
       allocate( TempHist(0:nBins+1) )
+      TempHist = 0E0
       call MPI_REDUCE(miscHist(iHist)%binCount, TempHist, nBins+2, &
                        MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)  
       if(myid .eq. 0) then

@@ -40,8 +40,8 @@
       integer :: nSel    
     
 !      real(dp) :: max_dist, max_dist_single, max_rot
-      real(dp) :: atmp_1,atmp_2,atmp_3,atmp_4
-      real(dp) :: acc_1, acc_2, acc_3, acc_4
+!      real(dp) :: atmp_1,atmp_2,atmp_3,atmp_4
+!      real(dp) :: acc_1, acc_2, acc_3, acc_4
       real(dp) :: E_T, E_Final
       real(dp) :: grnd,ran_num
       real(dp) :: dist_limit,rot_limit
@@ -95,7 +95,6 @@
         endif
       endif         
       call ReadForcefield
-      call CreateJointArray      
       call ReadInitialConfiguration
       call RecenterCoordinates
       call ReadInitialGasPhase      
@@ -245,7 +244,7 @@
       write(35,*) "Rejection Distance:", r_min
       write(nout,*) "AVBMC E_Bias Alpha:"      
       do i = 1, nMolTypes      
-        write(nout,*) (biasAlpha(i,j),j=1,nMolTypes)       
+        write(nout,*) (biasAlpha(i,j), j=1,nMolTypes)       
       enddo
       write(nout,*) "Temperature:", temperature
       write(nout,*) "Gas Phase Density:", gas_dens
@@ -280,11 +279,10 @@
            endif
            if(useAnalysis) then
              call PostMoveAnalysis
-           endif
+           endif  
          enddo
 
-
-            
+         
          if(mod(iCycle, 100) .eq. 0 ) then
            do i = 1, nMolTypes
              call AdjustMax(acptTrans(i), atmpTrans(i), max_dist(i), dist_limit)
