@@ -12,7 +12,8 @@
       real(dp) :: binSize, sizeInv
       real(dp), allocatable :: binCount(:)
     end type
-    
+
+    integer :: nIntegers = 0    
     integer :: nGeometry = 0
     integer :: nHistArrays = 0
 
@@ -48,7 +49,7 @@
 
     end subroutine
 !===========================================================
-    subroutine AllocateArrays
+    subroutine AllocateMiscArrays
     implicit none
     integer :: AllocationStat
 
@@ -65,12 +66,14 @@
 !===========================================================
     subroutine AllocateHistBins
     implicit none
-    integer :: iHist, AllocationStat, nBins
+    integer :: iHist, iBin, AllocationStat, nBins
 
     do iHist = 1, nHistArrays
       nBins = miscHist(iHist)%nBins
       allocate(miscHist(iHist)%binCount(0:nBins+1), Stat = AllocationStat)
-      miscHist(iHist)%binCount(0:nBins+1) = 0E0
+      do iBin = 0, nBins+1
+        miscHist(iHist)%binCount(iBin) = 0E0
+      enddo
     enddo
 
     end subroutine

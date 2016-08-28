@@ -216,14 +216,11 @@
       read(54,*)
       read(54,*)
       read(54,*)
-      call 
 
-
-      
-      close(54)       
       end subroutine
 !========================================================  
       subroutine ReadForcefield
+      use AnalysisMain, only: ReadAnalysisInput
       use ForceField, only: ForceFieldName
       use EnergyPointers
       use SwapBoundary
@@ -268,7 +265,9 @@
         stop "Unknown potential type given in forcefield input"
       end select
  
-         
+      call AllocateCoordinateArrays
+      call ReadAnalysisInput(54)
+      close(54)                
 
 
       end subroutine

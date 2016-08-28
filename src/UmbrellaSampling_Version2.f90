@@ -82,7 +82,6 @@
       read(fileUnit, *) labelField, nBiasVariables
       if(nBiasVariables .lt. 0) then
         write(*,*) "ERROR! The user has specified an invalid number of Umbrella Sampling Variables"
-        write(*,*) "Please specify at least one valid Monte Carlo move to continue"
         write(*,*) labelField, nBiasVariables
         stop
       endif

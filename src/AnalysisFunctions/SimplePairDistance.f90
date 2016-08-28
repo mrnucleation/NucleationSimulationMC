@@ -20,6 +20,30 @@
 
         contains
      !--------------------------------------------------------------------------------
+        subroutine Initialize_DistPair
+           use MiscelaniousVars
+           implicit none 
+           integer :: AllocationStatus
+           integer :: startIndx, endIndx, iPair
+
+
+           if(nDistPair .eq. 0) then
+             return
+           endif 
+
+           allocate(pairArrayIndx(1:nDistPair), STAT = AllocationStatus)
+           allocate(pairGloIndx1(1:nDistPair), STAT = AllocationStatus)
+           allocate(pairGloIndx2(1:nDistPair), STAT = AllocationStatus)
+           allocate(molIndx1(1:nDistPair), STAT = AllocationStatus)
+           allocate(molIndx2(1:nDistPair), STAT = AllocationStatus)
+           
+           call ReserveSpace_Coord(nDistPair, startIndx, endIndx)
+
+           do iPair = 1, nDistPair
+             pairArrayIndx(iPair) = startIndx + iPair - 1
+           enddo
+        end subroutine
+     !--------------------------------------------------------------------------------
         subroutine SetPairVariables(nPair, nType1, nMol1, nAtom1, nType2, nMol2, nAtom2)
            use MiscelaniousVars
            use Coords, only: molArray
@@ -41,25 +65,6 @@
            
            rPair(gloIndx1, gloIndx2)%p%storeRValue = .true.
 
-        end subroutine
-     !--------------------------------------------------------------------------------
-        subroutine Initialize_DistPair
-           use MiscelaniousVars
-           implicit none 
-           integer :: AllocationStatus
-           integer :: startIndx, endIndx, iPair
-
-           allocate(pairArrayIndx(1:nDistPair), STAT = AllocationStatus)
-           allocate(pairGloIndx1(1:nDistPair), STAT = AllocationStatus)
-           allocate(pairGloIndx2(1:nDistPair), STAT = AllocationStatus)
-           allocate(molIndx1(1:nDistPair), STAT = AllocationStatus)
-           allocate(molIndx2(1:nDistPair), STAT = AllocationStatus)
-           
-           call ReserveSpace_Coord(nDistPair, startIndx, endIndx)
-
-           do iPair = 1, nDistPair
-             pairArrayIndx(iPair) = startIndx + iPair - 1
-           enddo
         end subroutine
      !--------------------------------------------------------------------------------
         subroutine CalcDistPairs

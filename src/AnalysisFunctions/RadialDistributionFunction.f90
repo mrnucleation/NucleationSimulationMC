@@ -28,6 +28,10 @@
       integer :: AllocationStatus
       integer :: startIndx, endIndx
 
+      if(nRadialDist .eq. 0) then
+        return
+      endif
+
       allocate( radType1(1:nRadialDist), stat = AllocationStatus )
       allocate( radType2(1:nRadialDist), stat = AllocationStatus )
       allocate( radAtom1(1:nRadialDist), stat = AllocationStatus )

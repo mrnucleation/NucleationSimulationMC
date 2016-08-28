@@ -91,11 +91,10 @@
 !       echo input parameter is true.  Otherwise the screen data is exported to 100+myid      
       if(screenEcho) then      
         if(myid .eq. 0) then
-          nout=6        
+          nout = 6        
         endif
       endif         
       call ReadForcefield
-      call AllocateCoordinateArrays
       call CreateJointArray      
       call ReadInitialConfiguration
       call RecenterCoordinates
@@ -114,7 +113,7 @@
       distGen_atmp = 0E0
       angGen_atmp = 0E0
       dihedGen_atmp = 0E0
-      atmpRot = -huge(dp)
+      atmpRot = 1E-30
 !  Counter for the number of moves rejected due to the cluster criteria
       NeighRej = 0E0
       NHist = 0E0
@@ -137,9 +136,9 @@
       critriaRej_out = 0E0
       boundaryRej_out = 0E0      
 !      Maximum Displacement used by the translational move
-      max_dist = 0.5E0
+      max_dist = 0.05E0
 !      Maximum Displacement used by the rotation move      
-      max_rot = 0.5E0 * pi
+      max_rot = 0.05E0 * pi
       max_dist_single = 0.01E0
 !      Maximum Displacements allowed by the auto-tuning function. Failure to use this can result in
 !      critical simulation errors in the auto-tuning function.
@@ -164,7 +163,7 @@
       write(outFormat2, out1) "(", "2x,I9", (",2x,I5",i=1,nMolTypes),",F17.4,2x",(",2x,F6.2",i=1,nMoveTypes), ")"  
 !"
 !      E_T is the total energy of the system
-      E_T=0E0
+      E_T = 0E0
       
 !      Initialize random number generator      
       seed = p_size*seed + myid
@@ -257,7 +256,7 @@
       write(nout,*) "------------------------------------------------"
       write(nout,*) "Cycle # ", "Particles ",  "Energy ", "Acceptance Rates"
 !"
-      call DummyAnalysisTest2
+!      call DummyAnalysisTest2
       flush(35)
       call CPU_TIME(TimeStart)      
 !--------------------------------------------------------------------------------------------------      
@@ -282,7 +281,6 @@
            if(useAnalysis) then
              call PostMoveAnalysis
            endif
-
          enddo
 
 
@@ -435,17 +433,18 @@
       if(myid .eq. 0) then
         call N_HistOutput    
       endif
-      write(nout,*) "Histogram Outputted...."
+!      write(nout,*) "Histogram Outputted...."
 !     Output Final Configuration to a visualization file that can be opened by a program like VMD or Avagadro.    
 
       call CollectHistograms
+      write(nout,*) "Histograms Condenced...."
       if(myid .eq. 0) then
         call Output_VMD_Final
         if(useAnalysis) then
           call OutputAnalysis
         endif
       endif
-
+      write(nout,*) "Histograms Outputted...."
 
       
       write(35,*) "Energy Table:"
@@ -534,18 +533,18 @@
       real(dp), intent(in) :: acc_x,atmp_x,limit
       real(dp), intent(inout):: max_x
       
-      if(atmp_x .lt. 1E0_dp) then
+      if(atmp_x .lt. 0.5E0) then
         return
       endif
 
-      if(acc_x/atmp_x .gt. 0.5E0_dp) then
-        if(max_x*1.01E0_dp .lt. limit) then
-          max_x=max_x*1.01E0_dp
+      if(acc_x/atmp_x .gt. 0.5E0) then
+        if(max_x*1.01E0 .lt. limit) then
+          max_x = max_x * 1.01E0
         else 
-          max_x=limit       
+          max_x = limit       
         endif
       else
-        max_x=max_x*0.99E0_dp
+        max_x = max_x * 0.99E0
       endif
 
  
