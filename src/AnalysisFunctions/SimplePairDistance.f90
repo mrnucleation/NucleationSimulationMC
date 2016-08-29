@@ -83,6 +83,7 @@
 !            r = rPair(gloIndx1, gloIndx2) % p % r
             miscCoord(pairArrayIndx(iDistPair)) = rPair(gloIndx1, gloIndx2) % p % r
 !            write(*,*) miscCoord(pairArrayIndx(iDistPair))
+           
           enddo
 
 

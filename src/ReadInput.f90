@@ -213,9 +213,7 @@
             biasAlpha(i,j) = biasAlpha(i,j)/temperature
          enddo         
       enddo      
-      read(54,*)
-      read(54,*)
-      read(54,*)
+
 
       end subroutine
 !========================================================  
@@ -225,6 +223,7 @@
       use EnergyPointers
       use SwapBoundary
       use ParallelVar, only: nout
+      use UmbrellaSamplingNew, only: ReadInput_Umbrella
       implicit none
       character(len=15) :: labelField 
       character(len=10) :: potenType
@@ -265,8 +264,14 @@
         stop "Unknown potential type given in forcefield input"
       end select
  
-
+      read(54,*)
+      read(54,*)
+      read(54,*)
       call ReadAnalysisInput(54)
+      read(54,*)
+      read(54,*)
+      read(54,*)
+      call ReadInput_Umbrella(54)
       close(54)                
 
 

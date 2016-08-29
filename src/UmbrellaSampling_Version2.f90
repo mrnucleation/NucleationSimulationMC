@@ -87,10 +87,12 @@
       endif
       if(nBiasVariables .eq. 0) then
         useUmbrella = .false.
+        return
       else
         useUmbrella = .true.
       endif
 
+      call AllocateUmbrellaVariables
 !      nDispFunc = 0
 !      nSwapInFunc = 0
 !      nSwapOutFunc = 0

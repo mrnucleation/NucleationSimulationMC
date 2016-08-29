@@ -177,7 +177,7 @@
         case("pairdist")
           iDistPair = iDistPair + 1
           read(inputLines(iAnalysis), *)  analysisName, type1, mol1, atom1, type2, mol2, atom2
-          call SetPairVariables(iRadial, type1, type2, mol1, mol2, atom1, atom2)
+          call SetPairVariables(iDistPair, Type1, Mol1, Atom1, Type2, Mol2, Atom2)
           if(iDistPair .eq. 1) then
             iPostMove = iPostMove + 1
             postMoveArray(iPostMove)%func => CalcDistPairs

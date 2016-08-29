@@ -219,9 +219,6 @@
               if(r_sq .lt. rmin_ij) then
                 if(iIndx .ne. jIndx) then
                   rejMove = .true.
-                  write(2,*) iType, iMol, iAtom
-                  write(2,*) jType, jMol, jAtom
-                  write(2,*) r_sq, rmin_ij
                   return
                 endif
               endif    
@@ -275,9 +272,6 @@
               r_sq = rx*rx + ry*ry + rz*rz
               if(r_sq .lt. rmin_ij) then
                 rejMove = .true.
-!                write(*,*) iType, iMol, iAtom
-!                write(*,*) jType, jMol, jAtom
-!                write(*,*) sqrt(r_sq), sqrt(rmin_ij)
                 return
               endif
               nNewDist = nNewDist + 1
@@ -287,7 +281,6 @@
               newDist(nNewDist)%r_sq = r_sq
 !              newDist(nNewDist)%E_Pair = 0d0
               if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
-                write(*,*) 
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif
             enddo
