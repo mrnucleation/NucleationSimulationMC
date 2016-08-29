@@ -48,6 +48,7 @@
 
 
       allocate( NPART(1:nMolTypes),STAT = AllocateStatus )    
+      allocate( NPART_new(1:nMolTypes),STAT = AllocateStatus )   
       allocate( NMIN(1:nMolTypes),STAT = AllocateStatus )     
       allocate( NMAX(1:nMolTypes),STAT = AllocateStatus )     
       allocate( gas_dens(1:nMolTypes),STAT = AllocateStatus )      

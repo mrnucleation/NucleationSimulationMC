@@ -35,6 +35,7 @@
     real(dp), allocatable :: UBias(:)
     real(dp), allocatable :: UHist(:)
     real(dp), allocatable :: UBinSize(:)
+    character(len=10), allocatable :: outputFormat(:)
     type(BiasVariablePointer), allocatable :: biasvar(:)
     type(BiasVariablePointer), allocatable :: biasvarnew(:)
 
@@ -43,8 +44,8 @@
 !    type(SwapUmbrellaArray), allocatable :: SwapInUmbrella(:)
 !    type(SwapUmbrellaArray), allocatable :: SwapOutUmbrella(:)
 
-    public :: AllocateUmbrellaVariables, ReadInput_Umbrella, AllocateUmbrellaArray
-
+    public :: AllocateUmbrellaVariables, ReadInput_Umbrella, AllocateUmbrellaArray, UmbrellaHistAdd
+    public :: useUmbrella, OutputUmbrellaHist
 !==========================================================================================
     contains
 !==========================================================================================
@@ -59,7 +60,7 @@
     allocate( biasvarnew(1:nBiasVariables), STAT = AllocateStatus )
     allocate( binIndx(1:nBiasVariables), STAT = AllocateStatus )
     allocate( indexCoeff(1:nBiasVariables), STAT = AllocateStatus )
-
+    allocate( outputFormat(1:nBiasVariables), STAT = AllocateStatus )
 !    allocate( DispUmbrella(1:nBiasVariables), STAT = AllocateStatus )
 !    allocate( SwapInUmbrella(1:nBiasVariables), STAT = AllocateStatus )
 !    allocate( SwapOutUmbrella(1:nBiasVariables), STAT = AllocateStatus )
@@ -71,11 +72,12 @@
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx
       use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes
+      use ParallelVar, only: nout
       implicit none
       integer, intent(in) :: fileUnit
       integer :: iUmbrella, AllocateStatus
       integer :: indxVar
-      real(dp) :: binSize
+      real(dp) :: binSize, valMax, valMin
       character(len=30) :: labelField 
       character(len=30) :: umbrellaName
 
@@ -87,9 +89,12 @@
       endif
       if(nBiasVariables .eq. 0) then
         useUmbrella = .false.
+        write(nout,*) "Umbrella Sampling Used? = ", useUmbrella
         return
       else
         useUmbrella = .true.
+        write(nout,*) "Umbrella Sampling Used? = ", useUmbrella
+        write(nout,*) "Number of Umbrella Variables:", nBiasVariables
       endif
 
       call AllocateUmbrellaVariables
@@ -121,10 +126,11 @@
           varMax(iUmbrella) = NMAX(indxVar)
           varMin(iUmbrella) = NMin(indxVar)
           UBinSize(iUmbrella) = 1E0
+          outputFormat(iUmbrella) = "2x,F5.1,"
         case("pairdist")
           indxVar = 0
           backspace(fileUnit)
-          read(fileUnit, *) labelField, indxVar, varMin(iUmbrella), varMax(iUmbrella), binSize
+          read(fileUnit, *) labelField, indxVar, valMin, valMax , binSize
           if(nDistPair .le. 0) then
             write(*,*) "Error! An invalid distance variable has been chosen!"
             write(*,*) "Defined Distance Pairs:", nDistPair
@@ -142,6 +148,9 @@
           biasvarnew(iUmbrella) % varType = 2
           biasvarnew(iUmbrella) % realVar => miscCoord_New(pairArrayIndx(indxVar))
           UBinSize(iUmbrella) = binSize
+          varMin(iUmbrella) = valMin / binSize
+          varMax(iUmbrella) = valMax / binSize
+          outputFormat(iUmbrella) = "2x,F12.6,"
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) umbrellaName
@@ -149,24 +158,16 @@
         end select
       enddo
 
+      call AllocateUmbrellaArray
 
     end subroutine
 !==========================================================================================
     subroutine AllocateUmbrellaArray
-    use UmbrellaFunctions
-    use SimParameters
-    use WHAM_Module
     implicit none
     integer :: i, j
     integer :: AllocateStatus
         
-     umbrellaLimit = 1
-     do i = 1, nBiasVariables 
-       umbrellaLimit = umbrellaLimit * (VarMax(i) - VarMin(i) + 1)
-     enddo
-        
-     allocate(UBias(1:umbrellaLimit), STAT = AllocateStatus)
-     allocate(UHist(1:umbrellaLimit), STAT = AllocateStatus)
+
 
      indexCoeff(1) = 1
      do i = 2, nBiasVariables 
@@ -176,9 +177,23 @@
        enddo
      enddo      
 
-     if(useWHAM) then
-       call WHAM_Initialize
-     endif
+
+     umbrellaLimit = 0
+     do i = 1, nBiasVariables 
+       umbrellaLimit = umbrellaLimit + indexCoeff(i) * (VarMax(i) - VarMin(i))
+     enddo
+
+        
+     allocate(UBias(1:umbrellaLimit), STAT = AllocateStatus)
+     allocate(UHist(1:umbrellaLimit), STAT = AllocateStatus)
+
+     UBias = 0E0_dp
+     UHist = 0E0_dp
+     
+
+!     if(useWHAM) then
+!       call WHAM_Initialize
+!     endif
       
      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
      end subroutine
@@ -190,9 +205,9 @@
 
      do iBias = 1, nBiasVariables
        if(biasvar(iBias) % varType .eq. 1) then
-         binIndx(iBias) = nint( biasvar(iBias) % intVar * UBinSize(iBias) )
+         binIndx(iBias) = nint( biasvar(iBias) % intVar / UBinSize(iBias) )
        elseif(biasvar(iBias) % varType .eq. 2) then
-         binIndx(iBias) = nint( biasvar(iBias) % realVar * UBinSize(iBias) )
+         binIndx(iBias) = nint( biasvar(iBias) % realVar / UBinSize(iBias) )
        endif
      enddo
 
@@ -203,6 +218,7 @@
      enddo
      
 
+ 
      end function
 !==========================================================================
      function getNewBiasIndex() result(biasIndx)
@@ -213,9 +229,9 @@
 
      do iBias = 1, nBiasVariables
        if(biasvarnew(iBias) % varType .eq. 1) then
-         binIndx(iBias) = nint( biasvarnew(iBias)%intVar * UBinSize(iBias) )
+         binIndx(iBias) = nint( biasvarnew(iBias)%intVar / UBinSize(iBias) )
        elseif(biasvar(iBias) % varType .eq. 2) then
-         binIndx(iBias) = nint( biasvarnew(iBias)%realVar * UBinSize(iBias) )
+         binIndx(iBias) = nint( biasvarnew(iBias)%realVar / UBinSize(iBias) )
        endif
      enddo
 
@@ -226,7 +242,64 @@
      enddo
      
 
-     end function
+    end function
+!=========================================================================================
+    subroutine findVarValues(UIndx, UArray)
+    implicit none
+    integer, intent(in) :: UIndx
+    integer, intent(inout) :: UArray(:)
+    integer :: i, iBias
+    integer :: remainder, curVal
+
+    remainder = UIndx - 1
+    do i = 1, nBiasVariables
+      iBias = nBiasVariables - i + 1
+      curVal = int( real(remainder, dp)/real(indexCoeff(iBias),dp) )
+      UArray(iBias) = curVal + varMin(iBias)
+      remainder = remainder - curVal * indexCoeff(iBias)
+    enddo
+    
+!    write(2,*) UIndx, UArray
+
+    end subroutine
+!==========================================================================================
+    subroutine UmbrellaHistAdd
+    implicit none
+
+    curUIndx = getBiasIndex()
+    UHist(curUIndx) = UHist(curUIndx) + 1E0_dp
+ 
+    end subroutine
+!==========================================================================================
+    subroutine OutputUmbrellaHist
+    implicit none
+    integer :: iUmbrella, iBias
+    integer, allocatable :: UArray(:)
+    real(dp), allocatable :: varValues(:)
+    character(len = 100) :: outputString
+
+
+    allocate(UArray(1:nBiasVariables))
+    allocate(varValues(1:nBiasVariables))
+
+    write(outputString, *) "(", (trim(outputFormat(iBias)), iBias =1,nBiasVariables), "2x, E15.8)"
+    open(unit=60, file="TemporaryHist.txt")
+    do iUmbrella = 1, umbrellaLimit
+      call findVarValues(iUmbrella, UArray)
+      do iBias = 1, nBiasVariables
+        varValues(iBias) = real( UArray(iBias), dp) * UBinSize(iBias)
+      enddo
+      if(UHist(iUmbrella) .ne. 0E0) then
+        write(60,outputString) (varValues(iBias), iBias =1,nBiasVariables), UHist(iUmbrella)
+      endif
+    enddo 
+    flush(60)
+    close(60)
+
+    deallocate(UArray)
+    deallocate(varValues)
+
+    end subroutine
 !==========================================================================
     end module
 !==========================================================================

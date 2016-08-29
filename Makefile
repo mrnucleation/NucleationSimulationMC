@@ -9,7 +9,7 @@ FC := /opt/openmpi/bin/mpif90
 #FC := gfortran
 CC := mpicc
 OPTIMIZE_FLAGS := -O3
-OPTIMIZE_FLAGS += -xHost
+#OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
@@ -100,13 +100,13 @@ SRC_MAIN := $(SRC)/BasicMovement.f90\
             $(SRC)/AnalysisFunctions.f90\
             $(SRC)/MCMove_Module.f90\
             $(SRC)/DebugFunctions.f90\
+            $(SRC)/UmbrellaSampling_Version2.f90\
             $(SRC)/Main.f90\
  		$(SRC)/WHAM.f90\
  		$(SRC)/RandomNew.f90\
  		$(SRC)/OutputFunctions.f90\
  		$(SRC)/Input_Ultility.f90\
  		$(SRC)/UmbrellaSampling.f\
- 		$(SRC)/UmbrellaSampling_Version2.f90\
  		$(SRC)/AngleIntegration.f90\
  		$(SRC)/CoordinateFunctions.f90\
 		$(SRC)/ReadInput.f90

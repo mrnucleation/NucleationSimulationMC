@@ -27,6 +27,7 @@
       use SimParameters
       use VarPrecision
       use WHAM_Module
+      use UmbrellaSamplingNew, only: useUmbrella, UmbrellaHistAdd, OutputUmbrellaHist
       implicit none
 
 !      include 'mpif.h'
@@ -270,16 +271,19 @@
            enddo
            call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
 
-           if(useWham) then
-             if(mod(iCycle, intervalWham) .gt. equilInterval) then
-               call NHistAdd(E_T) 
-             endif
-           else
-             call NHistAdd(E_T) 
-           endif
+
            if(useAnalysis) then
              call PostMoveAnalysis
            endif  
+           if(useWham) then
+             if(mod(iCycle, intervalWham) .gt. equilInterval) then
+               call NHistAdd(E_T) 
+               call UmbrellaHistAdd
+             endif
+           else
+             call NHistAdd(E_T)
+             call UmbrellaHistAdd 
+           endif
          enddo
 
          
@@ -443,7 +447,11 @@
           call OutputAnalysis
         endif
       endif
+      if(useUmbrella) then
+        call OutputUmbrellaHist
+      endif
       write(nout,*) "Histograms Outputted...."
+
 
       
       write(35,*) "Energy Table:"
