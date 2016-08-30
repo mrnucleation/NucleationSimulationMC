@@ -40,7 +40,7 @@
     type(BiasVariablePointer), allocatable :: biasvarnew(:)
 
 !    integer :: nDispFunc, nSwapInFunc, nSwapOutFunc
-!    type(DispUmbrellaArray), allocatable :: DispUmbrella(:)
+    type(DispUmbrellaArray), allocatable :: DispUmbrella(:)
 !    type(SwapUmbrellaArray), allocatable :: SwapInUmbrella(:)
 !    type(SwapUmbrellaArray), allocatable :: SwapOutUmbrella(:)
 
@@ -271,6 +271,19 @@
  
     end subroutine
 !==========================================================================================
+    subroutine Umbrella(biasDiff, disp)
+    use CoordinateTypes
+    implicit none
+    type(Displacement), intent(in) :: disp(:)
+    real(dp), intent(out) :: biasDiff
+    real(dp) :: biasOld, biasNew
+
+    curUIndx = getBiasIndex()
+
+
+ 
+    end subroutine
+!==========================================================================================
     subroutine OutputUmbrellaHist
     implicit none
     integer :: iUmbrella, iBias
@@ -282,7 +295,7 @@
     allocate(UArray(1:nBiasVariables))
     allocate(varValues(1:nBiasVariables))
 
-    write(outputString, *) "(", (trim(outputFormat(iBias)), iBias =1,nBiasVariables), "2x, E15.8)"
+    write(outputString, *) "(", (trim(outputFormat(iBias)), iBias =1,nBiasVariables), "2x, F18.1)"
     open(unit=60, file="TemporaryHist.txt")
     do iUmbrella = 1, umbrellaLimit
       call findVarValues(iUmbrella, UArray)
