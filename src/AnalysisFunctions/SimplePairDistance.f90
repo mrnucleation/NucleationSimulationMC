@@ -140,7 +140,7 @@
             rz = disp(dispIndx)%z_new - molArray(nType)%mol(nMol)%z(nAtom)
             r = rx*rx + ry*ry + rz*rz
             r = sqrt(r)
-            miscCoord_New(pairArrayIndx(iDistPair)) = r          
+            miscCoord_New(pairArrayIndx(iDistPair)) = r       
           enddo
 
 

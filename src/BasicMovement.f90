@@ -128,14 +128,16 @@
       use DistanceCriteria      
       use EnergyTables
       use PairStorage, only: UpdateDistArray
+      use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       implicit none
       
       real(dp),intent(inout) :: E_T, acc_x, atmp_x      
       logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
       
       logical :: rejMove      
-      integer :: i, nType, nMol, nIndx, nMove
-      real(dp) :: grnd 
+      integer :: iAtom, nType, nMol, nIndx, nMove
+      real(dp) :: biasDiff, biasEnergy
+      real(dp) :: grnd
       real(dp) :: dx, dy, dz      
       real(dp) :: E_Inter, E_Intra
       type (displacement) :: disp(1:maxAtoms)
@@ -160,18 +162,18 @@
       dz = max_dist(nType) * (2E0*grnd() - 1E0)
 
 !     Construct the Displacement Vectors for each atom in the molecule that was chosen.
-      do i=1,nAtoms(nType)
-        disp(i)%molType = int(nType,atomIntType)
-        disp(i)%molIndx = int(nMol,atomIntType)
-        disp(i)%atmIndx = int(i,atomIntType)
+      do iAtom=1,nAtoms(nType)
+        disp(iAtom)%molType = int(nType, atomIntType)
+        disp(iAtom)%molIndx = int(nMol, atomIntType)
+        disp(iAtom)%atmIndx = int(iAtom, atomIntType)
         
-        disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
-        disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
-        disp(i)%z_old => MolArray(nType)%mol(nMol)%z(i)
+        disp(iAtom)%x_old => MolArray(nType)%mol(nMol)%x(iAtom)
+        disp(iAtom)%y_old => MolArray(nType)%mol(nMol)%y(iAtom)
+        disp(iAtom)%z_old => MolArray(nType)%mol(nMol)%z(iAtom)
         
-        disp(i)%x_new = disp(i)%x_old + dx
-        disp(i)%y_new = disp(i)%y_old + dy
-        disp(i)%z_new = disp(i)%z_old + dz        
+        disp(iAtom)%x_new = disp(iAtom)%x_old + dx
+        disp(iAtom)%y_new = disp(iAtom)%y_old + dy
+        disp(iAtom)%z_new = disp(iAtom)%z_old + dz        
       enddo
       
 !     Calculate the Energy Associated with this move and ensure it conforms to
@@ -184,14 +186,19 @@
         return
       endif
       
-
+      biasDiff = 0E0
+      if(useUmbrella) then
+        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff)
+      endif
+      biasEnergy = beta*E_Inter - biasDiff
+        
 
 !     Calculate Acceptance and determine if the move is accepted or not     
-      if(E_Inter .le. 0E0) then
-        do i=1,nAtoms(nType)      
-          disp(i)%x_old = disp(i)%x_new
-          disp(i)%y_old = disp(i)%y_new
-          disp(i)%z_old = disp(i)%z_new
+      if(biasEnergy .le. 0E0) then
+        do iAtom=1,nAtoms(nType)      
+          disp(iAtom)%x_old = disp(iAtom)%x_new
+          disp(iAtom)%y_old = disp(iAtom)%y_new
+          disp(iAtom)%z_old = disp(iAtom)%z_new
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
@@ -205,11 +212,11 @@
 !        call Create_NeiETable
         call UpdateDistArray
         call Update_SubEnergies        
-      elseif(exp(-beta*E_Inter) .gt. grnd()) then
-        do i=1,nAtoms(nType)      
-          disp(i)%x_old = disp(i)%x_new
-          disp(i)%y_old = disp(i)%y_new
-          disp(i)%z_old = disp(i)%z_new
+      elseif(exp(-biasEnergy) .gt. grnd()) then
+        do iAtom=1,nAtoms(nType)      
+          disp(iAtom)%x_old = disp(iAtom)%x_new
+          disp(iAtom)%y_old = disp(iAtom)%y_new
+          disp(iAtom)%z_old = disp(iAtom)%z_new
         enddo
         E_T = E_T + E_Inter
         ETable = ETable + dETable
@@ -265,6 +272,7 @@
       use DistanceCriteria      
       use EnergyTables
       use PairStorage, only: UpdateDistArray
+      use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       implicit none
 
       real(dp), intent(inout) :: E_T,acc_x,atmp_x
@@ -275,6 +283,7 @@
       integer :: atmType,nMol,nType,nIndx
       real(dp) :: E_Inter, E_Intra
       real(dp) :: grnd   
+      real(dp) :: biasDiff, biasEnergy
       real(dp) :: c_term,s_term
       real(dp) :: x_scale, y_scale
       real(dp) :: xcm,ycm,angle
@@ -336,9 +345,15 @@
 !      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
+
+      biasDiff = 0E0
+      if(useUmbrella) then
+        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff)
+      endif
+      biasEnergy = beta*E_Inter - biasDiff
        
 !      Calculate Acceptance and determine if the move is accepted or not       
-      if(E_Inter .le. 0E0) then
+      if(biasEnergy .le. 0E0) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new
@@ -356,7 +371,7 @@
 !        call Create_NeiETable
         call UpdateDistArray
         call Update_SubEnergies        
-      elseif(exp(-beta*E_Inter) .gt. grnd()) then
+      elseif(exp(-biasEnergy) .gt. grnd()) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new
@@ -389,6 +404,7 @@
       use DistanceCriteria      
       use EnergyTables      
       use PairStorage, only: UpdateDistArray
+      use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       implicit none
 
       real(dp), intent(inout) :: E_T,acc_x,atmp_x
@@ -401,6 +417,7 @@
       real(dp) :: angle
       real(dp) :: E_Inter, E_Intra
       real(dp) :: grnd   
+      real(dp) :: biasDiff, biasEnergy
       real(dp) :: c_term,s_term
       real(dp) :: x_scale, z_scale
       real(dp) :: xcm,zcm
@@ -462,9 +479,15 @@
 !      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
+
+      biasDiff = 0E0
+      if(useUmbrella) then
+        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff)
+      endif
+      biasEnergy = beta*E_Inter - biasDiff
        
 !      Calculate Acceptance and determine if the move is accepted or not       
-      if(E_Inter .le. 0E0) then
+      if(biasEnergy .le. 0E0) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new
@@ -482,7 +505,7 @@
 !        call Create_NeiETable
         call Update_SubEnergies        
         call UpdateDistArray
-      elseif(exp(-beta*E_Inter) .gt. grnd()) then
+      elseif(exp(-biasEnergy) .gt. grnd()) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new
@@ -516,6 +539,7 @@
       use DistanceCriteria
       use EnergyTables
       use PairStorage, only: UpdateDistArray
+      use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       implicit none
       
       real(dp), intent(inout) :: E_T,acc_x,atmp_x
@@ -527,6 +551,7 @@
       real(dp) :: angle
       real(dp) :: E_Inter, E_Intra
       real(dp) :: grnd   
+      real(dp) :: biasDiff, biasEnergy
       real(dp) :: c_term,s_term
       real(dp) :: y_scale, z_scale
       real(dp) :: ycm,zcm
@@ -588,9 +613,15 @@
 !      call Shift_EnergyCalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       call Shift_ECalc(E_Inter, E_Intra, disp(1:nAtoms(nType)), PairList, dETable, useIntra, rejMove)
       if(rejMove) return
+
+      biasDiff = 0E0
+      if(useUmbrella) then
+        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff)
+      endif
+      biasEnergy = beta*E_Inter - biasDiff
        
 !      Calculate Acceptance and determine if the move is accepted or not       
-      if(E_Inter .le. 0E0) then
+      if(biasEnergy .le. 0E0) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new
@@ -608,7 +639,7 @@
 !        call Create_NeiETable
         call UpdateDistArray
         call Update_SubEnergies        
-      elseif(exp(-beta*E_Inter) .gt. grnd()) then
+      elseif(exp(-biasEnergy) .gt. grnd()) then
         do i=1,nAtoms(nType)      
           disp(i)%x_old = disp(i)%x_new
           disp(i)%y_old = disp(i)%y_new

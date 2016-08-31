@@ -96,11 +96,11 @@ SRC_ENERGY := $(ESUB)/Bending_Functions.f90 \
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
-SRC_MAIN := $(SRC)/BasicMovement.f90\
+SRC_MAIN :=             $(SRC)/UmbrellaSampling_Version2.f90\
+            $(SRC)/BasicMovement.f90\
             $(SRC)/AnalysisFunctions.f90\
             $(SRC)/MCMove_Module.f90\
             $(SRC)/DebugFunctions.f90\
-            $(SRC)/UmbrellaSampling_Version2.f90\
             $(SRC)/Main.f90\
  		$(SRC)/WHAM.f90\
  		$(SRC)/RandomNew.f90\
