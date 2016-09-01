@@ -8,14 +8,14 @@ FC := /opt/openmpi/bin/mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
-OPTIMIZE_FLAGS := -O3
+#OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
-#DEBUGFLAGS := -g -fbacktrace -fcheck=all
+DEBUGFLAGS := -g -fbacktrace -fcheck=all
 #DEBUGFLAGS := -fbounds-check
 #DEBUGFLAGS := -check bounds
 #DEBUGFLAGS += -heap-arrays 1024
@@ -96,13 +96,13 @@ SRC_ENERGY := $(ESUB)/Bending_Functions.f90 \
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
-SRC_MAIN :=             $(SRC)/UmbrellaSampling_Version2.f90\
+SRC_MAIN := $(SRC)/UmbrellaSampling_Version2.f90\
+            $(SRC)/WHAM_Version2.f90\
             $(SRC)/BasicMovement.f90\
             $(SRC)/AnalysisFunctions.f90\
             $(SRC)/MCMove_Module.f90\
             $(SRC)/DebugFunctions.f90\
             $(SRC)/Main.f90\
- 		$(SRC)/WHAM.f90\
  		$(SRC)/RandomNew.f90\
  		$(SRC)/OutputFunctions.f90\
  		$(SRC)/Input_Ultility.f90\
@@ -307,4 +307,4 @@ $(CUR_DIR)/avbmc_module.mod: $(SRC_SWAP) $(SRC)/ETableFunctions.f90
 $(CUR_DIR)/simplemcmoves_module.mod: $(SRC)/BasicMovement.f90
 $(CUR_DIR)/movetypemodule.mod: $(SRC)/MCMove_Module.f90 $(CUR_DIR)/avbmc_module.mod $(CUR_DIR)/simplemcmoves_module.mod $(CUR_DIR)/cbmc_module.mod
 $(CUR_DIR)/energypointers.mod: $(ESUB)/EnergyPointers.f90 $(ESUB)/EnergyInterfaceFunctions.f90 $(CUR_DIR)/e_interface.mod
-		
+$(CUR_DIR)/energypointers.mod: $(ESUB)/EnergyPointers.f90 $(ESUB)/EnergyInterfaceFunctions.f90 $(CUR_DIR)/e_interface.mod		

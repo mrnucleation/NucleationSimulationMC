@@ -1,7 +1,6 @@
 !================================================================
       subroutine BlankUmbrellaBias
       use SimParameters
-      use IonBias
       use WHAM_Module
       implicit none
       integer :: AllocateStatus
@@ -15,13 +14,6 @@
       allocate(NBias(1:umbrellaLimit), STAT = AllocateStatus)
       allocate(NHist(1:umbrellaLimit), STAT = AllocateStatus)
       allocate(E_Avg(1:umbrellaLimit), STAT = AllocateStatus)  
-      if(biasIon) then
-        allocate(NR_Hist(1:umbrellaLimit, 0:rBins), STAT = AllocateStatus)
-        allocate(NR_Bias(1:umbrellaLimit, 0:rBins), STAT = AllocateStatus)          
-        NR_Bias = 0d0
-        NR_Hist = 0d0     
-        dR = 20d0/dble(rBins)
-      endif
      
       NBias = 0d0
       NHist = 0d0
@@ -73,9 +65,9 @@
       enddo
 30    close(25)
 
-      if(useWHAM) then
-        call WHAM_Initialize
-      endif
+!      if(useWHAM) then
+!        call WHAM_Initialize
+!      endif
        
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
       end subroutine

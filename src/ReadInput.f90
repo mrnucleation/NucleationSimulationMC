@@ -77,10 +77,9 @@
       if(useBias) then
         backspace(54)
         read(54,*) labelField, useBias, fileName
-!        write(6,*) labelField, useBias, fileName
-        call AllocateUmbrellaBias(fileName)
+!        call AllocateUmbrellaBias(fileName)
       else 
-        call BlankUmbrellaBias
+!        call BlankUmbrellaBias
       endif
       read(54,*) labelField, multipleInput
       read(54,*) labelField, (nRosenTrials(j),j=1,nMolTypes) 
@@ -184,7 +183,8 @@
 
       read(54,*) labelField, useWHAM
       read(54,*) labelField, (refSizeNumbers(j), j=1,nMolTypes)
-      refBin = getBiasIndex(refSizeNumbers, NMAX)
+!      refBin = getBiasIndex(refSizeNumbers, NMAX)
+      refBin = 1
       read(54,*) labelField, intervalWHAM
       read(54,*) labelField, tolLimit
       read(54,*) labelField, maxSelfConsist
@@ -192,7 +192,7 @@
       read(54,*) labelField, equilInterval
       if(useWham) then
         nWhamItter = ceiling(dble(ncycle)/dble(intervalWHAM))
-        call WHAM_Initialize
+!        call WHAM_Initialize
       endif
 
       
@@ -225,6 +225,7 @@
       use SwapBoundary
       use ParallelVar, only: nout
       use UmbrellaSamplingNew, only: ReadInput_Umbrella
+      use WHAM_Functions
       implicit none
       character(len=15) :: labelField 
       character(len=10) :: potenType
@@ -274,7 +275,9 @@
       read(54,*)
       call ReadInput_Umbrella(54)
       close(54)                
-
+      if(useWHAM) then
+        call WHAM_Initialize
+      endif
 
       end subroutine
 !========================================================  
@@ -405,8 +408,8 @@
           sig_tab(j,i) = sig_tab(i,j)
           q_tab(j,i) = q_tab(i,j)
           if(echoInput) then
-             write(35,*) i,j, ep_tab(i,j)/4d0, sqrt(sig_tab(i,j)), q_tab(i,j) 
-           endif          
+            write(35,*) i,j, ep_tab(i,j)/4d0, sqrt(sig_tab(i,j)), q_tab(i,j) 
+          endif          
 !          r_min_tab(j,i) = r_min_tab(i,j)
         enddo
       enddo

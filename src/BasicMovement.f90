@@ -188,7 +188,10 @@
       
       biasDiff = 0E0
       if(useUmbrella) then
-        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff)
+        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff, rejMove)
+        if(rejMove) then
+          return
+        endif
       endif
       biasEnergy = beta*E_Inter - biasDiff
         
@@ -348,7 +351,10 @@
 
       biasDiff = 0E0
       if(useUmbrella) then
-        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff)
+        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff, rejMove)
+        if(rejMove) then
+          return
+        endif
       endif
       biasEnergy = beta*E_Inter - biasDiff
        
@@ -482,7 +488,10 @@
 
       biasDiff = 0E0
       if(useUmbrella) then
-        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff)
+        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff, rejMove)
+        if(rejMove) then
+          return
+        endif
       endif
       biasEnergy = beta*E_Inter - biasDiff
        
@@ -616,7 +625,10 @@
 
       biasDiff = 0E0
       if(useUmbrella) then
-        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff)
+        call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff, rejMove)
+        if(rejMove) then
+          return
+        endif
       endif
       biasEnergy = beta*E_Inter - biasDiff
        

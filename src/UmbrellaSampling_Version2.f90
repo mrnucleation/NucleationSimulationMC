@@ -37,6 +37,7 @@
     real(dp), allocatable :: UBias(:)
     real(dp), allocatable :: UHist(:)
     real(dp), allocatable :: UBinSize(:)
+    character(len=20), allocatable :: inputFile
     character(len=10), allocatable :: outputFormat(:)
     type(BiasVariablePointer), allocatable :: biasvar(:)
     type(BiasVariablePointer), allocatable :: biasvarnew(:)
@@ -47,7 +48,8 @@
     type(SwapUmbrellaArray), allocatable :: SwapOutUmbrella(:)
 
     public :: AllocateUmbrellaVariables, ReadInput_Umbrella, AllocateUmbrellaArray, UmbrellaHistAdd
-    public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp
+    public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp, findVarValues
+    public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat
 !==========================================================================================
     contains
 !==========================================================================================
@@ -234,9 +236,7 @@
      UHist = 0E0_dp
      
 
-!     if(useWHAM) then
-!       call WHAM_Initialize
-!     endif
+
       
      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
      end subroutine
@@ -279,35 +279,43 @@
 
      do iBias = 1, nBiasVariables
        if(biasvar(iBias) % varType .eq. 1) then
-         binIndx(iBias) = nint( biasvar(iBias) % intVar / UBinSize(iBias) )
+         binIndx(iBias) = floor( biasvar(iBias) % intVar / UBinSize(iBias) )
+!         write(*,*) iBias, biasvar(iBias)%intVar, binIndx(iBias)
        elseif(biasvar(iBias) % varType .eq. 2) then
-         binIndx(iBias) = nint( biasvar(iBias) % realVar / UBinSize(iBias) )
+         binIndx(iBias) = floor( biasvar(iBias) % realVar / UBinSize(iBias) )
+!         write(*,*) iBias, biasvar(iBias)%realvar, binIndx(iBias)
        endif
      enddo
 
 
      biasIndx = 1
      do iBias = 1, nBiasVariables
+!       write(*,*) biasIndx,indexCoeff(iBias), binIndx(iBias), VarMin(iBias) 
        biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
      enddo
-     
 
  
      end function
 !==========================================================================
-     function getNewBiasIndex() result(biasIndx)
-!     real(dp), intent(in) :: newArray(:)
-     integer :: biasIndx
+     subroutine getNewBiasIndex(biasIndx, rejMove)
+     logical, intent(out) :: rejMove
+     integer, intent(out) :: biasIndx
      integer :: iBias
       
-
+     rejMove = .false.
      do iBias = 1, nBiasVariables
        if(biasvarnew(iBias) % varType .eq. 1) then
-         binIndx(iBias) = nint( biasvarnew(iBias)%intVar / UBinSize(iBias) )
-!         write(*,*) iBias, biasvarnew(iBias)%intVar, binIndx(iBias)
+         binIndx(iBias) = floor( biasvarnew(iBias)%intVar / UBinSize(iBias) )
        elseif(biasvar(iBias) % varType .eq. 2) then
-         binIndx(iBias) = nint( biasvarnew(iBias)%realVar / UBinSize(iBias) )
-!         write(*,*) iBias, biasvarnew(iBias)%realVar, binIndx(iBias)
+         binIndx(iBias) = floor( biasvarnew(iBias)%realVar / UBinSize(iBias) )
+       endif
+       if(binIndx(iBias) .lt. varMin(iBias) ) then
+         rejMove = .true.
+         return
+       endif
+       if(binIndx(iBias) .gt. varMax(iBias) ) then
+         rejMove = .true.
+         return
        endif
      enddo
 
@@ -316,9 +324,12 @@
      do iBias = 1, nBiasVariables
        biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
      enddo
-     
+     if(biasIndx .gt. umbrellaLimit ) then
+       rejMove = .true.
+       return
+     endif
 
-    end function
+    end subroutine
 !==========================================================================
      subroutine getUIndexArray(varArray, biasIndx, stat) 
      real(dp), intent(in) :: varArray(:)
@@ -327,7 +338,7 @@
       
      stat = 0
      do iBias = 1, nBiasVariables
-       binIndx(iBias) = nint( varArray(iBias) / UBinSize(iBias) )
+       binIndx(iBias) = floor( varArray(iBias) / UBinSize(iBias) )
        if(binIndx(iBias) .gt. varMax(iBias)) then
          stat = 1
          return
@@ -345,66 +356,92 @@
      enddo
      
 
-    end subroutine
+     end subroutine
 !===========================================================================
-    subroutine findVarValues(UIndx, UArray)
-    implicit none
-    integer, intent(in) :: UIndx
-    integer, intent(inout) :: UArray(:)
-    integer :: i, iBias
-    integer :: remainder, curVal
+     subroutine findVarValues(UIndx, UArray)
+     implicit none
+     integer, intent(in) :: UIndx
+     integer, intent(inout) :: UArray(:)
+     integer :: i, iBias
+     integer :: remainder, curVal
 
-    remainder = UIndx - 1
-    do i = 1, nBiasVariables
-      iBias = nBiasVariables - i + 1
-      curVal = int( real(remainder, dp)/real(indexCoeff(iBias),dp) )
-      UArray(iBias) = curVal + varMin(iBias)
-      remainder = remainder - curVal * indexCoeff(iBias)
-    enddo
+     remainder = UIndx - 1
+     do i = 1, nBiasVariables
+       iBias = nBiasVariables - i + 1
+       curVal = int( real(remainder, dp)/real(indexCoeff(iBias),dp) )
+       UArray(iBias) = curVal + varMin(iBias)
+       remainder = remainder - curVal * indexCoeff(iBias)
+     enddo
     
-!    write(2,*) UIndx, UArray
+!     write(2,*) UIndx, UArray
 
-    end subroutine
+     end subroutine
 !==========================================================================================
-    subroutine UmbrellaHistAdd
-    implicit none
+     subroutine UmbrellaHistAdd
+     implicit none
 
-    curUIndx = getBiasIndex()
-    UHist(curUIndx) = UHist(curUIndx) + 1E0_dp
+     curUIndx = getBiasIndex()
+     UHist(curUIndx) = UHist(curUIndx) + 1E0_dp
  
-    end subroutine
+     end subroutine
 !==========================================================================================
-    subroutine GetUmbrellaBias_Disp(disp, biasDiff)
-    use CoordinateTypes
-    use SimParameters, only: NPART, NPART_new
-    implicit none
-    type(Displacement), intent(in) :: disp(:)
-    real(dp), intent(out) :: biasDiff
-    integer :: iDispFunc, newUIndx, sizeDisp
-    real(dp) :: biasOld, biasNew
+     subroutine GetUmbrellaBias_Disp(disp, biasDiff, rejMove)
+     use CoordinateTypes
+     use SimParameters, only: NPART, NPART_new
+     implicit none
+     logical, intent(out) :: rejMove
+     type(Displacement), intent(in) :: disp(:)
+     real(dp), intent(out) :: biasDiff
+     integer :: iDispFunc, newUIndx, sizeDisp
+     real(dp) :: biasOld, biasNew
 
-    if(nDispFunc .eq. 0) then
-      biasDiff = 0E0_dp
-      return
-    endif
+     if(nDispFunc .eq. 0) then
+       biasDiff = 0E0_dp
+       return
+     endif
 
-    NPART_New = NPART
+     NPART_New = NPART
+     rejMove = .false.
+     curUIndx = getBiasIndex()
+     biasOld = UBias(curUIndx)
+     sizeDisp = size(disp)
+     do iDispFunc = 1, nDispFunc
+       call DispUmbrella(iDispFunc) % func(disp(1:sizeDisp))
+     enddo
 
-    curUIndx = getBiasIndex()
-    biasOld = UBias(curUIndx)
-    sizeDisp = size(disp)
-    do iDispFunc = 1, nDispFunc
-      call DispUmbrella(iDispFunc) % func(disp(1:sizeDisp))
-    enddo
-
-    newUIndx = getNewBiasIndex()
-    biasNew = UBias(newUIndx)
-    biasDiff = biasNew - biasOld
-!    if(biasDiff .ne. 0d0) then
-!      write(2,*) curUIndx, newUIndx, biasOld, biasNew, biasDiff
-!    endif
+     call getNewBiasIndex(newUIndx, rejMove)
+     if(rejMove) then
+       return
+     endif
+     biasNew = UBias(newUIndx)
+     biasDiff = biasNew - biasOld
+!     if(biasDiff .ne. 0d0) then
+!       write(2,*) curUIndx, newUIndx, biasOld, biasNew, biasDiff
+!     endif
  
-    end subroutine
+     end subroutine
+!==========================================================================================
+     subroutine GetUmbrellaBias_SwapIn(biasDiff)
+     use CoordinateTypes
+     use SimParameters, only: NPART, NPART_new
+     implicit none
+!     type(Displacement), intent(in) :: disp(:)
+     real(dp), intent(out) :: biasDiff
+     integer :: iDispFunc, newUIndx, sizeDisp
+     real(dp) :: biasOld, biasNew
+
+     if(nDispFunc .eq. 0) then
+       biasDiff = 0E0_dp
+       return
+     endif
+
+     curUIndx = getBiasIndex()
+     biasOld = UBias(curUIndx)
+!     if(biasDiff .ne. 0d0) then
+!       write(2,*) curUIndx, newUIndx, biasOld, biasNew, biasDiff
+!     endif
+ 
+     end subroutine
 !==========================================================================================
     subroutine OutputUmbrellaHist
     implicit none

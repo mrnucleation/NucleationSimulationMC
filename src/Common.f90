@@ -79,16 +79,6 @@
       module ParallelVar
         integer myid, p_size, ierror, tag, nout
       end module         
-!======================================================
-      module IonBias
-      use VarPrecision
-        logical, parameter :: biasIon = .false.
-        integer, parameter :: rBins = 300
-        real(dp) :: ionDistance, dR
-        real(dp),allocatable :: NR_Hist(:,:), NR_Bias(:,:)  
-        
-      end module         
-
 !==============================================================
       module Coords
       use CoordinateTypes

@@ -26,7 +26,7 @@
       use ParallelVar
       use SimParameters
       use VarPrecision
-      use WHAM_Module
+      use WHAM_Functions
       use UmbrellaSamplingNew, only: useUmbrella, UmbrellaHistAdd, OutputUmbrellaHist
       implicit none
 
@@ -116,8 +116,9 @@
       atmpRot = 1E-30
 !  Counter for the number of moves rejected due to the cluster criteria
       NeighRej = 0E0
-      NHist = 0E0
-      E_Avg = 0E0      
+!      NHist = 0E0
+!      NHist = 0E0
+!      E_Avg = 0E0      
 !      Detailed Counters for the swap move
       acptSwapIn = 0E0
       acptSwapOut = 0E0
@@ -256,7 +257,10 @@
       write(nout,*) "------------------------------------------------"
       write(nout,*) "Cycle # ", "Particles ",  "Energy ", "Acceptance Rates"
 !"
-!      call DummyAnalysisTest2
+!      Collect the initial values for the analysis variables. 
+      if(useAnalysis) then
+        call PostMoveAnalysis
+      endif  
       flush(35)
       call CPU_TIME(TimeStart)      
 !--------------------------------------------------------------------------------------------------      
@@ -277,11 +281,11 @@
            endif  
            if(useWham) then
              if(mod(iCycle, intervalWham) .gt. equilInterval) then
-               call NHistAdd(E_T) 
+!               call NHistAdd(E_T) 
                call UmbrellaHistAdd
              endif
            else
-             call NHistAdd(E_T)
+!             call NHistAdd(E_T)
              call UmbrellaHistAdd 
            endif
          enddo
@@ -432,10 +436,10 @@
       write(nout,*) "Waiting for all processes to finish..."
       call MPI_BARRIER(MPI_COMM_WORLD, ierror) 
       write(nout,*) "Writting output..."      
-      call CollapseN  
-      if(myid .eq. 0) then
-        call N_HistOutput    
-      endif
+!      call CollapseN  
+!      if(myid .eq. 0) then
+!        call N_HistOutput    
+!      endif
 !      write(nout,*) "Histogram Outputted...."
 !     Output Final Configuration to a visualization file that can be opened by a program like VMD or Avagadro.    
 
