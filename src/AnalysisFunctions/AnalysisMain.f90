@@ -228,5 +228,16 @@
 
      end subroutine
 !======================================================
+     subroutine DummyFunction
+     use ParallelVar
+     implicit none
+     integer :: iOutput
+
+     do iOutput = 1, nOutput
+       call outputArray(iOutput)%func
+     enddo
+
+     end subroutine
+!======================================================
      end module
 !======================================================

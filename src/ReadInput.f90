@@ -301,10 +301,11 @@
       integer i,j,h,AllocateStatus,nParam
       integer :: nAtomsMax, nBondsMax,nAnglesMax    
       integer :: nTorsMax, nImpropMax, nNonBondMax
+      integer :: indx1, indx2
       character(len=15) :: labelField 
       character(len=10) :: mixingRule
       character(len=10) :: unitsEnergy,unitsDistance,unitsAngular
-      real(dp) :: convEng, convDist, convAng
+      real(dp) :: convEng, convDist, convAng, curVal
       procedure (MixRule), pointer :: ep_func => null()
       procedure (MixRule), pointer :: sig_func => null()      
       procedure (MixRule), pointer :: rmin_func => null()   
@@ -439,12 +440,14 @@
       end select
 
       if(custom) then           
-        do i = 1,nAtomTypes
-          read(55,*) (r_min_tab(i,j), j=1,nAtomTypes)
+        do i = 1,nint(nAtomTypes*(nAtomTypes+1)*0.5d0)
+          read(55,*) indx1, indx2, curVal 
           if(echoInput) then
-            write(35,*) (r_min_tab(i,j), j=1,nAtomTypes)
+            write(35,*) indx1, indx2, curVal
             flush(35)
            endif
+           r_min_tab(indx1, indx2) = curVal
+           r_min_tab(indx2, indx1) = curVal
         enddo
         do i = 1,nAtomTypes
           do j = 1,nAtomTypes

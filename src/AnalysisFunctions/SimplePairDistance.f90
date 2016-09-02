@@ -16,7 +16,7 @@
         public :: Initialize_DistPair
         public :: SetPairVariables
         public :: CalcDistPairs
-        public :: CalcDistPairs_New
+        public :: CalcDistPairs_New, CalcDistPairs_Swap
 
         contains
      !--------------------------------------------------------------------------------
@@ -141,6 +141,18 @@
             r = rx*rx + ry*ry + rz*rz
             r = sqrt(r)
             miscCoord_New(pairArrayIndx(iDistPair)) = r       
+          enddo
+
+
+        end subroutine
+     !--------------------------------------------------------------------------------
+        subroutine CalcDistPairs_Swap
+          use MiscelaniousVars
+          implicit none 
+          integer :: iDistPair
+  
+          do iDistPair = 1, nDistPair
+            miscCoord_New(pairArrayIndx(iDistPair)) = miscCoord(pairArrayIndx(iDistPair)) 
           enddo
 
 

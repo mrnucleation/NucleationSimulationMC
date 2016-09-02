@@ -41,6 +41,7 @@
       use NeighborTable
       use SwapBoundary
       use PairStorage, only: UpdateDistArray
+      use UmbrellaSamplingNew, only: GetUmbrellaBias_SwapIn
       implicit none
       
       real(dp), intent(inout) :: E_T      
@@ -51,11 +52,10 @@
       integer :: i, iType, nTargType, nTargMol, nTargIndx, nTarget
       integer :: nType, nIndx, bIndx
       integer :: atmType1, atmType2, nSel
-      integer :: nMolCanidates
       real(dp) :: grnd
       real(dp) :: dx, dy, dz, r
       real(dp) :: genProbRatio, rosenRatio
-      real(dp) :: E_Inter, E_Intra, bias_Diff
+      real(dp) :: E_Inter, E_Intra, biasDiff
       real(dp) :: biasOld, biasNew
       real(dp) :: PairList(1:maxMol)
       real(dp) :: dETable(1:maxMol)
@@ -89,6 +89,7 @@
          return
       endif
 
+
       atmp_x = atmp_x + 1d0
       atmpSwapIn(nType) = atmpSwapIn(nType) + 1d0
       atmpInSize(NTotal) = atmpInSize(NTotal) + 1d0
@@ -109,7 +110,6 @@
         call StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)   
       case default
         write(*,*) "Error! EBias can not regrow a molecule of regrow type:", regrowType(nType)
-!"
         stop
       end select        
       if(rejMove) then
@@ -119,6 +119,13 @@
       endif      
 
 !      call DEBUG_Output_NewConfig
+
+!     Calculate the umbrella sampling bias.
+      NPART_new = NPART + NDiff
+      call GetUmbrellaBias_SwapIn(biasDiff, rejMove)
+      if(rejMove) then
+        return
+      endif
 
 !      Perform a check to see if the cluster criteria is statisfied or not.
       if(.not. distCriteria) then
@@ -143,46 +150,24 @@
         ovrlapRej = ovrlapRej + 1d0
         return
       endif
-  
-      biasArray = 0d0
-      NDiff = 0
-      NDiff(nType) = +1
-      bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
-      biasOld = NBias(bIndx)      
-      do iType = 1, nMolTypes
-        NDiff = 0
-        NDiff(nType) = +1
-        NDiff(iType) = NDiff(iType) - 1       
-        if(NPART(iType) + NDiff(iType) .lt. NMIN(iType)) cycle
-        bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
-        biasNew = NBias(bIndx)      
-        bias_diff = biasNew - biasOld
-        biasArray(iType) = bias_diff
-      enddo   
+ 
 
 !     Determine the reverse probability of this move.
       if(distCriteria) then
         call Insert_NewNeiETable_Distance(nType, PairList, dETable,  newNeiETable)  
       else
-        call Insert_NewNeiETable(nType, PairList, dETable, biasArray, newNeiETable)      
+        call Insert_NewNeiETable(nType, PairList, dETable, newNeiETable)      
       endif
       call EBias_Insert_ReverseProbTarget(nTarget, nType, newNeiETable, ProbTarg_Out)
-      call EBias_Insert_ReverseProbSel(nTarget, nType, dETable, biasArray, ProbSel_Out)
+      call EBias_Insert_ReverseProbSel(nTarget, nType, dETable, ProbSel_Out)
       
-!     Calculate the umbrella sampling bias.
-      NDiff = 0 
-      NDiff(nType) = 1
-      bIndx = getBiasIndex(NPart,NMAX)
-      biasOld = NBias(bIndx)
-      bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
-      biasNew = NBias(bIndx)      
-      bias_diff = biasNew - biasOld
+
 
 !     Calculate acceptance probability and determine if the move is accepted or not          
-      genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol * dble(nMolTypes) * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
-!      genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol * dble(nMolCanidates) * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
+      genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol  * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
+!      genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol  * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
 
-      Boltzterm = exp(-beta*E_Inter + bias_diff)
+      Boltzterm = exp(-beta*E_Inter + biasDiff)
 
       if( genProbRatio * Boltzterm .gt. grnd() ) then
          acptSwapIn(nType) = acptSwapIn(nType) + 1d0        
@@ -232,6 +217,7 @@
       use NeighborTable
       use SwapBoundary
       use PairStorage, only: UpdateDistArray_SwapOut
+      use UmbrellaSamplingNew, only: GetUmbrellaBias_SwapOut
       implicit none
       
       real(dp), intent(inout) :: E_T      
@@ -244,7 +230,7 @@
       integer :: nMolCanidates
       real(dp) :: grnd
       real(dp) :: genProbRatio
-      real(dp) :: bias_diff       
+      real(dp) :: biasDiff      
       real(dp) :: biasOld, biasNew      
       real(dp) :: E_Inter, E_Intra
       real(dp) :: dETable(1:maxMol)
@@ -258,28 +244,13 @@
         return
       endif
       
-!     Pick a Random Target Particle to Delete   
-      biasArray = 0d0 
-      bIndx = getBiasIndex(NPart,NMAX)
-      biasOld = NBias(bIndx)
-      do iType = 1, nMolTypes
-        NDiff = 0
-        NDiff(iType) = -1
-        if(NPART(iType) + NDiff(iType) .lt. NMIN(iType)) cycle
-        bIndx = getNewBiasIndex(NPart,NMAX, NDiff)
-        biasNew = NBias(bIndx)      
-        bias_diff = biasNew - biasOld
-        biasArray(iType) = bias_diff
-      enddo      
+!     Pick a Random Particle Type
+      if(nMolTypes .eq. 1) then
+        nType = 1
+      else
+        nType = floor(nMolTypes*grnd() + 1d0)
+      endif
 
-      call Create_NeiETable(biasArray)
-      call EBias_Remove_ChooseTarget(nTarget, nTargType, nTargMol, ProbTargOut)
-      call EBias_Remove_ChooseNeighbor(nTarget, biasArray, nSel, ProbSel)
-      nType = typeList(nSel)
-      nMol = subIndxList(nSel)
-      atmp_x = atmp_x + 1d0
-      atmpSwapOut(nType) = atmpSwapOut(nType) + 1d0     
- 
       NDiff = 0
       NDiff(nType) = -1
       rejMove = boundaryFunction(NPART, NDiff)
@@ -287,7 +258,15 @@
          boundaryRej = boundaryRej + 1d0
          totalRej = totalRej + 1d0
          return
-      endif      
+      endif   
+
+      call Create_NeiETable(nType)
+      call EBias_Remove_ChooseTarget(nTarget, nTargType, nTargMol, ProbTargOut)
+      call EBias_Remove_ChooseNeighbor(nTarget, nType, nSel, ProbSel)
+!      nType = typeList(nSel)
+      nMol = subIndxList(nSel)
+      atmp_x = atmp_x + 1d0
+      atmpSwapOut(nType) = atmpSwapOut(nType) + 1d0     
 
 !     Check to see that the appropriate atoms are within the insertion distance
 !     in order to ensure the move is reversible. If not reject the move since
@@ -302,6 +281,15 @@
           totalRej_out = totalRej_out + 1d0
           return
         endif
+      endif
+
+!     Calculate the umbrella sampling bias.
+!      NDiff = 0 
+!      NDiff(nType) = -1
+      NPART_new = NPART + NDiff
+      call GetUmbrellaBias_SwapOut(biasDiff, rejMove)
+      if(rejMove) then
+        return
       endif
         
 !     Check to see if the deletion of the particle will break the cluster
@@ -332,15 +320,11 @@
       call SwapOut_ECalc(E_Inter, E_Intra, nType, nMol, dETable)
       call EBias_Remove_ReverseProbTarget(nTarget, nSel, nType, dETable, ProbTargIn)
 
-      genProbRatio = (ProbTargIn * rosenRatio) / (ProbTargOut * ProbSel * dble(nMolTypes) * avbmc_vol * gas_dens(nType))
-!      genProbRatio = (ProbTargIn * rosenRatio) / (ProbTargOut * ProbSel * dble(nMolCanidates) * avbmc_vol * gas_dens(nType))
-
-
-      bias_diff = biasArray(nType)
-
+!      genProbRatio = (ProbTargIn * rosenRatio) / (ProbTargOut * ProbSel * dble(nMolTypes) * avbmc_vol * gas_dens(nType))
+      genProbRatio = (ProbTargIn * rosenRatio) / (ProbTargOut * ProbSel * avbmc_vol * gas_dens(nType))
 
 !      Calculate Acceptance and determine if the move is accepted or not         
-      if( genProbRatio * exp(-beta*E_Inter + bias_diff) .gt. grnd() ) then
+      if( genProbRatio * exp(-beta*E_Inter + biasDiff) .gt. grnd() ) then
          acptSwapOut(nType) = acptSwapOut(nType) + 1d0      
          molArray(nType)%mol(nMol)%x(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%x(1:nAtoms(nType))
          molArray(nType)%mol(nMol)%y(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%y(1:nAtoms(nType))
@@ -461,7 +445,7 @@
       
       end subroutine
 !=================================================================================    
-      subroutine EBias_Insert_ReverseProbSel(nTarget, nType, dE, biasArray, ProbRev)
+      subroutine EBias_Insert_ReverseProbSel(nTarget, nType, dE, ProbRev)
       use SimParameters  
       use Coords
       use EnergyTables
@@ -470,38 +454,30 @@
       integer, intent(in) :: nTarget, nType
       real(dp), intent(in) :: dE(:)
       real(dp), intent(out) :: ProbRev
-      real(dp) :: biasArray(:)
       
-      integer :: i, iType, nIndx, bIndx
+      integer :: iMol, iType, iIndx, nIndx, bIndx
       integer :: NDiff(1:nMolTypes)
       real(dp) :: norm, bias_diff, biasOld, biasNew       
-
-
-
       
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
       norm = 0d0
-      do i = 1, maxMol
-        if(NeighborList(nTarget,i)) then
-          iType = typeList(i)        
-          norm = norm + exp(beta*(ETable(i)+dE(i)-dE(nIndx)) + biasArray(iType))
-!          norm = norm + exp(beta*(ETable(i)+dE(i)-dE(nIndx)))
+      do iMol = 1, NPART(nType)
+        iIndx = molArray(nType)%mol(iMol)%indx
+        if( NeighborList(iIndx,nTarget) ) then
+          norm = norm + exp(beta*(ETable(iIndx)+dE(iIndx)-dE(nIndx)))
         endif
       enddo
-      norm = norm + exp(biasArray(nType))
-      ProbRev = exp(biasArray(nType))/norm
-
-!      norm = norm + 1d0
-!      ProbRev = 1d0/norm      
+      norm = norm + 1E0
+      ProbRev = 1E0/norm
       
       end subroutine
 !=================================================================================    
-      subroutine EBias_Remove_ChooseTarget(nTarget, nType, nMol, ProbTarget)
+      subroutine EBias_Remove_ChooseTarget(nTarget, nTargType, nTargMol, ProbTarget)
       use SimParameters  
       use Coords
       use EnergyTables
       implicit none
-      integer, intent(out) :: nTarget, nType, nMol
+      integer, intent(out) :: nTarget, nTargType, nTargMol
       real(dp), intent(out) :: ProbTarget
       
       integer :: i
@@ -526,40 +502,42 @@
         sumInt = sumInt + ProbTable(nTarget)
       enddo
       
-      nType = typeList(nTarget) 
+      nTargType = typeList(nTarget) 
       ProbTarget = ProbTable(nTarget)/norm
       
-      nMol = 0
-      do i = 1, nType-1
-        nMol = nMol + NMAX(i)
+      nTargMol = 0
+      do i = 1, nTargType-1
+        nTargMol = nTargMol + NMAX(i)
       enddo
-      nMol = nTarget - nMol
+      nTargMol = nTarget - nTargMol
       
       end subroutine
 !=================================================================================    
-      subroutine EBias_Remove_ChooseNeighbor(nTarget, biasArray, nSel, ProbTarget)
+      subroutine EBias_Remove_ChooseNeighbor(nTarget, nType, nSel, ProbTarget)
       use SimParameters  
       use Coords
       use EnergyTables
       implicit none
-      integer, intent(in) :: nTarget
-      real(dp), intent(in) :: biasArray(:)       
+      integer, intent(in) :: nTarget, nType
       integer, intent(out) ::  nSel
       real(dp), intent(out) :: ProbTarget
       
-      integer :: i, iType
+      integer :: iIndx, iType, iMol
       real(dp) :: ProbTable(1:maxMol)
       real(dp) :: grnd, norm       
       real(dp) :: ranNum, sumInt   
 
       
       ProbTable = 0d0
-      do i = 1, maxMol
-        if(NeighborList(nTarget,i)) then
-          iType = typeList(i)
-          ProbTable(i) = exp(beta * ETable(i) + biasArray(iType))
+!      iIndx = molArray(nType)%mol(1)%indx
+      do iMol = 1, NPART(nType)
+        iIndx = molArray(nType)%mol(iMol)%indx
+        if(NeighborList(iIndx,nTarget)) then
+!          iType = typeList(i)
+          ProbTable(iIndx) = exp(beta * ETable(iIndx))
 !          ProbTable(i) = exp(beta * ETable(i))
         endif
+!        iIndx = iIndx + 1
       enddo
 
       norm = sum(ProbTable)

@@ -49,7 +49,8 @@
 
     public :: AllocateUmbrellaVariables, ReadInput_Umbrella, AllocateUmbrellaArray, UmbrellaHistAdd
     public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp, findVarValues
-    public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat
+    public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat 
+    public :: GetUmbrellaBias_SwapIn, GetUmbrellaBias_SwapOut
 !==========================================================================================
     contains
 !==========================================================================================
@@ -67,8 +68,8 @@
     allocate( outputFormat(1:nBiasVariables), STAT = AllocateStatus )
 
     allocate( DispUmbrella(1:nDispFunc), STAT = AllocateStatus )
-!    allocate( SwapInUmbrella(1:nSwapInFunc), STAT = AllocateStatus )
-!    allocate( SwapOutUmbrella(1:nSwapOutFunc), STAT = AllocateStatus )
+    allocate( SwapInUmbrella(1:nSwapInFunc), STAT = AllocateStatus )
+    allocate( SwapOutUmbrella(1:nSwapOutFunc), STAT = AllocateStatus )
 
     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
     end subroutine
@@ -117,8 +118,8 @@
         read(inputLines(iUmbrella), *) umbrellaName
         select case( trim(adjustl(umbrellaName)) )
         case("clustersize")
-          nSwapInFunc = nSwapInFunc + 1
-          nSwapOutFunc = nSwapOutFunc + 1
+!          nSwapInFunc = nSwapInFunc + 1
+!          nSwapOutFunc = nSwapOutFunc + 1
         case("pairdist")
           nDispFunc = nDispFunc + 1
           nSwapInFunc = nSwapInFunc + 1
@@ -191,8 +192,10 @@
 
           iDisp = iDisp + 1
           DispUmbrella(iDisp) % func => CalcDistPairs_New
-!          iSwapIn = iSwapIn + 1
-!          iSwapOut = iSwapOut + 1
+          iSwapIn = iSwapIn + 1
+          SwapInUmbrella(iSwapIn) % func => CalcDistPairs_Swap
+          iSwapOut = iSwapOut + 1
+          SwapOutUmbrella(iSwapOut) % func => CalcDistPairs_Swap
 
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
@@ -201,13 +204,14 @@
         end select
       enddo
 
-      call AllocateUmbrellaArray
       deallocate(inputLines)
+      call AllocateUmbrellaArray
       call ReadUmbrellaInput
 
     end subroutine
 !==========================================================================================
     subroutine AllocateUmbrellaArray
+    use ParallelVar
     implicit none
     integer :: i, j
     integer :: AllocateStatus
@@ -223,20 +227,18 @@
      enddo      
 
 
-     umbrellaLimit = 0
+     umbrellaLimit = 1
      do i = 1, nBiasVariables 
        umbrellaLimit = umbrellaLimit + indexCoeff(i) * (VarMax(i) - VarMin(i))
      enddo
 
-        
+     write(nout,*) "Number of Umbrella Bins:", umbrellaLimit
+       
      allocate(UBias(1:umbrellaLimit), STAT = AllocateStatus)
      allocate(UHist(1:umbrellaLimit), STAT = AllocateStatus)
 
      UBias = 0E0_dp
      UHist = 0E0_dp
-     
-
-
       
      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
      end subroutine
@@ -263,7 +265,6 @@
         cycle
       endif
       UBias(biasIndx) = curBias
-!      write(2,*) biasIndx, curBias
     enddo
 
     deallocate(varValue)
@@ -306,8 +307,10 @@
      do iBias = 1, nBiasVariables
        if(biasvarnew(iBias) % varType .eq. 1) then
          binIndx(iBias) = floor( biasvarnew(iBias)%intVar / UBinSize(iBias) )
+         write(2,*) iBias, biasvarnew(iBias)%intVar 
        elseif(biasvar(iBias) % varType .eq. 2) then
          binIndx(iBias) = floor( biasvarnew(iBias)%realVar / UBinSize(iBias) )
+         write(2,*) iBias, biasvarnew(iBias)%realVar 
        endif
        if(binIndx(iBias) .lt. varMin(iBias) ) then
          rejMove = .true.
@@ -317,8 +320,9 @@
          rejMove = .true.
          return
        endif
-     enddo
 
+     enddo
+     write(2,*) 
 
      biasIndx = 1
      do iBias = 1, nBiasVariables
@@ -329,7 +333,7 @@
        return
      endif
 
-    end subroutine
+     end subroutine
 !==========================================================================
      subroutine getUIndexArray(varArray, biasIndx, stat) 
      real(dp), intent(in) :: varArray(:)
@@ -373,8 +377,6 @@
        remainder = remainder - curVal * indexCoeff(iBias)
      enddo
     
-!     write(2,*) UIndx, UArray
-
      end subroutine
 !==========================================================================================
      subroutine UmbrellaHistAdd
@@ -395,19 +397,17 @@
      integer :: iDispFunc, newUIndx, sizeDisp
      real(dp) :: biasOld, biasNew
 
-     if(nDispFunc .eq. 0) then
-       biasDiff = 0E0_dp
-       return
-     endif
-
      NPART_New = NPART
      rejMove = .false.
      curUIndx = getBiasIndex()
      biasOld = UBias(curUIndx)
-     sizeDisp = size(disp)
-     do iDispFunc = 1, nDispFunc
-       call DispUmbrella(iDispFunc) % func(disp(1:sizeDisp))
-     enddo
+     write(*,*) nDispFunc
+     if(nDispFunc .ne. 0) then
+       sizeDisp = size(disp)
+       do iDispFunc = 1, nDispFunc
+         call DispUmbrella(iDispFunc) % func(disp(1:sizeDisp))
+       enddo
+     endif
 
      call getNewBiasIndex(newUIndx, rejMove)
      if(rejMove) then
@@ -415,31 +415,64 @@
      endif
      biasNew = UBias(newUIndx)
      biasDiff = biasNew - biasOld
-!     if(biasDiff .ne. 0d0) then
-!       write(2,*) curUIndx, newUIndx, biasOld, biasNew, biasDiff
-!     endif
+
  
      end subroutine
 !==========================================================================================
-     subroutine GetUmbrellaBias_SwapIn(biasDiff)
-     use CoordinateTypes
+     subroutine GetUmbrellaBias_SwapIn(biasDiff, rejMove)
      use SimParameters, only: NPART, NPART_new
      implicit none
-!     type(Displacement), intent(in) :: disp(:)
+     logical, intent(out) :: rejMove
      real(dp), intent(out) :: biasDiff
-     integer :: iDispFunc, newUIndx, sizeDisp
+     integer :: iSwapFunc, newUIndx, sizeDisp
      real(dp) :: biasOld, biasNew
 
-     if(nDispFunc .eq. 0) then
-       biasDiff = 0E0_dp
-       return
-     endif
 
+ 
+     rejMove = .false.
      curUIndx = getBiasIndex()
      biasOld = UBias(curUIndx)
-!     if(biasDiff .ne. 0d0) then
-!       write(2,*) curUIndx, newUIndx, biasOld, biasNew, biasDiff
-!     endif
+     if(nSwapInFunc .ne. 0) then
+       do iSwapFunc = 1, nSwapInFunc
+         call SwapInUmbrella(iSwapFunc) % func
+       enddo
+     endif
+
+     call getNewBiasIndex(newUIndx, rejMove)
+     if(rejMove) then
+       return
+     endif
+     biasNew = UBias(newUIndx)
+     biasDiff = biasNew - biasOld
+ 
+!     write(2,*) biasNew, biasOld, biasDiff
+
+     end subroutine
+!==========================================================================================
+     subroutine GetUmbrellaBias_SwapOut(biasDiff, rejMove)
+     use SimParameters, only: NPART, NPART_new
+     implicit none
+     logical, intent(out) :: rejMove
+     real(dp), intent(out) :: biasDiff
+     integer :: iSwapFunc, newUIndx, sizeDisp
+     real(dp) :: biasOld, biasNew
+
+     rejMove = .false.
+     curUIndx = getBiasIndex()
+     biasOld = UBias(curUIndx)
+     if(nSwapOutFunc .ne. 0) then
+       do iSwapFunc = 1, nSwapInFunc
+         call SwapOutUmbrella(iSwapFunc) % func
+       enddo
+     endif
+
+     call getNewBiasIndex(newUIndx, rejMove)
+     if(rejMove) then
+       return
+     endif
+     biasNew = UBias(newUIndx)
+     biasDiff = biasNew - biasOld
+
  
      end subroutine
 !==========================================================================================

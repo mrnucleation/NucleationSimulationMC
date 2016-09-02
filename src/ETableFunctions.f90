@@ -1,39 +1,37 @@
       module NeighborTable
       contains
 !===================================================================
-      subroutine Create_NeiETable(biasArray)
+      subroutine Create_NeiETable(nType)
       use EnergyTables
       use SimParameters
       use Coords
       implicit none
-      real(dp), intent(in) :: biasArray(:)
-      integer :: i,j     
+      integer :: i,j, nType
       integer :: iType, jType, iLowIndx, jLowIndx
       real(dp) :: EMax, ETab
       real(dp) :: biasOld, biasNew
 
       NeiETable=0E0
-!      return
- 
       if(NTotal .eq. 1) return
       iLowIndx = 0      
+
+      jLowIndx = 0
+      do jType = 1, nType-1
+        jLowIndx = jLowIndx + NMAX(jType)
+      enddo
+
       do iType = 1,nMolTypes
         do i = ilowIndx+1, ilowIndx+NPART(iType)
           EMax = -huge(dp)
-          jLowIndx = 0
-          do jType = 1,nMolTypes
-            do j = jlowIndx+1,jlowIndx+NPART(jType)
-              if(NeighborList(j,i)) then
-                ETab = ETable(j) - biasArray(jType)/beta
-                if(ETab .gt. EMax) then
-                 EMax = ETab
-               endif
-              endif 
-            enddo
-            jLowIndx = jLowIndx + NMAX(jType)
-          enddo    
+          do j = jlowIndx+1, jlowIndx+NPART(nType)
+            if(NeighborList(j,i)) then
+              ETab = ETable(j)
+              if(ETab .gt. EMax) then
+                EMax = ETab
+              endif
+            endif 
+          enddo
           NeiETable(i) = EMax       
-!          write(*,*) i, NeiETable(i)
         enddo
         iLowIndx = iLowIndx + NMAX(iType)
       enddo
@@ -60,7 +58,7 @@
        
       end subroutine
 !=================================================================================
-      subroutine Insert_NewNeiETable(nType, PairList, dE, biasArray,newNeiTable)
+      subroutine Insert_NewNeiETable(nType, PairList, dE, newNeiTable)
       use EnergyTables
       use SimParameters
       use Coords
@@ -68,7 +66,7 @@
       integer, intent(in) :: nType
       real(dp), intent(in) :: PairList(:)
       real(dp), intent(inout) :: dE(:), newNeiTable(:)
-      real(dp), intent(in) :: biasArray(:)
+!      real(dp), intent(in) :: biasArray(:)
 
       integer :: i,j, nIndx
       integer :: iType, jType, iLowIndx, jLowIndx
@@ -80,50 +78,45 @@
 !      return
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
 
-!      write(2,*)
-!      write(2,*) "NPART:", NPART
+      jLowIndx = 0
+      do jType = 1, nType-1
+        jLowIndx = jLowIndx + NMAX(jType)
+      enddo
+
       iLowIndx = 0      
       do iType = 1,nMolTypes
         do i = ilowIndx+1,ilowIndx+NPART(iType)
           EMax = -huge(dp)
-          jLowIndx = 0
-          do jType = 1,nMolTypes
-            do j = jlowIndx+1,jlowIndx+NPART(jType)
-!              write(2,*) i,j
-              if(NeighborList(j,i)) then
-                ETab = ETable(j) + dE(j) - biasArray(jType)/beta
-                if(ETab .gt. EMax) then
-                  EMax = ETab
-                endif
-              endif 
-            enddo
-            jLowIndx = jLowIndx + NMAX(jType)
-          enddo    
-!          write(2,*) i, nIndx
-          if(PairList(i) .le. Eng_Critr(iType, nType)) then
-            ETab = ETable(nIndx) + dE(nIndx) - biasArray(nType)/beta
-            if(ETab .gt. EMax) then
-              EMax = ETab
-            endif		
-          endif
-          newNeiTable(i) = EMax       
-        enddo
+          do j = jlowIndx+1, jlowIndx+NPART(nType)
+            if(NeighborList(j,i)) then
+              ETab = ETable(j) + dE(j)
+              if(ETab .gt. EMax) then
+                EMax = ETab
+              endif
+            endif 
+          enddo
+        enddo    
+
+        if(PairList(i) .le. Eng_Critr(iType, nType)) then
+          ETab = ETable(nIndx) + dE(nIndx)
+          if(ETab .gt. EMax) then
+            EMax = ETab
+          endif		
+        endif
+        newNeiTable(i) = EMax       
         iLowIndx = iLowIndx + NMAX(iType)
       enddo
 
-      jLowIndx = 0
       EMax = -huge(dp)
       do jType = 1,nMolTypes
-        do j = jlowIndx+1,jlowIndx+NPART(jType)
-!	  write(2,*) nindx, j
+        do j = jlowIndx+1,jlowIndx+NPART(nType)
           if(PairList(j) .le. Eng_Critr(jType, nType)) then
-            ETab = ETable(j) + dE(j) - biasArray(jType)/beta
+            ETab = ETable(j) + dE(j)
             if(ETab .gt. EMax) then
               EMax = ETab
             endif
           endif 
         enddo
-        jLowIndx = jLowIndx + NMAX(jType)
       enddo    
       newNeiTable(nIndx) = EMax
      

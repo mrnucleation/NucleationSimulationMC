@@ -150,9 +150,7 @@
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
       nMove = floor(NTotal*grnd() + 1E0)
       call Get_MolIndex(nMove, NPart, nType, nMol)
-!      if(nType .ne. 1) then
-!        return
-!      endif
+
       atmp_x = atmp_x + 1E0
       atmpTrans(nType) = atmpTrans(nType) + 1E0
       nIndx = MolArray(nType)%mol(nMol)%indx
@@ -187,6 +185,7 @@
       endif
       
       biasDiff = 0E0
+      write(*,*) useUmbrella
       if(useUmbrella) then
         call GetUmbrellaBias_Disp(disp(1:nAtoms(nType)), biasDiff, rejMove)
         if(rejMove) then

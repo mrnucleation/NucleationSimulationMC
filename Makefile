@@ -8,19 +8,19 @@ FC := /opt/openmpi/bin/mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
-#OPTIMIZE_FLAGS := -O3
+OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
-DEBUGFLAGS := -g -fbacktrace -fcheck=all
+#DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS := -fbounds-check
 #DEBUGFLAGS := -check bounds
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
-#DEBUGFLAGS += -pg 
+DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
@@ -96,9 +96,9 @@ SRC_ENERGY := $(ESUB)/Bending_Functions.f90 \
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
-SRC_MAIN := $(SRC)/UmbrellaSampling_Version2.f90\
-            $(SRC)/WHAM_Version2.f90\
-            $(SRC)/BasicMovement.f90\
+SRC_BIAS := $(SRC)/UmbrellaSampling_Version2.f90\
+            $(SRC)/WHAM_Version2.f90
+SRC_MAIN := $(SRC)/BasicMovement.f90\
             $(SRC)/AnalysisFunctions.f90\
             $(SRC)/MCMove_Module.f90\
             $(SRC)/DebugFunctions.f90\
@@ -144,6 +144,9 @@ OBJ_MOD:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 
 OBJ_TEMP:=$(patsubst $(CBMC)/%.f, $(OBJ)/%.o, $(SRC_CBMC))
 OBJ_CBMC:=$(patsubst $(CBMC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
+
+OBJ_TEMP:=$(patsubst $(SRC)/%.f, $(OBJ)/%.o, $(SRC_BIAS))
+OBJ_BIAS:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 
 OBJ_TEMP:=$(patsubst $(SWAP)/%.f,$(OBJ)/%.o,$(SRC_SWAP))
 OBJ_SWAP:=$(patsubst $(SWAP)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
@@ -246,7 +249,7 @@ energyFunctions: $(OBJ_CRIT) $(OBJ_ENERGY)
 		@$(FC) $(COMPFLAGS)  $< -c
       
         
-generalNucleation:  $(OBJ_CRIT) $(OBJ_ANALYSIS) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_MOD) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
+generalNucleation:  $(OBJ_CRIT) $(OBJ_ANALYSIS) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_MOD) $(OBJ_BIAS) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
 		@echo =============================================
 		@echo     Compiling and Linking Source Files
 		@echo =============================================	
