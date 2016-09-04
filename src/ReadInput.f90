@@ -206,6 +206,12 @@
         read(54,*) (Eng_Critr(i,j),j=1,nMolTypes)
       enddo
       read(54,*)      
+      if(echoinput) then
+        write(35,*) "Energy Criteria"
+        do i=1,nMolTypes
+          write(35,*) (Eng_Critr(i,j),j=1,nMolTypes)
+        enddo
+      endif
       
       allocate(biasAlpha(1:nMolTypes,1:nMolTypes), stat = AllocateStatus)      
       do i = 1,nMolTypes

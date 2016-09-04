@@ -9,7 +9,7 @@ FC := /opt/openmpi/bin/mpif90
 #FC := gfortran
 CC := mpicc
 OPTIMIZE_FLAGS := -O3
-#OPTIMIZE_FLAGS += -xHost
+OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
@@ -19,8 +19,8 @@ OPTIMIZE_FLAGS := -O3
 #DEBUGFLAGS := -fbounds-check
 #DEBUGFLAGS := -check bounds
 #DEBUGFLAGS += -heap-arrays 1024
-#DEBUGFLAGS += -check bounds -traceback -g
-DEBUGFLAGS += -pg 
+#DEBUGFLAGS += -check all -traceback -g
+#DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
@@ -36,9 +36,7 @@ OBJ := $(CUR_DIR)/objects
 TRIAL := $(CUR_DIR)/Trials
 ESUB := $(CUR_DIR)/src/EnergyFunctions
 CBMC := $(CUR_DIR)/src/CBMC_Functions
-CLUSTSUB := $(CUR_DIR)/src/ClusterCriteriaFunctions
 SWAP := $(CUR_DIR)/src/SwapFunctions
-INPUTSUB := $(CUR_DIR)/src/InputFunctions
 ANALYSIS_SUB := $(CUR_DIR)/src/AnalysisFunctions
 
 #RUN_DIR := $(TRIAL)/Trial1_TransRot_Test
@@ -176,41 +174,28 @@ OBJ_ANALYSIS:=$(patsubst $(ANALYSIS_SUB)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 
-$(OBJ)/%.o: $(ESUB)/%.f 
-		@echo Creating $<
-		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 $(OBJ)/%.o: $(ESUB)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
-            
-$(OBJ)/%.o: $(CBMC)/%.f 
-		@echo Creating $<
-		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<		        
+        
 $(OBJ)/%.o: $(CBMC)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
             
-$(OBJ)/%.o: $(SWAP)/%.f 
+$(OBJ)/%.o: $(SRC_ANALYSIS)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 $(OBJ)/%.o: $(SWAP)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 
-$(OBJ)/%.o: $(ANALYSIS_SUB)/%.f 
-		@echo Creating $<
-		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 $(OBJ)/%.o: $(ANALYSIS_SUB)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
-            
-$(OBJ)/%.o: $(SRC)/%.f
-		@echo Creating $<
-		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
+
 $(OBJ)/%.o: $(SRC)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
-
 
 
 
@@ -220,7 +205,6 @@ $(OBJ)/%.o: $(SRC)/%.f90
 default: startUP createMods energyFunctions generalNucleation finale
 engOnly: startUP energyFunctions generalNucleation finale
 quick: startUP generalNucleation finale
-comp_run: startUP createMods generalNucleation run finale
 neat: startUP createMods generalNucleation removeObject finale
 clean: removeObjects removeExec finale    
     
@@ -239,6 +223,8 @@ createMods: $(MOD_SRC)
 		@$(FC) -c $(SRC)/Common.f90  $(COMPFLAGS) $(MODFLAGS) -o $(OBJ)/Common.o
 		@echo  -------- Compiling DistanceStorage.f90
 		@$(FC) -c $(SRC)/DistanceStorage.f90 $(COMPFLAGS) $(MODFLAGS) -o $(OBJ)/DistanceStorage.o		
+		@echo  -------- Compiling SwapBoundaries.f90
+		@$(FC) -c $(SWAP)/SwapBoundaries.f90 $(COMPFLAGS) $(MODFLAGS) -o $(OBJ)/SwapBoundaries.o	
 		@echo =============================================
 		@echo            Creating Object Files
 		@echo =============================================	
@@ -302,12 +288,5 @@ removeExec:
 # ====================================
 #        Dependencies
 # ====================================
-$(CUR_DIR)/neighbortable.mod: $(SRC)/ETableFunctions.f90 $(SRC)/ForceFieldFunctions.f90 $(SRC)/Common.f90
-$(CUR_DIR)/simparameters.mod: $(SRC)/Common.f90 $(SRC)/ForceFieldFunctions.f90
-$(CUR_DIR)/cbmc_module.mod: $(CBMC)/CBMC.f90
-$(SRC_SWAP): $(CUR_DIR)/neighbortable.mod
-$(CUR_DIR)/avbmc_module.mod: $(SRC_SWAP) $(SRC)/ETableFunctions.f90
-$(CUR_DIR)/simplemcmoves_module.mod: $(SRC)/BasicMovement.f90
-$(CUR_DIR)/movetypemodule.mod: $(SRC)/MCMove_Module.f90 $(CUR_DIR)/avbmc_module.mod $(CUR_DIR)/simplemcmoves_module.mod $(CUR_DIR)/cbmc_module.mod
-$(CUR_DIR)/energypointers.mod: $(ESUB)/EnergyPointers.f90 $(ESUB)/EnergyInterfaceFunctions.f90 $(CUR_DIR)/e_interface.mod
-$(CUR_DIR)/energypointers.mod: $(ESUB)/EnergyPointers.f90 $(ESUB)/EnergyInterfaceFunctions.f90 $(CUR_DIR)/e_interface.mod		
+$(OBJ)/UmbrellaSampling_Version2.o: $(SRC)/UmbrellaSampling_Version2.f90 $(SRC)/WHAM_Version2.f90
+$(OBJ)/WHAM_Version2.f90.o: $(SWAP)/SwapBoundaries.f90

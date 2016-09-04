@@ -204,7 +204,7 @@
           FreeEnergyEst(i) = FreeEnergyEst(i) - refBias
         enddo
         
-        call WHAM_MidSimOutput
+
       endif
 !     End of processor 0 only block
 
@@ -215,9 +215,13 @@
       call MPI_BCast(NewBias, arraySize, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierror) 
 
       do i = 1, umbrellaLimit
+!        write(*,*) i, UBias(i), Newbias(i)
         UBias(i) = NewBias(i)
         UHist(i) = 0E0
       enddo 
+      if(myid .eq. 0) then
+        call WHAM_MidSimOutput
+      endif
 
       nCurWhamItter = nCurWhamItter + 1
        

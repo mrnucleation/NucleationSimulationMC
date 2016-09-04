@@ -77,7 +77,7 @@
     subroutine ReadInput_Umbrella(fileUnit)
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx, CalcDistPairs_New
-      use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes
+      use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, echoInput
       use ParallelVar, only: nout
       implicit none
       integer, intent(in) :: fileUnit
@@ -108,6 +108,9 @@
       allocate( inputLines(1:nBiasVariables) )
       do iUmbrella = 1, nBiasVariables
         read(fileUnit, "(A)") inputLines(iUmbrella)
+        if(echoinput) then
+          write(35, "(A)") inputLines(iUmbrella)
+        endif 
       enddo
 
 
@@ -307,10 +310,8 @@
      do iBias = 1, nBiasVariables
        if(biasvarnew(iBias) % varType .eq. 1) then
          binIndx(iBias) = floor( biasvarnew(iBias)%intVar / UBinSize(iBias) )
-         write(2,*) iBias, biasvarnew(iBias)%intVar 
        elseif(biasvar(iBias) % varType .eq. 2) then
          binIndx(iBias) = floor( biasvarnew(iBias)%realVar / UBinSize(iBias) )
-         write(2,*) iBias, biasvarnew(iBias)%realVar 
        endif
        if(binIndx(iBias) .lt. varMin(iBias) ) then
          rejMove = .true.
@@ -322,7 +323,6 @@
        endif
 
      enddo
-     write(2,*) 
 
      biasIndx = 1
      do iBias = 1, nBiasVariables
@@ -401,7 +401,7 @@
      rejMove = .false.
      curUIndx = getBiasIndex()
      biasOld = UBias(curUIndx)
-     write(*,*) nDispFunc
+!     write(*,*) nDispFunc
      if(nDispFunc .ne. 0) then
        sizeDisp = size(disp)
        do iDispFunc = 1, nDispFunc

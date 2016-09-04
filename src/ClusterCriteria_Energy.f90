@@ -20,25 +20,26 @@
 
 
       rejMove = .false.
-      NeighborList=.false.
+      NeighborList = .false.
       if(NTotal .eq. 1) then
          return      
       endif
 
       
-      do iType=1,nMolTypes
-      do jType=iType,nMolTypes
-        do iMol = 1 ,NPART(iType)      
-        iIndx = MolArray(iType)%mol(iMol)%indx
-        do jMol = 1 ,NPART(jType) 
-          jIndx = MolArray(jType)%mol(jMol)%indx        
-          if(PairList(iIndx,jIndx) .le. Eng_Critr(iType,jType) ) then
-            NeighborList(iIndx,jIndx)=.true.         
-            NeighborList(jIndx,iIndx)=.true.          
-          endif
+      do iType = 1, nMolTypes
+        do jType = iType, nMolTypes
+          do iMol = 1, NPART(iType)      
+            iIndx = MolArray(iType)%mol(iMol)%indx
+            do jMol = 1, NPART(jType) 
+              jIndx = MolArray(jType)%mol(jMol)%indx        
+              if(PairList(iIndx,jIndx) .le. Eng_Critr(iType,jType) ) then
+                NeighborList(iIndx,jIndx)=.true.         
+                NeighborList(jIndx,iIndx)=.true.          
+              endif
+              write(*,*) PairList(iIndx,jIndx), Eng_Critr(iType,jType)
+            enddo
+          enddo
         enddo
-        enddo
-      enddo
       enddo
 
       cnt = 0
@@ -48,8 +49,16 @@
           cnt = cnt + 1
         endif         
       enddo
+
+
+      do i = 1, maxMol
+        if(isActive(i) .eqv. .true.) then
+          ClusterMember(i) = .true.
+          exit
+        endif         
+      enddo
       
-      ClusterMember(1)=.true.      
+!      ClusterMember(1)=.true.      
       do h=1,maxMol  
         do i=1,maxMol
           do j=1,maxMol
