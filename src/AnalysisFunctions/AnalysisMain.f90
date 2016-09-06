@@ -80,13 +80,14 @@
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx
       use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes
+      use Q6Functions, only: CalcQ6, Initialize_q6, useQ6, q6Dist
       implicit none
       integer, intent(in) :: fileUnit
       integer :: iAnalysis, AllocateStatus
       integer :: indxVar, nBins
       integer :: iRadial, iDistPair, iPostMove, iOutput
       integer :: type1, type2, mol1, mol2, atom1, atom2
-      real(dp) :: binSize
+      real(dp) :: binSize, realVar
       character(len=200), allocatable :: inputLines(:)
       character(len=30) :: labelField 
       character(len=30) :: analysisName, fileName
@@ -134,6 +135,13 @@
           if(nDistPair .eq. 1) then
             nPostMove = nPostMove + 1
           endif
+        case("q6")
+          if(useQ6 .eqv. .false.) then
+            useQ6 = .true.
+            nPostMove = nPostMove + 1
+          else
+            stop "ERROR! The Q6 analysis function has been defined more than once in the input script."
+          endif
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) analysisName
@@ -150,6 +158,7 @@
       endif 
       call Initialize_RadialDist
       call Initialize_DistPair
+      call Initialize_Q6
       call AllocateMiscArrays
 
       iOutPut = 0
@@ -182,6 +191,11 @@
             iPostMove = iPostMove + 1
             postMoveArray(iPostMove)%func => CalcDistPairs
           endif 
+        case("q6")
+          read(inputLines(iAnalysis), *)  analysisName, realVar
+          iPostMove = iPostMove + 1
+          q6Dist = realVar
+          postMoveArray(iPostMove)%func => CalcQ6
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) analysisName

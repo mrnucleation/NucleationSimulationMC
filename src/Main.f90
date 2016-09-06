@@ -282,11 +282,15 @@
            if(useWham) then
              if(mod(iCycle, intervalWham) .gt. equilInterval) then
 !               call NHistAdd(E_T) 
-               call UmbrellaHistAdd
+               if(useUmbrella) then
+                 call UmbrellaHistAdd
+               endif
              endif
            else
 !             call NHistAdd(E_T)
-             call UmbrellaHistAdd 
+             if(useUmbrella) then
+               call UmbrellaHistAdd 
+             endif
            endif
          enddo
 

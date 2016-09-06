@@ -8,16 +8,14 @@ FC := /opt/openmpi/bin/mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
-OPTIMIZE_FLAGS := -O3
-OPTIMIZE_FLAGS += -xHost
+#OPTIMIZE_FLAGS := -O3
+#OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
-OPTIMIZE_FLAGS += -no-prec-div
+#OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
-#DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
-#DEBUGFLAGS := -fbounds-check
-#DEBUGFLAGS := -check bounds
+DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
 #DEBUGFLAGS += -pg 
@@ -121,6 +119,7 @@ SRC_SWAP := $(SWAP)/SwapBoundaries.f90\
 SRC_ANALYSIS := $(ANALYSIS_SUB)/MiscelaniousVariables.f90\
             $(ANALYSIS_SUB)/SimplePairDistance.f90\
             $(ANALYSIS_SUB)/RadialDistributionFunction.f90\
+            $(ANALYSIS_SUB)/Q6Functions.f90\
             $(ANALYSIS_SUB)/AnalysisMain.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90

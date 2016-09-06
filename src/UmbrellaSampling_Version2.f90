@@ -399,6 +399,11 @@
      integer :: iDispFunc, newUIndx, sizeDisp
      real(dp) :: biasOld, biasNew
 
+     if(.not. useUmbrella) then
+       biasDiff = 0E0
+       return
+     endif
+
      NPART_New = NPART
      rejMove = .false.
      curUIndx = getBiasIndex()
@@ -429,7 +434,10 @@
      integer :: iSwapFunc, newUIndx, sizeDisp
      real(dp) :: biasOld, biasNew
 
-
+     if(.not. useUmbrella) then
+       biasDiff = 0E0
+       return
+     endif
  
      rejMove = .false.
      curUIndx = getBiasIndex()
@@ -458,6 +466,11 @@
      real(dp), intent(out) :: biasDiff
      integer :: iSwapFunc, newUIndx, sizeDisp
      real(dp) :: biasOld, biasNew
+
+     if(.not. useUmbrella) then
+       biasDiff = 0E0
+       return
+     endif
 
      rejMove = .false.
      curUIndx = getBiasIndex()

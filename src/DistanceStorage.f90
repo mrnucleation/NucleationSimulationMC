@@ -12,8 +12,10 @@
      !Primary distance/energy pair storage variable defintinio
     type DistArray
       logical :: storeRValue
+      logical :: storeRParts
       integer :: arrayIndx
       integer :: indx1, indx2
+      real(dp) :: rx, ry, rz
       real(dp) :: r_sq, r
       real(dp) :: E_Pair
     end type
@@ -21,6 +23,7 @@
      !Variable defintion for storing trial distances
     type DistArrayNew
       integer :: indx1, indx2
+      real(dp) :: rx, ry, rz
       real(dp) :: r_sq, r
       real(dp) :: E_Pair
     end type
@@ -63,6 +66,7 @@
           distStorage(cnt)%r = 0d0
           distStorage(cnt)%E_Pair = 0d0
           distStorage(cnt)%storeRValue = .false.
+          distStorage(cnt)%storeRParts = .false. 
           rPair(i,j)%p => distStorage(cnt)
           rPair(j,i)%p => distStorage(cnt)
         enddo
@@ -76,6 +80,8 @@
       distStorage(0)%indx2 = 0
       distStorage(0)%r_sq = 0d0
       distStorage(0)%E_Pair = 0d0
+      distStorage(0)%storeRValue = .false.
+      distStorage(0)%storeRParts = .false. 
       do i = 1, nTotalAtoms
         rPair(i,i)%p => distStorage(0)
       enddo 
@@ -96,7 +102,6 @@
      do i = 1, nMaxPairs
        distStorage(i) % storeRValue = .false.
      enddo 
-
 
      do iType = 1,nMolTypes
        do jType = iType, nMolTypes
@@ -151,6 +156,11 @@
                   rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
                   ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
                   rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom) 
+                  if( rPair(globIndx1, globIndx2) % p % storeRParts ) then
+                    rPair(globIndx1, globIndx2)% p % rx = rx
+                    rPair(globIndx1, globIndx2)% p % ry = ry
+                    rPair(globIndx1, globIndx2)% p % rz = rz
+                  endif
                   r_sq = rx*rx + ry*ry + rz*rz
                   if(r_sq .lt. rmin_ij) then
                     if(iIndx .ne. jIndx) then
@@ -231,6 +241,11 @@
               if( rPair(gloIndx1, gloIndx2)%p%storeRValue .eqv. .true.) then
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif
+              if( rPair(gloIndx1, gloIndx2)%p%storeRParts .eqv. .true.) then
+                newDist(nNewDist)%rx = rx
+                newDist(nNewDist)%ry = ry
+                newDist(nNewDist)%rz = rz
+              endif
             enddo
           enddo
         enddo
@@ -283,6 +298,11 @@
               if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif
+              if( rPair(gloIndx1, gloIndx2)%p%storeRParts ) then
+                newDist(nNewDist)%rx = rx
+                newDist(nNewDist)%ry = ry
+                newDist(nNewDist)%rz = rz
+              endif
             enddo
           enddo
         enddo
@@ -303,6 +323,11 @@
         distStorage(oldIndxArray(iPair))%E_Pair = newDist(iPair)%E_Pair
         if( distStorage(oldIndxArray(iPair))%storeRValue ) then
           distStorage(oldIndxArray(iPair))%r = newDist(iPair)%r
+        endif
+        if( distStorage(oldIndxArray(iPair))%storeRParts ) then
+          distStorage(oldIndxArray(iPair))%rx = newDist(iPair)%rx
+          distStorage(oldIndxArray(iPair))%ry = newDist(iPair)%ry
+          distStorage(oldIndxArray(iPair))%rz = newDist(iPair)%rz
         endif
       enddo
 
@@ -334,6 +359,11 @@
           rPair(gloIndx1, gloIndx3)%p%storeRValue = rPair(gloIndx2, gloIndx3)%p%storeRValue
           if( rPair(gloIndx2, gloIndx3)%p%storeRValue ) then
             rPair(gloIndx1, gloIndx3)%p%r = rPair(gloIndx2, gloIndx3)%p%r
+          endif
+          if( rPair(gloIndx1, gloIndx3)%p%storeRParts ) then
+            rPair(gloIndx1, gloIndx3)%p%rx = rPair(gloIndx2, gloIndx3)%p%rx
+            rPair(gloIndx1, gloIndx3)%p%ry = rPair(gloIndx2, gloIndx3)%p%ry
+            rPair(gloIndx1, gloIndx3)%p%rz = rPair(gloIndx2, gloIndx3)%p%rz
           endif
         enddo
       enddo

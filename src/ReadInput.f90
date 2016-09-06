@@ -57,6 +57,7 @@
       read(54,*) labelField, (NMIN(j),j=1,nMolTypes) 
       read(54,*) labelField, (NMAX(j),j=1,nMolTypes)
       maxMol = sum(NMAX)      
+!      allocate( PairList(1:maxMol), STAT = AllocateStatus )  
       do j=1,nMolTypes
         if(NMIN(j) .gt. NMAX(j) ) then
           write(nout,*) "ERROR! NMin is greater than NMax in input file"

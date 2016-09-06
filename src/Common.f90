@@ -93,9 +93,10 @@
       
       logical, allocatable :: NeighborList(:,:)
       integer, allocatable :: NumNei(:)   
-!      real(dp), allocatable :: PairTable(:,:)
       integer, allocatable :: typeList(:)
       integer, allocatable :: subIndxList(:)
+
+!      real(dp), allocatable :: PairList(:)
       
       type(SimpleMolCoords), allocatable :: gasConfig(:)
       
