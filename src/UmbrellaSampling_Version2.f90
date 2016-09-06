@@ -263,10 +263,12 @@
       if(inStat .lt. 0) then
         exit
       endif
+      write(*,*) varValue, curBias
       call getUIndexArray(varValue, biasIndx, inStat) 
       if(inStat .eq. 1) then
         cycle
       endif
+      write(*,*) biasIndx
       UBias(biasIndx) = curBias
     enddo
 
@@ -342,7 +344,7 @@
       
      stat = 0
      do iBias = 1, nBiasVariables
-       binIndx(iBias) = floor( varArray(iBias) / UBinSize(iBias) )
+       binIndx(iBias) = nint( varArray(iBias) / UBinSize(iBias) )
        if(binIndx(iBias) .gt. varMax(iBias)) then
          stat = 1
          return

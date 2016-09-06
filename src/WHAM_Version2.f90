@@ -33,6 +33,7 @@
         BiasStorage = 0E0
         nCurWhamItter = 1
 !        tolLimit = 1d-2
+        open(unit = 96, file="WHAM_TempHist.incomp")
         open(unit = 97, file="WHAM_Potential.incomp")
         open(unit = 98, file="WHAM_Mid_DG.incomp")
       endif
@@ -183,13 +184,13 @@
             if(ProbArray(i) .gt. 0E0) then
               FreeEnergyEst(i) = -log(ProbArray(i)/ProbArray(maxbin))
             endif
-            if(TempHist(i) .gt. 0E0) then
+            if(TempHist(i) .ge. 1E0) then
               NewBias(i) = UBias(i) - UBias(maxbin2) - log(TempHist(i)/TempHist(maxbin2))
             endif
           enddo
 !          maxBias = UBias(maxbin2)
           do i = 1, umbrellaLimit
-            if(TempHist(i) .le. 0E0) then
+            if(TempHist(i) .lt. 1E0) then
               NewBias(i) = UBias(i) - UBias(maxbin2) + log(TempHist(maxbin2))
             endif
           enddo
@@ -197,6 +198,7 @@
 !        Rescale the pontential such that the reference free energy is set to 0
         refBias = NewBias(refBin)
         do i = 1, umbrellaLimit
+          write(2,*) NewBias(i), NewBias(i) - refBias
           NewBias(i) = NewBias(i) - refBias
         enddo
         refBias = FreeEnergyEst(refBin)
@@ -242,6 +244,16 @@
 
       write(outputString, *) "(", (trim(outputFormat(j)), j =1,nBiasVariables), "2x, F18.10)"
 
+!        This block exports the calculated free energy to a file
+      rewind(96)
+      do i = 1, umbrellaLimit
+        if(HistStorage(i) .ne. 0E0 ) then
+          call findVarValues(i, UArray)
+          write(96, outputString) (UArray(j)*UBinSize(j),j=1,nBiasVariables), HistStorage(i)
+        endif
+      enddo
+      flush(96)
+
 !        This block exports the current umbrella bias
       rewind(97)
       do i = 1, umbrellaLimit
@@ -260,6 +272,8 @@
         endif
       enddo
       flush(98)
+
+
 
            
       end subroutine

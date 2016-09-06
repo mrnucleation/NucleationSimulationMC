@@ -36,7 +36,6 @@
                 NeighborList(iIndx,jIndx)=.true.         
                 NeighborList(jIndx,iIndx)=.true.          
               endif
-              write(*,*) PairList(iIndx,jIndx), Eng_Critr(iType,jType)
             enddo
           enddo
         enddo
