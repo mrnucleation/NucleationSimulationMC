@@ -83,7 +83,7 @@
         jLowIndx = jLowIndx + NMAX(jType)
       enddo
 
-      iLowIndx = 0      
+      iLowIndx = 0
       do iType = 1,nMolTypes
         do i = ilowIndx+1,ilowIndx+NPART(iType)
           EMax = -huge(dp)
@@ -95,15 +95,14 @@
               endif
             endif 
           enddo
+          if(PairList(i) .le. Eng_Critr(iType, nType)) then
+            ETab = ETable(nIndx) + dE(nIndx)
+            if(ETab .gt. EMax) then
+              EMax = ETab
+            endif		
+          endif
+          newNeiTable(i) = EMax  
         enddo    
-
-        if(PairList(i) .le. Eng_Critr(iType, nType)) then
-          ETab = ETable(nIndx) + dE(nIndx)
-          if(ETab .gt. EMax) then
-            EMax = ETab
-          endif		
-        endif
-        newNeiTable(i) = EMax       
         iLowIndx = iLowIndx + NMAX(iType)
       enddo
 

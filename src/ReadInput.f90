@@ -1,5 +1,6 @@
 !========================================================            
       subroutine ReadParameters(seed,outFreq_Traj,outFreq_Screen,outFreq_GCD,screenEcho)
+      use AVBMC_Module, only: swapProb
       use CBMC_Variables
       use Constants
       use Coords
@@ -221,6 +222,29 @@
             biasAlpha(i,j) = biasAlpha(i,j)/temperature
          enddo         
       enddo      
+
+      if(avbmcUsed .eqv. .true.) then
+        allocate(swapProb(1:nMolTypes), stat = AllocateStatus)
+        swapProb = 0E0
+        do i = 1,nMolTypes
+          if(NMIN(i) .ne. NMAX(i)) then
+            swapProb(i) = 1E0
+          endif
+        enddo
+        norm = sum(swapProb)
+        if(norm .eq. 0E0) then 
+          write(*,*) "ERROR! AVBMC has been used, but no swap moves can occur"
+          write(*,*) "since NMIN is equal to NMAX for all molecule types"
+          write(*,*) "NMIN:", NMIN
+          write(*,*) "NMAX:", NMAX
+          stop
+        endif
+        write(35,*) "Probability of swaping type i"
+        do i = 1,nMolTypes
+          swapProb(i) = swapProb(i)/norm
+          write(35,*) i, swapProb(i)
+        enddo
+      endif
 
 
       end subroutine

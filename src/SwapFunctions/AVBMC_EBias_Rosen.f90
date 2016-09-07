@@ -3,6 +3,8 @@
 !   move for cluster simulations. 
 !===================================================================================            
       module AVBMC_Module
+      use VarPrecision
+      real(dp), allocatable :: swapProb(:)
       contains
 !===================================================================================            
       subroutine AVBMC(E_T, acc_x, atmp_x)
@@ -77,7 +79,14 @@
       if(nMolTypes .eq. 1) then
         nType = 1
       else
-        nType = floor(nMolTypes*grnd() + 1d0)
+!        nType = floor(nMolTypes*grnd() + 1d0)
+        ranNum = grnd()
+        sumInt = swapProb(1)
+        nType = 1
+        do while(sumInt .lt. ranNum) 
+          nType = nType + 1
+          sumInt = sumInt + swapProb(nType)
+        enddo
       endif
 
       NDiff = 0
@@ -237,6 +246,7 @@
       real(dp) :: ProbTargOut, ProbSel, ProbTargIn
       real(dp) :: rx, ry, rz, dist, rosenRatio, gasNorm
       real(dp) :: biasArray(1:nMolTypes)
+      real(dp) :: ranNum, sumInt
       
       if(NTotal .eq. 1) then
         boundaryRej_out = boundaryRej_out + 1d0
@@ -248,7 +258,14 @@
       if(nMolTypes .eq. 1) then
         nType = 1
       else
-        nType = floor(nMolTypes*grnd() + 1d0)
+!        nType = floor(nMolTypes*grnd() + 1d0)
+        ranNum = grnd()
+        sumInt = swapProb(1)
+        nType = 1
+        do while(sumInt .lt. ranNum) 
+          nType = nType + 1
+          sumInt = sumInt + swapProb(nType)
+        enddo
       endif
 
       NDiff = 0
