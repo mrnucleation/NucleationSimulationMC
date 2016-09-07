@@ -263,12 +263,10 @@
       if(inStat .lt. 0) then
         exit
       endif
-      write(*,*) varValue, curBias
       call getUIndexArray(varValue, biasIndx, inStat) 
       if(inStat .eq. 1) then
         cycle
       endif
-      write(*,*) biasIndx
       UBias(biasIndx) = curBias
     enddo
 

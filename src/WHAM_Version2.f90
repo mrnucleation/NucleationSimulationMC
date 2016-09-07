@@ -198,7 +198,6 @@
 !        Rescale the pontential such that the reference free energy is set to 0
         refBias = NewBias(refBin)
         do i = 1, umbrellaLimit
-          write(2,*) NewBias(i), NewBias(i) - refBias
           NewBias(i) = NewBias(i) - refBias
         enddo
         refBias = FreeEnergyEst(refBin)
