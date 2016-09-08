@@ -14,6 +14,7 @@
       use AVBMC_RejectionVar
       use CBMC_Variables
       use Coords
+      use CoodinateFunctions
       use Constants
 !      use E_Interface
       use EnergyPointers, only: Detailed_ECalc
@@ -24,6 +25,7 @@
       use MiscelaniousVars, only: CollectHistograms
       use MoveTypeModule
       use ParallelVar
+      use SelfAdaptive
       use SimParameters
       use VarPrecision
       use WHAM_Functions
@@ -302,6 +304,12 @@
              call AdjustMax(acptRot(i), atmpRot(i), max_rot(i), rot_limit)   
            enddo
          endif      
+
+        if(totalDihed .gt. 0) then
+          if(mod(iCycle, 5000) .eq. 0 ) then
+            call UpdateDihedralProbabilites
+          endif
+        endif
 
 !         call TrajOutput(iCycle)
 !        Mid Simulation Output Block

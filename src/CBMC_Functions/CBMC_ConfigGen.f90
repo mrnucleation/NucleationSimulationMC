@@ -1,6 +1,7 @@
 !=======================================================================
       subroutine Ridgid_ConfigGen(nType)
       use Coords
+      use CoodinateFunctions
       use ForceField
       use Constants
       implicit none
@@ -63,6 +64,7 @@
 !=======================================================================
       subroutine Simple_ConfigGen(nType)
       use Coords
+      use CoodinateFunctions
       use ForceField
       use Constants
       use CBMC_Variables
@@ -115,7 +117,7 @@
         bendType = bendArray(nType,1)%bendType
         k_bend = bendData(bendType)%k_eq
         ang_eq = bendData(bendType)%ang_eq
-        call GenerateBendAngle(ang, k_bend, ang_eq, Prob)
+!        call GenerateBendAngle(ang, k_bend, ang_eq, Prob)
         call Generate_UnitCone(v1,r,ang,v2)
         newMol%x(atm3) = newMol%x(atm2) + v2%x 
         newMol%y(atm3) = newMol%y(atm2) + v2%y

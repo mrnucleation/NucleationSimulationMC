@@ -16,7 +16,7 @@
       use CBMC_Variables
       use ParallelVar
       implicit none
-      integer :: i,iType,iAtom,iBond
+      integer :: i, iBin, iType, iAtom, iBond
       integer :: AllocateStatus
       integer :: cnt,curAtom
       integer :: nTerminal, nLinker, nHub      
@@ -29,6 +29,8 @@
       case default
         continue
       end select
+
+
 
 !      Allocate the Topology arrays      
       allocate(topolArray(1:nMolTypes),STAT = AllocateStatus)
@@ -46,6 +48,7 @@
 !      a part of. This is done in order to classify each atom as either a Terminal atom(numBonds = 1),
 !      Linker Atom(numBonds = 2), or Hub Atom (numBonds >= 3).  This information is used to classify
 !      which type of CBMC algorithm will be required to regrow each molecule.
+      totalDihed = 0
       do iType = 1, nMolTypes
         do iAtom = 1, nAtoms(iType)
           cnt = 0
@@ -60,7 +63,7 @@
               cycle
             endif            
           enddo 
-          topolArray(iType)%atom(iAtom) = int(cnt, 2)
+          topolArray(iType)%atom(iAtom) = int(cnt, atomIntType)
         enddo
       enddo
 
@@ -77,6 +80,12 @@
              nLinker = nLinker + 1
            elseif(topolArray(iType)%atom(iAtom) .ge. 3) then
              nHub = nHub + 1
+!             Count the number of dihedral angles that are used.
+             if(topolArray(iType)%atom(iAtom) .eq. 3) then
+               totalDihed = totalDihed + 1
+             elseif(topolArray(iType)%atom(iAtom) .eq. 4) then
+               totalDihed = totalDihed + 2
+             endif
            endif
         enddo
         pathArray(iType)%nTerminal = nTerminal        
@@ -95,6 +104,7 @@
            endif
         endif        
 
+
 !        This block stores the atom indicies for each Terminal and Hub atom for quick access
 !        later in the program.
         nTerminal = 0
@@ -111,7 +121,44 @@
         enddo
       enddo
 
-!      
+
+      allocate(dihedData(1:totalDihed), STAT = AllocateStatus)
+      cnt = 0
+      write(35,*) "--------------------------------------------"
+      write(35,*) "Dihedral Angles"
+      do iType = 1, nMolTypes
+        do iAtom = 1, nAtoms(iType)
+          if(topolArray(iType)%atom(iAtom) .eq. 3) then
+            cnt = cnt + 1
+            dihedData(cnt)%molType = iType
+            dihedData(cnt)%hubIndx = iAtom
+            dihedData(cnt)%dihedIndx = 1
+            write(35,*) iType, iAtom, 1
+          elseif(topolArray(iType)%atom(iAtom) .eq. 4) then
+            cnt = cnt + 1
+            dihedData(cnt)%molType = iType
+            dihedData(cnt)%hubIndx = iAtom
+            dihedData(cnt)%dihedIndx = 1
+            write(35,*) iType, iAtom, 1
+            cnt = cnt + 1
+            dihedData(cnt)%molType = iType
+            dihedData(cnt)%hubIndx = iAtom
+            dihedData(cnt)%dihedIndx = 2
+            write(35,*) iType, iAtom, 2
+          endif
+        enddo
+      enddo
+      
+      do i = 1, totalDihed
+        dihedData(i)%Prob = 1E0 / nDihBins
+        dihedData(i)%Hist = 1E0
+        dihedData(i)%Integral(0) = dihedData(i)%Prob(0)
+        do iBin = 1, nDihBins
+          dihedData(i)%Integral(iBin) = dihedData(i)%Integral(iBin-1) + dihedData(i)%Prob(iBin)
+        enddo
+        dihedData(i)%accConst = nDihBins
+      enddo
+
       call CBMC_FindPathways
 
       usedByPath = 0

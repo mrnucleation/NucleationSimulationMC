@@ -104,6 +104,7 @@
     
 !==============================================================
       module CBMC_Variables
+      use Constants
       use VarPrecision
 
       type BondNumber
@@ -119,6 +120,18 @@
         integer(kind=atomIntType),allocatable :: pathMax(:)
       end type      
  
+      integer, parameter :: nDihBins = 500
+      real(dp), parameter :: diBinSize = two_pi/real(nDihBins, dp)
+      real(dp) :: startProb = 0.05E0
+      type DihedralAngle
+        integer :: molType, hubIndx, dihedIndx
+        integer :: startBin
+        real(dp) :: accConst
+        real(dp) :: Hist(0:nDihBins)
+        real(dp) :: Prob(0:nDihBins)
+        real(dp) :: Integral(0:nDihBins)
+        real(dp) :: MaxWeight(0:nDihBins)
+      end type  
  
       integer :: maxRosenTrial
       integer, allocatable :: nRosenTrials(:)      
@@ -130,6 +143,9 @@
       
       integer, allocatable :: usedByPath(:,:)
       integer, allocatable :: atomPathIndex(:,:)
+
+      integer :: totalDihed
+      type(DihedralAngle), allocatable :: dihedData(:)
       
       end module
 

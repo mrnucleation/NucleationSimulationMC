@@ -18,7 +18,7 @@ OPTIMIZE_FLAGS := -O3
 #DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
-#DEBUGFLAGS += -pg 
+DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
@@ -73,8 +73,8 @@ MOD_FILES := $(MODS)/acceptrates.mod\
 		$(MODS)/torsionalfunctions.mod\
 		$(MODS)/umbrellafunctions.mod\
 		$(MODS)/units.mod
-MOD_SRC := $(SRC)/Common.f90 \
- 		$(SRC)/VariablePrecision.f90\
+MOD_SRC := $(SRC)/VariablePrecision.f90\
+ 		$(SRC)/Common.f90 \
  		$(SRC)/Units.f90 \
  		$(SRC)/ForceFieldFunctions.f90\
  		$(SRC)/DistanceStorage.f90
@@ -105,6 +105,7 @@ SRC_MAIN := $(SRC)/BasicMovement.f90\
  		$(SRC)/UmbrellaSampling.f\
  		$(SRC)/AngleIntegration.f90\
  		$(SRC)/CoordinateFunctions.f90\
+ 		$(SRC)/SelfAdaptiveDistribution.f90\
 		$(SRC)/ReadInput.f90
 SRC_MAIN2:=  $(SRC)/ETableFunctions.f90
 SRC_CBMC := $(CBMC)/CBMC.f90\
@@ -113,8 +114,8 @@ SRC_CBMC := $(CBMC)/CBMC.f90\
             $(CBMC)/CBMC_Utility.f90\
             $(CBMC)/CBMC_PartialRegrowth.f90\
             $(CBMC)/CBMC_Rosen_AVBMC_ConfigGen.f90
-SRC_SWAP := $(SWAP)/SwapBoundaries.f90\
-            $(SWAP)/Exchange.f90\
+SRC_SWAP := $(SWAP)/Exchange.f90\
+            $(SWAP)/SwapBoundaries.f90\
             $(SWAP)/AVBMC_EBias_Rosen.f90
 SRC_ANALYSIS := $(ANALYSIS_SUB)/MiscelaniousVariables.f90\
             $(ANALYSIS_SUB)/SimplePairDistance.f90\
@@ -123,7 +124,6 @@ SRC_ANALYSIS := $(ANALYSIS_SUB)/MiscelaniousVariables.f90\
             $(ANALYSIS_SUB)/AnalysisMain.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90
-SRC_COMPLETE:= $(SRC_ENERGY) $(SRC_ANALYSIS) $(SRC_CBMC) $(SRC_MAIN2) $(SRC_SWAP) $(SRC_CRIT) $(MOD_SRC) $(SRC_MAIN) 
 # ====================================
 #        Object Files
 # ====================================
@@ -153,6 +153,8 @@ OBJ_CRIT:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 
 OBJ_TEMP:=$(patsubst $(ANALYSIS_SUB)/%.f,$(OBJ)/%.o,$(SRC_ANALYSIS))
 OBJ_ANALYSIS:=$(patsubst $(ANALYSIS_SUB)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
+
+OBJ_COMPLETE:= $(OBJ_MOD) $(OBJ_CRIT) $(OBJ_ANALYSIS) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_BIAS) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
 # ====================================
 #        Compile Commands
 # ====================================
@@ -201,7 +203,8 @@ $(OBJ)/%.o: $(SRC)/%.f90
 # ====================================
 #        Compile Commands
 # ====================================
-default: startUP createMods energyFunctions generalNucleation finale
+default: startUP generalNucleation finale
+#default: startUP createMods energyFunctions generalNucleation finale
 engOnly: startUP energyFunctions generalNucleation finale
 quick: startUP generalNucleation finale
 neat: startUP createMods generalNucleation removeObject finale
@@ -234,7 +237,7 @@ energyFunctions: $(OBJ_CRIT) $(OBJ_ENERGY)
 		@$(FC) $(COMPFLAGS)  $< -c
       
         
-generalNucleation:  $(OBJ_CRIT) $(OBJ_ANALYSIS) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_MOD) $(OBJ_BIAS) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
+generalNucleation: $(OBJ_COMPLETE)
 		@echo =============================================
 		@echo     Compiling and Linking Source Files
 		@echo =============================================	
@@ -287,5 +290,10 @@ removeExec:
 # ====================================
 #        Dependencies
 # ====================================
-$(OBJ)/UmbrellaSampling_Version2.o: $(SRC)/UmbrellaSampling_Version2.f90 $(SRC)/WHAM_Version2.f90
-$(OBJ)/WHAM_Version2.f90.o: $(SWAP)/SwapBoundaries.f90
+$(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o
+$(OBJ)/WHAM_Version2.o: $(OBJ)/SwapBoundaries.o $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o
+$(OBJ)/Units.o: $(OBJ)/VariablePrecision.o
+$(OBJ)/Common.o: $(OBJ)/VariablePrecision.o $(OBJ)/Units.o
+$(OBJ)/CBMC_ConfigGen.o: $(OBJ)/CoordinateFunctions.o
+$(OBJ)/ClusterCriteria_Energy.o: $(OBJ)/Common.o
+$(OBJ)/Main.o: $(OBJ)/Common.o $(OBJ)/SelfAdaptiveDistribution.o

@@ -12,6 +12,8 @@
       use Forcefield
       use DistanceCriteria      
       use IndexingFunctions
+      use PairStorage, only: UpdateDistArray
+      use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       implicit none
       
       real(dp),intent(inout) :: E_T, acc_x, atmp_x     
@@ -25,7 +27,7 @@
       logical :: regrowDirection
       real(dp) :: grnd, ranNum, sumInt
       real(dp) :: dx,dy,dz      
-      real(dp) :: E_Diff
+      real(dp) :: E_Diff, biasDiff
       type (displacement) :: disp(1:maxAtoms)
       real(dp) :: PairList(1:maxMol)
       real(dp) :: dETable(1:maxMol)
@@ -188,7 +190,16 @@
 
       rosenRatio = rosenProb_Old/rosenProb_New
 
-      if(rosenRatio*exp(-beta*E_Inter) .gt. grnd()) then
+
+      biasDiff = 0E0
+      if(useUmbrella) then
+        call GetUmbrellaBias_Disp(disp(1:nDisp), biasDiff, rejMove)
+        if(rejMove) then
+          return
+        endif
+      endif
+
+      if(rosenRatio*exp(-beta*E_Inter + biasDiff) .gt. grnd()) then
         do iAtom = 1, nDisp      
           disp(iAtom)%x_old = disp(iAtom)%x_new
           disp(iAtom)%y_old = disp(iAtom)%y_new
@@ -202,6 +213,7 @@
         else
           call NeighborUpdate(PairList, nIndx)
         endif  
+        call UpdateDistArray
         call Update_SubEnergies        
       endif
       

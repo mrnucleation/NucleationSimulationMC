@@ -2,6 +2,7 @@
       subroutine Simple_Partial_ConfigGen(nType, nIndx, nMol, rosenRatio_New, rosenRatio_Old, rejMove)
       use SimParameters
       use Coords
+      use CoodinateFunctions
       use ForceField
       use Constants
 !      use Rosenbluth_Functions_LJ_Q
@@ -18,7 +19,7 @@
       logical :: overlap(1:maxRosenTrial)
       integer :: i, iRosen, nSel, nTargetMol
       integer :: Atm1, Atm2, Atm3, Atm4
-      integer :: bendType, bondType  
+      integer :: bendType, bondType, dihedType
       integer :: bendType2, bendType3
       real(dp) :: E_Trial(1:maxRosenTrial)      
       real(dp) :: grnd,rotang
@@ -117,7 +118,8 @@
           call FindAngle(nType, Atm1, Atm2, Atm3, bendType)
           call FindAngle(nType, Atm1, Atm2, Atm4, bendType2)
           call FindAngle(nType, Atm3, Atm2, Atm4, bendType3)
-          call GenerateTwoBranches(ang1, ang2, dihed, bendType, bendType2, bendType3, Prob)
+          call FindSingleDihedral(nType, Atm2, dihedType)
+          call GenerateTwoBranches(ang1, ang2, dihed, dihedType, bendType, bendType2, bendType3, Prob)
           call Generate_UnitPyramid(v1, r2, r3, ang1, ang2, dihed, v2, v3)
           rosenTrial(iRosen)%x(atm3) = rosenTrial(iRosen)%x(atm2) + v2%x 
           rosenTrial(iRosen)%y(atm3) = rosenTrial(iRosen)%y(atm2) + v2%y
@@ -257,7 +259,8 @@
           call FindAngle(nType, Atm1, Atm2, Atm3, bendType)
           call FindAngle(nType, Atm1, Atm2, Atm4, bendType2)
           call FindAngle(nType, Atm3, Atm2, Atm4, bendType3)
-          call GenerateTwoBranches(ang1, ang2, dihed, bendType, bendType2, bendType3, Prob)
+          call FindSingleDihedral(nType, Atm2, dihedType)
+          call GenerateTwoBranches(ang1, ang2, dihed, dihedType, bendType, bendType2, bendType3, Prob)
           call Generate_UnitPyramid(v1, r2, r3, ang1, ang2, dihed, v2, v3)
           rosenTrial(iRosen)%x(atm3) = rosenTrial(iRosen)%x(atm2) + v2%x 
           rosenTrial(iRosen)%y(atm3) = rosenTrial(iRosen)%y(atm2) + v2%y
@@ -297,6 +300,7 @@
       subroutine StraightChain_Partial_ConfigGen(nType, nMol, regrownIn, regrowDirection, startAtom, rosenRatio, rejMove)
       use SimParameters
       use Coords
+      use CoodinateFunctions
       use ForceField
       use Constants
       use Rosenbluth_Functions_LJ_Q
@@ -484,6 +488,7 @@
       subroutine StraightChain_Partial_ConfigGen_Reverse(nType, nMol, regrownIn, regrowDirection, startAtom, rosenRatio)
       use SimParameters
       use Coords
+      use CoodinateFunctions
       use ForceField
       use Constants
       use Rosenbluth_Functions_LJ_Q

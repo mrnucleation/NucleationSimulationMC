@@ -1,4 +1,7 @@
 !========================================================================
+      module CoodinateFunctions
+      contains
+!========================================================================
       subroutine AllocateCoordinateArrays
       use ForceField
       use SimParameters
@@ -474,8 +477,18 @@
       use ForceFieldFunctions
       use AcceptRates, only: angGen_accpt, angGen_atmp
       implicit none
+
+      interface
+        subroutine SelectBin_IntTable(integralTable, nBin)
+          use VarPrecision
+          implicit none
+          real(dp), intent(in) :: integralTable(:)
+          integer, intent(out) :: nBin
+        end subroutine
+      end interface
+
       logical :: acpt
-      integer :: nSel
+      integer :: nSel, dummy
       integer, intent(in) :: bendType
       real(dp), intent(out) :: angle
       real(dp), intent(out), optional :: ProbGen
@@ -499,19 +512,20 @@
 !         angle = pi*grnd()
 !         angle = acos(1E0-2E0*grnd())
 
-         ranNum = grnd()
+!         ranNum = grnd()
           !Since the majority of the probability density will be centered near the equilibrium angle
           !we can use this fact to find the correct bin with much fewer comparisons by simply starting
           !near the beginning of the gaussian curve unless the random number chosen is sufficiently small.
-         if(ranNum .lt. startProb) then
-           nSel = 1
-         else 
-           nSel = bendData(bendType)%startBin
-         endif
-         do while(bendData(bendType)%Prob(nSel) .lt. ranNum)
-           nSel = nSel + 1
-         enddo
-
+!         if(ranNum .lt. startProb) then
+!           nSel = 1
+!         else 
+!           nSel = bendData(bendType)%startBin
+!         endif
+!         do while(bendData(bendType)%Prob(nSel) .lt. ranNum)
+!           nSel = nSel + 1
+!         enddo
+         call SelectBin_IntTable(bendData(bendType)%Prob, nSel)
+!         write(*,*) nSel, dummy
           !Now that the bin has been chosen, select an angle uniformly from the bin and calculate the
           !acceptance probability.
          angle = ( dble(nSel)-grnd() ) * bendBinWidth
@@ -532,28 +546,33 @@
 
       end subroutine
 !==========================================================================  
-      subroutine GenerateTwoBranches(ang1, ang2, dihedral, bendType1, bendType2, bendType3, ProbGen)  
+      subroutine GenerateTwoBranches(ang1, ang2, dihedral, dihedType, bendType1, bendType2, bendType3, ProbGen)  
       use Constants
       use SimParameters
       use ForceFieldFunctions
       use ForceField
       use AcceptRates, only: dihedGen_accpt, dihedGen_atmp
+      use CBMC_Variables, only: diBinSize, dihedData
       implicit none
+
       interface
-        subroutine GenerateBendAngle(angle, bendType, ProbGen)
-         use VarPrecision
-         integer, intent(in) :: bendType
-         real(dp), intent(out) :: angle
-         real(dp), intent(out), optional :: ProbGen
+        subroutine SelectBin_IntTable(integralTable, nBin)
+          use VarPrecision
+          implicit none
+          real(dp), intent(in) :: integralTable(:)
+          integer, intent(out) :: nBin
         end subroutine
       end interface
+
       logical acpt
-      integer, intent(in) :: bendType1, bendType2, bendType3
+      integer, intent(in) :: bendType1, bendType2, bendType3, dihedType
       real(dp), intent(out) :: ang1, ang2, dihedral
       real(dp), intent(out), optional :: ProbGen
-      real(dp) :: ProbTemp
+      integer :: bin, nSel, cnt
+      real(dp) :: ProbTemp, ProbDihed
       real(dp) :: k_bend1,theta_eq1,k_bend2,theta_eq2,k_bend3,theta_eq3
       real(dp) :: grnd, eng, ang3
+      real(dp) :: ranNum, sumInt, weight
 	  
       k_bend1 = bendData(bendType1)%k_eq
       theta_eq1 = bendData(bendType1)%ang_eq
@@ -571,17 +590,29 @@
         return
       endif
       
-     
+      cnt = 0
       acpt=.false.         
       do while(acpt .eqv. .false.)
 !         eng = 0E0
+!         cnt = cnt + 1
          dihedGen_atmp = dihedGen_atmp + 1E0
 !         angle = pi*grnd()
 !         ang1 = acos(1E0-2E0*grnd())
 !         ang2 = acos(1E0-2E0*grnd())
          call GenerateBendAngle(ang1, bendType1, ProbTemp)
          call GenerateBendAngle(ang2, bendType2, ProbTemp)
-         dihedral = two_pi*grnd()
+
+!         dihedral = two_pi*grnd()
+!         ranNum = grnd()
+!         nSel = 0
+!         do while(dihedData(dihedType)%Integral(nSel) .lt. ranNum)
+!           nSel = nSel + 1
+!         enddo
+         call SelectBin_IntTable( dihedData(dihedType)%Integral, nSel )
+         nSel = nSel - 1
+         dihedral = ( dble(nSel) + grnd() ) * diBinSize
+         ProbDihed = dihedData(dihedType)%Prob(nSel)
+
          ang3 = cos(ang1)*cos(ang2) + sin(ang1)*sin(ang2)*cos(dihedral)
          if (ang3 .ge. 1E0) ang3 = 1E0
          if (ang3 .le. -1E0) ang3 = -1E0
@@ -589,14 +620,26 @@
 !         eng = Harmonic(ang1, k_bend1, theta_eq1)
 !         eng = eng + Harmonic(ang2, k_bend2, theta_eq2)
          eng = Harmonic(ang3, k_bend3, theta_eq3)
+         ProbTemp = exp(-beta*eng)/ProbDihed
+         ProbGen = ProbTemp/(dihedData(dihedType)%accConst)
 
-         ProbGen = exp(-beta*eng)
-         if(ProbGen .gt. grnd()) acpt=.true.
+         if(ProbGen .gt. 1E0) then
+!           write(*,*) ProbGen, dihedData(dihedType)%accConst
+           dihedData(dihedType)%accConst = ProbTemp
+           cycle
+         endif 
+
+         if( ProbGen .gt. grnd() ) then
+           acpt = .true.
+         endif
       enddo    
+      bin = floor(dihedral/diBinSize)
+      dihedData(dihedType)%Hist(bin) = dihedData(dihedType)%Hist(bin) + 1E0
       dihedGen_accpt = dihedGen_accpt + 1E0   
-      end subroutine
 
-!==========================================================================           
+
+      end subroutine
+!========================================================================================
       subroutine GenerateTorsAngle(angle, torsType, ProbGen)
       use Constants
       use SimParameters
@@ -699,4 +742,28 @@
       stop
       
       end subroutine 
+!==========================================================================           
+      subroutine FindSingleDihedral(nType, hubIndx, dihedType)
+      use CBMC_Variables
+      implicit none
+      integer, intent(in) :: nType, hubIndx
+      integer, intent(out) :: dihedType
+      integer :: iDihed
+      
+      
+      do iDihed = 1, totalDihed
+        if(dihedData(iDihed)%molType .eq. nType) then
+          if(dihedData(iDihed)%hubIndx .eq. hubIndx) then
+            dihedType = iDihed
+            return
+          endif         
+        endif
+      enddo
+
+      write(*,*) "Error! FindSingleDihedral function unable to find a dihedral angle"
+      write(*,*) nType, hubIndx
+      stop
+      
+      end subroutine 
 !========================================================================
+      end module

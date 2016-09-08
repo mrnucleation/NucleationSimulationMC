@@ -15,6 +15,7 @@
       use EnergyPointers, only: Rosen_Mol_New
       use CBMC_Variables
       use CBMC_Utility
+      use CoodinateFunctions
       implicit none
 
       integer, intent(in) :: nType, nTarget, nTargType, nIndx
@@ -161,6 +162,7 @@
       use EnergyPointers, only: Rosen_Mol_Old
       use CBMC_Variables
       use CBMC_Utility
+      use CoodinateFunctions
       implicit none
 
       integer, intent(in) :: nType, nMol, nTarget, nTargType
@@ -277,6 +279,7 @@
       use EnergyPointers, only: Rosen_Mol_New
       use CBMC_Variables
       use CBMC_Utility
+      use CoodinateFunctions
       implicit none
 
       integer, intent(in) :: nType, nTarget, nTargType, nIndx
@@ -290,7 +293,7 @@
       integer :: i, iRosen, nSel, nTargetMol
       integer :: Atm1, Atm2, Atm3, Atm4
       integer :: bendType, bondType  
-      integer :: bendType1, bendType2, bendType3
+      integer :: bendType1, bendType2, bendType3, dihedType
       real(dp) :: E_Trial(1:maxRosenTrial)      
       real(dp) :: grnd,rotang
       real(dp) :: c_term,s_term
@@ -395,7 +398,8 @@
           call FindAngle(nType, Atm1, Atm2, Atm3, bendType1)
           call FindAngle(nType, Atm1, Atm2, Atm4, bendType2)
           call FindAngle(nType, Atm3, Atm2, Atm4, bendType3)
-          call GenerateTwoBranches(ang1, ang2, dihed, bendType1, bendType2, bendType3, Prob)
+          call FindSingleDihedral(nType, Atm2, dihedType)
+          call GenerateTwoBranches(ang1, ang2, dihed,dihedType, bendType1, bendType2, bendType3, Prob)
           call Generate_UnitPyramid(v1, r2, r3, ang1, ang2, dihed, v2, v3)
           rosenTrial(iRosen)%x(atm3) = rosenTrial(iRosen)%x(atm2) + v2%x 
           rosenTrial(iRosen)%y(atm3) = rosenTrial(iRosen)%y(atm2) + v2%y
@@ -473,6 +477,7 @@
       use EnergyPointers, only: Rosen_Mol_Old
       use CBMC_Variables
       use CBMC_Utility
+      use CoodinateFunctions
       implicit none
 
       integer, intent(in) :: nType, nTarget, nTargType, nMol
@@ -482,7 +487,7 @@
 
       integer :: i, iRosen, nSel, nIndx, nTargetMol
       integer :: Atm1, Atm2, Atm3, Atm4
-      integer :: bondType, bendType
+      integer :: bondType, bendType, dihedType
       integer :: bendType1, bendType2, bendType3
       real(dp) :: E_Trial(1:maxRosenTrial)      
       real(dp) :: grnd,rotang
@@ -585,7 +590,8 @@
           call FindAngle(nType, Atm1, Atm2, Atm3, bendType1)
           call FindAngle(nType, Atm1, Atm2, Atm4, bendType2)
           call FindAngle(nType, Atm3, Atm2, Atm4, bendType3)
-          call GenerateTwoBranches(ang1, ang2, dihed, bendType1, bendType2, bendType3, Prob)
+          call FindSingleDihedral(nType, Atm2, dihedType)
+          call GenerateTwoBranches(ang1, ang2, dihed, dihedType, bendType1, bendType2, bendType3, Prob)
           call Generate_UnitPyramid(v1, r2, r3, ang1, ang2, dihed, v2, v3)
           newMol%x(atm3) = newMol%x(atm2) + v2%x 
           newMol%y(atm3) = newMol%y(atm2) + v2%y
@@ -637,6 +643,7 @@
       use Rosenbluth_Functions_LJ_Q
       use CBMC_Variables
       use CBMC_Utility
+      use CoodinateFunctions
       implicit none
 
       integer, intent(in) :: nType, nTarget, nTargType
@@ -898,6 +905,7 @@
       use Rosenbluth_Functions_LJ_Q
       use CBMC_Variables
       use CBMC_Utility
+      use CoodinateFunctions
       implicit none
 
       integer, intent(in) :: nType, nMol, nTarget, nTargType

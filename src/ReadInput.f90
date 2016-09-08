@@ -4,6 +4,7 @@
       use CBMC_Variables
       use Constants
       use Coords
+      use CoodinateFunctions
       use EnergyTables
       use ForceField
       use SimParameters
@@ -321,6 +322,7 @@
       use CBMC_Variables
       use Constants
       use Coords
+      use CoodinateFunctions
       use ForceField
       use ForceFieldPara_LJ_Q
       use ForceFieldFunctions
@@ -689,6 +691,7 @@
       use SimParameters
       use Constants
       use Coords
+      use CoodinateFunctions
       use ForceField
       use ForceFieldPara_Pedone
       use ForceFieldFunctions
