@@ -110,7 +110,7 @@
         endif  
 !        call Create_NeiETable
         call UpdateDistArray
-        call Update_SubEnergies        
+        call Update_SubEnergies   
       endif
 
       	  
@@ -197,41 +197,13 @@
 
 !     Calculate Acceptance and determine if the move is accepted or not     
       if(biasEnergy .le. 0E0) then
-        do iAtom=1,nAtoms(nType)      
-          disp(iAtom)%x_old = disp(iAtom)%x_new
-          disp(iAtom)%y_old = disp(iAtom)%y_new
-          disp(iAtom)%z_old = disp(iAtom)%z_new
-        enddo
-        E_T = E_T + E_Inter
-        ETable = ETable + dETable
-        acc_x = acc_x + 1E0 
         acptTrans(nType) = acptTrans(nType) + 1E0
-        if(distCriteria) then
-          call NeighborUpdate_Distance(PairList,nIndx)        
-        else
-          call NeighborUpdate(PairList, nIndx)
-        endif    
-!        call Create_NeiETable
-        call UpdateDistArray
-        call Update_SubEnergies        
+        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
       elseif(exp(-biasEnergy) .gt. grnd()) then
-        do iAtom=1,nAtoms(nType)      
-          disp(iAtom)%x_old = disp(iAtom)%x_new
-          disp(iAtom)%y_old = disp(iAtom)%y_new
-          disp(iAtom)%z_old = disp(iAtom)%z_new
-        enddo
-        E_T = E_T + E_Inter
-        ETable = ETable + dETable
-        acc_x = acc_x + 1E0
         acptTrans(nType) = acptTrans(nType) + 1E0
-        if(distCriteria) then
-          call NeighborUpdate_Distance(PairList, nIndx)        
-        else
-          call NeighborUpdate(PairList, nIndx)
-        endif  
-!        call Create_NeiETable
-        call UpdateDistArray
-        call Update_SubEnergies        
+        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+      else
+        prevMoveAccepted = .false.
       endif
 
       	  
@@ -359,41 +331,13 @@
        
 !      Calculate Acceptance and determine if the move is accepted or not       
       if(biasEnergy .le. 0E0) then
-        do i=1,nAtoms(nType)      
-          disp(i)%x_old = disp(i)%x_new
-          disp(i)%y_old = disp(i)%y_new
-          disp(i)%z_old = disp(i)%z_new
-        enddo
-        E_T = E_T + E_Inter
-        ETable = ETable + dETable
-        acc_x = acc_x+1E0
         acptRot(nType) = acptRot(nType) + 1E0
-        if(distCriteria) then
-          call NeighborUpdate_Distance(PairList, nIndx)        
-        else
-          call NeighborUpdate(PairList, nIndx)
-        endif  
-!        call Create_NeiETable
-        call UpdateDistArray
-        call Update_SubEnergies        
+        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
       elseif(exp(-biasEnergy) .gt. grnd()) then
-        do i=1,nAtoms(nType)      
-          disp(i)%x_old = disp(i)%x_new
-          disp(i)%y_old = disp(i)%y_new
-          disp(i)%z_old = disp(i)%z_new
-        enddo
-        E_T = E_T + E_Inter
-        ETable = ETable + dETable
-        acc_x = acc_x+1E0
         acptRot(nType) = acptRot(nType) + 1E0
-        if(distCriteria) then
-          call NeighborUpdate_Distance(PairList, nIndx)        
-        else
-          call NeighborUpdate(PairList, nIndx)
-        endif  
-!        call Create_NeiETable
-        call UpdateDistArray
-        call Update_SubEnergies        
+        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+      else
+        prevMoveAccepted = .false.
       endif
       end subroutine
 !=======================================================      
@@ -496,41 +440,13 @@
        
 !      Calculate Acceptance and determine if the move is accepted or not       
       if(biasEnergy .le. 0E0) then
-        do i=1,nAtoms(nType)      
-          disp(i)%x_old = disp(i)%x_new
-          disp(i)%y_old = disp(i)%y_new
-          disp(i)%z_old = disp(i)%z_new
-        enddo
-        E_T = E_T + E_Inter
-        ETable = ETable + dETable
-        acc_x = acc_x + 1E0
         acptRot(nType) = acptRot(nType) + 1E0
-        if(distCriteria) then
-          call NeighborUpdate_Distance(PairList,nIndx)        
-        else
-          call NeighborUpdate(PairList, nIndx)
-        endif  
-!        call Create_NeiETable
-        call Update_SubEnergies        
-        call UpdateDistArray
+        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
       elseif(exp(-biasEnergy) .gt. grnd()) then
-        do i=1,nAtoms(nType)      
-          disp(i)%x_old = disp(i)%x_new
-          disp(i)%y_old = disp(i)%y_new
-          disp(i)%z_old = disp(i)%z_new
-        enddo
-        E_T = E_T + E_Inter
-        ETable = ETable + dETable
-        acc_x = acc_x + 1E0
         acptRot(nType) = acptRot(nType) + 1E0
-        if(distCriteria) then
-          call NeighborUpdate_Distance(PairList, nIndx)        
-        else
-          call NeighborUpdate(PairList, nIndx)
-        endif  
-!        call Create_NeiETable
-        call UpdateDistArray
-        call Update_SubEnergies        
+        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+      else
+        prevMoveAccepted = .false.    
       endif
 
       end subroutine
@@ -633,43 +549,58 @@
        
 !      Calculate Acceptance and determine if the move is accepted or not       
       if(biasEnergy .le. 0E0) then
-        do i=1,nAtoms(nType)      
-          disp(i)%x_old = disp(i)%x_new
-          disp(i)%y_old = disp(i)%y_new
-          disp(i)%z_old = disp(i)%z_new
-        enddo
-        E_T = E_T + E_Inter
-        ETable = ETable + dETable
-        acc_x = acc_x+1E0
         acptRot(nType) = acptRot(nType) + 1E0
-        if(distCriteria) then
-          call NeighborUpdate_Distance(PairList,nIndx)        
-        else
-          call NeighborUpdate(PairList, nIndx)
-        endif  
-!        call Create_NeiETable
-        call UpdateDistArray
-        call Update_SubEnergies        
+        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
       elseif(exp(-biasEnergy) .gt. grnd()) then
-        do i=1,nAtoms(nType)      
-          disp(i)%x_old = disp(i)%x_new
-          disp(i)%y_old = disp(i)%y_new
-          disp(i)%z_old = disp(i)%z_new
-        enddo
-        E_T = E_T + E_Inter
-        ETable = ETable + dETable
-        acc_x = acc_x+1E0
         acptRot(nType) = acptRot(nType) + 1E0
-        if(distCriteria) then
-          call NeighborUpdate_Distance(PairList,nIndx)        
-        else
-          call NeighborUpdate(PairList, nIndx)
-        endif  
-!        call Create_NeiETable
-        call UpdateDistArray
-        call Update_SubEnergies        
+        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+      else
+        prevMoveAccepted = .false.
       endif
       end subroutine
 
+
+!=======================================================      
+      subroutine Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+      use AcceptRates
+      use SimParameters
+      use Coords
+      use Forcefield, only: nAtoms
+      use EnergyPointers, only: Shift_ECalc, Update_SubEnergies
+      use EnergyCriteria
+      use DistanceCriteria
+      use EnergyTables
+      use PairStorage, only: UpdateDistArray
+      use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
+      implicit none
+      
+      real(dp), intent(inout) :: E_T,acc_x,atmp_x
+      integer, intent(in) :: nIndx, nType
+      type (displacement), intent(inout) :: disp(:)
+      real(dp), intent(in) :: PairList(1:maxMol)
+      real(dp), intent(in) :: dETable(1:maxMol)
+      real(dp), intent(in) :: E_Inter
+
+      integer :: i      
+    
+      do i=1,nAtoms(nType)      
+        disp(i)%x_old = disp(i)%x_new
+        disp(i)%y_old = disp(i)%y_new
+        disp(i)%z_old = disp(i)%z_new
+      enddo
+      E_T = E_T + E_Inter
+      ETable = ETable + dETable
+      acc_x = acc_x + 1E0
+      acptRot(nType) = acptRot(nType) + 1E0
+      if(distCriteria) then
+        call NeighborUpdate_Distance(PairList,nIndx)        
+      else
+        call NeighborUpdate(PairList, nIndx)
+      endif  
+      call UpdateDistArray
+      call Update_SubEnergies        
+      prevMoveAccepted = .true.
+
+      end subroutine
 !===========================================================================================
       end module

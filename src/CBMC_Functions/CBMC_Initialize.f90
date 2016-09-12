@@ -156,7 +156,7 @@
         do iBin = 1, nDihBins
           dihedData(i)%Integral(iBin) = dihedData(i)%Integral(iBin-1) + dihedData(i)%Prob(iBin)
         enddo
-        dihedData(i)%accConst = nDihBins
+        dihedData(i)%accConst = nDihBins*diBinSize
       enddo
 
       call CBMC_FindPathways

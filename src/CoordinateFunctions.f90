@@ -512,20 +512,19 @@
 !         angle = pi*grnd()
 !         angle = acos(1E0-2E0*grnd())
 
-!         ranNum = grnd()
+         ranNum = grnd()
           !Since the majority of the probability density will be centered near the equilibrium angle
           !we can use this fact to find the correct bin with much fewer comparisons by simply starting
           !near the beginning of the gaussian curve unless the random number chosen is sufficiently small.
-!         if(ranNum .lt. startProb) then
-!           nSel = 1
-!         else 
-!           nSel = bendData(bendType)%startBin
-!         endif
-!         do while(bendData(bendType)%Prob(nSel) .lt. ranNum)
-!           nSel = nSel + 1
-!         enddo
-         call SelectBin_IntTable(bendData(bendType)%Prob, nSel)
-!         write(*,*) nSel, dummy
+         if(ranNum .lt. startProb) then
+           nSel = 1
+         else 
+           nSel = bendData(bendType)%startBin
+         endif
+         do while(bendData(bendType)%Prob(nSel) .lt. ranNum)
+           nSel = nSel + 1
+         enddo
+ 
           !Now that the bin has been chosen, select an angle uniformly from the bin and calculate the
           !acceptance probability.
          angle = ( dble(nSel)-grnd() ) * bendBinWidth
@@ -553,16 +552,8 @@
       use ForceField
       use AcceptRates, only: dihedGen_accpt, dihedGen_atmp
       use CBMC_Variables, only: diBinSize, dihedData
+      use RandomTools
       implicit none
-
-      interface
-        subroutine SelectBin_IntTable(integralTable, nBin)
-          use VarPrecision
-          implicit none
-          real(dp), intent(in) :: integralTable(:)
-          integer, intent(out) :: nBin
-        end subroutine
-      end interface
 
       logical acpt
       integer, intent(in) :: bendType1, bendType2, bendType3, dihedType
@@ -595,40 +586,46 @@
       do while(acpt .eqv. .false.)
 !         eng = 0E0
 !         cnt = cnt + 1
-         dihedGen_atmp = dihedGen_atmp + 1E0
 !         angle = pi*grnd()
 !         ang1 = acos(1E0-2E0*grnd())
 !         ang2 = acos(1E0-2E0*grnd())
          call GenerateBendAngle(ang1, bendType1, ProbTemp)
          call GenerateBendAngle(ang2, bendType2, ProbTemp)
 
-!         dihedral = two_pi*grnd()
+         dihedral = two_pi*grnd()
 !         ranNum = grnd()
 !         nSel = 0
 !         do while(dihedData(dihedType)%Integral(nSel) .lt. ranNum)
 !           nSel = nSel + 1
 !         enddo
-         call SelectBin_IntTable( dihedData(dihedType)%Integral, nSel )
-         nSel = nSel - 1
-         dihedral = ( dble(nSel) + grnd() ) * diBinSize
-         ProbDihed = dihedData(dihedType)%Prob(nSel)
+!         call SelectBin_IntTable( dihedData(dihedType)%Integral, nSel )
+!         nSel = nSel - 1
+!         dihedral = ( dble(nSel) + grnd() ) * diBinSize
+ 
+!         ProbDihed = dihedData(dihedType)%Prob(nSel)/diBinSize
 
          ang3 = cos(ang1)*cos(ang2) + sin(ang1)*sin(ang2)*cos(dihedral)
-         if (ang3 .ge. 1E0) ang3 = 1E0
-         if (ang3 .le. -1E0) ang3 = -1E0
+         if (ang3 .ge. 1E0) then
+           ang3 = 1E0
+         elseif (ang3 .le. -1E0) then
+           ang3 = -1E0
+         endif
          ang3 = acos(ang3)
 !         eng = Harmonic(ang1, k_bend1, theta_eq1)
 !         eng = eng + Harmonic(ang2, k_bend2, theta_eq2)
          eng = Harmonic(ang3, k_bend3, theta_eq3)
-         ProbTemp = exp(-beta*eng)/ProbDihed
-         ProbGen = ProbTemp/(dihedData(dihedType)%accConst)
+!         ProbTemp = exp(-beta*eng)/ProbDihed
+!         ProbGen = ProbTemp/(dihedData(dihedType)%accConst)
 
-         if(ProbGen .gt. 1E0) then
-!           write(*,*) ProbGen, dihedData(dihedType)%accConst
-           dihedData(dihedType)%accConst = ProbTemp
-           cycle
-         endif 
+!         ProbGen = exp(-beta*eng)
 
+!         if(ProbGen .gt. 1E0) then
+!           write(*,*) ProbGen, dihedData(dihedType)%accConst, nSel, dihedData(dihedType)%Integral(nSel)
+!           dihedData(dihedType)%accConst = ProbTemp
+!           cycle
+!         endif 
+         dihedGen_atmp = dihedGen_atmp + 1E0
+!         ProbGen = exp(-beta*eng)
          if( ProbGen .gt. grnd() ) then
            acpt = .true.
          endif

@@ -51,17 +51,17 @@
         call Detailed_EnergyCriteria(PairList, rejMove)      
       endif
       
-      write(35,*) "Pairlist:"
-      do i = 1, maxMol
-        if(isActive(i)) then
-          do j = 1, maxMol
-            if(isActive(j)) then
-              write(35,*) i, j, PairList(i,j)            
-            endif
-          enddo
-        endif
-      enddo
-      write(35,*)
+!      write(35,*) "Pairlist:"
+!      do i = 1, maxMol
+!        if(isActive(i)) then
+!          do j = 1, maxMol
+!            if(isActive(j)) then
+!              write(35,*) i, j, PairList(i,j)            
+!            endif
+!          enddo
+!        endif
+!      enddo
+!      write(35,*)
       
       call Detailed_ECalc_IntraNonBonded(E_T)
       call Detailed_ECalc_BondStretch(E_T)

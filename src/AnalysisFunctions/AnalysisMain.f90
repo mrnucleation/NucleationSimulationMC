@@ -26,6 +26,7 @@
      type(TrialFunctionArray), allocatable :: TrialArray(:)
      type(AnalysisFunctionArray), allocatable :: postMoveArray(:)
      type(AnalysisFunctionArray), allocatable :: outputArray(:)
+     type(TrialFunctionArray), allocatable :: UpdateArray(:)
 
      public :: useAnalysis, ReadAnalysisInput, DummyAnalysisTest2, PostMoveAnalysis, OutputAnalysis
 
@@ -232,17 +233,6 @@
      end subroutine
 !======================================================
      subroutine OutputAnalysis
-     use ParallelVar
-     implicit none
-     integer :: iOutput
-
-     do iOutput = 1, nOutput
-       call outputArray(iOutput)%func
-     enddo
-
-     end subroutine
-!======================================================
-     subroutine DummyFunction
      use ParallelVar
      implicit none
      integer :: iOutput

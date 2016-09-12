@@ -15,10 +15,10 @@ OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
-#DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
+DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
-DEBUGFLAGS += -pg 
+#DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
@@ -100,6 +100,7 @@ SRC_MAIN := $(SRC)/BasicMovement.f90\
             $(SRC)/DebugFunctions.f90\
             $(SRC)/Main.f90\
  		$(SRC)/RandomNew.f90\
+ 		$(SRC)/RandomTools.f90\
  		$(SRC)/OutputFunctions.f90\
  		$(SRC)/Input_Ultility.f90\
  		$(SRC)/UmbrellaSampling.f\
@@ -296,4 +297,7 @@ $(OBJ)/Units.o: $(OBJ)/VariablePrecision.o
 $(OBJ)/Common.o: $(OBJ)/VariablePrecision.o $(OBJ)/Units.o
 $(OBJ)/CBMC_ConfigGen.o: $(OBJ)/CoordinateFunctions.o
 $(OBJ)/ClusterCriteria_Energy.o: $(OBJ)/Common.o
+$(OBJ)/CoordinateFunctions.o: $(OBJ)/Common.o $(OBJ)/RandomTools.o
+$(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o $(OBJ)/Common.o
+$(OBJ)/MiscelaniousVariables.o: $(OBJ)/Common.o
 $(OBJ)/Main.o: $(OBJ)/Common.o $(OBJ)/SelfAdaptiveDistribution.o

@@ -27,18 +27,21 @@
       procedure(), pointer, nopass :: func
     end type
 
-    logical :: useUmbrella
+    logical :: useUmbrella, UScreenOut
     integer :: nBiasVariables, umbrellaLimit
     integer :: curUIndx
     integer, allocatable :: curVarIndx
     integer, allocatable :: binIndx(:)
     integer, allocatable :: varMax(:), varMin(:)
     integer, allocatable :: indexCoeff(:)
+    integer, allocatable :: UArray(:)
     real(dp), allocatable :: UBias(:)
     real(dp), allocatable :: UHist(:)
     real(dp), allocatable :: UBinSize(:)
+    real(dp), allocatable :: varValues(:)
     character(len=20), allocatable :: inputFile
     character(len=10), allocatable :: outputFormat(:)
+    character(len=100) :: screenFormat
     type(BiasVariablePointer), allocatable :: biasvar(:)
     type(BiasVariablePointer), allocatable :: biasvarnew(:)
 
@@ -48,9 +51,9 @@
     type(SwapUmbrellaArray), allocatable :: SwapOutUmbrella(:)
 
     public :: AllocateUmbrellaVariables, ReadInput_Umbrella, AllocateUmbrellaArray, UmbrellaHistAdd
-    public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp, findVarValues
-    public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat 
-    public :: GetUmbrellaBias_SwapIn, GetUmbrellaBias_SwapOut
+    public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp, findVarValues, getBiasIndex
+    public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat, curUIndx
+    public :: GetUmbrellaBias_SwapIn, GetUmbrellaBias_SwapOut, ScreenOutputUmbrella, screenFormat
 !==========================================================================================
     contains
 !==========================================================================================
@@ -78,6 +81,7 @@
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx, CalcDistPairs_New
       use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, echoInput
+      use Q6Functions, only: q6ArrayIndx, CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut
       use ParallelVar, only: nout
       implicit none
       integer, intent(in) :: fileUnit
@@ -124,6 +128,10 @@
 !          nSwapInFunc = nSwapInFunc + 1
 !          nSwapOutFunc = nSwapOutFunc + 1
         case("pairdist")
+          nDispFunc = nDispFunc + 1
+          nSwapInFunc = nSwapInFunc + 1
+          nSwapOutFunc = nSwapOutFunc + 1
+        case("q6")
           nDispFunc = nDispFunc + 1
           nSwapInFunc = nSwapInFunc + 1
           nSwapOutFunc = nSwapOutFunc + 1
@@ -200,16 +208,41 @@
           iSwapOut = iSwapOut + 1
           SwapOutUmbrella(iSwapOut) % func => CalcDistPairs_Swap
 
+        case("q6")
+          read(inputLines(iUmbrella), *) labelField, valMin, valMax, binSize
+          biasvar(iUmbrella) % varType = 2
+          biasvar(iUmbrella) % realVar => miscCoord(q6ArrayIndx)
+          biasvarnew(iUmbrella) % varType = 2
+          biasvarnew(iUmbrella) % realVar => miscCoord_New(q6ArrayIndx)
+          UBinSize(iUmbrella) = binSize
+          varMin(iUmbrella) = valMin / binSize
+          varMax(iUmbrella) = valMax / binSize
+          outputFormat(iUmbrella) = "2x,F12.6,"
+
+          iDisp = iDisp + 1
+          DispUmbrella(iDisp) % func => CalcQ6_Disp
+          iSwapIn = iSwapIn + 1
+          SwapInUmbrella(iSwapIn) % func => CalcQ6_SwapIn
+          iSwapOut = iSwapOut + 1
+          SwapOutUmbrella(iSwapOut) % func => CalcQ6_SwapOut
+!          write(*,*) labelField, valMin, valMax, binSize
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) umbrellaName
           stop
         end select
       enddo
+      write(screenFormat,*) "(", (trim(adjustl(outputFormat(iUmbrella))), iUmbrella=1,nBiasVariables), "1x)"
+!      write(screenFormat, *) "(", (trim(adjustl(outputFormat(iUmbrella))), iUmbrella=1,nBiasVariables), ")"
+!      write(*,*) screenFormat
+      allocate(varValues(1:nBiasVariables))
+      allocate(UArray(1:nBiasVariables))
+
 
       deallocate(inputLines)
       call AllocateUmbrellaArray
       call ReadUmbrellaInput
+
 
     end subroutine
 !==========================================================================================
@@ -242,6 +275,8 @@
 
      UBias = 0E0_dp
      UHist = 0E0_dp
+
+
       
      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
      end subroutine
@@ -298,6 +333,7 @@
        biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
      enddo
 
+!     write(*,*) biasIndx
  
      end function
 !==========================================================================
@@ -406,7 +442,6 @@
      rejMove = .false.
      curUIndx = getBiasIndex()
      biasOld = UBias(curUIndx)
-!     write(*,*) nDispFunc
      if(nDispFunc .ne. 0) then
        sizeDisp = size(disp)
        do iDispFunc = 1, nDispFunc
@@ -416,6 +451,7 @@
 
      call getNewBiasIndex(newUIndx, rejMove)
      if(rejMove) then
+!       write(*,*) "BLAH!"
        return
      endif
      biasNew = UBias(newUIndx)
@@ -489,16 +525,31 @@
  
      end subroutine
 !==========================================================================================
+    subroutine ScreenOutputUmbrella
+    use ParallelVar
+    implicit none
+    integer :: iBias, j
+
+    do iBias = 1, nBiasVariables
+      if(biasvar(iBias)%varType .eq. 1) then
+        varValues(iBias) = real(biasvar(iBias)%intVar,dp)
+      else
+        varValues(iBias) = biasvar(iBias)%realVar
+      endif
+    enddo
+    write(nout,screenFormat) (varValues(j), j=1,nBiasVariables)
+
+    end subroutine
+!==========================================================================================
     subroutine OutputUmbrellaHist
     implicit none
     integer :: iUmbrella, iBias
-    integer, allocatable :: UArray(:)
-    real(dp), allocatable :: varValues(:)
+!    integer, allocatable :: UArray(:)
     character(len = 100) :: outputString
 
 
-    allocate(UArray(1:nBiasVariables))
-    allocate(varValues(1:nBiasVariables))
+!    allocate(UArray(1:nBiasVariables))
+!    allocate(varValues(1:nBiasVariables))
 
     write(outputString, *) "(", (trim(outputFormat(iBias)), iBias =1,nBiasVariables), "2x, F18.1)"
     open(unit=60, file="TemporaryHist.txt")
@@ -514,8 +565,8 @@
     flush(60)
     close(60)
 
-    deallocate(UArray)
-    deallocate(varValues)
+!    deallocate(UArray)
+!    deallocate(varValues)
 
     end subroutine
 !==========================================================================

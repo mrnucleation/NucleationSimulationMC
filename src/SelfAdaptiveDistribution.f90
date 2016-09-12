@@ -29,27 +29,23 @@
 
 
 !       Tabulate the integral table
-       dihedData(iDihed)%Integral(0) = dihedData(iDihed)%Prob(0)
+       dihedData(iDihed)%Integral(0) = dihedData(iDihed)%Prob(iBin)
        do iBin = 1, nDihBins
          dihedData(iDihed)%Integral(iBin) = dihedData(iDihed)%Integral(iBin-1) + dihedData(iDihed)%Prob(iBin)
        enddo
+       dihedData(iDihed)%Integral(nDihBins) = 1E0
 
 !       Determine the new acceptance constant
-       dihedData(iDihed)%accConst = 0d0
-       do iBin = 0, nDihBins
-         tempConst = dihedData(iDihed)%Hist(iBin)/(dihedData(iDihed)%Prob(iBin)*histNorm)
-         if(tempConst .gt. dihedData(iDihed)%accConst) then
-           dihedData(iDihed)%accConst = tempConst
-         endif
-       enddo
+       dihedData(iDihed)%accConst = diBinSize
 
  
 
-       write(2,*) iDihed, dihedData(iDihed)%accConst 
-       do iBin = 0, nDihBins
-         write(2,*) iBin*diBinSize, dihedData(iDihed)%Prob(iBin)
-       enddo
-       write(2,*)
+!       write(2,*) iDihed, dihedData(iDihed)%accConst 
+!       do iBin = 0, nDihBins
+!         write(2,*) iBin*diBinSize, dihedData(iDihed)%Integral(iBin)
+!       enddo
+!       write(2,*)
+!       flush(2)
      enddo
 
      end subroutine

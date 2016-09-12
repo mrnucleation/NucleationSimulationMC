@@ -29,7 +29,7 @@
       use SimParameters
       use VarPrecision
       use WHAM_Functions
-      use UmbrellaSamplingNew, only: useUmbrella, UmbrellaHistAdd, OutputUmbrellaHist
+      use UmbrellaSamplingNew, only: useUmbrella, curUIndx, UmbrellaHistAdd, OutputUmbrellaHist, ScreenOutputUmbrella
       implicit none
 
 !      include 'mpif.h'
@@ -40,7 +40,7 @@
       integer(kind=8) :: iCycle, iMove
       integer :: i,j,seed,AllocateStatus
       integer :: outFreq_Traj,outFreq_Screen,outFreq_GCD      
-      integer :: nSel    
+      integer :: nSel, getBiasIndex
     
 !      real(dp) :: max_dist, max_dist_single, max_rot
 !      real(dp) :: atmp_1,atmp_2,atmp_3,atmp_4
@@ -147,12 +147,9 @@
 !      critical simulation errors in the auto-tuning function.
       dist_limit = 2E0
       rot_limit = pi
+
+      prevMoveAccepted = .false.
       
-!      Histogram Initialization
-!      d_ang = dble(nBin_Hist)/pi
-!      d_r = dble(nBin_Hist)/(1.4E0)
-!      HistAngle = 0E0
-!      HistDist = 0E0
 
 !      AVBMC related volume variables
       Dist_Critr_sq = Dist_Critr*Dist_Critr
@@ -259,10 +256,20 @@
       write(nout,*) "------------------------------------------------"
       write(nout,*) "Cycle # ", "Particles ",  "Energy ", "Acceptance Rates"
 !"
-!      Collect the initial values for the analysis variables. 
+!      Collect the initial values for the analysis variables and print out the . 
       if(useAnalysis) then
         call PostMoveAnalysis
       endif  
+
+      if(abs(E_T) .lt. 1d6) then
+        write(nout,outFormat2) 0,NPART, E_T, (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
+      else
+        write(nout,outFormat1) 0,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
+      endif
+!      if(useUmbrella) then
+!        call ScreenOutputUmbrella
+!      endif
+      flush(nout)
       flush(35)
       call CPU_TIME(TimeStart)      
 !--------------------------------------------------------------------------------------------------      
@@ -276,7 +283,6 @@
              nSel = nSel + 1
            enddo
            call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
-
 
            if(useAnalysis) then
              call PostMoveAnalysis
@@ -316,12 +322,13 @@
         if(mod(iCycle, outFreq_GCD) .eq. 0) then
           if(mod(iCycle, outFreq_Screen) .eq. 0) then
             if(abs(E_T) .lt. 1d6) then
-!             write(nout,outFormat2) iCycle,NPART, E_T,1E2*acc_1/atmp_1, 1E2*acc_3/atmp_3
              write(nout,outFormat2) iCycle,NPART, E_T, (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             else
-!             write(nout,outFormat1) iCycle,NPART, E_T,1E2*acc_1/atmp_1, 1E2*acc_3/atmp_3
              write(nout,outFormat1) iCycle,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             endif
+!            if(useUmbrella) then
+!              call ScreenOutputUmbrella
+!            endif
             flush(nout)
           endif
           if(mod(iCycle,outFreq_Traj) .eq. 0) then

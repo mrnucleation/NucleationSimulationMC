@@ -120,7 +120,7 @@
         integer(kind=atomIntType),allocatable :: pathMax(:)
       end type      
  
-      integer, parameter :: nDihBins = 500
+      integer, parameter :: nDihBins = 1000
       real(dp), parameter :: diBinSize = two_pi/real(nDihBins, dp)
       real(dp) :: startProb = 0.05E0
       type DihedralAngle
@@ -130,7 +130,6 @@
         real(dp) :: Hist(0:nDihBins)
         real(dp) :: Prob(0:nDihBins)
         real(dp) :: Integral(0:nDihBins)
-        real(dp) :: MaxWeight(0:nDihBins)
       end type  
  
       integer :: maxRosenTrial
@@ -266,6 +265,7 @@
       logical, parameter :: echoInput = .false.      
       logical, parameter :: distCriteria = .false.
 
+      logical :: prevMoveAccepted
 
       integer(kind=8) :: ncycle,ncycle2       
       logical :: ridgidMolecules, multipleInput
