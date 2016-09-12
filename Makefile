@@ -15,7 +15,7 @@ OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
-DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
+#DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check bounds -traceback -g
 #DEBUGFLAGS += -pg 

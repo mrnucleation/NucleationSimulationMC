@@ -267,14 +267,16 @@
          iMol = NPART(iType) + 1
          dNeigh = 0
          gloIndx1 =  molArray(iType)%mol(iMol)%globalIndx(1)
-
+         dQ6real = 0E0
+         dQ6img = 0E0
          do jType = 1, nMolTypes
            do jMol = 1, NPART(jType)
              rx = newMol%x(1) -  molArray(jType)%mol(jMol)%x(1)
              ry = newMol%y(1) -  molArray(jType)%mol(jMol)%y(1)
              rz = newMol%z(1) -  molArray(jType)%mol(jMol)%z(1)
              r = rx*rx + ry*ry + rz*rz
-             if(r .le. q6Dist) then	
+             if(r .le. q6Dist*q6Dist) then	
+               r = sqrt(r)
                dNeigh = dNeigh + 1
                phi = atan2(ry,rx)
                theta = acos(rz/r)  
@@ -325,10 +327,15 @@
          enddo
  
          dNeigh = 0
+         dQ6real = 0E0
+         dQ6img = 0E0
          gloIndx1 =  molArray(iType)%mol(iMol)%globalIndx(1)
          do jType = 1, nMolTypes
            do jMol = 1, NPART(jType)
              gloIndx2 =  molArray(jType)%mol(jMol)%globalIndx(1)
+             if(gloIndx1 .eq. gloIndx2) then
+               cycle
+             endif
              r = rPair(gloIndx2, gloIndx1)%p%r
              if(r .le. q6Dist) then	
                dNeigh = dNeigh - 1

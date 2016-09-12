@@ -145,6 +145,8 @@
       real(dp) :: dETable(1:maxMol)
       
       if(NTotal .eq. 1) return
+
+      prevMoveAccepted = .false.
       
       rejMove = .false.
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
@@ -373,6 +375,8 @@
       type (displacement) :: disp(1:maxAtoms)
       real(dp) :: PairList(1:maxMol)
       real(dp) :: dETable(1:maxMol)
+
+      prevMoveAccepted = .false.
       
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
       nMove = floor(NTotal*grnd() + 1E0)

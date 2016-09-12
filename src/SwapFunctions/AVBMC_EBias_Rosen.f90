@@ -69,6 +69,8 @@
       real(dp) :: Boltzterm
       real(dp) :: ProbMol(1:nMolTypes), sumInt, ranNum, norm
 
+      prevMoveAccepted = .false.
+
       if(NTotal .eq. maxMol) then
         boundaryRej = boundaryRej + 1d0
         totalRej = totalRej + 1d0
@@ -200,9 +202,11 @@
          NPART(nType) = NPART(nType) + 1 
          call Update_SubEnergies
          call UpdateDistArray
+         prevMoveAccepted = .true.
        else
          totalRej = totalRej + 1d0
          dbalRej = dbalRej + 1d0
+         prevMoveAccepted = .false.
        endif
        end subroutine
 !===================================================================================            
@@ -247,6 +251,8 @@
       real(dp) :: rx, ry, rz, dist, rosenRatio, gasNorm
       real(dp) :: biasArray(1:nMolTypes)
       real(dp) :: ranNum, sumInt
+
+      prevMoveAccepted = .false.
       
       if(NTotal .eq. 1) then
         boundaryRej_out = boundaryRej_out + 1d0
@@ -358,11 +364,12 @@
          NTotal = NTotal - 1         
          acc_x = acc_x + 1d0 
          call Update_SubEnergies
-
+         prevMoveAccepted = .true.
 !         call DEBUG_Output_NeighborList
        else
          dbalRej_out = dbalRej_out + 1d0
          totalRej_out = totalRej_out + 1d0
+         prevMoveAccepted = .false.
        endif
        end subroutine
 !=================================================================================    
