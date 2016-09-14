@@ -16,7 +16,7 @@
         public :: Initialize_DistPair
         public :: SetPairVariables
         public :: CalcDistPairs
-        public :: CalcDistPairs_New, CalcDistPairs_Swap
+        public :: CalcDistPairs_New, CalcDistPairs_SwapIn, CalcDistPairs_SwapOut
 
         contains
      !--------------------------------------------------------------------------------
@@ -146,9 +146,23 @@
 
         end subroutine
      !--------------------------------------------------------------------------------
-        subroutine CalcDistPairs_Swap
+        subroutine CalcDistPairs_SwapIn
           use MiscelaniousVars
           implicit none 
+          integer :: iDistPair
+  
+          do iDistPair = 1, nDistPair
+            miscCoord_New(pairArrayIndx(iDistPair)) = miscCoord(pairArrayIndx(iDistPair)) 
+          enddo
+
+
+        end subroutine
+
+     !--------------------------------------------------------------------------------
+        subroutine CalcDistPairs_SwapOut(nType, nMol)
+          use MiscelaniousVars
+          implicit none 
+          integer, intent(in) :: nType, nMol
           integer :: iDistPair
   
           do iDistPair = 1, nDistPair

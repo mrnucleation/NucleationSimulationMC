@@ -13,7 +13,10 @@
       implicit none
       real(dp), intent(inout) :: E_T, atmp_x, acc_x
       real(dp) :: grnd
-        
+
+
+      prevMoveAccepted = .false.
+              
       if(grnd() .lt. 0.5d0) then
         call AVBMC_EBias_Rosen_In(E_T, acc_x, atmp_x)     
       else
@@ -68,8 +71,6 @@
       real(dp) :: biasArray(1:nMolTypes)
       real(dp) :: Boltzterm
       real(dp) :: ProbMol(1:nMolTypes), sumInt, ranNum, norm
-
-      prevMoveAccepted = .false.
 
       if(NTotal .eq. maxMol) then
         boundaryRej = boundaryRej + 1d0
@@ -206,7 +207,6 @@
        else
          totalRej = totalRej + 1d0
          dbalRej = dbalRej + 1d0
-         prevMoveAccepted = .false.
        endif
        end subroutine
 !===================================================================================            
@@ -252,8 +252,7 @@
       real(dp) :: biasArray(1:nMolTypes)
       real(dp) :: ranNum, sumInt
 
-      prevMoveAccepted = .false.
-      
+
       if(NTotal .eq. 1) then
         boundaryRej_out = boundaryRej_out + 1d0
         totalRej_out = totalRej_out + 1d0
@@ -310,7 +309,7 @@
 !      NDiff = 0 
 !      NDiff(nType) = -1
       NPART_new = NPART + NDiff
-      call GetUmbrellaBias_SwapOut(biasDiff, rejMove)
+      call GetUmbrellaBias_SwapOut(nType, nMol, biasDiff, rejMove)
       if(rejMove) then
         return
       endif
@@ -348,7 +347,7 @@
 
 !      Calculate Acceptance and determine if the move is accepted or not         
       if( genProbRatio * exp(-beta*E_Inter + biasDiff) .gt. grnd() ) then
-         acptSwapOut(nType) = acptSwapOut(nType) + 1d0      
+         acptSwapOut(nType) = acptSwapOut(nType) + 1d0
          molArray(nType)%mol(nMol)%x(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%x(1:nAtoms(nType))
          molArray(nType)%mol(nMol)%y(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%y(1:nAtoms(nType))
          molArray(nType)%mol(nMol)%z(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%z(1:nAtoms(nType))
@@ -356,20 +355,19 @@
          call UpdateDistArray_SwapOut(nType, nMol)
          nIndx = molArray(nType)%mol(nMol)%indx
          call NeighborUpdate_Delete(nIndx)
-         isActive(molArray(nType)%mol(NPART(nType))%indx) = .false.         
+         isActive(molArray(nType)%mol(NPART(nType))%indx) = .false.
          ETable = ETable - dETable
          ETable(nIndx) = ETable( molArray(nType)%mol(NPART(nType))%indx )
          ETable( molArray(nType)%mol(NPART(nType))%indx ) = 0d0
          NPART(nType) = NPART(nType) - 1
-         NTotal = NTotal - 1         
-         acc_x = acc_x + 1d0 
+         NTotal = NTotal - 1
+         acc_x = acc_x + 1d0
          call Update_SubEnergies
          prevMoveAccepted = .true.
 !         call DEBUG_Output_NeighborList
        else
          dbalRej_out = dbalRej_out + 1d0
          totalRej_out = totalRej_out + 1d0
-         prevMoveAccepted = .false.
        endif
        end subroutine
 !=================================================================================    

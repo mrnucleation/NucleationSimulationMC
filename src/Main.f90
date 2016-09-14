@@ -266,9 +266,9 @@
       else
         write(nout,outFormat1) 0,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
       endif
-!      if(useUmbrella) then
-!        call ScreenOutputUmbrella
-!      endif
+      if(useUmbrella) then
+        call ScreenOutputUmbrella
+      endif
       flush(nout)
       flush(35)
       call CPU_TIME(TimeStart)      
@@ -326,9 +326,9 @@
             else
              write(nout,outFormat1) iCycle,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             endif
-!            if(useUmbrella) then
-!              call ScreenOutputUmbrella
-!            endif
+            if(useUmbrella) then
+              call ScreenOutputUmbrella
+            endif
             flush(nout)
           endif
           if(mod(iCycle,outFreq_Traj) .eq. 0) then
@@ -346,6 +346,12 @@
 !--------------------------------------------------------------------------------------------------
       call CPU_TIME(TimeFinish)      
       write(nout,*) "--------------------------------------------"
+
+!      Collect the initial values for the analysis variables and print out the . 
+      if(useAnalysis) then
+!        call PostMoveAnalysis
+        call ScreenOutputUmbrella
+      endif 
 
 !      This block initializes variables used in calculating averages as well as variables used
 !      in checking for errors that may occur during the simulation. 

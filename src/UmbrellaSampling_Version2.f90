@@ -19,12 +19,24 @@
       end subroutine
     end interface
 
+    abstract interface
+      subroutine USwapOutFunc(nType, nMol)
+        use CoordinateTypes
+        implicit none
+        integer, intent(in) :: nType, nMol
+      end subroutine
+    end interface
+
     type DispUmbrellaArray
       procedure(UDispFunc), pointer, nopass :: func
     end type
 
-    type SwapUmbrellaArray
+    type SwapInUmbrellaArray
       procedure(), pointer, nopass :: func
+    end type
+
+    type SwapOutUmbrellaArray
+      procedure(USwapOutFunc), pointer, nopass :: func
     end type
 
     logical :: useUmbrella, UScreenOut
@@ -47,8 +59,8 @@
 
     integer :: nDispFunc, nSwapInFunc, nSwapOutFunc
     type(DispUmbrellaArray), allocatable :: DispUmbrella(:)
-    type(SwapUmbrellaArray), allocatable :: SwapInUmbrella(:)
-    type(SwapUmbrellaArray), allocatable :: SwapOutUmbrella(:)
+    type(SwapInUmbrellaArray), allocatable :: SwapInUmbrella(:)
+    type(SwapOutUmbrellaArray), allocatable :: SwapOutUmbrella(:)
 
     public :: AllocateUmbrellaVariables, ReadInput_Umbrella, AllocateUmbrellaArray, UmbrellaHistAdd
     public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp, findVarValues, getBiasIndex
@@ -204,9 +216,9 @@
           iDisp = iDisp + 1
           DispUmbrella(iDisp) % func => CalcDistPairs_New
           iSwapIn = iSwapIn + 1
-          SwapInUmbrella(iSwapIn) % func => CalcDistPairs_Swap
+          SwapInUmbrella(iSwapIn) % func => CalcDistPairs_SwapIn
           iSwapOut = iSwapOut + 1
-          SwapOutUmbrella(iSwapOut) % func => CalcDistPairs_Swap
+          SwapOutUmbrella(iSwapOut) % func => CalcDistPairs_SwapOut
 
         case("q6")
           read(inputLines(iUmbrella), *) labelField, valMin, valMax, binSize
@@ -493,10 +505,11 @@
 
      end subroutine
 !==========================================================================================
-     subroutine GetUmbrellaBias_SwapOut(biasDiff, rejMove)
+     subroutine GetUmbrellaBias_SwapOut(nType, nMol, biasDiff, rejMove)
      use SimParameters, only: NPART, NPART_new
      implicit none
      logical, intent(out) :: rejMove
+     integer, intent(in) :: nType, nMol
      real(dp), intent(out) :: biasDiff
      integer :: iSwapFunc, newUIndx, sizeDisp
      real(dp) :: biasOld, biasNew
@@ -511,7 +524,7 @@
      biasOld = UBias(curUIndx)
      if(nSwapOutFunc .ne. 0) then
        do iSwapFunc = 1, nSwapInFunc
-         call SwapOutUmbrella(iSwapFunc) % func
+         call SwapOutUmbrella(iSwapFunc) % func(nType, nMol)
        enddo
      endif
 

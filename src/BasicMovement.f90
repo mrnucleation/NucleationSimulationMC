@@ -30,7 +30,7 @@
       real(dp) :: PairList(1:maxMol)
       real(dp) :: dETable(1:maxMol)
       
-
+      prevMoveAccepted = .false.
       max_distx = 0.1E0
       rejMove = .false.
       atmp_x = atmp_x + 1E0
@@ -143,11 +143,12 @@
       type (displacement) :: disp(1:maxAtoms)
       real(dp) :: PairList(1:maxMol)
       real(dp) :: dETable(1:maxMol)
-      
-      if(NTotal .eq. 1) return
 
       prevMoveAccepted = .false.
       
+      if(NTotal .eq. 1) return
+
+     
       rejMove = .false.
 !     Randomly Select a Particle from the cluster and obtain its molecule type and index
       nMove = floor(NTotal*grnd() + 1E0)
@@ -204,8 +205,6 @@
       elseif(exp(-biasEnergy) .gt. grnd()) then
         acptTrans(nType) = acptTrans(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
-      else
-        prevMoveAccepted = .false.
       endif
 
       	  
@@ -222,7 +221,8 @@
 !       acc_x=acc_x+1E0
        return            
       endif      
-      
+
+      prevMoveAccepted = .false.      
 
       ran_num = grnd()
       if(ran_num .lt. 1E0/3E0) then
@@ -338,8 +338,6 @@
       elseif(exp(-biasEnergy) .gt. grnd()) then
         acptRot(nType) = acptRot(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
-      else
-        prevMoveAccepted = .false.
       endif
       end subroutine
 !=======================================================      
@@ -449,8 +447,6 @@
       elseif(exp(-biasEnergy) .gt. grnd()) then
         acptRot(nType) = acptRot(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
-      else
-        prevMoveAccepted = .false.    
       endif
 
       end subroutine
@@ -558,8 +554,6 @@
       elseif(exp(-biasEnergy) .gt. grnd()) then
         acptRot(nType) = acptRot(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
-      else
-        prevMoveAccepted = .false.
       endif
       end subroutine
 
@@ -595,7 +589,6 @@
       E_T = E_T + E_Inter
       ETable = ETable + dETable
       acc_x = acc_x + 1E0
-      acptRot(nType) = acptRot(nType) + 1E0
       if(distCriteria) then
         call NeighborUpdate_Distance(PairList,nIndx)        
       else

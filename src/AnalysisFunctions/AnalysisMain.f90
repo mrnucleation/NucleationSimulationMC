@@ -81,7 +81,7 @@
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx
       use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes
-      use Q6Functions, only: CalcQ6, Initialize_q6, useQ6, q6Dist
+      use Q6Functions, only: CalcQ6, Initialize_q6, useQ6, q6Dist, q6DistSq
       implicit none
       integer, intent(in) :: fileUnit
       integer :: iAnalysis, AllocateStatus
@@ -196,6 +196,7 @@
           read(inputLines(iAnalysis), *)  analysisName, realVar
           iPostMove = iPostMove + 1
           q6Dist = realVar
+          q6DistSq = q6Dist*q6Dist
           postMoveArray(iPostMove)%func => CalcQ6
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"

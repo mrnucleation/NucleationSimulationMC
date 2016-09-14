@@ -17,10 +17,10 @@
        integer :: q6Neigh, dNeigh
        real(dp) :: Q6real(0:12) , Q6Img(0:12)
        real(dp) :: dQ6real(0:12) , dQ6Img(0:12)
-       real(dp) :: q6Dist
+       real(dp) :: q6Dist, q6DistSq
 
 
-       public :: Initialize_q6, CalcQ6, useQ6, q6Dist, q6ArrayIndx
+       public :: Initialize_q6, CalcQ6, useQ6, q6Dist, q6DistSq, q6ArrayIndx
        public :: CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut, q6Neigh
        contains
      !--------------------------------------------------------------------------------
@@ -47,13 +47,15 @@
              do jType = 1, nMolTypes
                do jMol = 1, NMAX(jType)
                  gloIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
-                 rPair(gloIndx1,gloIndx2) % p % storeRParts = .true.
-                 rPair(gloIndx1,gloIndx2) % p % storeRValue = .true.
+                 if(gloIndx1 .ne. gloIndx2) then
+                   rPair(gloIndx1,gloIndx2) % p % storeRParts = .true.
+                   rPair(gloIndx1,gloIndx2) % p % storeRValue = .true.
+                 endif
                enddo
              enddo
            enddo
          enddo 
-
+!         q6DistSq = q6Dist*q6Dist
 
        end subroutine
      !--------------------------------------------------------------------------------
@@ -63,7 +65,7 @@
          use SimParameters, only: nMolTypes, NPART, NTotal, prevMoveAccepted
          implicit none 
          integer :: m
-         integer :: iType, iMol, jType, jMol
+         integer :: iType, iMol, jType, jMol, jMolMin
          integer :: gloIndx1, gloIndx2
          integer :: jIndx, iIndx
          real(dp) :: rx,ry,rz,r
@@ -74,8 +76,12 @@
 
   
          if(NTotal .eq. 1) then
-           q6Par = 1E0
-           return	   
+ 	       miscCoord(q6ArrayIndx) = 1E0_dp
+           Q6real = 0E0_dp
+           Q6img = 0E0_dp
+           q6neigh = 0
+           newData = .false.
+           return  
          endif
 
          if(prevMoveAccepted) then
@@ -84,13 +90,19 @@
                Q6real(m) = Q6real(m) + dQ6Real(m)
                Q6img(m) = Q6img(m) + dQ6img(m)
              enddo
-             dQ6real = 0E0
-             dQ6img = 0E0
              q6Neigh = q6Neigh + dNeigh
-             dNeigh = 0
              miscCoord(q6ArrayIndx) = miscCoord_New(q6ArrayIndx)
              newData = .false.
+!             dQ6real = 0E0_dp
+!             dQ6img = 0E0_dp
+!             dNeigh = 0
              return
+!             write(2,*) "Predicted"
+!             write(2,*) miscCoord_New(q6ArrayIndx)
+!             write(2,*) q6Neigh
+!             do m = 0, 12
+!              write(2,*) m, Q6real(m), Q6img(m)
+!             enddo
            endif
          endif
 
@@ -99,27 +111,30 @@
          endif
 
          q6Neigh = 0
-         Q6real = 0E0
-         Q6img = 0E0	      
+         Q6real = 0E0_dp
+         Q6img = 0E0_dp
 
          do iType = 1, nMolTypes
            do iMol = 1, NPART(iType)
+             gloIndx1 = molArray(iType)%mol(iMol)%globalIndx(1)
              do jType = 1, nMolTypes
-               iIndx = molArray(iType)%mol(iMol)%indx
-               do jMol = 1, NPART(jType)
-                 jIndx = molArray(jType)%mol(jMol)%indx
-                 if(iIndx .eq. jIndx) then
+               if(iType .eq. jType) then
+                 jMolMin = iMol+1
+               else
+                 jMolMin = 1        
+               endif
+               do jMol = jMolMin, NPART(jType)
+                 gloIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
+                 if(gloIndx1 .eq. gloIndx2) then
                    cycle
                  endif
-                 gloIndx1 = molArray(iType)%mol(iMol)%globalIndx(1)
-                 gloIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
-                 r = rPair(gloIndx1, gloIndx2)%p%r
+                 r = rPair(gloIndx2, gloIndx1)%p%r
 
                  if(r .le. q6Dist) then	
                    q6Neigh = q6Neigh + 1
-                   rx = rPair(gloIndx1, gloIndx2)%p%rx
-                   ry = rPair(gloIndx1, gloIndx2)%p%ry
-                   rz = rPair(gloIndx1, gloIndx2)%p%rz
+                   rx = rPair(gloIndx2, gloIndx1)%p%rx
+                   ry = rPair(gloIndx2, gloIndx1)%p%ry
+                   rz = rPair(gloIndx2, gloIndx1)%p%rz
                    phi = atan2(ry,rx)
                    theta = acos(rz/r)   
                    do m = 0, 12
@@ -140,7 +155,16 @@
          q6par = q6par * q6Constant
          q6par = sqrt(q6par)/q6Neigh
  	     miscCoord(q6ArrayIndx) = q6par
- 	     miscCoord_New(q6ArrayIndx) = q6par
+!         if(prevMoveAccepted) then
+!           write(2,*) "Actual"
+!           write(2,*) q6par
+!           write(2,*) q6Neigh
+!           do m = 0, 12
+!             write(2,*) m, Q6real(m), Q6img(m)
+!           enddo
+!           write(2,*)
+!         endif
+! 	     miscCoord_New(q6ArrayIndx) = q6par
          initialized = .true.
       end subroutine
      !--------------------------------------------------------------------------------
@@ -156,7 +180,7 @@
          integer :: m
          integer :: iDisp, iType, iMol, jType, jMol
          integer :: gloIndx1, gloIndx2
-         integer :: jIndx, iIndx, sizeDisp
+         integer :: sizeDisp
          integer :: dispAtom1, newNeigh
          real(dp) :: q6r_new, q6i_new
          real(dp) :: rx,ry,rz,r
@@ -164,9 +188,12 @@
          real(dp) :: q6Par
          real(dp) :: rPart,iPart
 
- 
+         dNeigh = 0
+         dQ6real = 0E0_dp
+         dQ6img = 0E0_dp
          if(NTotal .eq. 1) then
-           q6Par = 1E0
+ 	       miscCoord_New(q6ArrayIndx) = 1E0_dp
+           newData = .false.
            return	   
          endif
 
@@ -182,47 +209,44 @@
 
          if(.not. changed) then
            miscCoord_New(q6ArrayIndx) = miscCoord(q6ArrayIndx)
+           newData = .false.
            return
          endif
 
          iType = disp(1)%molType
          iMol = disp(1)%molIndx
-         dNeigh = 0
 
-         dQ6real = 0E0
-         dQ6img = 0E0
          gloIndx1 =  molArray(iType)%mol(iMol)%globalIndx(1)
-
          do jType = 1, nMolTypes
            do jMol = 1, NPART(jType)
              gloIndx2 =  molArray(jType)%mol(jMol)%globalIndx(1)
              if(gloIndx2 .eq. gloIndx1) then
                cycle
              endif
-             rx = disp(dispAtom1)%x_new -  molArray(jType)%mol(jMol)%x(1)
-             ry = disp(dispAtom1)%y_new -  molArray(jType)%mol(jMol)%y(1)
-             rz = disp(dispAtom1)%z_new -  molArray(jType)%mol(jMol)%z(1)
+             rx = molArray(jType)%mol(jMol)%x(1) - disp(dispAtom1)%x_new 
+             ry = molArray(jType)%mol(jMol)%y(1) - disp(dispAtom1)%y_new 
+             rz = molArray(jType)%mol(jMol)%z(1) - disp(dispAtom1)%z_new
              r = rx*rx + ry*ry + rz*rz
-             if(r .le. q6Dist*q6Dist) then	
+             if(r .le. q6DistSq) then	
                r = sqrt(r)
                dNeigh = dNeigh + 1
-               phi = atan2(ry,rx)
-               theta = acos(rz/r)  
+               phi = atan2( ry, rx )
+               theta = acos( rz / r )  
                do m = 0, 12
                  call Harmonics(theta, phi, m-6, rPart, iPart)	
                  dQ6real(m) = dQ6real(m) + rPart
                  dQ6img(m) = dQ6img(m) + iPart	
                enddo               
              endif
+             
 
-             r = rPair(gloIndx2, gloIndx1)%p%r
-             if(r .le. q6Dist) then	
+             if(rPair(gloIndx2, gloIndx1)%p%r_sq .le. q6DistSq) then	
                 dNeigh = dNeigh - 1
-                rx = rPair(gloIndx2, gloIndx1)%p%rx
-                ry = rPair(gloIndx2, gloIndx1)%p%ry
-                rz = rPair(gloIndx2, gloIndx1)%p%rz
-                phi = atan2(ry,rx)
-                theta = acos(rz/r)   
+!                rx = rPair(gloIndx2, gloIndx1)%p%rx
+!                ry = rPair(gloIndx2, gloIndx1)%p%ry
+!                rz = rPair(gloIndx2, gloIndx1)%p%rz
+                phi = atan2(rPair(gloIndx2, gloIndx1)%p%ry, rPair(gloIndx2, gloIndx1)%p%rx)
+                theta = acos(rPair(gloIndx2, gloIndx1)%p%rz / rPair(gloIndx2, gloIndx1)%p%r )   
                 do m = 0, 12
                   call Harmonics(theta, phi, m-6, rPart, iPart)	
                   dQ6real(m) = dQ6real(m) - rPart
@@ -266,16 +290,16 @@
          iType = newMol%molType
          iMol = NPART(iType) + 1
          dNeigh = 0
-         gloIndx1 =  molArray(iType)%mol(iMol)%globalIndx(1)
-         dQ6real = 0E0
-         dQ6img = 0E0
+!         gloIndx1 =  molArray(iType)%mol(iMol)%globalIndx(1)
+         dQ6real = 0E0_dp
+         dQ6img = 0E0_dp
          do jType = 1, nMolTypes
            do jMol = 1, NPART(jType)
              rx = newMol%x(1) -  molArray(jType)%mol(jMol)%x(1)
              ry = newMol%y(1) -  molArray(jType)%mol(jMol)%y(1)
              rz = newMol%z(1) -  molArray(jType)%mol(jMol)%z(1)
              r = rx*rx + ry*ry + rz*rz
-             if(r .le. q6Dist*q6Dist) then	
+             if(r .le. q6DistSq) then	
                r = sqrt(r)
                dNeigh = dNeigh + 1
                phi = atan2(ry,rx)
@@ -289,23 +313,24 @@
            enddo
          enddo
           
-         q6par = 0E0
+         q6par = 0E0_dp
          do m = 0, 12
            q6r_new = Q6real(m) + dQ6real(m)
            q6i_new = Q6img(m) + dQ6img(m)
            q6Par = q6par + q6r_new*q6r_new + q6i_new*q6i_new   	   
          enddo
          q6par = q6par * q6Constant
-         q6par = sqrt(q6par)/(q6Neigh + dNeigh)
+         q6par = sqrt(q6par)/real((q6Neigh + dNeigh), dp)
  	     miscCoord_New(q6ArrayIndx) = q6par
          newData = .true.
       end subroutine
      !--------------------------------------------------------------------------------
-       subroutine CalcQ6_SwapOut
+       subroutine CalcQ6_SwapOut(nType, nMol)
          use MiscelaniousVars
          use Coords
          use SimParameters
          implicit none 
+         integer, intent(in) :: nType, nMol
          integer :: m
          integer :: i, iType, iMol, jType, jMol
          integer :: gloIndx1, gloIndx2
@@ -318,26 +343,26 @@
          real(dp) :: q6Par
          real(dp) :: rPart,iPart
 
-         do i = 1, nMolTypes
-           if(NPART(i) - NPART_New(i) .ne. 0) then
-             iType = i
-             iMol = NPART_New(i)
-             exit
-           endif
-         enddo
+!         if(NTotal .eq. 2) then
+! 	       miscCoord_New(q6ArrayIndx) = 1E0
+!           return	   
+!         endif
+
  
          dNeigh = 0
          dQ6real = 0E0
          dQ6img = 0E0
-         gloIndx1 =  molArray(iType)%mol(iMol)%globalIndx(1)
+         gloIndx1 =  molArray(nType)%mol(nMol)%globalIndx(1)
+!         iIndx =  molArray(nType)%mol(nMol)%indx
          do jType = 1, nMolTypes
            do jMol = 1, NPART(jType)
+!             jIndx =  molArray(jType)%mol(jMol)%indx
              gloIndx2 =  molArray(jType)%mol(jMol)%globalIndx(1)
              if(gloIndx1 .eq. gloIndx2) then
                cycle
              endif
-             r = rPair(gloIndx2, gloIndx1)%p%r
-             if(r .le. q6Dist) then	
+             if(rPair(gloIndx2, gloIndx1)%p%r_sq .le. q6DistSq) then	
+               r = rPair(gloIndx2, gloIndx1)%p%r
                dNeigh = dNeigh - 1
                rx = rPair(gloIndx2, gloIndx1)%p%rx
                ry = rPair(gloIndx2, gloIndx1)%p%ry
@@ -360,7 +385,7 @@
            q6Par = q6par + q6r_new*q6r_new + q6i_new*q6i_new   	   
          enddo
          q6par = q6par * q6Constant
-         q6par = sqrt(q6par)/(q6Neigh + dNeigh)
+         q6par = sqrt(q6par)/real((q6Neigh + dNeigh), dp)
  	     miscCoord_New(q6ArrayIndx) = q6par
          newData = .true.
       end subroutine
@@ -375,7 +400,8 @@
 !      end subroutine
      !--------------------------------------------------------------------------------
       subroutine Harmonics(Theta, Phi, m, RealVal, ImgVal)
-      use Constants	  
+      use Constants	
+      use VarPrecision  
       implicit none	
       integer, intent(in) :: m
       real(dp), intent(in) :: Theta,Phi
@@ -389,8 +415,8 @@
       real(dp), parameter :: const6 = sqrt(3003d0/pi)/64d0
       integer :: i,n
 
-      RealVal = 0E0
-      ImgVal = 0E0
+      RealVal = 0E0_dp
+      ImgVal = 0E0_dp
       cterm = cos(Theta)
       sterm = sin(Theta)
 	  
@@ -443,11 +469,11 @@
 	
 	
       If(Abs(ImgVal) .lt. 1d-13) then
-        ImgVal = 0d0
+        ImgVal = 0E0_dp
       endif
 
       If(Abs(RealVal) .lt. 1d-13) then
-        RealVal = 0d0
+        RealVal = 0E0_dp
       endif
 
       end subroutine
