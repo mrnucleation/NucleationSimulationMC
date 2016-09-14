@@ -266,9 +266,9 @@
       else
         write(nout,outFormat1) 0,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
       endif
-      if(useUmbrella) then
-        call ScreenOutputUmbrella
-      endif
+!      if(useUmbrella) then
+!        call ScreenOutputUmbrella
+!      endif
       flush(nout)
       flush(35)
       call CPU_TIME(TimeStart)      
@@ -311,11 +311,11 @@
            enddo
          endif      
 
-        if(totalDihed .gt. 0) then
-          if(mod(iCycle, 5000) .eq. 0 ) then
-            call UpdateDihedralProbabilites
-          endif
-        endif
+!        if(totalDihed .gt. 0) then
+!          if(mod(iCycle, 5000) .eq. 0 ) then
+!            call UpdateDihedralProbabilites
+!          endif
+!        endif
 
 !         call TrajOutput(iCycle)
 !        Mid Simulation Output Block
@@ -348,10 +348,10 @@
       write(nout,*) "--------------------------------------------"
 
 !      Collect the initial values for the analysis variables and print out the . 
-      if(useAnalysis) then
+!      if(useAnalysis) then
 !        call PostMoveAnalysis
-        call ScreenOutputUmbrella
-      endif 
+!        call ScreenOutputUmbrella
+!      endif 
 
 !      This block initializes variables used in calculating averages as well as variables used
 !      in checking for errors that may occur during the simulation. 
