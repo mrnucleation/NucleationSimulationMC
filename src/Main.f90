@@ -224,6 +224,7 @@
         write(nout,*) "   ----- WHAM ------- "
         write(nout,*) "    Expected number of WHAM itterations:", nWhamItter
         write(nout,*) "    Reference Bin:", refSizeNumbers
+        write(nout,*) "    Reference Bin Indx:", refBin
         write(nout,*) "    Number of Cycle before WHAM adjustment:", intervalWHAM
         write(nout,*) "    WHAM Convergence Tolerance:", tolLimit
         write(nout,*) "    Maximum WHAM Itterations:", maxSelfConsist
@@ -266,9 +267,10 @@
       else
         write(nout,outFormat1) 0,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
       endif
-!      if(useUmbrella) then
+      if(useUmbrella) then
+        call UmbrellaHistAdd 
 !        call ScreenOutputUmbrella
-!      endif
+      endif
       flush(nout)
       flush(35)
       call CPU_TIME(TimeStart)      

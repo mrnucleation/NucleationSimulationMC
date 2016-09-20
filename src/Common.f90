@@ -205,7 +205,7 @@
             molType = i
             return
           endif
-        enddo
+        enddo 
 
         write(35,*) "NotFound", nMove, molType,molIndx
       end subroutine
@@ -351,7 +351,8 @@
 
       logical, parameter :: WHAM_ExtensiveOutput = .false.
 
-      integer, allocatable :: refSizeNumbers(:)
+!      integer, allocatable :: refSizeNumbers(:)
+      real(dp), allocatable :: refSizeNumbers(:)
       integer :: refBin
       logical :: useWHAM
       integer :: intervalWHAM

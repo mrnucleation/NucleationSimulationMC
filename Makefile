@@ -155,7 +155,7 @@ OBJ_CRIT:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 OBJ_TEMP:=$(patsubst $(ANALYSIS_SUB)/%.f,$(OBJ)/%.o,$(SRC_ANALYSIS))
 OBJ_ANALYSIS:=$(patsubst $(ANALYSIS_SUB)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 
-OBJ_COMPLETE:= $(OBJ_MOD) $(OBJ_CRIT) $(OBJ_ANALYSIS) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_BIAS) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
+OBJ_COMPLETE:= $(OBJ_CRIT) $(OBJ_ANALYSIS) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_BIAS) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
 # ====================================
 #        Compile Commands
 # ====================================
@@ -211,7 +211,7 @@ quick: startUP generalNucleation finale
 neat: startUP createMods generalNucleation removeObject finale
 clean: removeObjects removeExec finale    
     
-createMods: $(MOD_SRC)
+createMods: $(MOD_SRC) 
 		@echo =============================================
 		@echo            Creating Module Files
 		@echo =============================================		
@@ -238,7 +238,7 @@ energyFunctions: $(OBJ_CRIT) $(OBJ_ENERGY)
 		@$(FC) $(COMPFLAGS)  $< -c
       
         
-generalNucleation: $(OBJ_COMPLETE)
+generalNucleation: $(OBJ_COMPLETE) $(OBJ_MOD)
 		@echo =============================================
 		@echo     Compiling and Linking Source Files
 		@echo =============================================	
@@ -291,6 +291,7 @@ removeExec:
 # ====================================
 #        Dependencies
 # ====================================
+$(OBJ_COMPLETE): $(OBJ_MOD)
 $(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o
 $(OBJ)/WHAM_Version2.o: $(OBJ)/SwapBoundaries.o $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o
 $(OBJ)/Units.o: $(OBJ)/VariablePrecision.o

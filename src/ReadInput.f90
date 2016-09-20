@@ -182,10 +182,11 @@
       read(54,*)
       read(54,*) 
 
-      allocate(refSizeNumbers(1:nMolTypes),STAT = AllocateStatus)
+!      allocate(refSizeNumbers(1:nMolTypes),STAT = AllocateStatus)
 
       read(54,*) labelField, useWHAM
-      read(54,*) labelField, (refSizeNumbers(j), j=1,nMolTypes)
+!      read(54,*) labelField, (refSizeNumbers(j), j=1,nMolTypes)
+      read(54,*)
 !      refBin = getBiasIndex(refSizeNumbers, NMAX)
       refBin = 1
       read(54,*) labelField, intervalWHAM

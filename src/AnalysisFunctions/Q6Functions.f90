@@ -14,9 +14,10 @@
 
        logical :: initialized = .false.
        logical :: newData = .false.
-       integer :: q6Neigh, dNeigh
+       integer :: q6Neigh, dNeigh, q6Neigh_t
        real(dp) :: Q6real(0:12) , Q6Img(0:12)
        real(dp) :: dQ6real(0:12) , dQ6Img(0:12)
+       real(dp) :: Q6r_t(0:12) , Q6i_t(0:12)
        real(dp) :: q6Dist, q6DistSq
 
 
@@ -87,28 +88,20 @@
          if(prevMoveAccepted) then
            if( newData ) then
              do m = 0,12
-               Q6real(m) = Q6real(m) + dQ6Real(m)
-               Q6img(m) = Q6img(m) + dQ6img(m)
+               Q6r_t(m) = Q6real(m) + dQ6Real(m)
+               Q6i_t(m) = Q6img(m) + dQ6img(m)
              enddo
-             q6Neigh = q6Neigh + dNeigh
-             miscCoord(q6ArrayIndx) = miscCoord_New(q6ArrayIndx)
+             q6Neigh_t = q6Neigh + dNeigh 
+!             q6Neigh = q6Neigh + dNeigh
+!             miscCoord(q6ArrayIndx) = miscCoord_New(q6ArrayIndx)
              newData = .false.
-!             dQ6real = 0E0_dp
-!             dQ6img = 0E0_dp
-!             dNeigh = 0
-             return
-!             write(2,*) "Predicted"
-!             write(2,*) miscCoord_New(q6ArrayIndx)
-!             write(2,*) q6Neigh
-!             do m = 0, 12
-!              write(2,*) m, Q6real(m), Q6img(m)
-!             enddo
+!             return
            endif
          endif
 
-         if(initialized) then
-           return
-         endif
+!         if(initialized) then
+!           return
+!         endif
 
          q6Neigh = 0
          Q6real = 0E0_dp
@@ -155,16 +148,19 @@
          q6par = q6par * q6Constant
          q6par = sqrt(q6par)/q6Neigh
  	     miscCoord(q6ArrayIndx) = q6par
-!         if(prevMoveAccepted) then
-!           write(2,*) "Actual"
-!           write(2,*) q6par
-!           write(2,*) q6Neigh
-!           do m = 0, 12
-!             write(2,*) m, Q6real(m), Q6img(m)
-!           enddo
-!           write(2,*)
-!         endif
-! 	     miscCoord_New(q6ArrayIndx) = q6par
+         if(prevMoveAccepted) then
+           if(abs(miscCoord(q6ArrayIndx) - miscCoord_New(q6ArrayIndx)) .gt. 1d-7) then
+             write(2,*) "DISCRPANCY:", miscCoord(q6ArrayIndx), miscCoord_New(q6ArrayIndx)
+           endif
+           do m = 0, 12
+             if(abs(Q6real(m) - Q6r_t(m)) .gt. 1d-7) then
+               write(2,*) "DISCRPANCY:",m, Q6real(m) , Q6r_t(m)
+             endif
+           enddo
+           if(q6Neigh .ne. q6Neigh_t) then
+             write(2,*) "DISCRPANCY:", q6Neigh, q6Neigh_t
+           endif
+         endif
          initialized = .true.
       end subroutine
      !--------------------------------------------------------------------------------
@@ -343,10 +339,13 @@
          real(dp) :: q6Par
          real(dp) :: rPart,iPart
 
-!         if(NTotal .eq. 2) then
-! 	       miscCoord_New(q6ArrayIndx) = 1E0
-!           return	   
-!         endif
+         if(NTotal .eq. 2) then
+!           dNeigh = -q6Neigh
+!           dQ6real = -Q6real
+!           dQ6real = -Q6img
+ 	       miscCoord_New(q6ArrayIndx) = 1E0
+           return	   
+         endif
 
  
          dNeigh = 0

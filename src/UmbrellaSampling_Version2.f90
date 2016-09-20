@@ -45,6 +45,7 @@
     integer, allocatable :: curVarIndx
     integer, allocatable :: binIndx(:)
     integer, allocatable :: varMax(:), varMin(:)
+    integer, allocatable :: binMax(:), binMin(:)
     integer, allocatable :: indexCoeff(:)
     integer, allocatable :: UArray(:)
     real(dp), allocatable :: UBias(:)
@@ -73,8 +74,8 @@
     implicit none
     integer :: AllocateStatus
         
-    allocate( VarMin(1:nBiasVariables), STAT = AllocateStatus )
-    allocate( VarMax(1:nBiasVariables), STAT = AllocateStatus )
+    allocate( binMin(1:nBiasVariables), STAT = AllocateStatus )
+    allocate( binMax(1:nBiasVariables), STAT = AllocateStatus )
     allocate( UBinSize(1:nBiasVariables), STAT = AllocateStatus )
     allocate( biasvar(1:nBiasVariables), STAT = AllocateStatus )
     allocate( biasvarnew(1:nBiasVariables), STAT = AllocateStatus )
@@ -95,13 +96,16 @@
       use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, echoInput
       use Q6Functions, only: q6ArrayIndx, CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut
       use ParallelVar, only: nout
+      use WHAM_Module, only: refBin, refSizeNumbers
       implicit none
       integer, intent(in) :: fileUnit
       integer :: iUmbrella, AllocateStatus
-      integer :: indxVar
+      integer :: indxVar, stat
       integer :: iDisp, iSwapIn, iSwapOut
       real(dp) :: binSize, valMax, valMin
+      real(dp), allocatable :: refVals(:)
       character(len=100), allocatable :: inputLines(:)
+      character(len=100) :: refLine
       character(len=30) :: labelField 
       character(len=30) :: umbrellaName
 
@@ -121,6 +125,7 @@
         write(nout,*) "Number of Umbrella Variables:", nBiasVariables
       endif
 
+      read(fileUnit, "(A)") refLine
       allocate( inputLines(1:nBiasVariables) )
       do iUmbrella = 1, nBiasVariables
         read(fileUnit, "(A)") inputLines(iUmbrella)
@@ -129,6 +134,7 @@
         endif 
       enddo
 
+     allocate( refVals(1:nBiasVariables) )
 
      nDispFunc = 0
      nSwapInFunc = 0
@@ -182,8 +188,8 @@
           biasvar(iUmbrella) % intVar => NPart(indxVar)
           biasvarnew(iUmbrella) % varType = 1
           biasvarnew(iUmbrella) % intVar => NPart_New(indxVar)
-          varMax(iUmbrella) = NMAX(indxVar)
-          varMin(iUmbrella) = NMin(indxVar)
+          binMax(iUmbrella) = NMAX(indxVar)
+          binMin(iUmbrella) = NMin(indxVar)
           UBinSize(iUmbrella) = 1E0
           outputFormat(iUmbrella) = "2x,F5.1,"
           
@@ -209,8 +215,8 @@
           biasvarnew(iUmbrella) % varType = 2
           biasvarnew(iUmbrella) % realVar => miscCoord_New(pairArrayIndx(indxVar))
           UBinSize(iUmbrella) = binSize
-          varMin(iUmbrella) = valMin / binSize
-          varMax(iUmbrella) = valMax / binSize
+          binMin(iUmbrella) = nint(valMin / binSize)
+          binMax(iUmbrella) = nint(valMax / binSize)
           outputFormat(iUmbrella) = "2x,F12.6,"
 
           iDisp = iDisp + 1
@@ -227,8 +233,8 @@
           biasvarnew(iUmbrella) % varType = 2
           biasvarnew(iUmbrella) % realVar => miscCoord_New(q6ArrayIndx)
           UBinSize(iUmbrella) = binSize
-          varMin(iUmbrella) = valMin / binSize
-          varMax(iUmbrella) = valMax / binSize
+          binMin(iUmbrella) = nint(valMin / binSize)
+          binMax(iUmbrella) = nint(valMax / binSize)
           outputFormat(iUmbrella) = "2x,F12.6,"
 
           iDisp = iDisp + 1
@@ -245,15 +251,29 @@
         end select
       enddo
       write(screenFormat,*) "(", (trim(adjustl(outputFormat(iUmbrella))), iUmbrella=1,nBiasVariables), "1x)"
-!      write(screenFormat, *) "(", (trim(adjustl(outputFormat(iUmbrella))), iUmbrella=1,nBiasVariables), ")"
-!      write(*,*) screenFormat
+
       allocate(varValues(1:nBiasVariables))
       allocate(UArray(1:nBiasVariables))
-
-
       deallocate(inputLines)
+
+
       call AllocateUmbrellaArray
       call ReadUmbrellaInput
+
+!      Use the input to specify the reference bin
+      allocate(refSizeNumbers(1:nBiasVariables),STAT = AllocateStatus)
+      read(refLine, *) labelField, (refVals(iUmbrella), iUmbrella=1,nBiasVariables)
+      call getUIndexArray(refVals, refBin, stat)
+      do iUmbrella = 1, nBiasVariables
+        refSizeNumbers(iUmbrella) = refVals(iUmbrella)
+      enddo
+      if(stat .eq. 1) then
+        write(*,*) "ERROR! An invalid ref bin was specified!"
+        write(*,*) refLine
+        stop
+      endif
+
+      deallocate(refVals)
 
 
     end subroutine
@@ -270,14 +290,14 @@
      do i = 2, nBiasVariables 
        indexCoeff(i) = 1
        do j = 1, i-1
-         indexCoeff(i) = indexCoeff(i) + indexCoeff(j) * (VarMax(j) - VarMin(j))
+         indexCoeff(i) = indexCoeff(i) + indexCoeff(j) * (binMax(j) - binMin(j))
        enddo
      enddo      
 
 
      umbrellaLimit = 1
      do i = 1, nBiasVariables 
-       umbrellaLimit = umbrellaLimit + indexCoeff(i) * (VarMax(i) - VarMin(i))
+       umbrellaLimit = umbrellaLimit + indexCoeff(i) * (binMax(i) - binMin(i))
      enddo
 
      write(nout,*) "Number of Umbrella Bins:", umbrellaLimit
@@ -296,7 +316,7 @@
     subroutine ReadUmbrellaInput
     implicit none
     integer :: AllocateStatus
-    integer :: j, iBias, inStat, biasIndx
+    integer :: j, iInput, iBias, inStat, biasIndx
     real(dp), allocatable :: varValue(:)
     real(dp) :: curBias
 
@@ -305,15 +325,17 @@
     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
     UBias = 0E0_dp
-    do iBias = 1, nint(1d7)
+    do iInput = 1, nint(1d7)
       read(80, *, IOSTAT=inStat) (varValue(j), j=1,nBiasVariables), curBias
       if(inStat .lt. 0) then
         exit
       endif
+
       call getUIndexArray(varValue, biasIndx, inStat) 
       if(inStat .eq. 1) then
         cycle
       endif
+
       UBias(biasIndx) = curBias
     enddo
 
@@ -322,110 +344,6 @@
     close(80)
 
     end subroutine
-!==========================================================================
-     function getBiasIndex() result(biasIndx)
-     integer :: biasIndx
-     integer :: iBias
-      
-
-     do iBias = 1, nBiasVariables
-       if(biasvar(iBias) % varType .eq. 1) then
-         binIndx(iBias) = floor( biasvar(iBias) % intVar / UBinSize(iBias) )
-!         write(*,*) iBias, biasvar(iBias)%intVar, binIndx(iBias)
-       elseif(biasvar(iBias) % varType .eq. 2) then
-         binIndx(iBias) = floor( biasvar(iBias) % realVar / UBinSize(iBias) )
-!         write(*,*) iBias, biasvar(iBias)%realvar, binIndx(iBias)
-       endif
-     enddo
-
-
-     biasIndx = 1
-     do iBias = 1, nBiasVariables
-!       write(*,*) biasIndx,indexCoeff(iBias), binIndx(iBias), VarMin(iBias) 
-       biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
-     enddo
-
-!     write(*,*) biasIndx
- 
-     end function
-!==========================================================================
-     subroutine getNewBiasIndex(biasIndx, rejMove)
-     logical, intent(out) :: rejMove
-     integer, intent(out) :: biasIndx
-     integer :: iBias
-      
-     rejMove = .false.
-     do iBias = 1, nBiasVariables
-       if(biasvarnew(iBias) % varType .eq. 1) then
-         binIndx(iBias) = floor( biasvarnew(iBias)%intVar / UBinSize(iBias) )
-       elseif(biasvar(iBias) % varType .eq. 2) then
-         binIndx(iBias) = floor( biasvarnew(iBias)%realVar / UBinSize(iBias) )
-       endif
-       if(binIndx(iBias) .lt. varMin(iBias) ) then
-         rejMove = .true.
-         return
-       endif
-       if(binIndx(iBias) .gt. varMax(iBias) ) then
-         rejMove = .true.
-         return
-       endif
-
-     enddo
-
-     biasIndx = 1
-     do iBias = 1, nBiasVariables
-       biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
-     enddo
-     if(biasIndx .gt. umbrellaLimit ) then
-       rejMove = .true.
-       return
-     endif
-
-     end subroutine
-!==========================================================================
-     subroutine getUIndexArray(varArray, biasIndx, stat) 
-     real(dp), intent(in) :: varArray(:)
-     integer, intent(out) :: biasIndx, stat
-     integer :: iBias
-      
-     stat = 0
-     do iBias = 1, nBiasVariables
-       binIndx(iBias) = nint( varArray(iBias) / UBinSize(iBias) )
-       if(binIndx(iBias) .gt. varMax(iBias)) then
-         stat = 1
-         return
-       endif
-       if(binIndx(iBias) .lt. varMin(iBias)) then
-         stat = 1
-         return
-       endif
-     enddo
-
-
-     biasIndx = 1
-     do iBias = 1, nBiasVariables
-       biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - VarMin(iBias) )
-     enddo
-     
-
-     end subroutine
-!===========================================================================
-     subroutine findVarValues(UIndx, UArray)
-     implicit none
-     integer, intent(in) :: UIndx
-     integer, intent(inout) :: UArray(:)
-     integer :: i, iBias
-     integer :: remainder, curVal
-
-     remainder = UIndx - 1
-     do i = 1, nBiasVariables
-       iBias = nBiasVariables - i + 1
-       curVal = int( real(remainder, dp)/real(indexCoeff(iBias),dp) )
-       UArray(iBias) = curVal + varMin(iBias)
-       remainder = remainder - curVal * indexCoeff(iBias)
-     enddo
-    
-     end subroutine
 !==========================================================================================
      subroutine UmbrellaHistAdd
      implicit none
@@ -582,6 +500,113 @@
 !    deallocate(varValues)
 
     end subroutine
+
+!==========================================================================
+     function getBiasIndex() result(biasIndx)
+     integer :: biasIndx
+     integer :: iBias
+      
+
+     do iBias = 1, nBiasVariables
+       if(biasvar(iBias) % varType .eq. 1) then
+         binIndx(iBias) = floor( biasvar(iBias) % intVar / UBinSize(iBias) )
+!         write(*,*) iBias, biasvar(iBias)%intVar, binIndx(iBias)
+       elseif(biasvar(iBias) % varType .eq. 2) then
+         binIndx(iBias) = floor( biasvar(iBias) % realVar / UBinSize(iBias) )
+!         write(*,*) iBias, biasvar(iBias)%realvar, binIndx(iBias)
+       endif
+     enddo
+
+
+     biasIndx = 1
+     do iBias = 1, nBiasVariables
+!       write(*,*) biasIndx,indexCoeff(iBias), binIndx(iBias), binMin(iBias) 
+       biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - binMin(iBias) )
+     enddo
+
+!     write(*,*) biasIndx
+ 
+     end function
+!==========================================================================
+     subroutine getNewBiasIndex(biasIndx, rejMove)
+     logical, intent(out) :: rejMove
+     integer, intent(out) :: biasIndx
+     integer :: iBias
+      
+     rejMove = .false.
+     do iBias = 1, nBiasVariables
+       if(biasvarnew(iBias) % varType .eq. 1) then
+         binIndx(iBias) = floor( biasvarnew(iBias)%intVar / UBinSize(iBias) )
+       elseif(biasvar(iBias) % varType .eq. 2) then
+         binIndx(iBias) = floor( biasvarnew(iBias)%realVar / UBinSize(iBias) )
+       endif
+       if(binIndx(iBias) .lt. binMin(iBias) ) then
+         rejMove = .true.
+         return
+       endif
+       if(binIndx(iBias) .gt. binMax(iBias) ) then
+         rejMove = .true.
+         return
+       endif
+
+     enddo
+
+     biasIndx = 1
+     do iBias = 1, nBiasVariables
+       biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - binMin(iBias) )
+     enddo
+     if(biasIndx .gt. umbrellaLimit ) then
+       rejMove = .true.
+       return
+     endif
+
+     end subroutine
+!==========================================================================
+     subroutine getUIndexArray(varArray, biasIndx, stat) 
+     real(dp), intent(in) :: varArray(:)
+     integer, intent(out) :: biasIndx, stat
+     integer :: iBias
+      
+     stat = 0
+     do iBias = 1, nBiasVariables
+       binIndx(iBias) = nint( varArray(iBias) / UBinSize(iBias) )
+!       write(*,*) binIndx(iBias), varArray(iBias), UBinSize(iBias)
+       if(binIndx(iBias) .gt. binMax(iBias)) then
+         stat = 1
+         return
+       endif
+       if(binIndx(iBias) .lt. binMin(iBias)) then
+         stat = 1
+         return
+       endif
+     enddo
+
+
+     biasIndx = 1
+     do iBias = 1, nBiasVariables
+       biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - binMin(iBias) )
+!       write(*,*) biasIndx, indexCoeff(iBias), binIndx(iBias), binMin(iBias)
+     enddo
+     
+
+     end subroutine
+!===========================================================================
+     subroutine findVarValues(UIndx, UArray)
+     implicit none
+     integer, intent(in) :: UIndx
+     integer, intent(inout) :: UArray(:)
+     integer :: i, iBias
+     integer :: remainder, curVal
+
+     remainder = UIndx - 1
+     do i = 1, nBiasVariables
+       iBias = nBiasVariables - i + 1
+       curVal = int( real(remainder, dp)/real(indexCoeff(iBias),dp) )
+       UArray(iBias) = curVal + binMin(iBias)
+       remainder = remainder - curVal * indexCoeff(iBias)
+     enddo
+    
+     end subroutine
 !==========================================================================
     end module
 !==========================================================================
