@@ -145,6 +145,9 @@
         case("clustersize")
 !          nSwapInFunc = nSwapInFunc + 1
 !          nSwapOutFunc = nSwapOutFunc + 1
+        case("totalclustersize")
+!          nSwapInFunc = nSwapInFunc + 1
+!          nSwapOutFunc = nSwapOutFunc + 1
         case("pairdist")
           nDispFunc = nDispFunc + 1
           nSwapInFunc = nSwapInFunc + 1
@@ -190,6 +193,31 @@
           biasvarnew(iUmbrella) % intVar => NPart_New(indxVar)
           binMax(iUmbrella) = NMAX(indxVar)
           binMin(iUmbrella) = NMin(indxVar)
+          UBinSize(iUmbrella) = 1E0
+          outputFormat(iUmbrella) = "2x,F5.1,"
+          
+!          iSwapIn = iSwapIn + 1
+!          iSwapOut = iSwapOut + 1
+        case("clustersize")
+          read(inputLines(iUmbrella), *) labelField
+          if(indxVar .le. 0) then
+            write(*,*) "Error! An invalid molecule type has been chosen!"
+            write(*,*) "Defined Mol Types:", nMolTypes
+            write(*,*) "Chosen Mol Type:", indxVar
+            stop
+          endif
+          if(indxVar .gt. nMolTypes) then
+            write(*,*) "Error! An invalid molecule type has been chosen!"
+            write(*,*) "Defined Mol Types:", nMolTypes
+            write(*,*) "Chosen Mol Type:", indxVar
+            stop
+          endif
+          biasvar(iUmbrella) % varType = 1
+          biasvar(iUmbrella) % intVar => NTotal
+          biasvarnew(iUmbrella) % varType = 1
+          biasvarnew(iUmbrella) % intVar => NTotal_New
+          binMax(iUmbrella) = maxMol
+          binMin(iUmbrella) = 1
           UBinSize(iUmbrella) = 1E0
           outputFormat(iUmbrella) = "2x,F5.1,"
           
@@ -332,6 +360,7 @@
       endif
 
       call getUIndexArray(varValue, biasIndx, inStat) 
+!      write(*,*) varValue, biasIndx
       if(inStat .eq. 1) then
         cycle
       endif
@@ -364,11 +393,12 @@
      real(dp) :: biasOld, biasNew
 
      if(.not. useUmbrella) then
-       biasDiff = 0E0
+       biasDiff = 0E0_dp
        return
      endif
 
      NPART_New = NPART
+     NTotal_New = NTotal
      rejMove = .false.
      curUIndx = getBiasIndex()
      biasOld = UBias(curUIndx)
@@ -399,7 +429,7 @@
      real(dp) :: biasOld, biasNew
 
      if(.not. useUmbrella) then
-       biasDiff = 0E0
+       biasDiff = 0E0_dp
        return
      endif
  
@@ -433,7 +463,7 @@
      real(dp) :: biasOld, biasNew
 
      if(.not. useUmbrella) then
-       biasDiff = 0E0
+       biasDiff = 0E0_dp
        return
      endif
 
@@ -489,7 +519,7 @@
       do iBias = 1, nBiasVariables
         varValues(iBias) = real( UArray(iBias), dp) * UBinSize(iBias)
       enddo
-      if(UHist(iUmbrella) .ne. 0E0) then
+      if(UHist(iUmbrella) .ne. 0E0_dp) then
         write(60,outputString) (varValues(iBias), iBias =1,nBiasVariables), UHist(iUmbrella)
       endif
     enddo 
@@ -536,7 +566,7 @@
      rejMove = .false.
      do iBias = 1, nBiasVariables
        if(biasvarnew(iBias) % varType .eq. 1) then
-         binIndx(iBias) = floor( biasvarnew(iBias)%intVar / UBinSize(iBias) )
+         binIndx(iBias) = biasvarnew(iBias)%intVar
        elseif(biasvar(iBias) % varType .eq. 2) then
          binIndx(iBias) = floor( biasvarnew(iBias)%realVar / UBinSize(iBias) )
        endif
@@ -569,8 +599,9 @@
       
      stat = 0
      do iBias = 1, nBiasVariables
+!       binIndx(iBias) = floor( varArray(iBias) / UBinSize(iBias) + 1E-8 )
        binIndx(iBias) = nint( varArray(iBias) / UBinSize(iBias) )
-!       write(*,*) binIndx(iBias), varArray(iBias), UBinSize(iBias)
+!       write(*,*) nint( varArray(iBias) / UBinSize(iBias) ), floor( varArray(iBias) / UBinSize(iBias) + 1E-7 )
        if(binIndx(iBias) .gt. binMax(iBias)) then
          stat = 1
          return
@@ -585,7 +616,6 @@
      biasIndx = 1
      do iBias = 1, nBiasVariables
        biasIndx = biasIndx + indexCoeff(iBias) * ( binIndx(iBias) - binMin(iBias) )
-!       write(*,*) biasIndx, indexCoeff(iBias), binIndx(iBias), binMin(iBias)
      enddo
      
 

@@ -20,7 +20,7 @@
       use EnergyPointers, only: Detailed_ECalc
       use EnergyTables
       use Forcefield
-      use Histogram
+!      use Histogram
       use MPI
       use MiscelaniousVars, only: CollectHistograms
       use MoveTypeModule
@@ -105,47 +105,47 @@
       
 
 !   Counter for the number of Accepted Monte Carlo Moves   
-      movesAccepted = 0E0
-      distGen_accpt = 0E0
-      angGen_accpt = 0E0
-      dihedGen_accpt = 0E0
-      acptRot = 0E0
+      movesAccepted = 0E0_dp
+      distGen_accpt = 0E0_dp
+      angGen_accpt = 0E0_dp
+      dihedGen_accpt = 0E0_dp
+      acptRot = 0E0_dp
 !  Counter for the number of Attempted Monte Carlo Moves  
-      movesAttempt = 1E-30
-      distGen_atmp = 0E0
-      angGen_atmp = 0E0
-      dihedGen_atmp = 0E0
-      atmpRot = 1E-30
+      movesAttempt = 1E-30_dp
+      distGen_atmp = 0E0_dp
+      angGen_atmp = 0E0_dp
+      dihedGen_atmp = 0E0_dp
+      atmpRot = 1E-30_dp
 !  Counter for the number of moves rejected due to the cluster criteria
-      NeighRej = 0E0
+      NeighRej = 0E0_dp
 !      NHist = 0E0
 !      NHist = 0E0
 !      E_Avg = 0E0      
 !      Detailed Counters for the swap move
-      acptSwapIn = 0E0
-      acptSwapOut = 0E0
-      atmpSwapIn = 1E-30
-      atmpSwapOut = 1E-30
-      clusterCritRej = 0E0
+      acptSwapIn = 0E0_dp
+      acptSwapOut = 0E0_dp
+      atmpSwapIn = 1E-30_dp
+      atmpSwapOut = 1E-30_dp
+      clusterCritRej = 0E0_dp
 !      Rejection Counters for the AVBMC Insertion move.
-      totalRej = 0E0
-      ovrlapRej = 0E0
-      dbalRej = 0E0
-      critriaRej = 0E0
-      boundaryRej = 0E0
+      totalRej = 0E0_dp
+      ovrlapRej = 0E0_dp
+      dbalRej = 0E0_dp
+      critriaRej = 0E0_dp
+      boundaryRej = 0E0_dp
 
-      totalRej_out = 0E0
-      dbalRej_out = 0E0
-      critriaRej_out = 0E0
-      boundaryRej_out = 0E0      
+      totalRej_out = 0E0_dp
+      dbalRej_out = 0E0_dp
+      critriaRej_out = 0E0_dp
+      boundaryRej_out = 0E0_dp
 !      Maximum Displacement used by the translational move
-      max_dist = 0.05E0
+      max_dist = 0.05E0_dp
 !      Maximum Displacement used by the rotation move      
-      max_rot = 0.05E0 * pi
-      max_dist_single = 0.01E0
+      max_rot = 0.05E0_dp * pi
+      max_dist_single = 0.01E0_dp
 !      Maximum Displacements allowed by the auto-tuning function. Failure to use this can result in
 !      critical simulation errors in the auto-tuning function.
-      dist_limit = 2E0
+      dist_limit = 2E0_dp
       rot_limit = pi
 
       prevMoveAccepted = .false.
@@ -153,7 +153,7 @@
 
 !      AVBMC related volume variables
       Dist_Critr_sq = Dist_Critr*Dist_Critr
-      avbmc_vol = (4E0/3E0)*pi*Dist_Critr**3
+      avbmc_vol = (4E0_dp/3E0_dp)*pi*Dist_Critr**3
       
 !100   format(2x,I9,2x,I5,2x,E17.6,2x,F9.2,2x,F9.2,2x,F9.2)
 !101   format(2x,I9,2x,I5,2x,F17.4,2x,F9.4,2x,F9.2,2x,F9.2)
@@ -163,7 +163,7 @@
       write(outFormat2, out1) "(", "2x,I9", (",2x,I5",i=1,nMolTypes),",F17.4,2x",(",2x,F6.2",i=1,nMoveTypes), ")"  
 !"
 !      E_T is the total energy of the system
-      E_T = 0E0
+      E_T = 0E0_dp
       
 !      Initialize random number generator      
       seed = p_size*seed + myid
@@ -182,7 +182,7 @@
       write(35,*) "Initial Energy Table:"
       do i=1,maxMol      
         if(isActive(i)) then
-          if(ETable(i) .ne. 0E0) then
+          if(ETable(i) .ne. 0E0_dp) then
              write(35,*) i, ETable(i)
           endif            
         endif
@@ -200,11 +200,11 @@
       call TrajOutput(iCycle)
 
 !      Initialize the variables which keep track of the different energy types during the simulation.  
-      E_Inter_T = 0E0
-      E_NBond_T = 0E0
-      E_Stretch_T = 0E0
-      E_Bend_T = 0E0
-      E_Torsion_T = 0E0
+      E_Inter_T = 0E0_dp
+      E_NBond_T = 0E0_dp
+      E_Stretch_T = 0E0_dp
+      E_Bend_T = 0E0_dp
+      E_Torsion_T = 0E0_dp
  
 
 !      Output the initial parameters to the screen
@@ -262,10 +262,10 @@
         call PostMoveAnalysis
       endif  
 
-      if(abs(E_T) .lt. 1d6) then
-        write(nout,outFormat2) 0,NPART, E_T, (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
+      if(abs(E_T) .lt. 1E6_dp) then
+        write(nout,outFormat2) 0,NPART, E_T, (1E2_dp*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
       else
-        write(nout,outFormat1) 0,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
+        write(nout,outFormat1) 0,NPART, E_T,  (1E2_dp*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
       endif
       if(useUmbrella) then
         call UmbrellaHistAdd 
@@ -323,10 +323,10 @@
 !        Mid Simulation Output Block
         if(mod(iCycle, outFreq_GCD) .eq. 0) then
           if(mod(iCycle, outFreq_Screen) .eq. 0) then
-            if(abs(E_T) .lt. 1d6) then
-             write(nout,outFormat2) iCycle,NPART, E_T, (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
+            if(abs(E_T) .lt. 1E6_dp) then
+             write(nout,outFormat2) iCycle,NPART, E_T, (1E2_dp*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             else
-             write(nout,outFormat1) iCycle,NPART, E_T,  (1E2*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
+             write(nout,outFormat1) iCycle,NPART, E_T,  (1E2_dp*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
             endif
             if(useUmbrella) then
               call ScreenOutputUmbrella
@@ -386,6 +386,7 @@
       call TrajOutput(iCycle)
       close(30)    
   
+!      Begin epilogue
       write(35,*) "---------------------------------"
       write(35,*) "Culmative Energy,   Detailed Calc Final Energy"
       write(35,*) "Inter:", E_Inter_Final, E_Inter_T
@@ -420,40 +421,40 @@
       write(nout,*) "Final Max Displacement", (max_dist(j), j=1,nMolTypes)
       write(nout,*) "Final Max Rotation", (max_rot(j), j=1,nMolTypes)
       do i = 1, nMoveTypes
-        if(movesAttempt(i) .ne. 0E0 ) then
-          write(nout,"(1x,A,1x,A,A,F8.2)") "Acceptance Rate", trim(adjustl(moveName(i))), ": ", 1E2*movesAccepted(i)/movesAttempt(i)
+        if(movesAttempt(i) .ne. 0E0_dp ) then
+          write(nout,"(1x,A,1x,A,A,F8.2)") "Acceptance Rate", trim(adjustl(moveName(i))), ": ",1E2*movesAccepted(i)/movesAttempt(i)
         endif
       enddo
-      if(any(atmpTrans .gt. 1E0)) then
+      if(any(atmpTrans .gt. 1E0_dp)) then
         write(nout,*) "Acceptance Translate (Mol Type):", (1E2*acptTrans(j)/atmpTrans(j),j=1,nMolTypes) 
       endif
-      if(any(atmpRot .gt. 1E0)) then
+      if(any(atmpRot .gt. 1E0_dp)) then
         write(nout,*) "Acceptance Rotate (Mol Type):", (1E2*acptRot(j)/atmpRot(j),j=1,nMolTypes) 
       endif
 
-      if(distGen_atmp .ne. 0E0) then
+      if(distGen_atmp .ne. 0E0_dp) then
         write(nout,*) "Distance Generation Success Rate:", 1E2*distGen_accpt/distGen_atmp
       endif
-      if(angGen_atmp .ne. 0E0) then
+      if(angGen_atmp .ne. 0E0_dp) then
         write(nout,*) "Angle Generation Success Rate:", 1E2*angGen_accpt/angGen_atmp
       endif
-      if(dihedGen_atmp .ne. 0E0) then
+      if(dihedGen_atmp .ne. 0E0_dp) then
         write(nout,*) "Dihedral Angle Generation Success Rate:", 1E2*dihedGen_accpt/dihedGen_atmp
       endif
 !      write(nout,*) "Cluster Criteria Rejections (Total):", 1E2*clusterCritRej/atmp_3 
       if(avbmcUsed) then
         write(nout,*) "********** AVBMC Insertion Rejection Breakdown ********"
-        write(nout,*) "Percent of Moves Rejected due to Overlap:", 1E2*ovrlapRej/totalRej
-        write(nout,*) "Percent of Moves Rejected due to Detailed Balance:", 1E2*dbalRej/totalRej
-        write(nout,*) "Percent of Moves Rejected due to Cluster Criteria:", 1E2*critriaRej/totalRej
-        write(nout,*) "Percent of Moves Rejected due to Boundary Condition:", 1E2*boundaryRej/totalRej
+        write(nout,*) "Percent of Moves Rejected due to Overlap:", 1E2_dp*ovrlapRej/totalRej
+        write(nout,*) "Percent of Moves Rejected due to Detailed Balance:", 1E2_dp*dbalRej/totalRej
+        write(nout,*) "Percent of Moves Rejected due to Cluster Criteria:", 1E2_dp*critriaRej/totalRej
+        write(nout,*) "Percent of Moves Rejected due to Boundary Condition:", 1E2_dp*boundaryRej/totalRej
         write(nout,*) "********** AVBMC Deletion Rejection Breakdown ********"
-        write(nout,*) "Percent of Moves Rejected due to Detailed Balance:", 1E2*dbalRej_out/totalRej_out
-        write(nout,*) "Percent of Moves Rejected due to Cluster Criteria:", 1E2*critriaRej_out/totalRej_out
-        write(nout,*) "Percent of Moves Rejected due to Boundary Condition:", 1E2*boundaryRej_out/totalRej_out
+        write(nout,*) "Percent of Moves Rejected due to Detailed Balance:", 1E2_dp*dbalRej_out/totalRej_out
+        write(nout,*) "Percent of Moves Rejected due to Cluster Criteria:", 1E2_dp*critriaRej_out/totalRej_out
+        write(nout,*) "Percent of Moves Rejected due to Boundary Condition:", 1E2_dp*boundaryRej_out/totalRej_out
         write(nout,*) "**********"
-        write(nout,*) "Acceptance Swap In (Mol Type):", (1E2*acptSwapIn(j)/atmpSwapIn(j),j=1,nMolTypes)
-        write(nout,*) "Acceptance Swap Out (Mol Type):", (1E2*acptSwapOut(j)/atmpSwapOut(j),j=1,nMolTypes) 
+        write(nout,*) "Acceptance Swap In (Mol Type):", (1E2_dp*acptSwapIn(j)/atmpSwapIn(j),j=1,nMolTypes)
+        write(nout,*) "Acceptance Swap Out (Mol Type):", (1E2_dp*acptSwapOut(j)/atmpSwapOut(j),j=1,nMolTypes) 
 
 !        write(nout,*) "Cluster Criteria Rejections:",1E2*NeighRej/atmp_3
       endif
@@ -488,8 +489,8 @@
       write(35,*) "Energy Table:"
       do i=1,maxMol      
         if(isActive(i)) then
-          if(FinalETable(i) .ne. 0E0) then
-            if(abs((FinalETable(i) - ETable(i))/FinalETable(i)) .gt. 1E-6) then
+          if(FinalETable(i) .ne. 0E0_dp) then
+            if(abs((FinalETable(i) - ETable(i))/FinalETable(i)) .gt. 1E-6_dp) then
               write(35,*) i, ETable(i),FinalETable(i),"<---ETable Error"
             else 
               write(35,*) i, ETable(i)
@@ -526,30 +527,24 @@
         enddo       
       enddo      
 
-      if(any(HistAngle .ne. 0E0)) then
-        write(35,*)
-        write(35,*) "Angle Histogram:"      
-        norm = sum(HistAngle)
-        do i=0, nBin_Hist      
-           write(35,*) (i+0.5E0)/d_ang, d_ang*HistAngle(i)/(norm)
-        enddo
-      endif
-      if(any(HistDist .ne. 0E0)) then
-        write(35,*) "Dist Histogram:"      
-        do i = 0, nBin_Hist      
-          write(35,*) i/d_r, HistDist(i) 
-        enddo
-      endif
-
-      if(any(atmpInSize .ne. 0E0)) then
+      if(any(atmpInSize .ne. 0E0_dp)) then
         write(35,*) "Acceptance Rate by Cluster Size:"           
         do i=1,maxMol      
-          if(atmpInSize(i) .ne. 0E0) then
+          if(atmpInSize(i) .ne. 0E0_dp) then
            write(35,*) i, 1E2*acptInSize(i)/atmpInSize(i)
           endif
         enddo
       endif
+
+!      call OutputDihedral
       close(35)
+
+
+      do i=1,maxMol      
+        if(atmpInSize(i) .ne. 0E0_dp) then
+          write(35,*) i, 1E2*acptInSize(i)/atmpInSize(i)
+        endif
+      enddo
 
       if(useWham) then
         call WHAM_Finalize
@@ -571,18 +566,18 @@
       real(dp), intent(in) :: acc_x,atmp_x,limit
       real(dp), intent(inout):: max_x
       
-      if(atmp_x .lt. 0.5E0) then
+      if(atmp_x .lt. 0.5E0_dp) then
         return
       endif
 
-      if(acc_x/atmp_x .gt. 0.5E0) then
-        if(max_x*1.01E0 .lt. limit) then
-          max_x = max_x * 1.01E0
+      if(acc_x/atmp_x .gt. 0.5E0_dp) then
+        if(max_x*1.01E0_dp .lt. limit) then
+          max_x = max_x * 1.01E0_dp
         else 
           max_x = limit       
         endif
       else
-        max_x = max_x * 0.99E0
+        max_x = max_x * 0.99E0_dp
       endif
 
  
@@ -658,14 +653,14 @@
       real(dp) :: xcm,ycm,zcm
 
 
-      xcm = 0E0
-      ycm = 0E0
-      zcm = 0E0
+      xcm = 0E0_dp
+      ycm = 0E0_dp
+      zcm = 0E0_dp
       cnt = 0
       do iType = 1,nMolTypes
         do iMol = 1,NMAX(iType)
           do iAtom = 1, nAtoms(iType)
-            xcm = xcm + gasConfig(iType)%x(iAtom) + xOffset*( real(NMAX(iType),dp)/2E0 - real(iMol,dp) )
+            xcm = xcm + gasConfig(iType)%x(iAtom) + xOffset*( real(NMAX(iType),dp)/2E0_dp - real(iMol,dp) )
             ycm = ycm + gasConfig(iType)%y(iAtom) + yOffset*real(iType, dp)
             zcm = zcm + gasConfig(iType)%z(iAtom)
             cnt = cnt + 1
@@ -684,7 +679,7 @@
           do iAtom = 1, nAtoms(iType)
             atmType = atomArray(iType,iAtom)
             write(30,*) atomData(atmType)%Symb, &
-                      gasConfig(iType)%x(iAtom) + xOffset*( real(NMAX(iType),dp)/2E0 - real(iMol, dp) )-xcm, &
+                      gasConfig(iType)%x(iAtom) + xOffset*( real(NMAX(iType),dp)/2E0_dp - real(iMol, dp) )-xcm, &
                       gasConfig(iType)%y(iAtom) + yOffset*real(iType, dp) - ycm, &
                       gasConfig(iType)%z(iAtom) - zcm
           enddo

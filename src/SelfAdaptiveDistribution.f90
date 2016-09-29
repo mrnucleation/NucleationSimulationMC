@@ -49,5 +49,24 @@
      enddo
 
      end subroutine
+!===================================================================
+     subroutine OutputDihedral
+     use Constants
+     use CBMC_Variables
+     implicit none
+     integer :: iDihed, iBin
+     real(dp) :: histNorm, probNorm
+     real(dp) :: avg, tempConst
+     real(dp) :: maxProb, minProb
+
+     do iDihed = 1, totalDihed
+       histNorm = sum(dihedData(iDihed)%Hist)
+       do iBin = 0, nDihBins
+         write(35,*) iBin*diBinSize, dihedData(iDihed)%Hist(iBin)/histNorm
+       enddo
+     enddo
+
+     end subroutine
+
 !=================================================================== 
      end module

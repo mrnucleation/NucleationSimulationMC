@@ -1,5 +1,6 @@
 !======================================================
      module AnalysisMain
+     use RadialDensity
      use RadialDistribution
      use SimpleDistPair
      use MiscelaniousVars
@@ -86,7 +87,7 @@
       integer, intent(in) :: fileUnit
       integer :: iAnalysis, AllocateStatus
       integer :: indxVar, nBins
-      integer :: iRadial, iDistPair, iPostMove, iOutput
+      integer :: iRadial, iDistPair, iRadDens, iPostMove, iOutput
       integer :: type1, type2, mol1, mol2, atom1, atom2
       real(dp) :: binSize, realVar
       character(len=200), allocatable :: inputLines(:)
@@ -121,6 +122,7 @@
       nOutput = 0
       nDistPair = 0 
       nRadialDist = 0
+      nRadialDens = 0
       do iAnalysis = 1, nAnalysisVar
         read(inputLines(iAnalysis), *) analysisName
 
@@ -143,6 +145,11 @@
           else
             stop "ERROR! The Q6 analysis function has been defined more than once in the input script."
           endif
+        case("radialdensity")
+          nRadialDens = nRadialDens + 1
+          if(nRadialDens .eq. 1) then
+            nPostMove = nPostMove + 1
+          endif
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) analysisName
@@ -159,6 +166,7 @@
       endif 
       call Initialize_RadialDist
       call Initialize_DistPair
+      call Initialize_RadialDens
       call Initialize_Q6
       call AllocateMiscArrays
 
@@ -166,6 +174,7 @@
       iPostMove = 0
       iRadial = 0
       iDistPair = 0
+      iRadDens = 0
       do iAnalysis = 1, nAnalysisVar
         read(inputLines(iAnalysis), *) analysisName
 
@@ -198,6 +207,20 @@
           q6Dist = realVar
           q6DistSq = q6Dist*q6Dist
           postMoveArray(iPostMove)%func => CalcQ6
+        case("radialdensity")
+          read(inputLines(iAnalysis), *)  analysisName, type1, binSize, nBins, fileName
+          iPostMove = iPostMove + 1
+          iRadDens = iRadDens + 1
+          iOutPut = iOutPut + 1
+          call SetDensityParameters(iRadDens, type1)
+
+          miscHist(iRadial)%binSize = binSize
+          miscHist(iRadial)%sizeInv = 1E0_dp/binSize
+          miscHist(iRadial)%nBins = nBins
+          miscHist(iRadial)%fileName = fileName
+
+          postMoveArray(iPostMove)%func => Calc_RadialDensity
+          outputArray(iOutPut)%func => Output_RadialDensity
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) analysisName

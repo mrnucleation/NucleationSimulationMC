@@ -625,7 +625,7 @@
 !           cycle
 !         endif 
          dihedGen_atmp = dihedGen_atmp + 1E0
-!         ProbGen = exp(-beta*eng)
+         ProbGen = exp(-beta*eng)
          if( ProbGen .gt. grnd() ) then
            acpt = .true.
          endif

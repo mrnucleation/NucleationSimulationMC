@@ -18,7 +18,7 @@
       real(dp), intent(out) :: E_Trial
       
       integer :: iAtom, jType, jIndx, jMol, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: q, alpha, delta, repul_C, r_eq
       real(dp) :: LJ, Ele, Morse
@@ -99,7 +99,7 @@
       real(dp), intent(out) :: E_Trial
       
       integer :: iAtom, jType, jIndx, jMol, jAtom
-      integer(kind=2) :: atmType1, atmType2
+      integer(kind=atomIntType) :: atmType1, atmType2
       real(dp) :: rx, ry, rz, r
       real(dp) :: q, alpha, delta, repul_C, r_eq
       real(dp) :: LJ, Ele, Morse

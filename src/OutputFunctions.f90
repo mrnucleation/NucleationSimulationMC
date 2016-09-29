@@ -15,7 +15,7 @@
       
       open(unit=15, file="VMD_Output.xyz")      
       write(15,*) nTotalAtoms
-      write(15,*)
+      write(15,*) NPART
       do iType=1, nMolTypes
         do iMol = 1,NPART(iType)
           do iAtom = 1,nAtoms(iType)

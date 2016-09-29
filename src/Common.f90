@@ -120,7 +120,7 @@
         integer(kind=atomIntType),allocatable :: pathMax(:)
       end type      
  
-      integer, parameter :: nDihBins = 1000
+      integer, parameter :: nDihBins = 2000
       real(dp), parameter :: diBinSize = two_pi/real(nDihBins, dp)
       real(dp) :: startProb = 0.05E0
       type DihedralAngle
@@ -249,17 +249,6 @@
       end module
 
 !==============================================================
-      module Histogram
-      use VarPrecision
-      integer, parameter :: nBin_Hist = 1000
-      real(dp) :: d_ang      
-      real(dp) :: HistAngle(0:nBin_Hist)
-
-      real(dp) :: d_r 
-      real(dp) :: HistDist(0:nBin_Hist)
-      
-      end module      
-!==============================================================
       module SimParameters
       use VarPrecision
       logical, parameter :: echoInput = .false.      
@@ -274,8 +263,9 @@
       integer,allocatable, target :: NPart(:)
       integer,allocatable, target :: NPart_New(:)
       logical,allocatable :: isActive(:)
-      integer :: NTotal
-      integer :: maxMol, maxAtoms, vmdAtoms
+      integer, target :: NTotal, NTotal_New
+      integer :: maxMol
+      integer :: maxAtoms, vmdAtoms
       real(dp) :: avbmc_vol
       
       integer :: umbrellaLimit

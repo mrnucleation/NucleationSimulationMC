@@ -153,7 +153,7 @@
         rx = x2_New - x1_New
         ry = y2_New - y1_New
         rz = z2_New - z1_New
-        r = rx**2 + ry**2 + rz**2
+        r = rx*rx + ry*ry + rz*rz
 
         LJ = (sig_sq/r)
         LJ = LJ * LJ * LJ
@@ -167,7 +167,7 @@
         rx = x2_Old - x1_Old
         ry = y2_Old - y1_Old
         rz = z2_Old - z1_Old
-        r = rx**2 + ry**2 + rz**2
+        r = rx*rx + ry*ry + rz*rz
 
         LJ = (sig_sq/r)
         LJ = LJ * LJ * LJ              
@@ -193,7 +193,7 @@
       real(dp), intent(out) :: E_Trial
      
       integer :: iPair, iAtom, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
@@ -216,7 +216,7 @@
         rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(iType)%mol(iMol)%x(jAtom)
         ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(iType)%mol(iMol)%y(jAtom)
         rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(iType)%mol(iMol)%z(jAtom) 
-        r = rx**2 + ry**2 + rz**2
+        r = rx*rx + ry*ry + rz*rz
         if(ep .ne. 0d0) then
           LJ = (sig_sq/r)
           LJ = LJ * LJ * LJ
@@ -244,7 +244,7 @@
       real(dp), intent(out) :: E_Trial
      
       integer :: iType,iPair, iAtom, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
@@ -267,7 +267,7 @@
         rx = newMol%x(iAtom) - newMol%x(jAtom)
         ry = newMol%y(iAtom) - newMol%y(jAtom)
         rz = newMol%z(iAtom) - newMol%z(jAtom)
-        r = rx**2 + ry**2 + rz**2
+        r = rx*rx + ry*ry + rz*rz
         if(ep .ne. 0d0) then
           LJ = (sig_sq/r)
           LJ = LJ * LJ * LJ

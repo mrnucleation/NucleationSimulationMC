@@ -95,7 +95,6 @@ SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
 SRC_BIAS := $(SRC)/UmbrellaSampling_Version2.f90\
             $(SRC)/WHAM_Version2.f90
 SRC_MAIN := $(SRC)/BasicMovement.f90\
-            $(SRC)/AnalysisFunctions.f90\
             $(SRC)/MCMove_Module.f90\
             $(SRC)/DebugFunctions.f90\
             $(SRC)/Main.f90\
@@ -122,6 +121,7 @@ SRC_ANALYSIS := $(ANALYSIS_SUB)/MiscelaniousVariables.f90\
             $(ANALYSIS_SUB)/SimplePairDistance.f90\
             $(ANALYSIS_SUB)/RadialDistributionFunction.f90\
             $(ANALYSIS_SUB)/Q6Functions.f90\
+            $(ANALYSIS_SUB)/RadialDensity.f90\
             $(ANALYSIS_SUB)/AnalysisMain.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90
@@ -244,19 +244,6 @@ generalNucleation: $(OBJ_COMPLETE) $(OBJ_MOD)
 		@echo =============================================	
 		@$(FC) $(COMPFLAGS) $(MODFLAGS)  $^ -o $@ 		
 		
-run:
-		@echo =============================================
-		@echo            Running Code
-		@echo =============================================		
-		cd $(RUN_DIR)\
-		&& ../../generalNucleation.exe	
-		
-runMPI:
-		@echo =============================================
-		@echo            Running Code
-		@echo =============================================		
-		cd $(RUN_DIR)\
-		&& mpirun -np 2 ../../generalNucleation.exe		
 		
 startUP:
 		@echo ==================================================================
@@ -292,13 +279,13 @@ removeExec:
 #        Dependencies
 # ====================================
 $(OBJ_COMPLETE): $(OBJ_MOD)
+$(OBJ)/Common.o: $(OBJ)/VariablePrecision.o $(OBJ)/Units.o
 $(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o
 $(OBJ)/WHAM_Version2.o: $(OBJ)/SwapBoundaries.o $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o
 $(OBJ)/Units.o: $(OBJ)/VariablePrecision.o
-$(OBJ)/Common.o: $(OBJ)/VariablePrecision.o $(OBJ)/Units.o
 $(OBJ)/CBMC_ConfigGen.o: $(OBJ)/CoordinateFunctions.o
 $(OBJ)/ClusterCriteria_Energy.o: $(OBJ)/Common.o
 $(OBJ)/CoordinateFunctions.o: $(OBJ)/Common.o $(OBJ)/RandomTools.o
-$(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o $(OBJ)/Common.o
+$(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o $(OBJ)/RadialDensity.o $(OBJ)/Common.o
 $(OBJ)/MiscelaniousVariables.o: $(OBJ)/Common.o
 $(OBJ)/Main.o: $(OBJ)/Common.o $(OBJ)/SelfAdaptiveDistribution.o

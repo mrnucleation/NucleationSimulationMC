@@ -1,4 +1,5 @@
 !================================================================================
+!     This module contains functions that are used to restrict
       module SwapBoundary
 
       interface 
@@ -15,6 +16,7 @@
 !================================================================================
       contains
 !================================================================================
+!
       function Bound_MaxMin(NPART, NDiff) result(rejMove)
       use SimParameters, only: NMAX, NMIN
       logical :: rejMove
@@ -36,6 +38,11 @@
 
       end function bound_MaxMin
 !================================================================================
+!     The purpose of this function is to impose a hard boundary based on the total
+!     eletrostatic charge in a given cluster. This is primarily used in the Pedone
+!     Model to avoid sampling clusters which are physically unimportant such
+!     as a cluster that is composed only of positively charged
+!     silcon atoms.   Any move which violates the charge balance will be rejected by this function.
       function Bound_PedoneChargeBalance(NPART, NDiff) result(rejMove)
       use SimParameters, only: NMAX, NMIN
       use ForceFieldPara_Pedone

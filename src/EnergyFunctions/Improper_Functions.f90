@@ -24,7 +24,7 @@
       implicit none
       real(dp), intent(inout) :: E_T
       integer :: iType,iMol,iImprop
-      integer(kind=2) :: impropType      
+      integer(kind=atomIntType) :: impropType      
       integer :: memb1, memb2, memb3, memb4
       real(dp) :: x12,y12,z12
       real(dp) :: x23,y23,z23
@@ -254,7 +254,7 @@
       real(dp), intent(out) :: E_Improp
       integer, intent(in) :: iType,iMol
       integer :: iTors
-      integer(kind=2) :: impropType      
+      integer(kind=atomIntType) :: impropType      
       integer :: memb1, memb2, memb3, memb4
       real(dp) :: x12,y12,z12
       real(dp) :: x23,y23,z23
@@ -324,7 +324,7 @@
       implicit none
       real(dp), intent(out) :: E_Improp
       integer :: iType,iTors
-      integer(kind=2) :: impropType      
+      integer(kind=atomIntType) :: impropType      
       integer :: memb1, memb2, memb3, memb4
       real(dp) :: x12,y12,z12
       real(dp) :: x23,y23,z23

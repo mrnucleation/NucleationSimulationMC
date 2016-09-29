@@ -134,6 +134,7 @@
 
 !     Calculate the umbrella sampling bias.
       NPART_new = NPART + NDiff
+      NTotal_New = NTotal + 1
       call GetUmbrellaBias_SwapIn(biasDiff, rejMove)
       if(rejMove) then
         return
@@ -309,6 +310,7 @@
 !      NDiff = 0 
 !      NDiff(nType) = -1
       NPART_new = NPART + NDiff
+      NTotal_New = NTotal - 1
       call GetUmbrellaBias_SwapOut(nType, nMol, biasDiff, rejMove)
       if(rejMove) then
         return

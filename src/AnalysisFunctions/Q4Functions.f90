@@ -3,29 +3,28 @@
 !      perform single pair calculations.  This can be used
 !      in the Umbrella Sampling algorithms or be used to study
 !      di
-     module Q6Functions
+     module q4Functions
        use PairStorage
        use Constants
        private
 
 
-       logical :: useQ6 = .false.
-       integer :: q6ArrayIndx
+       logical :: useq4 = .false.
+       integer :: q4ArrayIndx
 
        logical :: initialized = .false.
        logical :: newData = .false.
-       integer :: q6Neigh, dNeigh
-       real(dp) :: Q6real(0:12) , Q6Img(0:12)
-       real(dp) :: dQ6real(0:12) , dQ6Img(0:12)
-!       real(dp) :: Q6r_t(0:12) , Q6i_t(0:12)
-       real(dp) :: q6Dist, q6DistSq
+       integer :: q4Neigh, dNeigh
+       real(dp) :: q4real(0:8) , q4Img(0:8)
+       real(dp) :: dq4real(0:8) , dq4Img(0:8)
+       real(dp) :: q4Dist, q4DistSq
 
 
-       public :: Initialize_q6, CalcQ6, useQ6, q6Dist, q6DistSq, q6ArrayIndx
-       public :: CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut, q6Neigh
+       public :: Initialize_q4, Calcq4, useq4, q4Dist, q4DistSq, q4ArrayIndx
+       public :: Calcq4_Disp, Calcq4_SwapIn, Calcq4_SwapOut, q4Neigh
        contains
      !--------------------------------------------------------------------------------
-       subroutine Initialize_q6
+       subroutine Initialize_q4
          use MiscelaniousVars
          use Coords
          use SimParameters, only: nMolTypes, NMAX
@@ -35,12 +34,12 @@
          integer :: gloIndx1, gloIndx2
          integer :: iType, iMol, jType, jMol
 
-         if(.not. useQ6) then
+         if(.not. useq4) then
            return
          endif
 
          call ReserveSpace_Coord(1, startIndx, endIndx)
-         q6ArrayIndx = startIndx
+         q4ArrayIndx = startIndx
 
          do iType = 1, nMolTypes
            do iMol = 1, NMAX(iType)
@@ -56,11 +55,11 @@
              enddo
            enddo
          enddo 
-!         q6DistSq = q6Dist*q6Dist
+!         q4DistSq = q4Dist*q4Dist
 
        end subroutine
      !--------------------------------------------------------------------------------
-       subroutine CalcQ6
+       subroutine Calcq4
          use MiscelaniousVars
          use Coords
          use SimParameters, only: nMolTypes, NPART, NTotal, prevMoveAccepted
@@ -71,28 +70,28 @@
          integer :: jIndx, iIndx
          real(dp) :: rx,ry,rz,r
          real(dp) :: theta,phi,junk,sTerm,cTerm
-         real(dp) :: q6Par
+         real(dp) :: q4Par
          real(dp) :: rPart,iPart
-         real(dp), parameter :: q6Constant = 4d0*pi/13d0
+         real(dp), parameter :: q4Constant = 4d0*pi/13d0
 
   
          if(NTotal .eq. 1) then
- 	       miscCoord(q6ArrayIndx) = 1E0_dp
-           Q6real = 0E0_dp
-           Q6img = 0E0_dp
-           q6neigh = 0
+ 	       miscCoord(q4ArrayIndx) = 1E0_dp
+           q4real = 0E0_dp
+           q4img = 0E0_dp
+           q4neigh = 0
            newData = .false.
            return  
          endif
 
          if(prevMoveAccepted) then
            if( newData ) then
-             do m = 0,12
-               Q6real(m) = Q6real(m) + dQ6Real(m)
-               Q6img(m) = Q6img(m) + dQ6img(m)
+             do m = 0,8
+               q4real(m) = q4real(m) + dq4Real(m)
+               q4img(m) = q4img(m) + dq4img(m)
              enddo
-             q6Neigh = q6Neigh + dNeigh
-             miscCoord(q6ArrayIndx) = miscCoord_New(q6ArrayIndx)
+             q4Neigh = q4Neigh + dNeigh
+             miscCoord(q4ArrayIndx) = miscCoord_New(q4ArrayIndx)
              newData = .false.
              return
            endif
@@ -102,9 +101,9 @@
            return
          endif
 
-         q6Neigh = 0
-         Q6real = 0E0_dp
-         Q6img = 0E0_dp
+         q4Neigh = 0
+         q4real = 0E0_dp
+         q4img = 0E0_dp
 
          do iType = 1, nMolTypes
            do iMol = 1, NPART(iType)
@@ -122,17 +121,17 @@
                  endif
                  r = rPair(gloIndx2, gloIndx1)%p%r
 
-                 if(r .le. q6Dist) then	
-                   q6Neigh = q6Neigh + 1
+                 if(r .le. q4Dist) then	
+                   q4Neigh = q4Neigh + 1
                    rx = rPair(gloIndx2, gloIndx1)%p%rx
                    ry = rPair(gloIndx2, gloIndx1)%p%ry
                    rz = rPair(gloIndx2, gloIndx1)%p%rz
                    phi = atan2(ry,rx)
                    theta = acos(rz/r)   
-                   do m = 0, 12
+                   do m = 0, 8
                      call Harmonics(theta, phi, m-6, rPart, iPart)	
-                     Q6real(m) = Q6real(m) + rPart
-                     Q6img(m) = Q6img(m) + iPart	
+                     q4real(m) = q4real(m) + rPart
+                     q4img(m) = q4img(m) + iPart	
                    enddo
                  endif
                enddo
@@ -140,36 +139,36 @@
            enddo
          enddo
 
-         q6par = 0E0_dp
-         do m = 0, 12
-           q6Par = q6par + Q6real(m)*Q6real(m) + Q6img(m)*Q6img(m)	  	   
+         q4par = 0E0_dp
+         do m = 0, 8
+           q4Par = q4par + q4real(m)*q4real(m) + q4img(m)*q4img(m)	  	   
          enddo
-         q6par = q6par * q6Constant
-         q6par = sqrt(q6par)/q6Neigh
- 	     miscCoord(q6ArrayIndx) = q6par
+         q4par = q4par * q4Constant
+         q4par = sqrt(q4par)/q4Neigh
+ 	     miscCoord(q4ArrayIndx) = q4par
 !         if(prevMoveAccepted) then
-!           if(abs(miscCoord(q6ArrayIndx) - miscCoord_New(q6ArrayIndx)) .gt. 1d-7) then
-!             write(2,*) "DISCRPANCY:", miscCoord(q6ArrayIndx), miscCoord_New(q6ArrayIndx)
+!           if(abs(miscCoord(q4ArrayIndx) - miscCoord_New(q4ArrayIndx)) .gt. 1d-7) then
+!             write(2,*) "DISCRPANCY:", miscCoord(q4ArrayIndx), miscCoord_New(q4ArrayIndx)
 !           endif
 !           do m = 0, 12
-!             if(abs(Q6real(m) - Q6r_t(m)) .gt. 1d-7) then
-!               write(2,*) "DISCRPANCY:",m, Q6real(m) , Q6r_t(m)
+!             if(abs(q4real(m) - q4r_t(m)) .gt. 1d-7) then
+!               write(2,*) "DISCRPANCY:",m, q4real(m) , q4r_t(m)
 !             endif
 !           enddo
-!           if(q6Neigh .ne. q6Neigh_t) then
-!             write(2,*) "DISCRPANCY:", q6Neigh, q6Neigh_t
+!           if(q4Neigh .ne. q4Neigh_t) then
+!             write(2,*) "DISCRPANCY:", q4Neigh, q4Neigh_t
 !           endif
 !         endif
          initialized = .true.
       end subroutine
      !--------------------------------------------------------------------------------
-       subroutine CalcQ6_Disp(disp)
+       subroutine Calcq4_Disp(disp)
          use MiscelaniousVars
          use Coords
          use SimParameters, only: nMolTypes, NPART, NTotal
          implicit none 
          type(Displacement), intent(in) :: disp(:)
-         real(dp), parameter :: q6Constant = 4d0*pi/13d0
+         real(dp), parameter :: q4Constant = 4d0*pi/13d0
 
          logical :: changed
          integer :: m
@@ -177,17 +176,17 @@
          integer :: gloIndx1, gloIndx2
          integer :: sizeDisp
          integer :: dispAtom1, newNeigh
-         real(dp) :: q6r_new, q6i_new
+         real(dp) :: q4r_new, q4i_new
          real(dp) :: rx,ry,rz,r
          real(dp) :: theta,phi,junk,sTerm,cTerm
-         real(dp) :: q6Par
+         real(dp) :: q4Par
          real(dp) :: rPart,iPart
 
          dNeigh = 0
-         dQ6real = 0E0_dp
-         dQ6img = 0E0_dp
+         dq4real = 0E0_dp
+         dq4img = 0E0_dp
          if(NTotal .eq. 1) then
- 	       miscCoord_New(q6ArrayIndx) = 1E0_dp
+ 	       miscCoord_New(q4ArrayIndx) = 1E0_dp
            newData = .false.
            return	   
          endif
@@ -203,7 +202,7 @@
          enddo
 
          if(.not. changed) then
-           miscCoord_New(q6ArrayIndx) = miscCoord(q6ArrayIndx)
+           miscCoord_New(q4ArrayIndx) = miscCoord(q4ArrayIndx)
            newData = .false.
            return
          endif
@@ -222,49 +221,49 @@
              ry = molArray(jType)%mol(jMol)%y(1) - disp(dispAtom1)%y_new 
              rz = molArray(jType)%mol(jMol)%z(1) - disp(dispAtom1)%z_new
              r = rx*rx + ry*ry + rz*rz
-             if(r .le. q6DistSq) then	
+             if(r .le. q4DistSq) then	
                r = sqrt(r)
                dNeigh = dNeigh + 1
                phi = atan2( ry, rx )
                theta = acos( rz / r )  
-               do m = 0, 12
+               do m = 0, 8
                  call Harmonics(theta, phi, m-6, rPart, iPart)	
-                 dQ6real(m) = dQ6real(m) + rPart
-                 dQ6img(m) = dQ6img(m) + iPart	
+                 dq4real(m) = dq4real(m) + rPart
+                 dq4img(m) = dq4img(m) + iPart	
                enddo               
              endif
              
 
-             if(rPair(gloIndx2, gloIndx1)%p%r_sq .le. q6DistSq) then	
+             if(rPair(gloIndx2, gloIndx1)%p%r_sq .le. q4DistSq) then	
                 dNeigh = dNeigh - 1
 !                rx = rPair(gloIndx2, gloIndx1)%p%rx
 !                ry = rPair(gloIndx2, gloIndx1)%p%ry
 !                rz = rPair(gloIndx2, gloIndx1)%p%rz
                 phi = atan2(rPair(gloIndx2, gloIndx1)%p%ry, rPair(gloIndx2, gloIndx1)%p%rx)
                 theta = acos(rPair(gloIndx2, gloIndx1)%p%rz / rPair(gloIndx2, gloIndx1)%p%r )   
-                do m = 0, 12
+                do m = 0, 8
                   call Harmonics(theta, phi, m-6, rPart, iPart)	
-                  dQ6real(m) = dQ6real(m) - rPart
-                  dQ6img(m) = dQ6img(m) - iPart	
+                  dq4real(m) = dq4real(m) - rPart
+                  dq4img(m) = dq4img(m) - iPart	
                 enddo
              endif   
            enddo
          enddo
           
-         q6par = 0E0_dp
-         do m = 0, 12
-           q6r_new = Q6real(m) + dQ6real(m)
-           q6i_new = Q6img(m) + dQ6img(m)
-           q6Par = q6par + q6r_new*q6r_new + q6i_new*q6i_new   	   
+         q4par = 0E0_dp
+         do m = 0, 8
+           q4r_new = q4real(m) + dq4real(m)
+           q4i_new = q4img(m) + dq4img(m)
+           q4Par = q4par + q4r_new*q4r_new + q4i_new*q4i_new   	   
          enddo
-         q6par = q6par * q6Constant
-         newNeigh = q6Neigh + dNeigh
-         q6par = sqrt(q6par)/newNeigh
- 	     miscCoord_New(q6ArrayIndx) = q6par
+         q4par = q4par * q4Constant
+         newNeigh = q4Neigh + dNeigh
+         q4par = sqrt(q4par)/newNeigh
+ 	     miscCoord_New(q4ArrayIndx) = q4par
          newData = .true.
       end subroutine
      !--------------------------------------------------------------------------------
-       subroutine CalcQ6_SwapIn
+       subroutine Calcq4_SwapIn
          use MiscelaniousVars
          use Coords
          use SimParameters, only: nMolTypes, NPART, NTotal
@@ -274,11 +273,11 @@
          integer :: gloIndx1, gloIndx2
          integer :: jIndx, iIndx, sizeDisp
          integer :: dispAtom1
-         real(dp), parameter :: q6Constant = 4d0*pi/13d0
-         real(dp) :: q6r_new, q6i_new
+         real(dp), parameter :: q4Constant = 4d0*pi/13d0
+         real(dp) :: q4r_new, q4i_new
          real(dp) :: rx,ry,rz,r
          real(dp) :: theta,phi,junk,sTerm,cTerm
-         real(dp) :: q6Par
+         real(dp) :: q4Par
          real(dp) :: rPart,iPart
 
  
@@ -286,41 +285,41 @@
          iMol = NPART(iType) + 1
          dNeigh = 0
 !         gloIndx1 =  molArray(iType)%mol(iMol)%globalIndx(1)
-         dQ6real = 0E0_dp
-         dQ6img = 0E0_dp
+         dq4real = 0E0_dp
+         dq4img = 0E0_dp
          do jType = 1, nMolTypes
            do jMol = 1, NPART(jType)
              rx = newMol%x(1) -  molArray(jType)%mol(jMol)%x(1)
              ry = newMol%y(1) -  molArray(jType)%mol(jMol)%y(1)
              rz = newMol%z(1) -  molArray(jType)%mol(jMol)%z(1)
              r = rx*rx + ry*ry + rz*rz
-             if(r .le. q6DistSq) then	
+             if(r .le. q4DistSq) then	
                r = sqrt(r)
                dNeigh = dNeigh + 1
                phi = atan2(ry,rx)
                theta = acos(rz/r)  
-               do m = 0, 12
+               do m = 0, 8
                  call Harmonics(theta, phi, m-6, rPart, iPart)	
-                 dQ6real(m) = dQ6real(m) + rPart
-                 dQ6img(m) = dQ6img(m) + iPart	
+                 dq4real(m) = dq4real(m) + rPart
+                 dq4img(m) = dq4img(m) + iPart	
                enddo               
              endif
            enddo
          enddo
           
-         q6par = 0E0_dp
-         do m = 0, 12
-           q6r_new = Q6real(m) + dQ6real(m)
-           q6i_new = Q6img(m) + dQ6img(m)
-           q6Par = q6par + q6r_new*q6r_new + q6i_new*q6i_new   	   
+         q4par = 0E0_dp
+         do m = 0, 8
+           q4r_new = q4real(m) + dq4real(m)
+           q4i_new = q4img(m) + dq4img(m)
+           q4Par = q4par + q4r_new*q4r_new + q4i_new*q4i_new   	   
          enddo
-         q6par = q6par * q6Constant
-         q6par = sqrt(q6par)/real((q6Neigh + dNeigh), dp)
- 	     miscCoord_New(q6ArrayIndx) = q6par
+         q4par = q4par * q4Constant
+         q4par = sqrt(q4par)/real((q4Neigh + dNeigh), dp)
+ 	     miscCoord_New(q4ArrayIndx) = q4par
          newData = .true.
       end subroutine
      !--------------------------------------------------------------------------------
-       subroutine CalcQ6_SwapOut(nType, nMol)
+       subroutine Calcq4_SwapOut(nType, nMol)
          use MiscelaniousVars
          use Coords
          use SimParameters
@@ -331,25 +330,25 @@
          integer :: gloIndx1, gloIndx2
          integer :: jIndx, iIndx, sizeDisp
          integer :: dispAtom1
-         real(dp), parameter :: q6Constant = 4d0*pi/13d0
-         real(dp) :: q6r_new, q6i_new
+         real(dp), parameter :: q4Constant = 4d0*pi/13d0
+         real(dp) :: q4r_new, q4i_new
          real(dp) :: rx,ry,rz,r
          real(dp) :: theta,phi,junk,sTerm,cTerm
-         real(dp) :: q6Par
+         real(dp) :: q4Par
          real(dp) :: rPart,iPart
 
          if(NTotal .eq. 2) then
-!           dNeigh = -q6Neigh
-!           dQ6real = -Q6real
-!           dQ6real = -Q6img
- 	       miscCoord_New(q6ArrayIndx) = 1E0
+!           dNeigh = -q4Neigh
+!           dq4real = -q4real
+!           dq4real = -q4img
+ 	       miscCoord_New(q4ArrayIndx) = 1E0
            return	   
          endif
 
  
          dNeigh = 0
-         dQ6real = 0E0
-         dQ6img = 0E0
+         dq4real = 0E0
+         dq4img = 0E0
          gloIndx1 =  molArray(nType)%mol(nMol)%globalIndx(1)
 !         iIndx =  molArray(nType)%mol(nMol)%indx
          do jType = 1, nMolTypes
@@ -359,7 +358,7 @@
              if(gloIndx1 .eq. gloIndx2) then
                cycle
              endif
-             if(rPair(gloIndx2, gloIndx1)%p%r_sq .le. q6DistSq) then	
+             if(rPair(gloIndx2, gloIndx1)%p%r_sq .le. q4DistSq) then	
                r = rPair(gloIndx2, gloIndx1)%p%r
                dNeigh = dNeigh - 1
                rx = rPair(gloIndx2, gloIndx1)%p%rx
@@ -367,35 +366,26 @@
                rz = rPair(gloIndx2, gloIndx1)%p%rz
                phi = atan2(ry,rx)
                theta = acos(rz/r)  
-               do m = 0, 12
+               do m = 0, 8
                  call Harmonics(theta, phi, m-6, rPart, iPart)	
-                 dQ6real(m) = dQ6real(m) - rPart
-                 dQ6img(m) = dQ6img(m) - iPart	
+                 dq4real(m) = dq4real(m) - rPart
+                 dq4img(m) = dq4img(m) - iPart	
                enddo               
              endif
            enddo
          enddo
           
-         q6par = 0E0
-         do m = 0, 12
-           q6r_new = Q6real(m) + dQ6real(m)
-           q6i_new = Q6img(m) + dQ6img(m)
-           q6Par = q6par + q6r_new*q6r_new + q6i_new*q6i_new   	   
+         q4par = 0E0
+         do m = 0, 8
+           q4r_new = q4real(m) + dq4real(m)
+           q4i_new = q4img(m) + dq4img(m)
+           q4Par = q4par + q4r_new*q4r_new + q4i_new*q4i_new   	   
          enddo
-         q6par = q6par * q6Constant
-         q6par = sqrt(q6par)/real((q6Neigh + dNeigh), dp)
- 	     miscCoord_New(q6ArrayIndx) = q6par
+         q4par = q4par * q4Constant
+         q4par = sqrt(q4par)/real((q4Neigh + dNeigh), dp)
+ 	     miscCoord_New(q4ArrayIndx) = q4par
          newData = .true.
       end subroutine
-     !--------------------------------------------------------------------------------
-!       subroutine Q6_Update
-!         use MiscelaniousVars
-!         use Coords
-!         use SimParameters
-!         implicit none 
-
-
-!      end subroutine
      !--------------------------------------------------------------------------------
       subroutine Harmonics(Theta, Phi, m, RealVal, ImgVal)
       use Constants	
@@ -406,13 +396,11 @@
       real(dp), intent(out) :: RealVal, ImgVal
 
       real(dp) :: cTerm, sTerm, cTermsq, sTermsq
-      real(dp), parameter :: const0 = sqrt(13d0/pi)/32d0
-      real(dp), parameter :: const1 = sqrt(273d0/(2d0*pi))/16d0
-      real(dp), parameter :: const2 = sqrt(1365d0/pi)/64d0
-      real(dp), parameter :: const3 = sqrt(1365d0/pi)/32d0
-      real(dp), parameter :: const4 = sqrt(91d0/(2d0*pi))*3d0/32d0
-      real(dp), parameter :: const5 = sqrt(1001d0/pi)*3d0/32d0
-      real(dp), parameter :: const6 = sqrt(3003d0/pi)/64d0
+      real(dp), parameter :: const0 = (3d0/16d0)*sqrt(1d0/pi)
+      real(dp), parameter :: const1 = (3d0/8d0)*sqrt(5d0/pi)
+      real(dp), parameter :: const2 = (3d0/8d0)*sqrt(5d0/(2d0*pi))
+      real(dp), parameter :: const3 = (3d0/8d0)*sqrt(35d0/pi)
+      real(dp), parameter :: const4 = (3d0/16d0)*sqrt(35d0/(2d0*pi))
 
       RealVal = 0E0_dp
       ImgVal = 0E0_dp
@@ -422,45 +410,31 @@
       select case (abs(m))
       case(0)
         ctermsq = cterm * cterm
-        RealVal = 231d0*ctermsq*ctermsq*ctermsq - 315d0*ctermsq*ctermsq
-        RealVal = RealVal + 105d0*ctermsq - 5d0
+        RealVal = 35d0*ctermsq*ctermsq - 30d0*ctermsq + 3d0
         RealVal = RealVal * const0
       case(1) 
         ctermsq = cterm * cterm
-        RealVal = 33d0*ctermsq*ctermsq*cterm
-        RealVal = RealVal - 30d0*cterm*ctermsq + 5d0*cterm 
-        RealVal = sterm * RealVal 
-        RealVal = RealVal * const1
+        RealVal = sterm * (7d0*ctermsq*cterm - 3d0 * cterm)
         if(m .gt. 0) then
 	       RealVal = -RealVal
         endif
+        RealVal = RealVal * const1
       case(2)
         ctermsq = cterm * cterm
-        RealVal = sterm * sterm
-        RealVal = RealVal * (33d0*ctermsq*ctermsq - 18d0*ctermsq + 1d0)
+        stermsq = sterm * sterm
+        RealVal = stermsq * (7d0*ctermsq - 1d0)
         RealVal = RealVal * const2
       case(3)	   
         RealVal = sTerm * sTerm * sTerm
-        RealVal = RealVal * cterm * (11d0*cterm*cterm-3d0)
-        RealVal = RealVal * const3
+        RealVal = RealVal * cterm 
         if(m .gt. 0) then
 	      RealVal = -RealVal
         endif
+        RealVal = RealVal * const3
       case(4)
         sTermsq = sterm * sterm
-        RealVal = sTermsq * sTermsq * (11d0*cterm*cterm - 1d0)
+        RealVal = sTermsq * sTermsq
         RealVal = RealVal * const4
-      case(5)
-        sTermsq = sTerm * sTerm
-        RealVal = sTerm * sTermsq * sTermsq * cterm
-        RealVal = RealVal * const5
-        if(m .gt. 0) then
-          RealVal = -RealVal
-        endif
-      case(6)
-        sTermsq = sTerm * sTerm
-        RealVal = sTermsq * sTermsq *sTermsq
-        RealVal = RealVal * const6
       end select
 
       ImgVal = RealVal * sin(m * Phi)

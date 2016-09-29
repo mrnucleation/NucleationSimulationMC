@@ -40,7 +40,7 @@
       real(dp), intent(inOut) :: E_T
       real(dp), intent(inOut) :: PairList(:,:)
       integer :: iType,jType,iMol, jMol
-      integer(kind=2) :: atmType1,atmType2      
+      integer(kind=atomIntType) :: atmType1,atmType2      
       integer :: iIndx, jIndx, jMolMin
       real(dp) :: rx,ry,rz,r
       real(dp) :: r_eq, repul_C, q_ij
@@ -161,7 +161,7 @@
 
       
       integer :: iType,jType,iMol,jMol,iDisp
-      integer(kind=2) :: atmType1,atmType2,iIndx,jIndx
+      integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
       integer :: sizeDisp 
       real(dp) :: rx,ry,rz
       real(dp) :: r_new, r_old
@@ -313,7 +313,7 @@
       real(dp), intent(inout) :: dETable(:)
       
       integer :: iIndx,jType,jIndx,jMol
-      integer(kind=2)  :: atmType1,atmType2
+      integer(kind=atomIntType)  :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
@@ -402,7 +402,7 @@
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
       integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom
-      integer(kind=2) :: atmType1,atmType2
+      integer(kind=atomIntType) :: atmType1,atmType2
 
       real(dp) :: rx,ry,rz
       real(dp) :: r
@@ -505,7 +505,7 @@
       logical, intent(out) :: rejMove
       
       integer :: iAtom,jAtom
-      integer(kind=2)  :: atmType1,atmType2
+      integer(kind=atomIntType)  :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
