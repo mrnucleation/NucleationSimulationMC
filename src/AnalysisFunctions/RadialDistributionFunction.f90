@@ -15,6 +15,7 @@
 
       public :: nRadialDist
       public :: Initialize_RadialDist
+      public :: SetRadialHist
       public :: Calc_RadialDist
       public :: Output_RadialDist
       public :: SetRadialParameters
@@ -78,6 +79,21 @@
           enddo
         enddo
       endif
+
+      end subroutine
+!======================================================================================    
+      subroutine SetRadialHist(iRadial, binSize, nBins, fileName)
+      implicit none 
+      integer, intent(in) :: iRadial, nBins
+      real(dp), intent(in) :: binSize
+      character(len=30), intent(in) :: fileName
+      integer :: binIndx
+
+      binIndx = radHistIndx(iRadial)
+      miscHist(binIndx)%binSize = binSize
+      miscHist(binIndx)%sizeInv = 1E0_dp/binSize
+      miscHist(binIndx)%nBins = nBins
+      miscHist(binIndx)%fileName = fileName
 
       end subroutine
 !======================================================================================    

@@ -1,5 +1,3 @@
-
-
 !======================================================================================    
 !      This module contains the functions nessisary to initalize and 
 !      perform radial density distribution studies
@@ -13,6 +11,7 @@
       integer, allocatable :: radType(:)
 
       public :: nRadialDens
+      public :: SetDensityHist
       public :: Initialize_RadialDens
       public :: SetDensityParameters
       public :: Calc_RadialDensity
@@ -31,6 +30,7 @@
         return
       endif
 
+      allocate( radHistIndx(1:nRadialDens), stat = AllocationStatus )
       allocate( radType(1:nRadialDens), stat = AllocationStatus )
 
       call ReserveSpace_Histograms(nRadialDens, startIndx, endIndx)
@@ -49,6 +49,21 @@
 
       end subroutine
 !======================================================================================    
+      subroutine SetDensityHist(iRadial, binSize, nBins, fileName)
+      implicit none 
+      integer, intent(in) :: iRadial, nBins
+      real(dp), intent(in) :: binSize
+      character(len=30), intent(in) :: fileName
+      integer :: binIndx
+
+      binIndx = radHistIndx(iRadial)
+      miscHist(binIndx)%binSize = binSize
+      miscHist(binIndx)%sizeInv = 1E0_dp/binSize
+      miscHist(binIndx)%nBins = nBins
+      miscHist(binIndx)%fileName = fileName
+
+      end subroutine
+!======================================================================================    
       subroutine Calc_RadialDensity
         use ParallelVar, only: nout
         use SimParameters, only: NPART, nMolTypes
@@ -60,30 +75,26 @@
         integer :: iMol
         integer :: radialIndx
         integer :: gloIndx1, gloIndx2
-        integer :: x_cnt, y_cnt, z_cnt
+        integer :: cnt
         real(dp) :: r_sq, r, rx, ry, rz
         real(dp) :: xcm, ycm, zcm
 
         xcm = 0d0 
-        x_cnt = 0
+        cnt = 0
         ycm = 0d0 
-        y_cnt = 0
         zcm = 0d0 
-        z_cnt = 0
         do iType = 1, nMolTypes
           do iMol = 1, NPART(iType)
             xcm = xcm + molArray(iType)%mol(iMol)%x(1)
             ycm = ycm + molArray(iType)%mol(iMol)%y(1)
             zcm = zcm + molArray(iType)%mol(iMol)%z(1) 
-            x_cnt = x_cnt + 1
-            y_cnt = y_cnt + 1
-            z_cnt = z_cnt + 1
+            cnt = cnt + 1
           enddo
         enddo
 
-        xcm = xcm/real(x_cnt, dp)
-        ycm = ycm/real(y_cnt, dp)
-        zcm = zcm/real(z_cnt, dp)
+        xcm = xcm/real(cnt, dp)
+        ycm = ycm/real(cnt, dp)
+        zcm = zcm/real(cnt, dp)
 
         do iRadial = 1, nRadialDens
           nType = radType(iRadial)

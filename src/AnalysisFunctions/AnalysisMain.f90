@@ -149,6 +149,7 @@
           nRadialDens = nRadialDens + 1
           if(nRadialDens .eq. 1) then
             nPostMove = nPostMove + 1
+            nOutput = nOutput + 1
           endif
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
@@ -182,11 +183,10 @@
         case("radialdistribution")
           iRadial = iRadial + 1
           read(inputLines(iAnalysis), *)  analysisName, type1, atom1, type2, atom2, binSize, nBins, fileName
+
           call SetRadialParameters(iRadial, type1, type2, atom1, atom2)
-          miscHist(iRadial)%binSize = binSize
-          miscHist(iRadial)%sizeInv = 1E0_dp/binSize
-          miscHist(iRadial)%nBins = nBins
-          miscHist(iRadial)%fileName = fileName
+          call SetRadialHist(iRadial, binSize, nBins, fileName)
+
           if(iRadial .eq. 1) then
             iPostMove = iPostMove + 1
             postMoveArray(iPostMove)%func => Calc_RadialDist
@@ -213,11 +213,7 @@
           iRadDens = iRadDens + 1
           iOutPut = iOutPut + 1
           call SetDensityParameters(iRadDens, type1)
-
-          miscHist(iRadial)%binSize = binSize
-          miscHist(iRadial)%sizeInv = 1E0_dp/binSize
-          miscHist(iRadial)%nBins = nBins
-          miscHist(iRadial)%fileName = fileName
+          call SetDensityHist(iRadDens, binSize, nBins, fileName)
 
           postMoveArray(iPostMove)%func => Calc_RadialDensity
           outputArray(iOutPut)%func => Output_RadialDensity

@@ -67,6 +67,7 @@
     public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp, findVarValues, getBiasIndex
     public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat, curUIndx
     public :: GetUmbrellaBias_SwapIn, GetUmbrellaBias_SwapOut, ScreenOutputUmbrella, screenFormat
+    public :: CheckInitialValues
 !==========================================================================================
     contains
 !==========================================================================================
@@ -93,7 +94,7 @@
     subroutine ReadInput_Umbrella(fileUnit)
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx, CalcDistPairs_New
-      use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, echoInput
+      use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, maxMol, echoInput, NTotal, NTotal_New
       use Q6Functions, only: q6ArrayIndx, CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut
       use ParallelVar, only: nout
       use WHAM_Module, only: refBin, refSizeNumbers
@@ -198,7 +199,7 @@
           
 !          iSwapIn = iSwapIn + 1
 !          iSwapOut = iSwapOut + 1
-        case("clustersize")
+        case("totalclustersize")
           read(inputLines(iUmbrella), *) labelField
           if(indxVar .le. 0) then
             write(*,*) "Error! An invalid molecule type has been chosen!"
@@ -384,7 +385,7 @@
 !==========================================================================================
      subroutine GetUmbrellaBias_Disp(disp, biasDiff, rejMove)
      use CoordinateTypes
-     use SimParameters, only: NPART, NPART_new
+     use SimParameters, only: NPART, NPART_new, NTotal, NTotal_New
      implicit none
      logical, intent(out) :: rejMove
      type(Displacement), intent(in) :: disp(:)
@@ -421,7 +422,7 @@
      end subroutine
 !==========================================================================================
      subroutine GetUmbrellaBias_SwapIn(biasDiff, rejMove)
-     use SimParameters, only: NPART, NPART_new
+     use SimParameters, only: NPART, NPART_new, NTotal, NTotal_New
      implicit none
      logical, intent(out) :: rejMove
      real(dp), intent(out) :: biasDiff
@@ -454,7 +455,7 @@
      end subroutine
 !==========================================================================================
      subroutine GetUmbrellaBias_SwapOut(nType, nMol, biasDiff, rejMove)
-     use SimParameters, only: NPART, NPART_new
+     use SimParameters, only: NPART, NPART_new, NTotal, NTotal_New
      implicit none
      logical, intent(out) :: rejMove
      integer, intent(in) :: nType, nMol
@@ -636,6 +637,30 @@
        remainder = remainder - curVal * indexCoeff(iBias)
      enddo
     
+     end subroutine
+!==========================================================================================
+     subroutine CheckInitialValues
+     implicit none
+     integer :: iBias
+
+     do iBias = 1, nBiasVariables
+       if(biasvar(iBias) % varType .eq. 1) then
+         binIndx(iBias) = floor( biasvar(iBias) % intVar / UBinSize(iBias) )
+       elseif(biasvar(iBias) % varType .eq. 2) then
+         binIndx(iBias) = floor( biasvar(iBias) % realVar / UBinSize(iBias) )
+       endif
+       if(binIndx(iBias) .gt. binMax(iBias)) then
+         write(*,*) "The initital system state is above the upper bounds"         
+         write(*,*) "specified by the umbrella sampling input"         
+         stop
+       endif
+       if(binIndx(iBias) .lt. binMin(iBias)) then
+         write(*,*) "The initital system state is below the lower bounds"         
+         write(*,*) "specified by the umbrella sampling input"         
+         stop
+       endif
+     enddo
+ 
      end subroutine
 !==========================================================================
     end module

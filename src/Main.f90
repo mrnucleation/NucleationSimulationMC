@@ -16,11 +16,9 @@
       use Coords
       use CoodinateFunctions
       use Constants
-!      use E_Interface
       use EnergyPointers, only: Detailed_ECalc
       use EnergyTables
       use Forcefield
-!      use Histogram
       use MPI
       use MiscelaniousVars, only: CollectHistograms
       use MoveTypeModule
@@ -29,7 +27,8 @@
       use SimParameters
       use VarPrecision
       use WHAM_Functions
-      use UmbrellaSamplingNew, only: useUmbrella, curUIndx, UmbrellaHistAdd, OutputUmbrellaHist, ScreenOutputUmbrella
+      use UmbrellaSamplingNew, only: useUmbrella, curUIndx, UmbrellaHistAdd, OutputUmbrellaHist, &
+                                     ScreenOutputUmbrella, CheckInitialValues
       implicit none
 
 !      include 'mpif.h'
@@ -269,6 +268,7 @@
       endif
       if(useUmbrella) then
         call UmbrellaHistAdd 
+        call CheckInitialValues
 !        call ScreenOutputUmbrella
       endif
       flush(nout)
