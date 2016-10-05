@@ -444,6 +444,7 @@
       use SimParameters  
       use Coords
       use EnergyTables
+      use ParallelVar, only: myid
       implicit none
       integer, intent(in) :: nTarget,nType
       real(dp), intent(in) :: newNeiETable(:)
@@ -476,7 +477,7 @@
       
       norm = sum(ProbTable)
       if(norm .eq. 0) then
-        write(*,*) "NORM IS 0!"
+        write(*,*) myid, "NORM IS 0!"
         do i = 1, maxMol
           write(*,*) i, neiCount(i), newNeiETable(i), ProbTable(i)
         enddo
