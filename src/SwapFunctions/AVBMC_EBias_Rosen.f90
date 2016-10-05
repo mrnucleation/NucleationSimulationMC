@@ -473,7 +473,7 @@
       if(norm .eq. 0) then
         write(*,*) "NORM IS 0!"
         do i = 1, maxMol
-          write(*,*) i, neiCount(i) ,ProbTable(i)
+          write(*,*) i, neiCount(i), newNeiETable(i), ProbTable(i)
         enddo
       endif
       ProbRev = ProbTable(nTarget)/norm
