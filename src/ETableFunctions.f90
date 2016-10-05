@@ -126,10 +126,10 @@
       enddo    
       newNeiTable(nIndx) = EMax
      
-      if( all(neighCount .eq. 0) )then
+      if( all(neiCount .eq. 0) )then
         write(*,*) "ERROR!"
         do i = 1, maxMol
-          write(*,*) i, PairList(i), neighCount(i)
+          write(*,*) i, PairList(i), neiCount(i)
         enddo
       endif
       end subroutine      
