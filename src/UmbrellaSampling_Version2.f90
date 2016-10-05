@@ -541,7 +541,10 @@
      do iBias = 1, nBiasVariables
        if(biasvar(iBias) % varType .eq. 1) then
          binIndx(iBias) = floor( biasvar(iBias) % intVar / UBinSize(iBias) )
-!         write(*,*) iBias, biasvar(iBias)%intVar, binIndx(iBias)
+!         binIndx(iBias) = biasvar(iBias) % intVar
+         if(biasvar(iBias)%intVar .ne. binIndx(iBias)) then
+           write(*,*) iBias, biasvar(iBias)%intVar, binIndx(iBias)
+         endif
        elseif(biasvar(iBias) % varType .eq. 2) then
          binIndx(iBias) = floor( biasvar(iBias) % realVar / UBinSize(iBias) )
 !         write(*,*) iBias, biasvar(iBias)%realvar, binIndx(iBias)
