@@ -624,6 +624,7 @@
       enddo
      
       E_Trial = E_LJ + E_Ele
+      write(35,*) E_Trial
 
       if( E_Trial .gt. Eng_Critr(newMol%molType,jType) ) then
         rejMove = .true.
