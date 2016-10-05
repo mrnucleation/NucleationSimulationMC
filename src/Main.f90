@@ -66,7 +66,7 @@
       call MPI_INIT(ierror)
       call MPI_COMM_SIZE(MPI_COMM_WORLD, p_size, ierror)
       call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierror)  
-!      if(ierror .eq    
+
 !      This section of code generates the file number for each MPI thread's files
       if (myid .lt. 10) then
         format_string = "(A,I1,A)"
@@ -473,18 +473,18 @@
 
       call CollectHistograms
       write(nout,*) "Histograms Condenced...."
+
       if(myid .eq. 0) then
         call Output_VMD_Final
         if(useAnalysis) then
           call OutputAnalysis
         endif
       endif
+
       if(useUmbrella) then
         call OutputUmbrellaHist
       endif
       write(nout,*) "Histograms Outputted...."
-
-
       
       write(35,*) "Energy Table:"
       do i=1,maxMol      

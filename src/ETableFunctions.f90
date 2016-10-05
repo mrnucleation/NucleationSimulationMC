@@ -95,7 +95,7 @@
               endif
             endif 
           enddo
-          if(PairList(i) .le. Eng_Critr(iType, nType)) then
+          if(PairList(i) .le. Eng_Critr(nType, iType)) then
             ETab = ETable(nIndx) + dE(nIndx)
             if(ETab .gt. EMax) then
               EMax = ETab

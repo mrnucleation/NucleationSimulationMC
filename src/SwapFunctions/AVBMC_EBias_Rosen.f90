@@ -137,6 +137,8 @@
       NTotal_New = NTotal + 1
       call GetUmbrellaBias_SwapIn(biasDiff, rejMove)
       if(rejMove) then
+        boundaryRej = boundaryRej + 1d0
+        totalRej = totalRej + 1d0
         return
       endif
 
@@ -278,8 +280,8 @@
       NDiff(nType) = -1
       rejMove = boundaryFunction(NPART, NDiff)
       if(rejMove) then
-         boundaryRej = boundaryRej + 1d0
-         totalRej = totalRej + 1d0
+         boundaryRej_out = boundaryRej_out + 1d0
+         totalRej_out = totalRej_out + 1d0
          return
       endif   
 
@@ -313,6 +315,8 @@
       NTotal_New = NTotal - 1
       call GetUmbrellaBias_SwapOut(nType, nMol, biasDiff, rejMove)
       if(rejMove) then
+        boundaryRej_out = boundaryRej_out + 1d0
+        totalRej_out = totalRej_out + 1d0
         return
       endif
         
