@@ -458,10 +458,10 @@
       EMax = maxval(newNeiETable)
       cnt = 0 
       do i = 1, maxMol
-        if(isActive(i) .eqv. .true.) then
+        if(neiCount(i) .gt. 0) then
           ProbTable(i) = exp(beta*(newNeiETable(i)-Emax))
-        elseif(i .eq. nIndx) then
-          ProbTable(i) = exp(beta*(newNeiETable(i)-Emax))
+!        elseif(i .eq. nIndx) then
+!          ProbTable(i) = exp(beta*(newNeiETable(i)-Emax))
         endif
       enddo
 !      ProbTable(nIndx) = exp(beta*(newNeiETable(nIndx)-Emax))
@@ -515,7 +515,8 @@
         
       ProbTable = 0d0
       do i = 1, maxMol
-        if(isActive(i)) then
+!        if(isActive(i)) then
+        if(neiCount(i) .gt. 0) then
           ProbTable(i) = exp(beta * NeiETable(i))
         endif
       enddo

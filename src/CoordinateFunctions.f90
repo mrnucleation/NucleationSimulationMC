@@ -60,6 +60,7 @@
       allocate(subIndxList(1:maxMol), stat=AllocationStatus)
       allocate(ETable(1:maxMol), stat=AllocationStatus)
       allocate(NeiETable(1:maxMol), stat=AllocationStatus)
+      allocate(neiCount(1:maxMol), stat=AllocationStatus)
       
       cnt = 0
       do i=1, nMolTypes      

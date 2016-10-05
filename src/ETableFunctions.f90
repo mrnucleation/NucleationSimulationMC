@@ -11,8 +11,11 @@
       real(dp) :: EMax, ETab
       real(dp) :: biasOld, biasNew
 
-      NeiETable=0E0
-      if(NTotal .eq. 1) return
+      NeiETable = 0E0
+      neiCount = 0
+      if(NTotal .eq. 1) then
+        return
+      endif
       iLowIndx = 0      
 
       jLowIndx = 0
@@ -26,6 +29,7 @@
           do j = jlowIndx+1, jlowIndx+NPART(nType)
             if(NeighborList(j,i)) then
               ETab = ETable(j)
+              neiCount(i) = neiCount(i) + 1
               if(ETab .gt. EMax) then
                 EMax = ETab
               endif
@@ -90,6 +94,7 @@
           do j = jlowIndx+1, jlowIndx+NPART(nType)
             if(NeighborList(j,i)) then
               ETab = ETable(j) + dE(j)
+              neiCount(i) = neiCount(i) + 1
               if(ETab .gt. EMax) then
                 EMax = ETab
               endif
@@ -97,6 +102,7 @@
           enddo
           if(PairList(i) .le. Eng_Critr(nType, iType)) then
             ETab = ETable(nIndx) + dE(nIndx)
+            neiCount(i) = neiCount(i) + 1
             if(ETab .gt. EMax) then
               EMax = ETab
             endif		
@@ -111,6 +117,7 @@
         do j = jlowIndx+1,jlowIndx+NPART(nType)
           if(PairList(j) .le. Eng_Critr(jType, nType)) then
             ETab = ETable(j) + dE(j)
+            neiCount(nIndx) = neiCount(nIndx) + 1
             if(ETab .gt. EMax) then
               EMax = ETab
             endif

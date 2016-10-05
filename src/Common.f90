@@ -169,6 +169,7 @@
       module EnergyTables
       use VarPrecision
 
+      integer, allocatable :: neiCount(:)
       real(dp), allocatable :: ETable(:)
       real(dp), allocatable :: NeiETable(:)
       real(dp), allocatable :: biasAlpha(:,:)
