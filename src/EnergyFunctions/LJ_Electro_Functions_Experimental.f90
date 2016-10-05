@@ -629,7 +629,7 @@
       if( E_Trial .gt. Eng_Critr(newMol%molType,jType) ) then
         rejMove = .true.
       endif
-      write(35,*) newMol%molType, jType, E_Trial, Eng_Critr(newMol%molType,jType), rejMove
+!      write(35,*) newMol%molType, jType, E_Trial, Eng_Critr(newMol%molType,jType), rejMove
 
       
       end subroutine
