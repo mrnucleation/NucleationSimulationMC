@@ -77,7 +77,7 @@
       real(dp) :: EMax, ETab
        
       
-      
+      neiCount = 0
       newNeiTable = 0E0
 !      return
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx

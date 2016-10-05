@@ -132,15 +132,6 @@
 
 !      call DEBUG_Output_NewConfig
 
-!     Calculate the umbrella sampling bias.
-      NPART_new = NPART + NDiff
-      NTotal_New = NTotal + 1
-      call GetUmbrellaBias_SwapIn(biasDiff, rejMove)
-      if(rejMove) then
-        boundaryRej = boundaryRej + 1d0
-        totalRej = totalRej + 1d0
-        return
-      endif
 
 !      Perform a check to see if the cluster criteria is statisfied or not.
       if(.not. distCriteria) then
@@ -154,6 +145,17 @@
           return
         endif  
       endif
+
+!     Calculate the umbrella sampling bias.
+      NPART_new = NPART + NDiff
+      NTotal_New = NTotal + 1
+      call GetUmbrellaBias_SwapIn(biasDiff, rejMove)
+      if(rejMove) then
+        boundaryRej = boundaryRej + 1d0
+        totalRej = totalRej + 1d0
+        return
+      endif
+
 
 !      Calculate the Energy Difference Associated with the move
       E_Inter = 0d0
