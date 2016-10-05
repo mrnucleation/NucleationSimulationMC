@@ -609,14 +609,15 @@
             rejMove = .true.
             return
           endif          
-          sig_sq = sig_tab(atmType2, atmType1)
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)
           if(ep .ne. 0E0) then
+            sig_sq = sig_tab(atmType2, atmType1)
             LJ = LJ_Func(r, ep, sig_sq)
             E_LJ = E_LJ + LJ
           endif
-          if(q .ne. 0E0) then            
+          if(q .ne. 0E0) then   
+            r = sqrt(r)         
             Ele = Ele_Func(r, q)
             E_Ele = E_Ele + Ele
           endif
