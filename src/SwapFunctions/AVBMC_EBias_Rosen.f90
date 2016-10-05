@@ -450,20 +450,25 @@
       real(dp), intent(out) :: ProbRev
       
       integer :: i, nIndx
-      integer :: cnt(1:nMolTypes)
       real(dp) :: ProbTable(1:maxMol)
       real(dp) :: norm, EMax
   
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
       ProbTable = 0d0
 !      EMax = newNeiETable(nTarget)
-      EMax = maxval(newNeiETable)
-      cnt = 0 
+!      EMax = maxval(newNeiETable)
+      EMax = -huge(dp)
+      do i = 1, maxMol
+        if(neiCount(i) .gt. 0) then
+          if(EMax .lt. newNeiETable(i)) then
+            EMax = newNeiETable(i)
+          endif
+        endif
+      enddo
+!      cnt = 0 
       do i = 1, maxMol
         if(neiCount(i) .gt. 0) then
           ProbTable(i) = exp(beta*(newNeiETable(i)-Emax))
-!        elseif(i .eq. nIndx) then
-!          ProbTable(i) = exp(beta*(newNeiETable(i)-Emax))
         endif
       enddo
 !      ProbTable(nIndx) = exp(beta*(newNeiETable(nIndx)-Emax))
