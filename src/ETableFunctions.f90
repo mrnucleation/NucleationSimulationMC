@@ -126,12 +126,12 @@
       enddo    
       newNeiTable(nIndx) = EMax
      
-      if( all(neiCount .eq. 0) )then
-        write(*,*) "ERROR!"
-        do i = 1, maxMol
-          write(*,*) i, PairList(i), neiCount(i)
-        enddo
-      endif
+!      if( all(neiCount .eq. 0) )then
+!        write(*,*) "ERROR!"
+!        do i = 1, maxMol
+!          write(*,*) i, PairList(i), neiCount(i)
+!        enddo
+!      endif
       end subroutine      
 !=================================================================================
       subroutine Insert_NewNeiETable_Distance(nType, PairList, dE, newNeiTable)

@@ -456,17 +456,7 @@
   
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
       ProbTable = 0d0
-!      EMax = newNeiETable(nTarget)
-!      EMax = maxval(newNeiETable)
-      EMax = -huge(dp)
-      do i = 1, maxMol
-        if(neiCount(i) .gt. 0) then
-          if(EMax .lt. newNeiETable(i)) then
-            EMax = newNeiETable(i)
-          endif
-        endif
-      enddo
-!      cnt = 0 
+      EMax = maxval(newNeiETable)
       do i = 1, maxMol
         if(neiCount(i) .gt. 0) then
           ProbTable(i) = exp(beta*(newNeiETable(i)-Emax))
@@ -476,12 +466,6 @@
       
       
       norm = sum(ProbTable)
-      if(norm .eq. 0) then
-        write(*,*) myid, "NORM IS 0!"
-        do i = 1, maxMol
-          write(*,*) i, neiCount(i), newNeiETable(i), ProbTable(i)
-        enddo
-      endif
       ProbRev = ProbTable(nTarget)/norm
 
       
