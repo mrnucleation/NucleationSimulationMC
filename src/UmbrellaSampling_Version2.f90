@@ -40,6 +40,7 @@
     end type
 
     logical :: useUmbrella, UScreenOut
+    logical :: energyAnalytics = .false.
     integer :: nBiasVariables, umbrellaLimit
     integer :: curUIndx
     integer, allocatable :: curVarIndx
