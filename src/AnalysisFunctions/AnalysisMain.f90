@@ -209,14 +209,15 @@
           postMoveArray(iPostMove)%func => CalcQ6
         case("radialdensity")
           read(inputLines(iAnalysis), *)  analysisName, type1, binSize, nBins, fileName
-          iPostMove = iPostMove + 1
           iRadDens = iRadDens + 1
-          iOutPut = iOutPut + 1
           call SetDensityParameters(iRadDens, type1)
           call SetDensityHist(iRadDens, binSize, nBins, fileName)
-
-          postMoveArray(iPostMove)%func => Calc_RadialDensity
-          outputArray(iOutPut)%func => Output_RadialDensity
+          if(iRadDens .eq. 1) then
+            iPostMove = iPostMove + 1
+            iOutPut = iOutPut + 1
+            postMoveArray(iPostMove)%func => Calc_RadialDensity
+            outputArray(iOutPut)%func => Output_RadialDensity
+          endif
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) analysisName

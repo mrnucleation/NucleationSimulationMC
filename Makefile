@@ -17,7 +17,7 @@ OPTIMIZE_FLAGS += -xHost
 #OPEN_MP_FLAGS := -fopenmp
 #DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS += -heap-arrays 1024
-#DEBUGFLAGS += -check bounds -traceback -g
+DEBUGFLAGS += -check all -traceback -g
 #DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace

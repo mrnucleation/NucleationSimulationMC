@@ -64,6 +64,9 @@
     type(SwapInUmbrellaArray), allocatable :: SwapInUmbrella(:)
     type(SwapOutUmbrellaArray), allocatable :: SwapOutUmbrella(:)
 
+    real(dp), allocatable :: U_EAvg(:)
+    real(dp), allocatable :: U_EHist(:, :)
+
     public :: AllocateUmbrellaVariables, ReadInput_Umbrella, AllocateUmbrellaArray, UmbrellaHistAdd
     public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp, findVarValues, getBiasIndex
     public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat, curUIndx
