@@ -10,14 +10,14 @@ FC := /opt/openmpi/bin/mpif90
 CC := mpicc
 OPTIMIZE_FLAGS := -O3
 OPTIMIZE_FLAGS += -xHost
-#OPTIMIZE_FLAGS += -ipo
+OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
 #DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS += -heap-arrays 1024
-DEBUGFLAGS += -check all -traceback -g
+#DEBUGFLAGS += -check all -traceback -g
 #DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
