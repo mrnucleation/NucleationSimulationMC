@@ -28,7 +28,7 @@
       use VarPrecision
       use WHAM_Functions
       use UmbrellaSamplingNew, only: useUmbrella, curUIndx, UmbrellaHistAdd, OutputUmbrellaHist, &
-                                     ScreenOutputUmbrella, CheckInitialValues
+                                     ScreenOutputUmbrella, CheckInitialValues, energyAnalytics, OutputUmbrellaAnalytics
       implicit none
 
 !      include 'mpif.h'
@@ -267,7 +267,7 @@
         write(nout,outFormat1) 0,NPART, E_T,  (1E2_dp*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
       endif
       if(useUmbrella) then
-        call UmbrellaHistAdd 
+        call UmbrellaHistAdd(E_T) 
         call CheckInitialValues
 !        call ScreenOutputUmbrella
       endif
@@ -293,13 +293,13 @@
              if(mod(iCycle, intervalWham) .gt. equilInterval) then
 !               call NHistAdd(E_T) 
                if(useUmbrella) then
-                 call UmbrellaHistAdd
+                 call UmbrellaHistAdd(E_T)
                endif
              endif
            else
 !             call NHistAdd(E_T)
              if(useUmbrella) then
-               call UmbrellaHistAdd 
+               call UmbrellaHistAdd(E_T) 
              endif
            endif
          enddo
@@ -472,6 +472,9 @@
 !     Output Final Configuration to a visualization file that can be opened by a program like VMD or Avagadro.    
 
       call CollectHistograms
+      if(energyAnalytics) then
+        call OutputUmbrellaAnalytics
+      endif
       write(nout,*) "Histograms Condenced...."
 
       if(myid .eq. 0) then

@@ -64,6 +64,8 @@
     type(SwapInUmbrellaArray), allocatable :: SwapInUmbrella(:)
     type(SwapOutUmbrellaArray), allocatable :: SwapOutUmbrella(:)
 
+    integer, parameter :: E_Bins = 1000
+    real(dp), parameter :: dE = -100000/E_Bins
     real(dp), allocatable :: U_EAvg(:)
     real(dp), allocatable :: U_EHist(:, :)
 
@@ -71,7 +73,7 @@
     public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp, findVarValues, getBiasIndex
     public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat, curUIndx
     public :: GetUmbrellaBias_SwapIn, GetUmbrellaBias_SwapOut, ScreenOutputUmbrella, screenFormat
-    public :: CheckInitialValues
+    public :: CheckInitialValues, energyAnalytics, OutputUmbrellaAnalytics
 !==========================================================================================
     contains
 !==========================================================================================
@@ -342,6 +344,13 @@
      UHist = 0E0_dp
 
 
+     if(energyAnalytics) then
+       allocate(U_EAvg(1:umbrellaLimit), STAT = AllocateStatus)
+       allocate(U_EHist(1:umbrellaLimit, 0:E_Bins), STAT = AllocateStatus)
+       U_EAvg = 0E0_dp
+       U_EHist = 0E0_dp
+     endif
+
       
      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
      end subroutine
@@ -379,12 +388,25 @@
 
     end subroutine
 !==========================================================================================
-     subroutine UmbrellaHistAdd
+     subroutine UmbrellaHistAdd(E_T)
      implicit none
+     real(dp), intent(in) :: E_T 
+
+     integer :: bin
 
      curUIndx = getBiasIndex()
      UHist(curUIndx) = UHist(curUIndx) + 1E0_dp
  
+     if(energyAnalytics) then
+       U_EAvg(curUIndx) = U_EAvg(curUIndx) + E_T
+       bin = floor(dE / E_T)
+       if((bin .ge. 0) .and. (bin .lt. E_Bins)) then
+         U_EHist(curUIndx, bin) = U_EHist(curUIndx, bin) + 1d0
+       else
+         U_EHist(curUIndx, E_Bins) = U_EHist(curUIndx, E_Bins) + 1d0
+       endif
+     endif
+
      end subroutine
 !==========================================================================================
      subroutine GetUmbrellaBias_Disp(disp, biasDiff, rejMove)
@@ -509,7 +531,7 @@
 !==========================================================================================
     subroutine OutputUmbrellaHist
     implicit none
-    integer :: iUmbrella, iBias
+    integer :: iUmbrella, iBias, iBin
 !    integer, allocatable :: UArray(:)
     character(len = 100) :: outputString
 
@@ -536,6 +558,84 @@
 
     end subroutine
 
+!==========================================================================================
+    subroutine OutputUmbrellaAnalytics
+    use ParallelVar
+!    use MPI
+    implicit none
+    include 'mpif.h' 
+    integer :: iUmbrella, iBias, iBin
+    real(dp), allocatable :: TempHist(:), Temp2D(:,:)
+    real(dp) :: arraySize
+    character(len = 100) :: outputString
+
+
+    allocate( TempHist(1:umbrellaLimit) ) 
+    allocate( Temp2D(1:umbrellaLimit, 0:E_Bins) )
+  
+    if(myid .eq. 0) then
+      TempHist = 0E0_dp
+      Temp2D = 0E0_dp
+    endif
+    call MPI_BARRIER(MPI_COMM_WORLD, ierror) 
+    arraySize = size(U_EAvg)   
+    call MPI_REDUCE(U_EAvg, TempHist, arraySize, &
+              MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
+
+    if(myid .eq. 0) then
+      do iUmbrella = 1, umbrellaLimit
+        U_EAvg(iUmbrella) = TempHist(iUmbrella)
+      enddo
+    endif
+
+    call MPI_BARRIER(MPI_COMM_WORLD, ierror)    
+    arraySize = size(U_EHist)   
+    call MPI_REDUCE(U_EHist, Temp2D, arraySize, &
+              MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)    
+   
+
+    if(myid .eq. 0) then
+      do iUmbrella = 1, umbrellaLimit
+        do iBin = 0, E_Bins
+          U_EHist(iUmbrella, iBin) = Temp2D(iUmbrella, iBin)
+        enddo
+      enddo
+    endif
+
+    deallocate(TempHist) 
+    deallocate(Temp2D)
+
+
+    if(myid .eq. 0) then
+      open(unit=60, file = "Umbrella_AvgE.txt")
+      do iUmbrella = 1, umbrellaLimit
+        if(UHist(iUmbrella) .ne. 0E0_dp) then
+          call findVarValues(iUmbrella, UArray)
+          do iBias = 1, nBiasVariables
+            varValues(iBias) = real( UArray(iBias), dp) * UBinSize(iBias)
+          enddo
+          write(60,outputString) (varValues(iBias), iBias =1,nBiasVariables), U_EAvg(iUmbrella)/UHist(iUmbrella)
+        endif
+      enddo
+      close(60)
+
+      open(unit=60, file = "Umbrella_DensityStates.txt")
+      do iUmbrella = 1, umbrellaLimit
+        if(UHist(iUmbrella) .ne. 0E0_dp) then
+          call findVarValues(iUmbrella, UArray)
+          do iBias = 1, nBiasVariables
+            varValues(iBias) = real( UArray(iBias), dp) * UBinSize(iBias)
+          enddo
+          write(60,*) (varValues(iBias), iBias =1,nBiasVariables)
+          do iBin = 0, E_Bins
+            write(60,outputString) iBin*dE, U_EHist(iUmbrella, iBin)
+          enddo
+        endif
+      enddo
+      close(60)
+    endif
+
+    end subroutine
 !==========================================================================
      function getBiasIndex() result(biasIndx)
      integer :: biasIndx
