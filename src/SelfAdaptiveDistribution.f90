@@ -62,7 +62,7 @@
      do iDihed = 1, totalDihed
        histNorm = sum(dihedData(iDihed)%Hist)
        do iBin = 0, nDihBins
-         write(35,*) iBin*diBinSize, dihedData(iDihed)%Hist(iBin)/histNorm
+         write(2,*) iBin*diBinSize, dihedData(iDihed)%Hist(iBin)/histNorm
        enddo
      enddo
 

@@ -51,6 +51,7 @@
     integer, allocatable :: UArray(:)
     real(dp), allocatable :: UBias(:)
     real(dp), allocatable :: UHist(:)
+    real(dp), allocatable :: UHistTotal(:)
     real(dp), allocatable :: UBinSize(:)
     real(dp), allocatable :: varValues(:)
     character(len=20), allocatable :: inputFile
@@ -347,8 +348,10 @@
      if(energyAnalytics) then
        allocate(U_EAvg(1:umbrellaLimit), STAT = AllocateStatus)
        allocate(U_EHist(1:umbrellaLimit, 0:E_Bins), STAT = AllocateStatus)
+       allocate(UHistTotal(1:umbrellaLimit), STAT = AllocateStatus)
        U_EAvg = 0E0_dp
        U_EHist = 0E0_dp
+       UHistTotal = 0E0_dp
      endif
 
       
@@ -399,8 +402,9 @@
  
      if(energyAnalytics) then
        U_EAvg(curUIndx) = U_EAvg(curUIndx) + E_T
-       bin = floor(dE / E_T)
-       if((bin .ge. 0) .and. (bin .lt. E_Bins)) then
+       UHistTotal(curUIndx) = UHistTotal(curUIndx) + 1E0_dp
+       bin = floor(E_T / dE)
+       if( (bin .ge. 0) .and. (bin .lt. E_Bins) ) then
          U_EHist(curUIndx, bin) = U_EHist(curUIndx, bin) + 1d0
        else
          U_EHist(curUIndx, E_Bins) = U_EHist(curUIndx, E_Bins) + 1d0
@@ -569,18 +573,26 @@
     real(dp) :: arraySize
     character(len = 100) :: outputString
 
+    if(.not. useUmbrella) then
+      return
+    endif
 
-    allocate( TempHist(1:umbrellaLimit) ) 
-    allocate( Temp2D(1:umbrellaLimit, 0:E_Bins) )
-  
-    if(myid .eq. 0) then
+
+!    if(myid .eq. 0) then
+      allocate( TempHist(1:umbrellaLimit) ) 
+      allocate( Temp2D(1:umbrellaLimit, 0:E_Bins) )
       TempHist = 0E0_dp
       Temp2D = 0E0_dp
-    endif
+!    endif
     call MPI_BARRIER(MPI_COMM_WORLD, ierror) 
     arraySize = size(U_EAvg)   
     call MPI_REDUCE(U_EAvg, TempHist, arraySize, &
               MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
+
+    write(*,*) myid, ierror
+    do iUmbrella = 1, umbrellaLimit
+      write(*,*) iUmbrella, U_EAvg(iUmbrella), TempHist(iUmbrella)
+    enddo
 
     if(myid .eq. 0) then
       do iUmbrella = 1, umbrellaLimit
@@ -609,26 +621,26 @@
     if(myid .eq. 0) then
       open(unit=60, file = "Umbrella_AvgE.txt")
       do iUmbrella = 1, umbrellaLimit
-        if(UHist(iUmbrella) .ne. 0E0_dp) then
+        if(UHistTotal(iUmbrella) .ne. 0E0_dp) then
           call findVarValues(iUmbrella, UArray)
           do iBias = 1, nBiasVariables
             varValues(iBias) = real( UArray(iBias), dp) * UBinSize(iBias)
           enddo
-          write(60,outputString) (varValues(iBias), iBias =1,nBiasVariables), U_EAvg(iUmbrella)/UHist(iUmbrella)
+          write(60, *) (varValues(iBias), iBias =1,nBiasVariables), U_EAvg(iUmbrella)/UHistTotal(iUmbrella)
         endif
       enddo
       close(60)
 
       open(unit=60, file = "Umbrella_DensityStates.txt")
       do iUmbrella = 1, umbrellaLimit
-        if(UHist(iUmbrella) .ne. 0E0_dp) then
+        if(UHistTotal(iUmbrella) .ne. 0E0_dp) then
           call findVarValues(iUmbrella, UArray)
           do iBias = 1, nBiasVariables
             varValues(iBias) = real( UArray(iBias), dp) * UBinSize(iBias)
           enddo
           write(60,*) (varValues(iBias), iBias =1,nBiasVariables)
           do iBin = 0, E_Bins
-            write(60,outputString) iBin*dE, U_EHist(iUmbrella, iBin)
+            write(60, *) iBin*dE, U_EHist(iUmbrella, iBin)
           enddo
         endif
       enddo

@@ -472,9 +472,6 @@
 !     Output Final Configuration to a visualization file that can be opened by a program like VMD or Avagadro.    
 
       call CollectHistograms
-      if(energyAnalytics) then
-        call OutputUmbrellaAnalytics
-      endif
       write(nout,*) "Histograms Condenced...."
 
       if(myid .eq. 0) then
@@ -539,8 +536,10 @@
         enddo
       endif
 
-!      call OutputDihedral
+      call OutputDihedral
       close(35)
+
+
 
 
       do i=1,maxMol      
@@ -551,6 +550,9 @@
 
       if(useWham) then
         call WHAM_Finalize
+      endif
+      if(energyAnalytics) then
+        call OutputUmbrellaAnalytics
       endif
 
       

@@ -169,6 +169,7 @@
 !          write(*,*) norm
           write(80,*) "Number of Bins:", miscHist(iRadial)%nBins
           write(80,*) "Bin Size:", d_bin
+          write(80,*) "Total Counts:", norm
           write(80,*)
           do iBin = 0, miscHist(iRadial)%nBins
             r = iBin * d_bin

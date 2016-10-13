@@ -2,6 +2,7 @@
       module WHAM_Functions
       use WHAM_Module
       implicit none
+
 !=========================================================================
       contains
 !=========================================================================
@@ -12,7 +13,6 @@
       use UmbrellaSamplingNew
       implicit none
       integer :: AllocateStatus
-
 
       if(myid .eq. 0) then
         allocate(WHAM_Numerator(1:umbrellaLimit), STAT = AllocateStatus)

@@ -585,25 +585,15 @@
       cnt = 0
       acpt=.false.         
       do while(acpt .eqv. .false.)
-!         eng = 0E0
-!         cnt = cnt + 1
-!         angle = pi*grnd()
-!         ang1 = acos(1E0-2E0*grnd())
-!         ang2 = acos(1E0-2E0*grnd())
          call GenerateBendAngle(ang1, bendType1, ProbTemp)
          call GenerateBendAngle(ang2, bendType2, ProbTemp)
+!         ang1 = pi*grnd()
+!         ang2 = pi*grnd()
+!         ang1 = acos(1E0-2E0*grnd())
+!         ang2 = acos(1E0-2E0*grnd())
 
          dihedral = two_pi*grnd()
-!         ranNum = grnd()
-!         nSel = 0
-!         do while(dihedData(dihedType)%Integral(nSel) .lt. ranNum)
-!           nSel = nSel + 1
-!         enddo
-!         call SelectBin_IntTable( dihedData(dihedType)%Integral, nSel )
-!         nSel = nSel - 1
-!         dihedral = ( dble(nSel) + grnd() ) * diBinSize
- 
-!         ProbDihed = dihedData(dihedType)%Prob(nSel)/diBinSize
+
 
          ang3 = cos(ang1)*cos(ang2) + sin(ang1)*sin(ang2)*cos(dihedral)
          if (ang3 .ge. 1E0) then
@@ -614,18 +604,10 @@
          ang3 = acos(ang3)
 !         eng = Harmonic(ang1, k_bend1, theta_eq1)
 !         eng = eng + Harmonic(ang2, k_bend2, theta_eq2)
+!         eng = eng + Harmonic(ang3, k_bend3, theta_eq3)
          eng = Harmonic(ang3, k_bend3, theta_eq3)
-!         ProbTemp = exp(-beta*eng)/ProbDihed
-!         ProbGen = ProbTemp/(dihedData(dihedType)%accConst)
-
-!         ProbGen = exp(-beta*eng)
-
-!         if(ProbGen .gt. 1E0) then
-!           write(*,*) ProbGen, dihedData(dihedType)%accConst, nSel, dihedData(dihedType)%Integral(nSel)
-!           dihedData(dihedType)%accConst = ProbTemp
-!           cycle
-!         endif 
          dihedGen_atmp = dihedGen_atmp + 1E0
+!         ProbGen = exp(-beta*eng)
          ProbGen = exp(-beta*eng)
          if( ProbGen .gt. grnd() ) then
            acpt = .true.

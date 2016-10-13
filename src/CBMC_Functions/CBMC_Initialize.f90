@@ -151,7 +151,7 @@
       
       do i = 1, totalDihed
         dihedData(i)%Prob = 1E0 / nDihBins
-        dihedData(i)%Hist = 1E0
+        dihedData(i)%Hist = 0E0
         dihedData(i)%Integral(0) = dihedData(i)%Prob(0)
         do iBin = 1, nDihBins
           dihedData(i)%Integral(iBin) = dihedData(i)%Integral(iBin-1) + dihedData(i)%Prob(iBin)
