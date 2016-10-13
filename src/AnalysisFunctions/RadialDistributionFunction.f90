@@ -159,6 +159,7 @@
         real(dp) :: d_bin
         real(dp) :: r, norm, rFactor
 
+        open(unit = 81, file = "RadialDist_Info.txt")
         do iRadial = 1, nRadialDist
           open(unit = 80, file = miscHist(iRadial)%fileName)
           d_bin = miscHist(iRadial)%binSize
@@ -167,10 +168,11 @@
             norm = norm + miscHist(iRadial)%binCount(iBin)
           enddo
 !          write(*,*) norm
-          write(80,*) "Number of Bins:", miscHist(iRadial)%nBins
-          write(80,*) "Bin Size:", d_bin
-          write(80,*) "Total Counts:", norm
-          write(80,*)
+          write(81,*) "File Name:", miscHist(iRadial)%fileName
+          write(81,*) "Number of Bins:", miscHist(iRadial)%nBins
+          write(81,*) "Bin Size:", d_bin
+          write(81,*) "Total Counts:", norm
+          write(81,*)
           do iBin = 0, miscHist(iRadial)%nBins
             r = iBin * d_bin
             rFactor = norm * 4E0/3E0 * pi * ( (r+d_bin)**3 - r**3 )
@@ -178,7 +180,7 @@
           enddo
           close(80)
         enddo
-        
+        close(81)
       
       end subroutine 
 !======================================================================================    
