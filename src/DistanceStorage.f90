@@ -164,6 +164,10 @@
                   r_sq = rx*rx + ry*ry + rz*rz
                   if(r_sq .lt. rmin_ij) then
                     if(iIndx .ne. jIndx) then
+                      write(*,*) "Index1:",iType, iMol, iAtom
+                      write(*,*) "Index2:",jType, jMol, jAtom
+                      write(*,*) "Distance:", sqrt(r_sq)
+                      write(*,*) "R_Min:", sqrt(rmin_ij)
                       stop "ERROR! Overlaping atoms found in the current configuration!"
                     endif
                   endif 
