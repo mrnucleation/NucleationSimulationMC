@@ -145,7 +145,7 @@
           do iMol=1,NPART(iType)
             iIndx = molArray(iType)%mol(iMol)%indx
             do jMol = 1,NPART(jType)
-              jIndx = molArray(iType)%mol(iMol)%indx
+              jIndx = molArray(jType)%mol(jMol)%indx
               do iAtom = 1,nAtoms(iType)
                 atmType1 = atomArray(iType,iAtom)
                 globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)

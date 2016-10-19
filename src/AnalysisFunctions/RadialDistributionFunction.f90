@@ -138,10 +138,10 @@
                 gloIndx2 = molArray(nType2)%mol(jMol)%globalIndx(nAtom2)
                 bin = floor(rPair(gloIndx1, gloIndx2)%p%r * miscHist(radialIndx)%sizeInv)
                 if(bin .le. miscHist(radialIndx)%nBins) then
-                  miscHist(radialIndx)%binCount(bin) = miscHist(radialIndx)%binCount(bin) + 2d0
+                  miscHist(radialIndx)%binCount(bin) = miscHist(radialIndx)%binCount(bin) + 1d0
                 else 
                   nBins = miscHist(radialIndx)%nBins
-                  miscHist(radialIndx)%binCount(nBins+1) = miscHist(radialIndx)%binCount(nBins+1) + 2d0
+                  miscHist(radialIndx)%binCount(nBins+1) = miscHist(radialIndx)%binCount(nBins+1) + 1d0
                 endif
               enddo
             enddo
