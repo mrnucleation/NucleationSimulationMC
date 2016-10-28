@@ -252,12 +252,13 @@
 !==============================================================
       module SimParameters
       use VarPrecision
-      logical, parameter :: echoInput = .false.      
+      logical, parameter :: echoInput = .true.      
       logical, parameter :: distCriteria = .false.
+      logical, parameter :: useScriptInput = .true.
 
       logical :: prevMoveAccepted
 
-      integer(kind=8) :: ncycle,ncycle2       
+      integer(kind=8) :: ncycle, ncycle2       
       logical :: ridgidMolecules, multipleInput
       integer(kind=atomIntType) :: nMolTypes
       integer,allocatable :: NMin(:), NMax(:)
@@ -291,6 +292,8 @@
       
       character(len=10) :: outputEngUnits,outputLenUnits
       real(dp) :: outputEConv,outputLenConv
+
+      integer :: outFreq_Traj,outFreq_Screen,outFreq_GCD
         
       end module
 !================================================================ 
@@ -345,7 +348,7 @@
 !      integer, allocatable :: refSizeNumbers(:)
       real(dp), allocatable :: refSizeNumbers(:)
       integer :: refBin
-      logical :: useWHAM
+      logical :: useWHAM = .false.
       integer :: intervalWHAM
       integer :: maxSelfConsist
       real(dp) :: tolLimit

@@ -3,14 +3,14 @@ CUR_DIR := $(shell pwd)
 # ====================================
 #        Compiler Options
 # ====================================
-FC := mpif90
-#FC := /opt/openmpi/bin/mpif90
+#FC := mpif90
+FC := /opt/openmpi/bin/mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
 OPTIMIZE_FLAGS := -O3
-OPTIMIZE_FLAGS += -xHost
-OPTIMIZE_FLAGS += -ipo
+#OPTIMIZE_FLAGS += -xHost
+#OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
@@ -106,6 +106,7 @@ SRC_MAIN := $(SRC)/BasicMovement.f90\
  		$(SRC)/AngleIntegration.f90\
  		$(SRC)/CoordinateFunctions.f90\
  		$(SRC)/SelfAdaptiveDistribution.f90\
+		$(SRC)/ScriptInput.f90\
 		$(SRC)/ReadInput.f90
 SRC_MAIN2:=  $(SRC)/ETableFunctions.f90
 SRC_CBMC := $(CBMC)/CBMC.f90\
@@ -289,3 +290,4 @@ $(OBJ)/CoordinateFunctions.o: $(OBJ)/Common.o $(OBJ)/RandomTools.o
 $(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o $(OBJ)/RadialDensity.o $(OBJ)/Common.o
 $(OBJ)/MiscelaniousVariables.o: $(OBJ)/Common.o
 $(OBJ)/Main.o: $(OBJ)/Common.o $(OBJ)/SelfAdaptiveDistribution.o
+$(OBJ)/ScriptInput.o: $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o $(OBJ)/AnalysisMain.o $(OBJ)/MCMove_Module.o

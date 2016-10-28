@@ -39,10 +39,11 @@
       procedure(USwapOutFunc), pointer, nopass :: func
     end type
 
-    logical :: useUmbrella, UScreenOut
+    logical :: useUmbrella = .false.
+    logical :: UScreenOut
     logical :: energyAnalytics = .false.
-    integer :: nBiasVariables, umbrellaLimit
-    integer :: curUIndx
+    integer :: nBiasVariables = 0
+    integer :: curUIndx, umbrellaLimit
     integer, allocatable :: curVarIndx
     integer, allocatable :: binIndx(:)
     integer, allocatable :: varMax(:), varMin(:)
@@ -75,6 +76,7 @@
     public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat, curUIndx
     public :: GetUmbrellaBias_SwapIn, GetUmbrellaBias_SwapOut, ScreenOutputUmbrella, screenFormat
     public :: CheckInitialValues, energyAnalytics, OutputUmbrellaAnalytics
+    public :: ScriptInput_Umbrella
 !==========================================================================================
     contains
 !==========================================================================================
@@ -306,6 +308,212 @@
       if(stat .eq. 1) then
         write(*,*) "ERROR! An invalid ref bin was specified!"
         write(*,*) refLine
+        stop
+      endif
+
+      deallocate(refVals)
+
+
+    end subroutine
+!==========================================================================================
+    subroutine ScriptInput_Umbrella(inputLines)
+      use MiscelaniousVars
+      use SimpleDistPair, only: nDistPair, pairArrayIndx, CalcDistPairs_New
+      use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, maxMol, echoInput, NTotal, NTotal_New
+      use Q6Functions, only: q6ArrayIndx, CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut
+      use ParallelVar, only: nout
+      use WHAM_Module, only: refBin, refSizeNumbers
+      implicit none
+      character(len=100), intent(in) :: inputLines(:)
+      integer :: nLines
+      integer :: iUmbrella, AllocateStatus
+      integer :: indxVar, stat
+      integer :: iDisp, iSwapIn, iSwapOut
+      real(dp) :: binSize, valMax, valMin
+      real(dp), allocatable :: refVals(:)
+
+      character(len=30) :: labelField 
+      character(len=30) :: umbrellaName
+
+!      read(fileUnit, *) labelField, nBiasVariables
+      nLines = size(inputLines)
+      nBiasVariables = nLines - 3
+      if(nBiasVariables .lt. 0) then
+        write(*,*) "ERROR! The user has specified an invalid number of Umbrella Sampling Variables"
+        write(*,*) labelField, nBiasVariables
+        stop
+      endif
+      if(nBiasVariables .eq. 0) then
+        useUmbrella = .false.
+        write(nout,*) "Umbrella Sampling Used? = ", useUmbrella
+        return
+      else
+        useUmbrella = .true.
+        write(nout,*) "Umbrella Sampling Used? = ", useUmbrella
+        write(nout,*) "Number of Umbrella Variables:", nBiasVariables
+      endif
+
+     allocate( refVals(1:nBiasVariables) )
+
+     nDispFunc = 0
+     nSwapInFunc = 0
+     nSwapOutFunc = 0
+     do iUmbrella = 1, nBiasVariables
+        read(inputLines(iUmbrella+2), *) umbrellaName
+        select case( trim(adjustl(umbrellaName)) )
+        case("clustersize")
+!          nSwapInFunc = nSwapInFunc + 1
+!          nSwapOutFunc = nSwapOutFunc + 1
+        case("totalclustersize")
+!          nSwapInFunc = nSwapInFunc + 1
+!          nSwapOutFunc = nSwapOutFunc + 1
+        case("pairdist")
+          nDispFunc = nDispFunc + 1
+          nSwapInFunc = nSwapInFunc + 1
+          nSwapOutFunc = nSwapOutFunc + 1
+        case("q6")
+          nDispFunc = nDispFunc + 1
+          nSwapInFunc = nSwapInFunc + 1
+          nSwapOutFunc = nSwapOutFunc + 1
+        case default
+          write(*,*) "ERROR! Invalid variable type specified in input file"
+          write(*,*) umbrellaName
+          stop
+        end select
+      enddo
+
+
+
+      call AllocateUmbrellaVariables
+
+      iDisp = 0
+      iSwapIn = 0
+      iSwapOut = 0
+      do iUmbrella = 1, nBiasVariables
+        read(inputLines(iUmbrella+2), *) umbrellaName
+        select case( trim(adjustl(umbrellaName)) )
+        case("clustersize")
+          read(inputLines(iUmbrella+2), *) labelField, indxVar
+          if(indxVar .le. 0) then
+            write(*,*) "Error! An invalid molecule type has been chosen!"
+            write(*,*) "Defined Mol Types:", nMolTypes
+            write(*,*) "Chosen Mol Type:", indxVar
+            stop
+          endif
+          if(indxVar .gt. nMolTypes) then
+            write(*,*) "Error! An invalid molecule type has been chosen!"
+            write(*,*) "Defined Mol Types:", nMolTypes
+            write(*,*) "Chosen Mol Type:", indxVar
+            stop
+          endif
+          biasvar(iUmbrella) % varType = 1
+          biasvar(iUmbrella) % intVar => NPart(indxVar)
+          biasvarnew(iUmbrella) % varType = 1
+          biasvarnew(iUmbrella) % intVar => NPart_New(indxVar)
+          binMax(iUmbrella) = NMAX(indxVar)
+          binMin(iUmbrella) = NMin(indxVar)
+          UBinSize(iUmbrella) = 1E0
+          outputFormat(iUmbrella) = "2x,F5.1,"
+          
+!          iSwapIn = iSwapIn + 1
+!          iSwapOut = iSwapOut + 1
+        case("totalclustersize")
+          read(inputLines(iUmbrella+2), *) labelField
+          if(indxVar .le. 0) then
+            write(*,*) "Error! An invalid molecule type has been chosen!"
+            write(*,*) "Defined Mol Types:", nMolTypes
+            write(*,*) "Chosen Mol Type:", indxVar
+            stop
+          endif
+          if(indxVar .gt. nMolTypes) then
+            write(*,*) "Error! An invalid molecule type has been chosen!"
+            write(*,*) "Defined Mol Types:", nMolTypes
+            write(*,*) "Chosen Mol Type:", indxVar
+            stop
+          endif
+          biasvar(iUmbrella) % varType = 1
+          biasvar(iUmbrella) % intVar => NTotal
+          biasvarnew(iUmbrella) % varType = 1
+          biasvarnew(iUmbrella) % intVar => NTotal_New
+          binMax(iUmbrella) = maxMol
+          binMin(iUmbrella) = 1
+          UBinSize(iUmbrella) = 1E0
+          outputFormat(iUmbrella) = "2x,F5.1,"
+          
+!          iSwapIn = iSwapIn + 1
+!          iSwapOut = iSwapOut + 1
+        case("pairdist")
+          indxVar = 0
+          read(inputLines(iUmbrella+2), *) labelField, indxVar, valMin, valMax , binSize
+          if(nDistPair .le. 0) then
+            write(*,*) "Error! An invalid distance variable has been chosen!"
+            write(*,*) "Defined Distance Pairs:", nDistPair
+            write(*,*) "Chosen Distance Pair:", indxVar
+            stop
+          endif
+          if(indxVar .gt. nDistPair) then
+            write(*,*) "Error! An invalid distance variable has been chosen!"
+            write(*,*) "Defined Distance Pairs:", nDistPair
+            write(*,*) "Chosen Distance Pair:", indxVar
+            stop
+          endif
+          biasvar(iUmbrella) % varType = 2
+          biasvar(iUmbrella) % realVar => miscCoord(pairArrayIndx(indxVar))
+          biasvarnew(iUmbrella) % varType = 2
+          biasvarnew(iUmbrella) % realVar => miscCoord_New(pairArrayIndx(indxVar))
+          UBinSize(iUmbrella) = binSize
+          binMin(iUmbrella) = nint(valMin / binSize)
+          binMax(iUmbrella) = nint(valMax / binSize)
+          outputFormat(iUmbrella) = "2x,F12.6,"
+
+          iDisp = iDisp + 1
+          DispUmbrella(iDisp) % func => CalcDistPairs_New
+          iSwapIn = iSwapIn + 1
+          SwapInUmbrella(iSwapIn) % func => CalcDistPairs_SwapIn
+          iSwapOut = iSwapOut + 1
+          SwapOutUmbrella(iSwapOut) % func => CalcDistPairs_SwapOut
+
+        case("q6")
+          read(inputLines(iUmbrella), *) labelField, valMin, valMax, binSize
+          biasvar(iUmbrella) % varType = 2
+          biasvar(iUmbrella) % realVar => miscCoord(q6ArrayIndx)
+          biasvarnew(iUmbrella) % varType = 2
+          biasvarnew(iUmbrella) % realVar => miscCoord_New(q6ArrayIndx)
+          UBinSize(iUmbrella) = binSize
+          binMin(iUmbrella) = nint(valMin / binSize)
+          binMax(iUmbrella) = nint(valMax / binSize)
+          outputFormat(iUmbrella) = "2x,F12.6,"
+
+          iDisp = iDisp + 1
+          DispUmbrella(iDisp) % func => CalcQ6_Disp
+          iSwapIn = iSwapIn + 1
+          SwapInUmbrella(iSwapIn) % func => CalcQ6_SwapIn
+          iSwapOut = iSwapOut + 1
+          SwapOutUmbrella(iSwapOut) % func => CalcQ6_SwapOut
+!          write(*,*) labelField, valMin, valMax, binSize
+        case default
+          write(*,*) "ERROR! Invalid variable type specified in input file"
+          write(*,*) umbrellaName
+          stop
+        end select
+      enddo
+      write(screenFormat,*) "(", (trim(adjustl(outputFormat(iUmbrella))), iUmbrella=1,nBiasVariables), "1x)"
+
+      allocate(varValues(1:nBiasVariables))
+      allocate(UArray(1:nBiasVariables))
+      call AllocateUmbrellaArray
+      call ReadUmbrellaInput
+
+!      Use the input to specify the reference bin
+      allocate(refSizeNumbers(1:nBiasVariables),STAT = AllocateStatus)
+      read(inputLines(2), *) labelField, (refVals(iUmbrella), iUmbrella=1,nBiasVariables)
+      call getUIndexArray(refVals, refBin, stat)
+      do iUmbrella = 1, nBiasVariables
+        refSizeNumbers(iUmbrella) = refVals(iUmbrella)
+      enddo
+      if(stat .eq. 1) then
+        write(*,*) "ERROR! An invalid ref bin was specified!"
+        write(*,*) inputLines(2)
         stop
       endif
 

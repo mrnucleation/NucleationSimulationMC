@@ -2,7 +2,7 @@
       module ScriptInput
       contains
 !========================================================            
-      subroutine ReadParameters(seed,ncycle,nmoves,outFreq_Traj, outFreq_Screen, outFreq_GCD, screenEcho)
+      subroutine Script_ReadParameters(seed, screenEcho)
       use SimParameters
       use Constants
       use ForceField
@@ -11,76 +11,123 @@
       use CBMC_Variables
       use Coords
       use EnergyTables
+      use AnalysisMain,only: ScriptAnalysisInput
+      use MoveTypeModule, only: ScriptInput_MCMove
+      use UmbrellaSamplingNew,only: ScriptInput_Umbrella
       implicit none
-      integer :: indx,lineStat
+      logical, intent(OUT)  :: screenEcho
+      integer, intent(OUT) :: seed
+!      integer(kind=8), intent(OUT) :: ncycle,nmoves
+      integer :: i
+      integer :: iLine, lineStat, AllocateStat
+      integer :: nLines, lineBuffer
       real(dp) :: varValue
-      character(len=200) :: line
-      character(len=15) :: command, dummy
+      character(len=100), allocatable :: lineStore(:)
+      character(len=25) :: command, dummy
       character(len=50) :: fileName
       
       
-      read(5,*) fileName
+!      read(5,*) fileName
+      fileName = "ScriptTest.dat"
       
 !      open(unit=54,file="input_Parameters.dat",status='OLD')    
       open(unit=54,file=trim(adjustl(fileName)),status='OLD')    
-      
-      do indx = 1, nint(1d7)
-        read(54,"(A)",iostat = lineStat) line
-        write(35,*) line        
+
+
+!      This block counts the number of lines in the input file to determine how large the lineStorage array needs to be.
+      nLines = 0
+      do iLine = 1, nint(1d7)
+        read(54,*,iostat=lineStat)
         if(lineStat .lt. 0) then
           exit
         endif
-       
+        nLines = nLines + 1
+      enddo
+      rewind(54)
+
+
+!      Read in the input script
+      allocate(lineStore(1:nLines), stat = AllocateStat)
+      do iLine = 1, nLines
+        read(54,"(A)") lineStore(iLine)
+        if(echoInput) then
+          write(35,*) lineStore(iLine)        
+        endif
+        call LowerCaseLine(lineStore(iLine))
+      enddo
+
+      lineBuffer = 0
+      do iLine = 1, nLines
+        if(lineBuffer .gt. 0) then
+          lineBuffer = lineBuffer - 1
+          cycle
+        endif
         lineStat = 0        
-        call getCommand(line, command, lineStat)
+        call getCommand(lineStore(iLine), command, lineStat)
 !         If line is empty or commented, move to the next line.         
         if(lineStat .eq. 1) then
           cycle
         endif 
-       
-!        call lowercase(command1)
-        
+
         select case(trim(adjustl( command )))
-        case("setvar")
-          call setVariable(line)
-        case("forcefield_type")
-          
+        case("set")
+          call setVariable( lineStore(iLine), seed, screenEcho, lineStat )
+          if(lineStat .eq. -1) then
+            write(*,"(A,2x,I10)") "ERROR! Unknown Variable Name on Line", iLine
+            write(*,*) lineStore(iLine)
+            stop 
+          endif
+        case("movetypes")
+          call FindCommandBlock(iLine, lineStore, lineBuffer)
+          call ScriptInput_MCMove( lineStore(iLine:iLine+lineBuffer) )
+        case("analysis")
+          call FindCommandBlock(iLine, lineStore, lineBuffer)
+          call ScriptAnalysisInput( lineStore(iLine:iLine+lineBuffer) )
+        case("umbrellasampling")
+          call FindCommandBlock(iLine, lineStore, lineBuffer)
+          call ScriptInput_Umbrella( lineStore(iLine:iLine+lineBuffer) )
+        case("iterator")
+          call FindCommandBlock(iLine, lineStore, lineBuffer)
+
         case default
-          write(*,"(A,2x,I10)") "ERROR! Unknown Command on line", indx
-          write(*,*) line
+          write(*,"(A,2x,I10)") "ERROR! Unknown Command on Line", iLine
+          write(*,*) lineStore(iLine)
           stop 
         end select
         
       enddo
       
-      
+      deallocate(lineStore)
+
 
       end subroutine
 !========================================================            
-      subroutine getCommand(line, command, lineStat)
+!     This subrotuine searches a given input line for the first command. 
+      subroutine GetCommand(line, command, lineStat)
+      use VarPrecision
       implicit none
       character(len=*), intent(in) :: line
-      character(len=15), intent(out) :: command
+      character(len=25), intent(out) :: command
       integer, intent(out) :: lineStat
       integer :: i, sizeLine, lowerLim, upperLim
 
       sizeLine = len(line)
       lineStat = 0
       i = 1
-!      Find the first character in the string
-      while(i .le. sizeLine)
-        if(line(i:i) .ne. " ") then
-          exit
-        endif
-!        If the first character is a # then the line is a comment. Return linestat=1 to tell the parent function
-!        to skip this line. 
-        if(line(i:i) .eq. "#") then
-          lineStat = 1
-          return
+!      Find the first non-blank character in the string
+      do while(i .le. sizeLine)
+        if(ichar(line(i:i)) .ne. ichar(' ')) then
+           !If a non-blank character is found, check first to see if it is the comment character.
+          if(ichar(line(i:i)) .eq. ichar('#')) then
+            lineStat = 1
+            return
+          else
+            exit
+          endif
         endif
         i = i + 1
       enddo
-!      If no characters are found the line is empty
+!      If no characters are found the line is empty, 
       if(i .ge. sizeLine) then
         lineStat = 1
         return
@@ -88,7 +135,7 @@
       lowerLim = i
 
 !      
-      while(i .le. sizeLine)
+      do while(i .le. sizeLine)
         if(line(i:i) .eq. " ") then
           exit
         endif
@@ -99,50 +146,91 @@
       command = line(lowerLim:upperLim)
      
       end subroutine
-!========================================================            
-      subroutine setVariable(line)
-      use VarPrecision
+!========================================================
+      subroutine FindCommandBlock(iLine, lineStore, lineBuffer)
       implicit none
-      character(len=*), intent(in) :: line      
+      integer, intent(in) :: iLine
+      character(len=100), intent(in) :: lineStore(:)      
+      integer, intent(out) :: lineBuffer
+      logical :: found
+      integer :: i, lineStat, nLines
+      character(len=35) :: dummy 
 
-      character(len=15) :: stringValue
+
+      dummy = " "
+      nLines = size(lineStore)
+      found = .false.
+      do i = iLine + 1, nLines
+        call GetCommand(lineStore(i), dummy, lineStat)
+!        write(*,*)  dummy
+        if(trim(adjustl(dummy)) .eq. "end") then
+          lineBuffer = i - iLine
+          found = .true.
+          exit
+        endif
+      enddo
+
+      if(.not. found) then
+        write(*,*) "ERROR! A command block was opened in the input script, but no closing END statement found!"
+        stop
+      endif
+
+      end subroutine
+!========================================================            
+      subroutine setVariable(line, seed, screenEcho, lineStat)
+      use VarPrecision
+      use SimParameters
+      use CBMC_Variables
+      use Coords
+      use EnergyTables
+      use Units
+      implicit none
+      character(len=100), intent(in) :: line      
+      logical, intent(out) :: screenEcho
+      integer, intent(out) :: seed, lineStat
+
+      character(len=30) :: dummy, command, stringValue
       character(len=15) :: fileName      
       logical :: logicValue
-      integer :: intValue
+      integer :: j
+      integer :: intValue, AllocateStat
       real(dp) :: realValue
       
+
+      lineStat  = 0
+
       read(line,*) dummy, command
       select case(trim(adjustl(command)))
         case("avbmc_distance")
           read(line,*) dummy, command, realValue
           Dist_Critr = realValue   
+          Dist_Critr_sq = realValue**2
         case("cycles")
           read(line,*) dummy, command, realValue  
           nCycle = nint(realValue)
+        case("moves")
+          read(line,*) dummy, command, realValue        
+          ncycle2 = nint(realValue)   
         case("gasdensity")        
           if(.not. allocated(gas_dens)) then
             write(*,*) "INPUT ERROR! GasDensity is called before the number of molecular types has been assigned"
             stop
           endif
           read(line,*) dummy, command, (gas_dens(j), j=1, nMolTypes)  
-        case("moves")
-          read(line,*) dummy, command, realValue        
-          nMoves = nint(realValue)      
-        
         case("moleculetypes")
           read(line,*) dummy, command, realValue        
           nMolTypes = nint(realValue)
-          allocate( NPART(1:nMolTypes), STAT = AllocateStatus )    
-          allocate( NMIN(1:nMolTypes), STAT = AllocateStatus )     
-          allocate( NMAX(1:nMolTypes), STAT = AllocateStatus )     
-          allocate( gas_dens(1:nMolTypes), STAT = AllocateStatus )      
-          allocate( nRosenTrials(1:nMolTypes), STAT = AllocateStatus )     
+          allocate( NPART(1:nMolTypes), STAT = AllocateStat )    
+          allocate( NMIN(1:nMolTypes), STAT = AllocateStat )     
+          allocate( NMAX(1:nMolTypes), STAT = AllocateStat )     
+          allocate( gas_dens(1:nMolTypes), STAT = AllocateStat )      
+          allocate( nRosenTrials(1:nMolTypes), STAT = AllocateStat )     
           NMIN = 0
           NMAX = 0
           gas_dens = 0
           nRosenTrials = 1
-          allocate( Eng_Critr(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus )
-          allocate( biasAlpha(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus )
+          allocate( Eng_Critr(1:nMolTypes,1:nMolTypes), STAT = AllocateStat )
+          allocate( biasAlpha(1:nMolTypes,1:nMolTypes), STAT = AllocateStat )
         case("molmin")        
           if(.not. allocated(NMIN)) then
             write(*,*) "INPUT ERROR! molmin is called before the number of molecular types has been assigned"
@@ -174,7 +262,7 @@
         case("screenecho")
           read(line,*) dummy, command, logicValue
           screenEcho = logicValue
-        case("seed")
+        case("rng_seed")
           read(line,*) dummy, command, intValue
           seed = intValue
         case("softcutoff")
@@ -191,24 +279,13 @@
           read(line,*) dummy, command, logicValue
           multipleInput = logicValue  
         case("out_energyunits")
-          read(line,*) labelField, outputEngUnits
+          read(line,*) dummy, command, outputEngUnits
           outputEConv = FindEngUnit(outputEngUnits)
         case("out_distunits")
-          read(line,*) labelField, outputLenUnits   
-          outputLenConv = FindLengthUnit(outputLenUnits) 
-        case("umbrellasampling")
-          read(line,*) dummy, command, logicValue
-          useBias = logicValue
-          if(useBias) then
-            read(line,*) labelField, useBias, fileName
-            call AllocateUmbrellaBias(fileName)
-          else 
-            call BlankUmbrellaBias
-          endif  
+          read(line,*) dummy, command, outputLenUnits   
+          outputLenConv = FindLengthUnit(outputLenUnits)
         case default
-          write(*,*) "Invalid variable"
-          write(*,*) line
-          stop      
+        lineStat = -1
       end select
 
      
@@ -222,5 +299,29 @@
      
       end subroutine
 
+!========================================================            
+!     The purpose of this subroutine is to lower case a given character string. 
+      subroutine LowerCaseLine(line)
+      implicit none
+      character(len=*),intent(inout) :: line
+      integer, parameter :: offset = ichar("a") - ichar("A")
+      integer :: i,sizeLine
+      integer :: curVal, newVal
+
+      sizeLine = len(line)
+
+      do i = 1, sizeLine
+        curVal = ichar(line(i:i))
+        if(curVal .le. ichar("Z")) then
+          if(curVal .ge. ichar("A")) then
+            newVal = curVal + offSet
+            line(i:i) = char(newVal)
+          endif
+        endif
+      enddo
+   
+!      write(*,*) line
+     
+      end subroutine
 !========================================================            
       end module

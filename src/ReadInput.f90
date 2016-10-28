@@ -1,5 +1,5 @@
 !========================================================            
-      subroutine ReadParameters(seed,outFreq_Traj,outFreq_Screen,outFreq_GCD,screenEcho)
+      subroutine ReadParameters(seed,screenEcho)
       use AVBMC_Module, only: swapProb
       use CBMC_Variables
       use Constants
@@ -14,12 +14,12 @@
       use WHAM_Module
       use UmbrellaFunctions
       use VarPrecision
+      use ScriptInput, only: Script_ReadParameters
       implicit none
       
       logical, intent(OUT)  :: screenEcho
       integer, intent(OUT) :: seed
 !      integer(kind=8), intent(OUT) :: ncycle,nmoves
-      integer, intent(OUT)  :: outFreq_Traj,outFreq_Screen,outFreq_GCD
       
       integer :: i,j
       logical :: useBias   
@@ -31,6 +31,12 @@
       real(dp) :: norm
 
 !      integer, allocatable :: NArray(:)
+      
+      if(useScriptInput) then
+        call Script_ReadParameters(seed, screenEcho)
+        stop
+      endif
+
 
       open(unit=54,file="input_Parameters.dat",status='OLD')       
 

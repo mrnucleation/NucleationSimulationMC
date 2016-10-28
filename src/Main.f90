@@ -38,7 +38,6 @@
 
       integer(kind=8) :: iCycle, iMove
       integer :: i,j,seed,AllocateStatus
-      integer :: outFreq_Traj,outFreq_Screen,outFreq_GCD      
       integer :: nSel, getBiasIndex
     
 !      real(dp) :: max_dist, max_dist_single, max_rot
@@ -87,7 +86,7 @@
       
 !      This block calls the input functions required to set up the simulation. For more information
 !      on the specific role of each function see the comments in the corresponding subfunction.
-      call ReadParameters(seed,outFreq_Traj, outFreq_Screen,outFreq_GCD,screenEcho)
+      call ReadParameters(seed, screenEcho)
 
 !       This block assigns the root thread (myid=0) to output to the screen if the screen
 !       echo input parameter is true.  Otherwise the screen data is exported to 100+myid      

@@ -72,7 +72,7 @@
         integer :: iRadial
         integer :: bin, nBins
         integer :: iType, nType
-        integer :: iMol
+        integer :: iMol, iAtom
         integer :: radialIndx
         integer :: gloIndx1, gloIndx2
         integer :: cnt
@@ -85,10 +85,12 @@
         zcm = 0d0 
         do iType = 1, nMolTypes
           do iMol = 1, NPART(iType)
-            xcm = xcm + molArray(iType)%mol(iMol)%x(1)
-            ycm = ycm + molArray(iType)%mol(iMol)%y(1)
-            zcm = zcm + molArray(iType)%mol(iMol)%z(1) 
-            cnt = cnt + 1
+!            do iAtom = 1, nAtoms(iType)
+              xcm = xcm + molArray(iType)%mol(iMol)%x(1)
+              ycm = ycm + molArray(iType)%mol(iMol)%y(1)
+              zcm = zcm + molArray(iType)%mol(iMol)%z(1) 
+              cnt = cnt + 1
+!            enddo
           enddo
         enddo
 

@@ -107,5 +107,80 @@
 
       end subroutine
 !======================================================
+      subroutine ScriptInput_MCMove(lines)
+      implicit none
+      character(len=100), intent(in) :: lines(:)
+      integer :: nLines
+      integer :: i, iMoves, AllocateStatus
+
+      real(dp) :: norm
+      character(len=30) :: labelField 
+      character(len=30) :: moveName_temp
+
+      nLines = size(lines)
+      nMoveTypes = nLines - 2
+
+!      read(lines(1), *) labelField, nMoveTypes
+      if(nMoveTypes .le. 0) then
+        write(*,*) "ERROR! The user has specified an invalid number of Monte Carlo moves"
+        write(*,*) "Please specify at least one valid Monte Carlo move to continue"
+        do i = 1, nLines
+          write(*,*) lines(i)
+        enddo
+        stop
+      endif
+
+      allocate(mcMoveArray(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(moveProbability(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(movesAccepted(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(movesAttempt(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(accptRate(1:nMoveTypes), STAT = AllocateStatus)
+      allocate(moveName(1:nMoveTypes), STAT = AllocateStatus)
+      norm = 0d0
+      avbmcUsed = .false.
+      cbmcUsed = .false.
+      do iMoves = 1, nMoveTypes
+        read(lines(iMoves+1), *) moveName_temp, moveProbability(iMoves)
+        norm = norm + moveProbability(iMoves)
+        select case( trim(adjustl(moveName_temp)) )
+        case("translation")
+          mcMoveArray(iMoves) % moveFunction => Translation
+          moveName(iMoves) = "Translation"
+        case("rotation")
+          mcMoveArray(iMoves) % moveFunction => Rotation
+          moveName(iMoves) = "Rotation"
+        case("avbmc")
+          mcMoveArray(iMoves) % moveFunction => AVBMC
+          moveName(iMoves) = "AVBMC"
+          avbmcUsed = .true.
+        case("cbmc")
+          mcMoveArray(iMoves) % moveFunction => CBMC
+          moveName(iMoves) = "CBMC"
+          cbmcUsed = .true.
+        case("exchange")
+          mcMoveArray(iMoves) % moveFunction => Exchange
+          moveName(iMoves) = "Exchange"
+        case("singleatom_translation")
+          mcMoveArray(iMoves) % moveFunction => SingleAtom_Translation
+          moveName(iMoves) = "Single Atom Translation"
+        case default
+          write(*,*) "ERROR! Invalid move type specified in input file"
+          write(*,*) moveName, moveProbability(iMoves)
+          stop
+        end select
+!        moveName(i) = moveName_temp
+      enddo
+
+      do iMoves =1, nMoveTypes
+        moveProbability(iMoves) = moveProbability(iMoves)/norm
+      enddo
+      if(nMoveTypes .gt. 1) then
+        do iMoves = 2, nMoveTypes
+          moveProbability(iMoves) = moveProbability(iMoves) + moveProbability(iMoves-1)
+        enddo
+      endif
+
+      end subroutine
+!======================================================
       end module
 !======================================================
