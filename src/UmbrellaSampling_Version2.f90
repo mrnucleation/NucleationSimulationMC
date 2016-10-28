@@ -41,7 +41,7 @@
 
     logical :: useUmbrella = .false.
     logical :: UScreenOut
-    logical :: energyAnalytics = .false.
+    logical :: energyAnalytics = .true.
     integer :: nBiasVariables = 0
     integer :: curUIndx, umbrellaLimit
     integer, allocatable :: curVarIndx
@@ -777,8 +777,8 @@
     implicit none
     include 'mpif.h' 
     integer :: iUmbrella, iBias, iBin
+    integer :: arraySize
     real(dp), allocatable :: TempHist(:), Temp2D(:,:)
-    real(dp) :: arraySize
     character(len = 100) :: outputString
 
     if(.not. useUmbrella) then
@@ -794,10 +794,11 @@
 !    endif
     call MPI_BARRIER(MPI_COMM_WORLD, ierror) 
     arraySize = size(U_EAvg)   
+!    write(*,*) arraySize, size(TempHist)
     call MPI_REDUCE(U_EAvg, TempHist, arraySize, &
               MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
 
-    write(*,*) myid, ierror
+!    write(*,*) myid, ierror
     do iUmbrella = 1, umbrellaLimit
       write(*,*) iUmbrella, U_EAvg(iUmbrella), TempHist(iUmbrella)
     enddo
@@ -812,7 +813,7 @@
     arraySize = size(U_EHist)   
     call MPI_REDUCE(U_EHist, Temp2D, arraySize, &
               MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)    
-   
+!    write(*,*) myid, ierror   
 
     if(myid .eq. 0) then
       do iUmbrella = 1, umbrellaLimit
@@ -848,7 +849,9 @@
           enddo
           write(60,*) (varValues(iBias), iBias =1,nBiasVariables)
           do iBin = 0, E_Bins
-            write(60, *) iBin*dE, U_EHist(iUmbrella, iBin)
+            if(U_EHist(iUmbrella, iBin) .ge. 1d0) then
+              write(60, *) iBin*dE, U_EHist(iUmbrella, iBin)
+            endif
           enddo
         endif
       enddo

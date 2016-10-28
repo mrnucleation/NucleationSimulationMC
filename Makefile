@@ -3,14 +3,14 @@ CUR_DIR := $(shell pwd)
 # ====================================
 #        Compiler Options
 # ====================================
-#FC := mpif90
-FC := /opt/openmpi/bin/mpif90
+FC := mpif90
+#FC := /opt/openmpi/bin/mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
 OPTIMIZE_FLAGS := -O3
-#OPTIMIZE_FLAGS += -xHost
-#OPTIMIZE_FLAGS += -ipo
+OPTIMIZE_FLAGS += -xHost
+OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling

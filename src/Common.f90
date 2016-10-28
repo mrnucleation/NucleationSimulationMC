@@ -254,7 +254,7 @@
       use VarPrecision
       logical, parameter :: echoInput = .true.      
       logical, parameter :: distCriteria = .false.
-      logical, parameter :: useScriptInput = .true.
+      logical, parameter :: useScriptInput = .false.
 
       logical :: prevMoveAccepted
 
