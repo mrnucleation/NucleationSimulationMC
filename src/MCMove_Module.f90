@@ -1,10 +1,15 @@
 !======================================================
       module MoveTypeModule
+      use VarPrecision
+
+!      This block is for linking the indivdual Monte Carlo moves functions to this
+!      module so that they can be added to the move array.  Any new Monte Carlo subroutines
+!      that will be called by the master loop must be added here to be integrated properly into the code. 
       use AVBMC_Module, only: AVBMC
       use CBMC_Module, only: CBMC
       use Exchange_Module, only: Exchange
       use SimpleMCMoves_Module, only: Translation, Rotation, SingleAtom_Translation
-      use VarPrecision
+
 
       abstract interface 
         subroutine MCMoveSub(E_T, acc_x, atmp_x)
@@ -18,6 +23,7 @@
         procedure(MCMoveSub), pointer, nopass :: moveFunction => NULL()
       end type
 
+      logical :: avbmcUsed, cbmcUsed
       integer :: nMoveTypes
       type(MoveArray), allocatable :: mcMoveArray(:)
       real(dp), allocatable :: moveProbability(:)
@@ -25,7 +31,6 @@
       real(dp), allocatable, target :: accptRate(:)
       character(len=35), allocatable :: moveName(:)
 
-      logical :: avbmcUsed, cbmcUsed
       contains
 !======================================================
       subroutine CalcAcceptanceRates
@@ -168,7 +173,6 @@
           write(*,*) moveName, moveProbability(iMoves)
           stop
         end select
-!        moveName(i) = moveName_temp
       enddo
 
       do iMoves =1, nMoveTypes

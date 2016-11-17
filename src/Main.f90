@@ -301,7 +301,7 @@
                call UmbrellaHistAdd(E_T) 
              endif
            endif
-         enddo
+         enddo!  End Move Loop
 
          
          if(mod(iCycle, 100) .eq. 0 ) then
@@ -319,6 +319,7 @@
 !        endif
 
 !         call TrajOutput(iCycle)
+
 !        Mid Simulation Output Block
         if(mod(iCycle, outFreq_GCD) .eq. 0) then
           if(mod(iCycle, outFreq_Screen) .eq. 0) then
@@ -535,7 +536,7 @@
         enddo
       endif
 
-      call OutputDihedral
+!      call OutputDihedral
       close(35)
 
 

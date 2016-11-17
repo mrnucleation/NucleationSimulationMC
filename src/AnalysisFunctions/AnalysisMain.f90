@@ -1,5 +1,8 @@
 !======================================================
      module AnalysisMain
+
+!     To add new analysis functions to this code, insert the module for the
+!     new function set here.
      use RadialDensity
      use RadialDistribution
      use SimpleDistPair
@@ -24,10 +27,10 @@
      logical :: useAnalysis = .false.
      integer :: nAnalysisVar = 0
      integer :: nPostMove, nOutput, nTrialVar
-     type(TrialFunctionArray), allocatable :: TrialArray(:)
+!     type(TrialFunctionArray), allocatable :: TrialArray(:)
      type(AnalysisFunctionArray), allocatable :: postMoveArray(:)
      type(AnalysisFunctionArray), allocatable :: outputArray(:)
-     type(TrialFunctionArray), allocatable :: UpdateArray(:)
+!     type(TrialFunctionArray), allocatable :: UpdateArray(:)
 
      public :: useAnalysis, ReadAnalysisInput, DummyAnalysisTest2, PostMoveAnalysis, OutputAnalysis
      public :: ScriptAnalysisInput
@@ -325,17 +328,17 @@
 
      end subroutine
 !======================================================
-     subroutine TrialPositionAnalysis(disp)
-     use CoordinateTypes
-     implicit none
-     type(Displacement), intent(in) :: disp(:)
-     integer :: iTrialVar
-
-     do iTrialVar = 1, nTrialVar
-       call TrialArray(iTrialVar)%func(disp)
-     enddo
-
-     end subroutine
+!     subroutine TrialPositionAnalysis(disp)
+!     use CoordinateTypes
+!     implicit none
+!     type(Displacement), intent(in) :: disp(:)
+!     integer :: iTrialVar
+! 
+!     do iTrialVar = 1, nTrialVar
+!       call TrialArray(iTrialVar)%func(disp)
+!     enddo
+! 
+!     end subroutine
 !======================================================
      subroutine PostMoveAnalysis
      implicit none

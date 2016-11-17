@@ -20,41 +20,46 @@
 !      integer(kind=8), intent(OUT) :: ncycle,nmoves
       integer :: i
       integer :: iLine, lineStat, AllocateStat
-      integer :: nLines, lineBuffer
+      integer :: nLines, nForceLines, lineBuffer
       real(dp) :: varValue
       character(len=100), allocatable :: lineStore(:)
-      character(len=25) :: command, dummy
+      character(len=100), allocatable :: forcefieldStore(:)
+      character(len=25) :: command, command2, dummy
       character(len=50) :: fileName
+      character(len=50) :: forcefieldFile
       
       
 !      read(5,*) fileName
       fileName = "ScriptTest.dat"
-      
+      call LoadFile(lineStore, nLines, fileName)
 !      open(unit=54,file="input_Parameters.dat",status='OLD')    
-      open(unit=54,file=trim(adjustl(fileName)),status='OLD')    
+!      open(unit=54,file=trim(adjustl(fileName)),status='OLD')    
 
 
 !      This block counts the number of lines in the input file to determine how large the lineStorage array needs to be.
-      nLines = 0
-      do iLine = 1, nint(1d7)
-        read(54,*,iostat=lineStat)
-        if(lineStat .lt. 0) then
-          exit
-        endif
-        nLines = nLines + 1
-      enddo
-      rewind(54)
+!      nLines = 0
+!      do iLine = 1, nint(1d7)
+!        read(54,*,iostat=lineStat)
+!        if(lineStat .lt. 0) then
+!          exit
+!        endif
+!        nLines = nLines + 1
+!      enddo
+!      rewind(54)
 
 
 !      Read in the input script
-      allocate(lineStore(1:nLines), stat = AllocateStat)
-      do iLine = 1, nLines
-        read(54,"(A)") lineStore(iLine)
-        if(echoInput) then
-          write(35,*) lineStore(iLine)        
-        endif
-        call LowerCaseLine(lineStore(iLine))
-      enddo
+!      allocate(lineStore(1:nLines), stat = AllocateStat)
+!      do iLine = 1, nLines
+!        read(54,"(A)") lineStore(iLine)
+!        if(echoInput) then
+!          write(35,*) lineStore(iLine)        
+!        endif
+!        call LowerCaseLine(lineStore(iLine))
+!      enddo
+
+
+
 
       lineBuffer = 0
       do iLine = 1, nLines
@@ -88,7 +93,17 @@
           call ScriptInput_Umbrella( lineStore(iLine:iLine+lineBuffer) )
         case("iterator")
           call FindCommandBlock(iLine, lineStore, lineBuffer)
-
+          
+        case("forcefield")
+          read(lineStore(iLine),*) dummy, command2
+          forcefieldFile =  trim( adjustl( command2 ) )
+          call LoadFile(forcefieldStore, nForceLines, forcefieldFile)
+        case("clustercriteria")
+          read(lineStore(iLine),*) dummy, command2
+          call FindCommandBlock(iLine, lineStore, lineBuffer)
+        case("clustercriteria")
+          read(lineStore(iLine),*) dummy, command2
+          call FindCommandBlock(iLine, lineStore, lineBuffer)
         case default
           write(*,"(A,2x,I10)") "ERROR! Unknown Command on Line", iLine
           write(*,*) lineStore(iLine)
@@ -99,81 +114,6 @@
       
       deallocate(lineStore)
 
-
-      end subroutine
-!========================================================            
-!     This subrotuine searches a given input line for the first command. 
-      subroutine GetCommand(line, command, lineStat)
-      use VarPrecision
-      implicit none
-      character(len=*), intent(in) :: line
-      character(len=25), intent(out) :: command
-      integer, intent(out) :: lineStat
-      integer :: i, sizeLine, lowerLim, upperLim
-
-      sizeLine = len(line)
-      lineStat = 0
-      i = 1
-!      Find the first non-blank character in the string
-      do while(i .le. sizeLine)
-        if(ichar(line(i:i)) .ne. ichar(' ')) then
-           !If a non-blank character is found, check first to see if it is the comment character.
-          if(ichar(line(i:i)) .eq. ichar('#')) then
-            lineStat = 1
-            return
-          else
-            exit
-          endif
-        endif
-        i = i + 1
-      enddo
-!      If no characters are found the line is empty, 
-      if(i .ge. sizeLine) then
-        lineStat = 1
-        return
-      endif
-      lowerLim = i
-
-!      
-      do while(i .le. sizeLine)
-        if(line(i:i) .eq. " ") then
-          exit
-        endif
-        i = i + 1
-      enddo
-      upperLim = i
-
-      command = line(lowerLim:upperLim)
-     
-      end subroutine
-!========================================================
-      subroutine FindCommandBlock(iLine, lineStore, lineBuffer)
-      implicit none
-      integer, intent(in) :: iLine
-      character(len=100), intent(in) :: lineStore(:)      
-      integer, intent(out) :: lineBuffer
-      logical :: found
-      integer :: i, lineStat, nLines
-      character(len=35) :: dummy 
-
-
-      dummy = " "
-      nLines = size(lineStore)
-      found = .false.
-      do i = iLine + 1, nLines
-        call GetCommand(lineStore(i), dummy, lineStat)
-!        write(*,*)  dummy
-        if(trim(adjustl(dummy)) .eq. "end") then
-          lineBuffer = i - iLine
-          found = .true.
-          exit
-        endif
-      enddo
-
-      if(.not. found) then
-        write(*,*) "ERROR! A command block was opened in the input script, but no closing END statement found!"
-        stop
-      endif
 
       end subroutine
 !========================================================            
@@ -298,7 +238,6 @@
 
      
       end subroutine
-
 !========================================================            
 !     The purpose of this subroutine is to lower case a given character string. 
       subroutine LowerCaseLine(line)
@@ -322,6 +261,118 @@
    
 !      write(*,*) line
      
+      end subroutine
+!========================================================            
+      subroutine LoadFile(lineArray, nLines, fileName)
+      use SimParameters, only: echoInput
+      implicit none
+      character(len=100),allocatable,intent(inout) :: lineArray(:)
+      character(len=50), intent(in) :: fileName
+      integer, intent(out) :: nLines
+      integer :: iLine, lineStat, AllocateStat
+
+      open(unit=54,file=trim(adjustl(fileName)),status='OLD')    
+
+!      This block counts the number of lines in the input file to determine how large the lineStorage array needs to be.
+      nLines = 0
+      do iLine = 1, nint(1d7)
+        read(54,*,iostat=lineStat)
+        if(lineStat .lt. 0) then
+          exit
+        endif
+        nLines = nLines + 1
+      enddo
+      rewind(54)
+
+
+!      Read in the file line by line
+      allocate(lineArray(1:nLines), stat = AllocateStat)
+      do iLine = 1, nLines
+        read(54,"(A)") lineArray(iLine)
+        if(echoInput) then
+          write(35,*) lineArray(iLine)        
+        endif
+        call LowerCaseLine(lineArray(iLine))
+        write(*,*) lineArray(iLine)
+      enddo
+      close(54) 
+    
+      end subroutine
+
+!========================================================            
+!     This subrotuine searches a given input line for the first command. 
+      subroutine GetCommand(line, command, lineStat)
+      use VarPrecision
+      implicit none
+      character(len=*), intent(in) :: line
+      character(len=25), intent(out) :: command
+      integer, intent(out) :: lineStat
+      integer :: i, sizeLine, lowerLim, upperLim
+
+      sizeLine = len(line)
+      lineStat = 0
+      i = 1
+!      Find the first non-blank character in the string
+      do while(i .le. sizeLine)
+        if(ichar(line(i:i)) .ne. ichar(' ')) then
+           !If a non-blank character is found, check first to see if it is the comment character.
+          if(ichar(line(i:i)) .eq. ichar('#')) then
+            lineStat = 1
+            return
+          else
+            exit
+          endif
+        endif
+        i = i + 1
+      enddo
+!      If no characters are found the line is empty, 
+      if(i .ge. sizeLine) then
+        lineStat = 1
+        return
+      endif
+      lowerLim = i
+
+!      
+      do while(i .le. sizeLine)
+        if(line(i:i) .eq. " ") then
+          exit
+        endif
+        i = i + 1
+      enddo
+      upperLim = i
+
+      command = line(lowerLim:upperLim)
+     
+      end subroutine
+!========================================================
+      subroutine FindCommandBlock(iLine, lineStore, lineBuffer)
+      implicit none
+      integer, intent(in) :: iLine
+      character(len=100), intent(in) :: lineStore(:)      
+      integer, intent(out) :: lineBuffer
+      logical :: found
+      integer :: i, lineStat, nLines
+      character(len=35) :: dummy 
+
+
+      dummy = " "
+      nLines = size(lineStore)
+      found = .false.
+      do i = iLine + 1, nLines
+        call GetCommand(lineStore(i), dummy, lineStat)
+!        write(*,*)  dummy
+        if(trim(adjustl(dummy)) .eq. "end") then
+          lineBuffer = i - iLine
+          found = .true.
+          exit
+        endif
+      enddo
+
+      if(.not. found) then
+        write(*,*) "ERROR! A command block was opened in the input script, but no closing END statement found!"
+        stop
+      endif
+
       end subroutine
 !========================================================            
       end module

@@ -209,19 +209,6 @@
 !          iSwapIn = iSwapIn + 1
 !          iSwapOut = iSwapOut + 1
         case("totalclustersize")
-          read(inputLines(iUmbrella), *) labelField
-          if(indxVar .le. 0) then
-            write(*,*) "Error! An invalid molecule type has been chosen!"
-            write(*,*) "Defined Mol Types:", nMolTypes
-            write(*,*) "Chosen Mol Type:", indxVar
-            stop
-          endif
-          if(indxVar .gt. nMolTypes) then
-            write(*,*) "Error! An invalid molecule type has been chosen!"
-            write(*,*) "Defined Mol Types:", nMolTypes
-            write(*,*) "Chosen Mol Type:", indxVar
-            stop
-          endif
           biasvar(iUmbrella) % varType = 1
           biasvar(iUmbrella) % intVar => NTotal
           biasvarnew(iUmbrella) % varType = 1
@@ -418,19 +405,6 @@
 !          iSwapIn = iSwapIn + 1
 !          iSwapOut = iSwapOut + 1
         case("totalclustersize")
-          read(inputLines(iUmbrella+2), *) labelField
-          if(indxVar .le. 0) then
-            write(*,*) "Error! An invalid molecule type has been chosen!"
-            write(*,*) "Defined Mol Types:", nMolTypes
-            write(*,*) "Chosen Mol Type:", indxVar
-            stop
-          endif
-          if(indxVar .gt. nMolTypes) then
-            write(*,*) "Error! An invalid molecule type has been chosen!"
-            write(*,*) "Defined Mol Types:", nMolTypes
-            write(*,*) "Chosen Mol Type:", indxVar
-            stop
-          endif
           biasvar(iUmbrella) % varType = 1
           biasvar(iUmbrella) % intVar => NTotal
           biasvarnew(iUmbrella) % varType = 1
@@ -439,9 +413,6 @@
           binMin(iUmbrella) = 1
           UBinSize(iUmbrella) = 1E0
           outputFormat(iUmbrella) = "2x,F5.1,"
-          
-!          iSwapIn = iSwapIn + 1
-!          iSwapOut = iSwapOut + 1
         case("pairdist")
           indxVar = 0
           read(inputLines(iUmbrella+2), *) labelField, indxVar, valMin, valMax , binSize
