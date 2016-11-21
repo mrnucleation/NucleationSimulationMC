@@ -95,6 +95,7 @@
           call FindCommandBlock(iLine, lineStore, lineBuffer)
           
         case("forcefield")
+          if(
           read(lineStore(iLine),*) dummy, command2
           forcefieldFile =  trim( adjustl( command2 ) )
           call LoadFile(forcefieldStore, nForceLines, forcefieldFile)
@@ -148,15 +149,15 @@
         case("cycles")
           read(line,*) dummy, command, realValue  
           nCycle = nint(realValue)
-        case("moves")
-          read(line,*) dummy, command, realValue        
-          ncycle2 = nint(realValue)   
         case("gasdensity")        
           if(.not. allocated(gas_dens)) then
             write(*,*) "INPUT ERROR! GasDensity is called before the number of molecular types has been assigned"
             stop
           endif
           read(line,*) dummy, command, (gas_dens(j), j=1, nMolTypes)  
+        case("moves")
+          read(line,*) dummy, command, realValue        
+          ncycle2 = nint(realValue)   
         case("moleculetypes")
           read(line,*) dummy, command, realValue        
           nMolTypes = nint(realValue)
@@ -177,7 +178,6 @@
             stop
           endif
           read(line,*) dummy, command, (NMIN(j), j=1, nMolTypes)    
-        
         case("molmax")        
           if(.not. allocated(NMAX)) then
             write(*,*) "INPUT ERROR! molmax is called before the number of molecular types has been assigned"
@@ -185,7 +185,6 @@
           endif
           read(line,*) dummy, command, (NMAX(j), j=1, nMolTypes)
           maxMol = sum(NMAX)        
-
         case("rosentrials")        
           if(.not. allocated(nRosenTrials)) then
             write(*,*) "INPUT ERROR! molmax is called before the number of molecular types has been assigned"
@@ -198,7 +197,6 @@
           read(line,*) dummy, command, realValue        
           temperature = realValue
           beta = 1d0/temperature
-        
         case("screenecho")
           read(line,*) dummy, command, logicValue
           screenEcho = logicValue
@@ -208,7 +206,6 @@
         case("softcutoff")
           read(line,*) dummy, command, realValue
           softCutoff = realValue
-      
         case("screen_outfreq")
           read(line,*) dummy, command, intValue
           outFreq_Screen = intValue             
@@ -225,7 +222,7 @@
           read(line,*) dummy, command, outputLenUnits   
           outputLenConv = FindLengthUnit(outputLenUnits)
         case default
-        lineStat = -1
+          lineStat = -1
       end select
 
      
