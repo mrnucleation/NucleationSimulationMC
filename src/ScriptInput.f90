@@ -102,9 +102,6 @@
         case("clustercriteria")
           read(lineStore(iLine),*) dummy, command2
           call FindCommandBlock(iLine, lineStore, lineBuffer)
-        case("clustercriteria")
-          read(lineStore(iLine),*) dummy, command2
-          call FindCommandBlock(iLine, lineStore, lineBuffer)
         case default
           write(*,"(A,2x,I10)") "ERROR! Unknown Command on Line", iLine
           write(*,*) lineStore(iLine)
@@ -342,10 +339,11 @@
      
       end subroutine
 !========================================================
-      subroutine FindCommandBlock(iLine, lineStore, lineBuffer)
+      subroutine FindCommandBlock(iLine, lineStore, endCommand, lineBuffer)
       implicit none
       integer, intent(in) :: iLine
-      character(len=100), intent(in) :: lineStore(:)      
+      character(len=100), intent(in) :: lineStore(:)   
+      character(len=20), intent(in) :: endCommand   
       integer, intent(out) :: lineBuffer
       logical :: found
       integer :: i, lineStat, nLines
@@ -358,7 +356,7 @@
       do i = iLine + 1, nLines
         call GetCommand(lineStore(i), dummy, lineStat)
 !        write(*,*)  dummy
-        if(trim(adjustl(dummy)) .eq. "end") then
+        if( trim(adjustl(dummy)) .eq. trim(adjustl(endCommand)) ) then
           lineBuffer = i - iLine
           found = .true.
           exit
