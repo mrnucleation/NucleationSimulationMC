@@ -34,7 +34,7 @@
       
       if(useScriptInput) then
         call Script_ReadParameters(seed, screenEcho)
-        stop
+        return
       endif
 
 
@@ -305,15 +305,15 @@
         stop "Unknown potential type given in forcefield input"
       end select
  
-      read(54,*)
-      read(54,*)
-      read(54,*)
-      call ReadAnalysisInput(54)
-      read(54,*)
-      read(54,*)
-      read(54,*)
-      call ReadInput_Umbrella(54)
-      close(54)                
+!      read(54,*)
+!      read(54,*)
+!      read(54,*)
+!      call ReadAnalysisInput(54)
+!      read(54,*)
+!      read(54,*)
+!      read(54,*)
+!      call ReadInput_Umbrella(54)
+!      close(54)                
       if(useWHAM) then
         call WHAM_Initialize
       endif

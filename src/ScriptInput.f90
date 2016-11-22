@@ -18,47 +18,23 @@
       logical, intent(OUT)  :: screenEcho
       integer, intent(OUT) :: seed
 !      integer(kind=8), intent(OUT) :: ncycle,nmoves
-      integer :: i
+      integer :: i, ii, j, nRawLines
       integer :: iLine, lineStat, AllocateStat
       integer :: nLines, nForceLines, lineBuffer
+      integer, allocatable :: lineNumber(:), ffLineNumber(:)
       real(dp) :: varValue
-      character(len=100), allocatable :: lineStore(:)
+      character(len=100), allocatable :: rawLines(:), lineStore(:)
       character(len=100), allocatable :: forcefieldStore(:)
       character(len=25) :: command, command2, dummy
       character(len=50) :: fileName
       character(len=50) :: forcefieldFile
       
-      
-!      read(5,*) fileName
+
+!     This first command block cleans the file of comments      
+
       fileName = "ScriptTest.dat"
-      call LoadFile(lineStore, nLines, fileName)
-!      open(unit=54,file="input_Parameters.dat",status='OLD')    
-!      open(unit=54,file=trim(adjustl(fileName)),status='OLD')    
-
-
+      call LoadFile(lineStore, nLines, lineNumber, fileName)
 !      This block counts the number of lines in the input file to determine how large the lineStorage array needs to be.
-!      nLines = 0
-!      do iLine = 1, nint(1d7)
-!        read(54,*,iostat=lineStat)
-!        if(lineStat .lt. 0) then
-!          exit
-!        endif
-!        nLines = nLines + 1
-!      enddo
-!      rewind(54)
-
-
-!      Read in the input script
-!      allocate(lineStore(1:nLines), stat = AllocateStat)
-!      do iLine = 1, nLines
-!        read(54,"(A)") lineStore(iLine)
-!        if(echoInput) then
-!          write(35,*) lineStore(iLine)        
-!        endif
-!        call LowerCaseLine(lineStore(iLine))
-!      enddo
-
-
 
 
       lineBuffer = 0
@@ -75,35 +51,50 @@
         endif 
 
         select case(trim(adjustl( command )))
+        case("analysis")
+          call FindCommandBlock(iLine, lineStore,"end_analysis", lineBuffer)
+          call ScriptAnalysisInput( lineStore(iLine:iLine+lineBuffer) )
         case("set")
           call setVariable( lineStore(iLine), seed, screenEcho, lineStat )
           if(lineStat .eq. -1) then
-            write(*,"(A,2x,I10)") "ERROR! Unknown Variable Name on Line", iLine
+            write(*,"(A,2x,I10)") "ERROR! Unknown Variable Name on Line", lineNumber(iLine)
             write(*,*) lineStore(iLine)
             stop 
           endif
         case("movetypes")
-          call FindCommandBlock(iLine, lineStore, lineBuffer)
+          call FindCommandBlock(iLine, lineStore,"end_movetypes", lineBuffer)
           call ScriptInput_MCMove( lineStore(iLine:iLine+lineBuffer) )
-        case("analysis")
-          call FindCommandBlock(iLine, lineStore, lineBuffer)
-          call ScriptAnalysisInput( lineStore(iLine:iLine+lineBuffer) )
-        case("umbrellasampling")
-          call FindCommandBlock(iLine, lineStore, lineBuffer)
+        case("umbrella")
+          call FindCommandBlock(iLine, lineStore, "end_umbrella", lineBuffer)
           call ScriptInput_Umbrella( lineStore(iLine:iLine+lineBuffer) )
-        case("iterator")
-          call FindCommandBlock(iLine, lineStore, lineBuffer)
-          
         case("forcefield")
-          if(
+!          if(
           read(lineStore(iLine),*) dummy, command2
           forcefieldFile =  trim( adjustl( command2 ) )
-          call LoadFile(forcefieldStore, nForceLines, forcefieldFile)
-        case("clustercriteria")
-          read(lineStore(iLine),*) dummy, command2
-          call FindCommandBlock(iLine, lineStore, lineBuffer)
+          call LoadFile(forcefieldStore, nForceLines, ffLineNumber, forcefieldFile)
+        case("boundary")
+!          read(lineStore(iLine),*) dummy, command2
+          call FindCommandBlock(iLine, lineStore, "end_boundary", lineBuffer)
+          allocate( Eng_Critr(1:nMolTypes,1:nMolTypes), STAT = AllocateStat )
+          ii = 0 
+          do i = iLine+1, iLine+lineBuffer-1
+            ii = ii + 1
+            read(lineStore(i),*) (Eng_Critr(ii,j),j=1,nMolTypes)
+          enddo 
+        case("biasalpha")
+!          read(lineStore(iLine),*) dummy, command2
+          call FindCommandBlock(iLine, lineStore, "end_biasalpha", lineBuffer)
+          allocate(biasAlpha(1:nMolTypes,1:nMolTypes), stat = AllocateStat)      
+          ii = 0
+          do i = iLine+1, iLine+lineBuffer-1
+            ii = ii + 1
+            read(lineStore(i),*) (biasAlpha(ii,j),j=1,nMolTypes)     
+            do j = 1, nMolTypes
+              biasAlpha(ii,j) = biasAlpha(ii,j)/temperature
+            enddo         
+          enddo      
         case default
-          write(*,"(A,2x,I10)") "ERROR! Unknown Command on Line", iLine
+          write(*,"(A,2x,I10)") "ERROR! Unknown Command on Line", lineNumber(iLine)
           write(*,*) lineStore(iLine)
           stop 
         end select
@@ -121,6 +112,7 @@
       use CBMC_Variables
       use Coords
       use EnergyTables
+      use WHAM_Module
       use Units
       implicit none
       character(len=100), intent(in) :: line      
@@ -158,17 +150,18 @@
         case("moleculetypes")
           read(line,*) dummy, command, realValue        
           nMolTypes = nint(realValue)
-          allocate( NPART(1:nMolTypes), STAT = AllocateStat )    
+          allocate( NPART(1:nMolTypes), STAT = AllocateStat ) 
+          allocate( NPART_new(1:nMolTypes),STAT = AllocateStat )     
           allocate( NMIN(1:nMolTypes), STAT = AllocateStat )     
           allocate( NMAX(1:nMolTypes), STAT = AllocateStat )     
           allocate( gas_dens(1:nMolTypes), STAT = AllocateStat )      
-          allocate( nRosenTrials(1:nMolTypes), STAT = AllocateStat )     
+          allocate( nRosenTrials(1:nMolTypes), STAT = AllocateStat )  
           NMIN = 0
           NMAX = 0
           gas_dens = 0
           nRosenTrials = 1
-          allocate( Eng_Critr(1:nMolTypes,1:nMolTypes), STAT = AllocateStat )
           allocate( biasAlpha(1:nMolTypes,1:nMolTypes), STAT = AllocateStat )
+          biasAlpha = 0E0_dp
         case("molmin")        
           if(.not. allocated(NMIN)) then
             write(*,*) "INPUT ERROR! molmin is called before the number of molecular types has been assigned"
@@ -218,6 +211,24 @@
         case("out_distunits")
           read(line,*) dummy, command, outputLenUnits   
           outputLenConv = FindLengthUnit(outputLenUnits)
+        case("usewham")
+          read(line,*) dummy, command, logicValue
+          useWHAM = logicValue  
+        case("whamseglength")
+          read(line,*) dummy, command, intValue
+          intervalWHAM = intValue 
+        case("whammaxiteration")
+          read(line,*) dummy, command, intValue
+          maxSelfConsist = intValue 
+        case("whamdgreplace")
+          read(line,*) dummy, command, intValue
+          whamEstInterval = intValue
+        case("whamequilcycle")
+          read(line,*) dummy, command, intValue
+          equilInterval = intValue 
+        case("whamtol")
+          read(line,*) dummy, command, realValue
+          tolLimit = realValue 
         case default
           lineStat = -1
       end select
@@ -257,39 +268,69 @@
      
       end subroutine
 !========================================================            
-      subroutine LoadFile(lineArray, nLines, fileName)
+      subroutine LoadFile(lineArray, nLines, lineNumber, fileName)
       use SimParameters, only: echoInput
       implicit none
       character(len=100),allocatable,intent(inout) :: lineArray(:)
       character(len=50), intent(in) :: fileName
+      integer, allocatable, intent(inout) :: lineNumber(:)
+
+      character(len=100),allocatable :: rawLines(:)
+      character(len=25) :: command
       integer, intent(out) :: nLines
-      integer :: iLine, lineStat, AllocateStat
+      integer :: i,iLine, nRawLines, lineStat, AllocateStat
 
       open(unit=54,file=trim(adjustl(fileName)),status='OLD')    
 
 !      This block counts the number of lines in the input file to determine how large the lineStorage array needs to be.
-      nLines = 0
+      nRawLines = 0
       do iLine = 1, nint(1d7)
         read(54,*,iostat=lineStat)
         if(lineStat .lt. 0) then
           exit
         endif
-        nLines = nLines + 1
+        nRawLines = nRawLines + 1
       enddo
       rewind(54)
 
 
 !      Read in the file line by line
-      allocate(lineArray(1:nLines), stat = AllocateStat)
-      do iLine = 1, nLines
-        read(54,"(A)") lineArray(iLine)
+      allocate(rawLines(1:nRawLines), stat = AllocateStat)
+
+      do iLine = 1, nRawLines
+        read(54,"(A)") rawLines(iLine)
         if(echoInput) then
-          write(35,*) lineArray(iLine)        
+          write(35,*) rawLines(iLine)        
         endif
-        call LowerCaseLine(lineArray(iLine))
-        write(*,*) lineArray(iLine)
+        call LowerCaseLine(rawLines(iLine))
+        write(*,*) rawLines(iLine)
       enddo
       close(54) 
+
+
+      nLines = 0 
+      do iLine = 1, nRawLines
+        lineStat = 0        
+        call getCommand(rawLines(iLine), command, lineStat)
+!         If line is empty or commented, move to the next line.         
+        if(lineStat .eq. 0) then
+          nLines = nLines + 1
+        endif 
+      enddo
+
+      allocate( lineArray(1:nLines) )
+      allocate( lineNumber(1:nLines) )
+      i = 0
+      do iLine = 1, nRawLines
+        lineStat = 0        
+        call getCommand(rawLines(iLine), command, lineStat)
+        if(lineStat .eq. 0) then
+          i = i + 1
+          lineArray(i) = rawLines(iLine)
+          lineNumber(i) = iLine
+          write(*,*) lineNumber(i), lineArray(i)
+        endif 
+      enddo
     
       end subroutine
 
@@ -343,7 +384,7 @@
       implicit none
       integer, intent(in) :: iLine
       character(len=100), intent(in) :: lineStore(:)   
-      character(len=20), intent(in) :: endCommand   
+      character(len=*), intent(in) :: endCommand   
       integer, intent(out) :: lineBuffer
       logical :: found
       integer :: i, lineStat, nLines

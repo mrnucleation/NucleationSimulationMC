@@ -1,4 +1,18 @@
+ !========================================================  
       module ForceFieldInput
+
+     
+      interface 
+        subroutine MCMoveSub
+          use VarPrecision
+          implicit none
+        end subroutine
+      end interface 
+ 
+      type MoveArray
+        procedure(MCMoveSub), pointer, nopass :: commonFunction => NULL()
+      end type
+
 !========================================================  
       contains
 !========================================================  
@@ -26,6 +40,7 @@
         Rosen_Mol_Old => Rosen_BoltzWeight_Molecule_Old
         Quick_Nei_ECalc => QuickNei_ECalc_Inter_LJ_Q
         boundaryFunction => Bound_MaxMin
+        commonFunction => Allocate_Common_Variables_LJ_Q
       case("Pedone")
         write(nout,*) "Forcefield Type: Pedone"
         ForceFieldName = "Pedone"
@@ -38,6 +53,8 @@
         Rosen_Mol_Old => Rosen_BoltzWeight_Pedone_Old
         Quick_Nei_ECalc => QuickNei_ECalc_Inter_Pedone
         boundaryFunction => Bound_PedoneChargeBalance
+        commonFunction => Allocate_Common_Variables_Pedone
+      case("custompairwise")
       case default
         stop "Unknown potential type given in forcefield input"
       end select
@@ -57,24 +74,39 @@
       implicit none
       character(len=100), intent(in) :: lineStore(:)
 
-      character(len=30) :: dummy, command, stringValue
+      character(len=30) :: dummy, command, command2, stringValue
       logical :: logicValue
       integer :: iLine, nLines
       integer :: intValue, AllocateStat
       real(dp) :: realValue
       
 
-      do iLine = 1, nLines
+      if(nMolTypes .eq. 0) then
+        write(*,*) "ERROR! Forcefield input has been called before the number of molecule types have been defined"
+        stop
+      endif
 
+      nAtomTypes = 0
+      nBondTypes = 0
+      nAngleTypes = 0
+      nTorsionalTypes = 0
+
+      do iLine = 1, nLines
+        if(lineBuffer .gt. 0) then
+          lineBuffer = lineBuffer - 1
+          cycle
+        endif
         call GetCommand(lineStore(iLine), command, lineStat)    
         if(lineStat .gt. 0) then
           cycle
         endif 
         select case( trim(adjustl(command)) )
           case("define")
-            read(line,*) dummy, command, realValue
+            call FindCommandBlock(iLine, lineStore, "end_define", lineBuffer)
+            call DefineForcefield(lineStore(iLine:iLine+lineBuffer)
           case("create")
-            read(line,*) dummy, command, realValue
+            call FindCommandBlock(iLine, lineStore, "end_create", lineBuffer)
+
           case default
             write(*,*) "ERROR! Invalid command in Forcefield file on line:", iLine
             write(*,*) lineStore(iLine)
@@ -88,7 +120,7 @@
      
       end subroutine   
 !========================================================            
-      subroutine DefineForcefield(line)
+      subroutine DefineForcefield(lineStore)
       use VarPrecision
       use SimParameters
       use CBMC_Variables
@@ -96,38 +128,55 @@
       use EnergyTables
       use Units
       implicit none
-      character(len=100), intent(in) :: line
-      character(len=30) :: dummy, command, stringValue
+      character(len=100), intent(in) :: lineStore(:)
+      character(len=30) :: dummy, defType, stringValue
       logical :: logicValue
       integer :: iLine, nLines
       integer :: intValue, AllocateStat
       real(dp) :: realValue
       
 
-      do iLine = 1, nLines
-
-        read(line,*) dummy, command, intValue
-        select case( trim(adjustl(command)) )
-          case("atomtypes")
-
-          case default
-            write(*,*) "ERROR! Invalid command in Forcefield file on line:", iLine
-            write(*,*) lineStore(iLine)
-            stop "INPUT ERROR!"
-        end select
-
-      enddo
-
-
-
+      read(lineStore(1),*) dummy, defType, intValue
+      select case( trim(adjustl(defType)) )
+        case("atomtypes")
+          if( allocated(atomData) ) then
+            write(*,*) "ERROR! AtomTypes already defined in the forcefield file"
+            stop
+          endif
+          nAtomTypes = intValue
+          ALLOCATE (atomData(1:nAtomTypes), STAT = AllocateStatus)
+          ALLOCATE (r_min(1:nAtomTypes), STAT = AllocateStatus)
+          ALLOCATE (r_min_sq(1:nAtomTypes), STAT = AllocateStatus)
+          ALLOCATE (r_min_tab(1:nAtomTypes, 1:nAtomTypes), STAT = AllocateStatus) 
+        case("bondtypes")
+          nBondTypes = intValue
+          ALLOCATE (bondData(1:nBondTypes), STAT = AllocateStatus)
+        case("angletypes")
+          nAngleTypes = intValue
+          ALLOCATE (bendData(1:nAngleTypes), STAT = AllocateStatus)
+        case("torsiontypes")
+          nTorsionalTypes = intValue
+          ALLOCATE (torsData(1:nTorsionalTypes), STAT = AllocateStatus)
+        case("rmin")
+          if(nAtomTypes .eq. 0) then
+            write(*,*) "ERROR! RMin is called before the number of atom types"
+            write(*,*) "have been defined"
+            stop
+          endif
+          
+        case default 
+          write(*,*) "ERROR! Invalid command in Forcefield file on line:", iLine
+          write(*,*) lineStore(iLine)
+          stop "INPUT ERROR!"
+      end select
      
       end subroutine 
 !========================================================
-      subroutine FindForceBlock(iLine, lineStore, endCommand ,lineBuffer)
+      subroutine FindCommandBlock(iLine, lineStore, endCommand ,lineBuffer)
       implicit none
       integer, intent(in) :: iLine
       character(len=100), intent(in) :: lineStore(:)      
-      character(len=20), intent(in) :: endCommand
+      character(len=*), intent(in) :: endCommand
       integer, intent(out) :: lineBuffer
       logical :: found
       integer :: i, lineStat, nLines
@@ -196,6 +245,63 @@
 
       command = line(lowerLim:upperLim)
      
+      end subroutine
+!================================================================ 
+      subroutine Allocate_Common_Variables_LJ_Q
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_LJ_Q
+      use AcceptRates
+      implicit none
+      integer :: AllocateStatus
+      
+      ALLOCATE (atomData(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (bondData(1:nBondTypes), STAT = AllocateStatus)
+      ALLOCATE (bendData(1:nAngleTypes), STAT = AllocateStatus)
+      ALLOCATE (torsData(1:nTorsionalTypes), STAT = AllocateStatus)
+      ALLOCATE (impropData(1:nImproperTypes), STAT = AllocateStatus)
+
+      ALLOCATE (r_min(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_sq(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_tab(1:nAtomTypes, 1:nAtomTypes), STAT = AllocateStatus) 
+
+      ALLOCATE (ep_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (sig_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (q_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
+     
+      ep_tab = 0d0
+      sig_tab = 0d0       
+      q_tab = 0d0
+      r_min_tab = 0d0
+
+      ALLOCATE (totalMass(1:nMolTypes), STAT = AllocateStatus)
+      
+      ALLOCATE (nAtoms(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (nIntraNonBond(1:nMolTypes), STAT = AllocateStatus)      
+      ALLOCATE (nBonds(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (nAngles(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (nTorsional(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (nImproper(1:nMolTypes), STAT = AllocateStatus)
+
+      ALLOCATE (acptTrans(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpTrans(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptRot(1:nMolTypes),   STAT = AllocateStatus)
+      ALLOCATE (atmpRot(1:nMolTypes),  STAT = AllocateStatus)
+      ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptSwapOut(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpSwapOut(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStatus)
+      ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStatus)
+
+
+      ALLOCATE (max_dist(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (max_dist_single(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (max_rot(1:nMolTypes), STAT = AllocateStatus) 
+      
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+  
       end subroutine
 !================================================================================
       end module

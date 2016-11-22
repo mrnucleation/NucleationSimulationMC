@@ -321,7 +321,7 @@
 !         call TrajOutput(iCycle)
 
 !        Mid Simulation Output Block
-        if(mod(iCycle, outFreq_GCD) .eq. 0) then
+!        if(mod(iCycle, outFreq_GCD) .eq. 0) then
           if(mod(iCycle, outFreq_Screen) .eq. 0) then
             if(abs(E_T) .lt. 1E6_dp) then
              write(nout,outFormat2) iCycle,NPART, E_T, (1E2_dp*movesAccepted(j)/movesAttempt(j), j=1, nMoveTypes)
@@ -336,7 +336,7 @@
           if(mod(iCycle,outFreq_Traj) .eq. 0) then
             call TrajOutput(iCycle)
           endif
-        endif
+!        endif
 
         if(useWham) then
           if(mod(iCycle,intervalWHAM) .eq. 0) then

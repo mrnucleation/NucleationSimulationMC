@@ -254,13 +254,13 @@
       use VarPrecision
       logical, parameter :: echoInput = .true.      
       logical, parameter :: distCriteria = .false.
-      logical, parameter :: useScriptInput = .false.
+      logical, parameter :: useScriptInput = .true.
 
       logical :: prevMoveAccepted
 
       integer(kind=8) :: ncycle, ncycle2       
-      logical :: ridgidMolecules, multipleInput
-      integer(kind=atomIntType) :: nMolTypes
+      logical :: multipleInput = .false.
+      integer(kind=atomIntType) :: nMolTypes = 1
       integer,allocatable :: NMin(:), NMax(:)
       integer,allocatable, target :: NPart(:)
       integer,allocatable, target :: NPart_New(:)
@@ -278,7 +278,6 @@
         
       real(dp) :: temperature, beta
       real(dp) :: global_r_min
-
       real(dp) :: softCutoff
 
 !     Cluster Criteria block      
@@ -293,7 +292,9 @@
       character(len=10) :: outputEngUnits,outputLenUnits
       real(dp) :: outputEConv,outputLenConv
 
-      integer :: outFreq_Traj,outFreq_Screen,outFreq_GCD
+      integer :: outFreq_GCD = 1000
+      integer :: outFreq_Screen = 1000
+      integer :: outFreq_Traj = 1000
         
       end module
 !================================================================ 
