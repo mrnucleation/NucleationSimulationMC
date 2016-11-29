@@ -95,7 +95,7 @@
           nout = 6        
         endif
       endif         
-      call ReadForcefield
+!      call ReadForcefield
       call ReadInitialConfiguration
       call RecenterCoordinates
       call ReadInitialGasPhase      
@@ -693,6 +693,27 @@
 
 
       end subroutine
+!========================================================            
+!     The purpose of this subroutine is to lower case a given character string. 
+      subroutine LowerCaseLine(line)
+      implicit none
+      character(len=*),intent(inout) :: line
+      integer, parameter :: offset = ichar("a") - ichar("A")
+      integer :: i,sizeLine
+      integer :: curVal, newVal
 
+      sizeLine = len(line)
+
+      do i = 1, sizeLine
+        curVal = ichar(line(i:i))
+        if(curVal .le. ichar("Z")) then
+          if(curVal .ge. ichar("A")) then
+            newVal = curVal + offSet
+            line(i:i) = char(newVal)
+          endif
+        endif
+      enddo
+
+      end subroutine
 !=============================================================================================      
 

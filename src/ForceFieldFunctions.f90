@@ -8,10 +8,12 @@
 !     This block defines custom variable types for forcefield
       type AtomDef
         character(len=5) :: Symb
+        character(len=20) :: atmName
         real(dp) :: sig, ep, q, mass
       end type
         
       type BondDef
+        character(len=20) :: bondName
         real(dp) :: k_eq,r_eq
       end type
 
@@ -19,15 +21,16 @@
       real(dp), parameter :: bendBinWidth = 4e0*atan(1e0)/real(nBendHistBins, dp)    
       real(dp), parameter :: startProb = 0.05e0
       type BendAngleDef
+        character(len=20) :: angleName
         real(dp) :: k_eq, ang_eq
 
         integer :: startBin
         real(dp) :: accptConstant
         real(dp) :: Prob(1:nBendHistBins)
-!        real(dp) :: Hist(0:nBendHistBins)
       end type
         
       type TorsionAngleDef
+        character(len=20) :: torsName
         integer(kind=atomIntType) :: nPara
         real(dp),allocatable :: a(:)
       end type
@@ -74,11 +77,11 @@
  
       character(len=20) :: ForceFieldName
 
-      integer :: nAtomTypes
-      integer :: nBondTypes     
-      integer :: nAngleTypes
-      integer :: nTorsionalTypes
-      integer :: nImproperTypes       
+      integer :: nAtomTypes = 0
+      integer :: nBondTypes = 0     
+      integer :: nAngleTypes = 0
+      integer :: nTorsionalTypes = 0
+      integer :: nImproperTypes = 0
         
       type(AtomDef), allocatable :: atomData(:)   
       type(BondDef), allocatable :: bondData(:)
@@ -114,8 +117,12 @@
       end module
 !==============================================================
       module ForceFieldPara_LJ_Q
+      use ForceFieldFunctions
       use ForceFieldVariableType
       use VarPrecision
+
+      procedure (MixRule), pointer :: ep_func => GeoMean_MixingFunc
+      procedure (MixRule), pointer :: sig_func => Mean_MixingFunc
 
       real(dp), allocatable :: ep_tab(:,:),sig_tab(:,:)
       real(dp), allocatable :: q_tab(:,:)       

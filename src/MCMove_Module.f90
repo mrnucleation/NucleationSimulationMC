@@ -149,6 +149,7 @@
       do iMoves = 1, nMoveTypes
         read(lines(iMoves+1), *) moveName_temp, moveProbability(iMoves)
         norm = norm + moveProbability(iMoves)
+        call LowerCaseLine(moveName_temp)
         select case( trim(adjustl(moveName_temp)) )
         case("translation")
           mcMoveArray(iMoves) % moveFunction => Translation

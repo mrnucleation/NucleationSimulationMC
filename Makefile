@@ -107,6 +107,7 @@ SRC_MAIN := $(SRC)/BasicMovement.f90\
  		$(SRC)/CoordinateFunctions.f90\
  		$(SRC)/SelfAdaptiveDistribution.f90\
 		$(SRC)/ScriptInput.f90\
+		$(SRC)/ScriptForceField.f90\
 		$(SRC)/ReadInput.f90
 SRC_MAIN2:=  $(SRC)/ETableFunctions.f90
 SRC_CBMC := $(CBMC)/CBMC.f90\
@@ -206,10 +207,8 @@ $(OBJ)/%.o: $(SRC)/%.f90
 #        Compile Commands
 # ====================================
 default: startUP generalNucleation finale
-#default: startUP createMods energyFunctions generalNucleation finale
-engOnly: startUP energyFunctions generalNucleation finale
 quick: startUP generalNucleation finale
-neat: startUP createMods generalNucleation removeObject finale
+neat: startUP generalNucleation removeObject finale
 clean: removeObjects removeExec finale    
     
 createMods: $(MOD_SRC) 
@@ -234,11 +233,7 @@ createMods: $(MOD_SRC)
 		@echo =============================================	
 		@echo  	
 
-            
-energyFunctions: $(OBJ_CRIT) $(OBJ_ENERGY) 
-		@$(FC) $(COMPFLAGS)  $< -c
-      
-        
+       
 generalNucleation: $(OBJ_COMPLETE) $(OBJ_MOD)
 		@echo =============================================
 		@echo     Compiling and Linking Source Files
@@ -281,13 +276,16 @@ removeExec:
 # ====================================
 $(OBJ_COMPLETE): $(OBJ_MOD)
 $(OBJ)/Common.o: $(OBJ)/VariablePrecision.o $(OBJ)/Units.o
+$(OBJ)/ForceFieldFunctions.o: $(OBJ)/Common.o $(OBJ)/VariablePrecision.o
+$(OBJ)/Units.o: $(OBJ)/VariablePrecision.o
+
 $(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o
 $(OBJ)/WHAM_Version2.o: $(OBJ)/SwapBoundaries.o $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o
-$(OBJ)/Units.o: $(OBJ)/VariablePrecision.o
 $(OBJ)/CBMC_ConfigGen.o: $(OBJ)/CoordinateFunctions.o
 $(OBJ)/ClusterCriteria_Energy.o: $(OBJ)/Common.o
 $(OBJ)/CoordinateFunctions.o: $(OBJ)/Common.o $(OBJ)/RandomTools.o
 $(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o $(OBJ)/RadialDensity.o $(OBJ)/Common.o
 $(OBJ)/MiscelaniousVariables.o: $(OBJ)/Common.o
 $(OBJ)/Main.o: $(OBJ)/Common.o $(OBJ)/SelfAdaptiveDistribution.o
-$(OBJ)/ScriptInput.o: $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o $(OBJ)/AnalysisMain.o $(OBJ)/MCMove_Module.o
+$(OBJ)/ScriptInput.o: $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o $(OBJ)/AnalysisMain.o $(OBJ)/MCMove_Module.o $(OBJ)/ScriptForceField.o
+$(OBJ)/ScriptForceField.o: $(OBJ)/Common.o 

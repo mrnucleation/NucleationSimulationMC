@@ -14,6 +14,7 @@
       use AnalysisMain,only: ScriptAnalysisInput
       use MoveTypeModule, only: ScriptInput_MCMove
       use UmbrellaSamplingNew,only: ScriptInput_Umbrella
+      use ForceFieldInput, only: SetForcefieldType, ScriptForcefield, fieldTypeSet
       implicit none
       logical, intent(OUT)  :: screenEcho
       integer, intent(OUT) :: seed
@@ -45,6 +46,7 @@
         endif
         lineStat = 0        
         call getCommand(lineStore(iLine), command, lineStat)
+        call LowerCaseLine(command)
 !         If line is empty or commented, move to the next line.         
         if(lineStat .eq. 1) then
           cycle
@@ -67,11 +69,15 @@
         case("umbrella")
           call FindCommandBlock(iLine, lineStore, "end_umbrella", lineBuffer)
           call ScriptInput_Umbrella( lineStore(iLine:iLine+lineBuffer) )
-        case("forcefield")
-!          if(
+        case("forcefieldfile")
           read(lineStore(iLine),*) dummy, command2
           forcefieldFile =  trim( adjustl( command2 ) )
           call LoadFile(forcefieldStore, nForceLines, ffLineNumber, forcefieldFile)
+        case("forcefieldtype")
+          read(lineStore(iLine),*) dummy, command2
+          call LowerCaseLine(command2)
+          call SetForcefieldType(command2)
+          fieldTypeSet = .true.
         case("boundary")
 !          read(lineStore(iLine),*) dummy, command2
           call FindCommandBlock(iLine, lineStore, "end_boundary", lineBuffer)
@@ -103,6 +109,9 @@
       
       deallocate(lineStore)
 
+      write(nout,*) "Input parameters read,  reading forcefield........."
+      call ScriptForcefield(forcefieldStore)
+      write(nout,*) "Forcefield read!"
 
       end subroutine
 !========================================================            
@@ -113,6 +122,7 @@
       use Coords
       use EnergyTables
       use WHAM_Module
+      use AcceptRates
       use Units
       implicit none
       character(len=100), intent(in) :: line      
@@ -130,6 +140,7 @@
       lineStat  = 0
 
       read(line,*) dummy, command
+      call LowerCaseLine(command)
       select case(trim(adjustl(command)))
         case("avbmc_distance")
           read(line,*) dummy, command, realValue
@@ -175,6 +186,8 @@
           endif
           read(line,*) dummy, command, (NMAX(j), j=1, nMolTypes)
           maxMol = sum(NMAX)        
+          ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStat)
+          ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStat)
         case("rosentrials")        
           if(.not. allocated(nRosenTrials)) then
             write(*,*) "INPUT ERROR! molmax is called before the number of molecular types has been assigned"
@@ -243,30 +256,7 @@
 
      
       end subroutine
-!========================================================            
-!     The purpose of this subroutine is to lower case a given character string. 
-      subroutine LowerCaseLine(line)
-      implicit none
-      character(len=*),intent(inout) :: line
-      integer, parameter :: offset = ichar("a") - ichar("A")
-      integer :: i,sizeLine
-      integer :: curVal, newVal
 
-      sizeLine = len(line)
-
-      do i = 1, sizeLine
-        curVal = ichar(line(i:i))
-        if(curVal .le. ichar("Z")) then
-          if(curVal .ge. ichar("A")) then
-            newVal = curVal + offSet
-            line(i:i) = char(newVal)
-          endif
-        endif
-      enddo
-   
-!      write(*,*) line
-     
-      end subroutine
 !========================================================            
       subroutine LoadFile(lineArray, nLines, lineNumber, fileName)
       use SimParameters, only: echoInput
@@ -302,8 +292,8 @@
         if(echoInput) then
           write(35,*) rawLines(iLine)        
         endif
-        call LowerCaseLine(rawLines(iLine))
-        write(*,*) rawLines(iLine)
+!        call LowerCaseLine(rawLines(iLine))
+!        write(*,*) rawLines(iLine)
       enddo
       close(54) 
 
@@ -328,9 +318,10 @@
           i = i + 1
           lineArray(i) = rawLines(iLine)
           lineNumber(i) = iLine
-          write(*,*) lineNumber(i), lineArray(i)
+!          write(*,*) lineNumber(i), lineArray(i)
         endif 
       enddo
+
     
       end subroutine
 
@@ -388,16 +379,17 @@
       integer, intent(out) :: lineBuffer
       logical :: found
       integer :: i, lineStat, nLines
-      character(len=35) :: dummy 
+      character(len=35) :: command 
 
 
-      dummy = " "
+      command = " "
       nLines = size(lineStore)
       found = .false.
       do i = iLine + 1, nLines
-        call GetCommand(lineStore(i), dummy, lineStat)
+        call GetCommand(lineStore(i), command, lineStat)
+        call LowerCaseLine(command)
 !        write(*,*)  dummy
-        if( trim(adjustl(dummy)) .eq. trim(adjustl(endCommand)) ) then
+        if( trim(adjustl(command)) .eq. trim(adjustl(endCommand)) ) then
           lineBuffer = i - iLine
           found = .true.
           exit

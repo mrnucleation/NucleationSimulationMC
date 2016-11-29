@@ -346,8 +346,8 @@
       character(len=10) :: mixingRule
       character(len=10) :: unitsEnergy,unitsDistance,unitsAngular
       real(dp) :: convEng, convDist, convAng, curVal
-      procedure (MixRule), pointer :: ep_func => null()
-      procedure (MixRule), pointer :: sig_func => null()      
+!      procedure (MixRule), pointer :: ep_func => null()
+!      procedure (MixRule), pointer :: sig_func => null()      
       procedure (MixRule), pointer :: rmin_func => null()   
 
 !     Open forcefield file      
