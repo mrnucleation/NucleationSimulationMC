@@ -15,6 +15,7 @@
       use MoveTypeModule, only: ScriptInput_MCMove
       use UmbrellaSamplingNew,only: ScriptInput_Umbrella
       use ForceFieldInput, only: SetForcefieldType, ScriptForcefield, fieldTypeSet
+      use WHAM_Functions
       implicit none
       logical, intent(OUT)  :: screenEcho
       integer, intent(OUT) :: seed
@@ -111,7 +112,16 @@
 
       write(nout,*) "Input parameters read,  reading forcefield........."
       call ScriptForcefield(forcefieldStore)
+      if(useWHAM) then
+        nWhamItter = ceiling(dble(ncycle)/dble(intervalWHAM))
+        call WHAM_Initialize
+      endif
       write(nout,*) "Forcefield read!"
+
+      if(allocated(forcefieldStore)) then
+        deallocate(forcefieldStore)
+      endif
+
 
       end subroutine
 !========================================================            
@@ -186,8 +196,8 @@
           endif
           read(line,*) dummy, command, (NMAX(j), j=1, nMolTypes)
           maxMol = sum(NMAX)        
-          ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStat)
-          ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStat)
+!          ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStat)
+!          ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStat)
         case("rosentrials")        
           if(.not. allocated(nRosenTrials)) then
             write(*,*) "INPUT ERROR! molmax is called before the number of molecular types has been assigned"
@@ -398,6 +408,7 @@
 
       if(.not. found) then
         write(*,*) "ERROR! A command block was opened in the input script, but no closing END statement found!"
+        write(*,*) lineStore(iLine)
         stop
       endif
 

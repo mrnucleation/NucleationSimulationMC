@@ -41,7 +41,7 @@
 
     logical :: useUmbrella = .false.
     logical :: UScreenOut
-    logical :: energyAnalytics = .true.
+    logical :: energyAnalytics = .false.
     integer :: nBiasVariables = 0
     integer :: curUIndx, umbrellaLimit
     integer, allocatable :: curVarIndx

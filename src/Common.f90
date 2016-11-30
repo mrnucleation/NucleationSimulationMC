@@ -252,7 +252,7 @@
 !==============================================================
       module SimParameters
       use VarPrecision
-      logical, parameter :: echoInput = .true.      
+      logical, parameter :: echoInput = .false.      
       logical, parameter :: distCriteria = .false.
       logical, parameter :: useScriptInput = .true.
 

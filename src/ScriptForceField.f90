@@ -23,6 +23,7 @@
       private
       logical :: fieldTypeSet = .false.
       procedure (CommonSub), pointer :: commonFunction => NULL()
+      procedure (CommonSub), pointer :: FFSpecificFlags => NULL()
       procedure (interSub), pointer :: interFunction => NULL()
       real(dp) :: convEng
       real(dp) :: convDist
@@ -69,6 +70,7 @@
         Quick_Nei_ECalc => QuickNei_ECalc_Inter_LJ_Q
         boundaryFunction => Bound_MaxMin
         commonFunction => Allocate_LJ_Q
+        FFSpecificFlags => LJ_SetFlags
         interFunction => Read_LJ_Q
       case("pedone")
         write(nout,*) "Forcefield Type: Pedone"
@@ -97,6 +99,7 @@
       subroutine ScriptForcefield(lineStore)
       use CBMC_Variables
       use Coords
+      use CoodinateFunctions
       use EnergyTables
       use ForceField
       use SimParameters
@@ -107,8 +110,10 @@
 
       character(len=25) :: dummy, command, command2, stringValue
       logical :: logicValue
-      integer :: iLine, nLines, lineBuffer, lineStat
+      integer :: i, j, iLine, nLines, lineBuffer, lineStat
       integer :: intValue, AllocateStat
+      integer :: nAtomsMax, nBondsMax,nAnglesMax    
+      integer :: nTorsMax, nImpropMax, nNonBondMax
       real(dp) :: realValue
       
       if(nMolTypes .eq. 0) then
@@ -120,6 +125,25 @@
       nBondTypes = 0
       nAngleTypes = 0
       nTorsionalTypes = 0
+
+
+      call FindMax(lineStore, "atoms", nAtomsMax)
+      call FindMax(lineStore, "nonbonded", nNonBondMax)
+      call FindMax(lineStore, "bonds", nBondsMax)
+      call FindMax(lineStore, "angles", nAnglesMax)
+      call FindMax(lineStore, "torsional", nTorsMax)
+      ALLOCATE (atomArray(1:nMolTypes,1:nAtomsMax), STAT = AllocateStat)
+      ALLOCATE (nonBondArray(1:nMolTypes,1:nNonBondMax), STAT = AllocateStat)     
+      ALLOCATE (bondArray(1:nMolTypes,1:nBondsMax), STAT = AllocateStat)
+      ALLOCATE (bendArray(1:nMolTypes,1:nAnglesMax), STAT = AllocateStat)
+      ALLOCATE (torsArray(1:nMolTypes,1:nTorsMax), STAT = AllocateStat)
+
+
+      do i = 1, maxRosenTrial
+        allocate(rosenTrial(i)%x(1:nAtomsMax))      
+        allocate(rosenTrial(i)%y(1:nAtomsMax)) 
+        allocate(rosenTrial(i)%z(1:nAtomsMax))         
+      enddo
 
       lineBuffer = 0
       nLines = size(lineStore)
@@ -139,7 +163,7 @@
             call DefineForcefield(lineStore(iLine:iLine+lineBuffer) )
           case("create")
             call FindCommandBlock(iLine, lineStore, "end_create", lineBuffer)
-
+            call CreateForcefield(lineStore(iLine:iLine+lineBuffer) )
           case default
             write(*,*) "ERROR! Invalid command in Forcefield file on line:", iLine
             write(*,*) lineStore(iLine)
@@ -148,6 +172,23 @@
 
       enddo
 
+
+
+      vmdAtoms = 0
+      do i = 1,nMolTypes
+        vmdAtoms = vmdAtoms + (NMAX(i)*nAtoms(i))
+      enddo
+      
+      totalMass = 0d0
+      do i = 1, nMolTypes
+        do j = 1,nAtoms(i)
+          totalMass(i) = totalMass(i) + atomData(atomArray(i,j))%mass
+        enddo
+      enddo
+      
+      call AllocateCoordinateArrays
+      call CreateJointArray  
+      call FFSpecificFlags
 
 
      
@@ -179,11 +220,8 @@
           read(lineStore(1),*) dummy, defType, intValue
           nAtomTypes = intValue
           ALLOCATE (atomData(1:nAtomTypes), STAT = AllocateStat)
-          write(*,*) "Here!"
           call commonFunction
-          write(*,*) "Here!"
           call interFunction(lineStore)
-          write(*,*) "Here!"
         case("bondtypes")
           read(lineStore(1),*) dummy, defType, intValue
           nBondTypes = intValue
@@ -243,6 +281,83 @@
       end select
      
       end subroutine 
+!========================================================            
+      subroutine CreateForcefield(lineStore)
+      use Coords
+      use ForceField
+      use SimParameters
+      use Units
+      use VarPrecision
+      implicit none
+      character(len=100), intent(in) :: lineStore(:)
+      character(len=30) :: dummy, labelField, stringValue
+      character(len=25) :: command
+      logical :: logicValue
+      integer :: i, j, iUnit, iLine, jLine, nLines, nMol
+      integer :: intValue, AllocateStat, lineStat, lineBuffer
+      real(dp) :: realValue
+
+      nLines = size(lineStore)
+      read(lineStore(1),*) dummy, nMol
+
+
+      do iLine = 2, nLines - 1
+        call GetCommand(lineStore(iLine), command, lineStat)    
+        if(lineStat .gt. 0) then
+          cycle
+        endif 
+        call LowerCaseLine(command)
+        select case(adjustl(trim(command)))
+          case("atoms")
+            call FindCommandBlock(iLine, lineStore, "end_atoms" ,lineBuffer)
+            read(lineStore(iLine),*) dummy, intValue
+            nAtoms(nMol) = intValue
+            iUnit = 0
+            do jLine = iLine+1, iLine+lineBuffer-1
+              iUnit = iUnit + 1
+              read(lineStore(jLine), *) atomArray(nMol, iUnit)
+            enddo
+          case("bonds")
+            call FindCommandBlock(iLine, lineStore, "end_bonds" ,lineBuffer)
+            read(lineStore(iLine),*) dummy, intValue
+            nBonds(nMol) = intValue
+            iUnit = 0
+            do jLine = iLine+1, iLine+lineBuffer-1
+              iUnit = iUnit + 1
+              read(lineStore(jLine), *) bondArray(nMol, iUnit)%bondType, (bondArray(nMol, iUnit)%bondMembr(j), j=1,2)
+            enddo
+          case("angles")
+            call FindCommandBlock(iLine, lineStore, "end_angles" ,lineBuffer)
+            read(lineStore(iLine),*) dummy, intValue
+            nAngles(nMol) = intValue
+            iUnit = 0
+            do jLine = iLine+1, iLine+lineBuffer-1
+              iUnit = iUnit + 1
+              read(lineStore(jLine), *) bendArray(nMol, iUnit)%bendType, (bendArray(nMol, iUnit)%bendMembr(j), j=1,3)
+            enddo
+          case("torsional")
+            call FindCommandBlock(iLine, lineStore, "end_torsional" ,lineBuffer)
+            read(lineStore(iLine),*) dummy, intValue
+            nTorsional(nMol) = intValue
+            iUnit = 0
+            do jLine = iLine+1, iLine+lineBuffer-1
+              iUnit = iUnit + 1
+              read(lineStore(jLine), *) torsArray(nMol, iUnit)%torsType, (torsArray(nMol, iUnit)%torsMembr(j), j=1,4)
+            enddo
+          case("nonbonded")
+            call FindCommandBlock(iLine, lineStore, "end_nonbonded" ,lineBuffer)
+            read(lineStore(iLine),*) dummy, intValue
+            nIntraNonBond(nMol) = intValue
+            iUnit = 0
+            do jLine = iLine+1, iLine+lineBuffer-1
+              iUnit = iUnit + 1
+              read(lineStore(jLine), *) (nonBondArray(nMol, iUnit)%nonMembr(j), j=1,2)
+            enddo
+        end select
+      enddo
+
+
+      end subroutine
 !========================================================
       subroutine FindCommandBlock(iLine, lineStore, endCommand ,lineBuffer)
       implicit none
@@ -269,6 +384,7 @@
 
       if(.not. found) then
         write(*,*) "ERROR! A command block was opened in the input script, but no closing END statement found!"
+        write(*,*) lineStore(iLine)
         stop
       endif
 
@@ -410,6 +526,8 @@
       ALLOCATE (r_min_sq(1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (r_min_tab(1:nAtomTypes, 1:nAtomTypes), STAT = AllocateStatus) 
 
+ 
+
       ALLOCATE (ep_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (sig_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (q_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
@@ -417,6 +535,8 @@
       ep_tab = 0d0
       sig_tab = 0d0       
       q_tab = 0d0
+      r_min = 0d0
+      r_min_sq = 0d0
       r_min_tab = 0d0
 
       ALLOCATE (totalMass(1:nMolTypes), STAT = AllocateStatus)
@@ -428,6 +548,12 @@
       ALLOCATE (nTorsional(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (nImproper(1:nMolTypes), STAT = AllocateStatus)
 
+      nAtoms = 0
+      nIntraNonBond = 0
+      nBonds = 0
+      nAngles = 0
+      nTorsional = 0
+      nImproper = 0
 
       ALLOCATE (acptTrans(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (atmpTrans(1:nMolTypes), STAT = AllocateStatus)
@@ -488,6 +614,47 @@
         write(35,*) "---------------------------------------------"
         flush(35)
       endif
+
+
+      end subroutine
+!===================================================================================
+      subroutine LJ_SetFlags
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_LJ_Q
+      use PairStorage, only: SetStorageFlags
+      implicit none
+
+      call IntegrateBendAngleProb
+      call SetStorageFlags(q_tab) 
+
+      end subroutine
+!===================================================================================
+      subroutine FindMax(lineStore, targetCommand, commandMax)
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_LJ_Q
+      implicit none
+      character(len=100), intent(in) :: lineStore(:)
+      character(len=*), intent(in) :: targetCommand
+      integer, intent(out) :: commandMax
+
+      integer :: intValue
+      character(len=25) :: curCommand, dummy
+
+      integer :: iLine, nLines, lineStat
+
+      nLines = size(lineStore)
+      commandMax = 0
+      do iLine = 1, nLines
+        call GetCommand(lineStore(iLine), curCommand, lineStat)
+        if(trim(adjustl(curCommand)) .eq. trim(adjustl(targetCommand))) then
+          read(lineStore(iLine), *) dummy, intValue
+          commandMax = max(commandMax, intValue)
+        endif
+      enddo
+
+      
 
 
       end subroutine

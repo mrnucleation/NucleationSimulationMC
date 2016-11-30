@@ -113,6 +113,7 @@
       end subroutine
 !======================================================
       subroutine ScriptInput_MCMove(lines)
+      use AcceptRates
       use AVBMC_Module, only: swapProb
       use SimParameters
       implicit none
@@ -160,6 +161,8 @@
         case("avbmc")
           mcMoveArray(iMoves) % moveFunction => AVBMC
           moveName(iMoves) = "AVBMC"
+          ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStatus)
+          ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStatus)
           avbmcUsed = .true.
         case("cbmc")
           mcMoveArray(iMoves) % moveFunction => CBMC

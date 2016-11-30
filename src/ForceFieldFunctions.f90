@@ -102,7 +102,6 @@
       real(dp),allocatable :: totalMass(:)
       
       integer(kind=atomIntType), allocatable :: atomArray(:,:)
-!      integer, allocatable :: atomArray(:,:)
       type(NonBondedIndex), allocatable :: nonBondArray(:,:)      
       type(BondIndex), allocatable :: bondArray(:,:)
       type(BendAngleIndex), allocatable :: bendArray(:,:)
@@ -113,36 +112,6 @@
 !      character(len=66), allocatable :: atomUseByBend(:,:)      
 !      character(len=66), allocatable :: atomUseByTors(:,:)
 !      character(len=66), allocatable :: atomUseByImprop(:,:)
-      
-      end module
-!==============================================================
-      module ForceFieldPara_LJ_Q
-      use ForceFieldFunctions
-      use ForceFieldVariableType
-      use VarPrecision
-
-      procedure (MixRule), pointer :: ep_func => GeoMean_MixingFunc
-      procedure (MixRule), pointer :: sig_func => Mean_MixingFunc
-
-      real(dp), allocatable :: ep_tab(:,:),sig_tab(:,:)
-      real(dp), allocatable :: q_tab(:,:)       
-      
-      end module
-!==============================================================
-      module ForceFieldPara_Pedone
-      use VarPrecision
-
-      type AtomDefPedone
-        character(len=5) :: Symb
-        real(dp) :: repul, rEq, q, alpha, delta, mass
-      end type
-
-      logical :: implcSolvent
-
-      type(AtomDefPedone), allocatable :: pedoneData(:)
-      real(dp), allocatable :: repul_tab(:,:), rEq_tab(:,:)
-      real(dp), allocatable :: q_tab(:,:), alpha_Tab(:,:), D_Tab(:,:)
-      real(dp), allocatable :: bornRad(:)
       
       end module
 !==============================================================
@@ -284,4 +253,34 @@
 !       !----------------------------------------------------------------       
       end module
 
+!==============================================================
+      module ForceFieldPara_LJ_Q
+      use ForceFieldFunctions
+      use ForceFieldVariableType
+      use VarPrecision
+
+      procedure (MixRule), pointer :: ep_func => GeoMean_MixingFunc
+      procedure (MixRule), pointer :: sig_func => Mean_MixingFunc
+
+      real(dp), allocatable :: ep_tab(:,:),sig_tab(:,:)
+      real(dp), allocatable :: q_tab(:,:)       
+      
+      end module
+!==============================================================
+      module ForceFieldPara_Pedone
+      use VarPrecision
+
+      type AtomDefPedone
+        character(len=5) :: Symb
+        real(dp) :: repul, rEq, q, alpha, delta, mass
+      end type
+
+      logical :: implcSolvent
+
+      type(AtomDefPedone), allocatable :: pedoneData(:)
+      real(dp), allocatable :: repul_tab(:,:), rEq_tab(:,:)
+      real(dp), allocatable :: q_tab(:,:), alpha_Tab(:,:), D_Tab(:,:)
+      real(dp), allocatable :: bornRad(:)
+      
+      end module
 !==============================================================
