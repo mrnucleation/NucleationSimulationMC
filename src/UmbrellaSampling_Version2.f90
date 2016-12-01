@@ -55,7 +55,7 @@
     real(dp), allocatable :: UHistTotal(:)
     real(dp), allocatable :: UBinSize(:)
     real(dp), allocatable :: varValues(:)
-    character(len=20), allocatable :: inputFile
+    character(len=50):: inputFile
     character(len=10), allocatable :: outputFormat(:)
     character(len=100) :: screenFormat
     type(BiasVariablePointer), allocatable :: biasvar(:)
@@ -77,6 +77,7 @@
     public :: GetUmbrellaBias_SwapIn, GetUmbrellaBias_SwapOut, ScreenOutputUmbrella, screenFormat
     public :: CheckInitialValues, energyAnalytics, OutputUmbrellaAnalytics
     public :: ScriptInput_Umbrella
+    public :: inputFile
 !==========================================================================================
     contains
 !==========================================================================================
@@ -342,6 +343,10 @@
 
      allocate( refVals(1:nBiasVariables) )
 
+!     Read the file name for the initial Umbrealla Sampling Bias
+     read(inputLines(1), *) labelField, inputFile
+
+
      nDispFunc = 0
      nSwapInFunc = 0
      nSwapOutFunc = 0
@@ -544,7 +549,8 @@
     real(dp), allocatable :: varValue(:)
     real(dp) :: curBias
 
-    open(unit=80, file="TempIn.txt")
+!    open(unit=80, file="TempIn.txt")
+    open(unit=80, file=trim(adjustl(inputFile)) )
     allocate(varValue(1:nBiasVariables), STAT = AllocateStatus )
     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 

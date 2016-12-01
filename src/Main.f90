@@ -209,7 +209,7 @@
       write(nout,*) "MPI threads:", p_size
       write(nout,*) "Thread ID:", myid
 !      write(nout,*) "OpenMP threads:", omp_get_max_threads()
-      write(nout,*) "Random Seed:", p_size*seed + myid
+      write(nout,*) "Random Seed:", seed
       write(nout,*) "Number of Molecule Types:", nMolTypes
       write(nout,*) "Number of Initial Particles:", NPART
       write(nout,*) "Minimum Number of Particles:", NMIN

@@ -13,7 +13,7 @@
 !     !----------------------------------------------------------
         real(dp) function FindEngUnit(unitName)
         implicit none 
-        character(len=10), intent(in) :: unitName       
+        character(len=*), intent(in) :: unitName       
         
         
         select case(trim(adjustl(unitName)))
@@ -42,7 +42,7 @@
 !    !----------------------------------------------------------
         real(dp) function FindLengthUnit(unitName)
         implicit none 
-        character(len=10) :: unitName       
+        character(len=*) :: unitName       
         
         select case(trim(adjustl(unitName)))
           case("nm")
@@ -64,7 +64,7 @@
         real(dp) function FindAngularUnit(unitName)
         use Constants         
         implicit none 
-        character(len=10), intent(in) :: unitName       
+        character(len=*), intent(in) :: unitName       
         
         select case(trim(adjustl(unitName)))
           case("deg")

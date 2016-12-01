@@ -20,7 +20,7 @@
       logical, intent(OUT)  :: screenEcho
       integer, intent(OUT) :: seed
 !      integer(kind=8), intent(OUT) :: ncycle,nmoves
-      integer :: i, ii, j, nRawLines
+      integer :: i, ii, j, nRawLines, nArgs
       integer :: iLine, lineStat, AllocateStat
       integer :: nLines, nForceLines, lineBuffer
       integer, allocatable :: lineNumber(:), ffLineNumber(:)
@@ -32,12 +32,19 @@
       character(len=50) :: forcefieldFile
       
 
-!     This first command block cleans the file of comments      
+    
+!      Get the filename from the command line. 
+      nArgs=command_argument_count()
+      if(nArgs > 1) then
+        stop "This program only takes one argument"
+      endif
+      call get_command_argument(1, fileName)
 
-      fileName = "ScriptTest.dat"
+!      fileName = "ScriptTest.dat"
       call LoadFile(lineStore, nLines, lineNumber, fileName)
 !      This block counts the number of lines in the input file to determine how large the lineStorage array needs to be.
 
+      call setDefaults(seed, screenEcho)
 
       lineBuffer = 0
       do iLine = 1, nLines
@@ -80,7 +87,10 @@
           call SetForcefieldType(command2)
           fieldTypeSet = .true.
         case("boundary")
-!          read(lineStore(iLine),*) dummy, command2
+          if(nMolTypes .eq. 0 ) then
+            write(*,*) "INPUT ERROR! Boundary is called before the number of molecule types has been assigned"
+            stop
+          endif
           call FindCommandBlock(iLine, lineStore, "end_boundary", lineBuffer)
           allocate( Eng_Critr(1:nMolTypes,1:nMolTypes), STAT = AllocateStat )
           ii = 0 
@@ -89,7 +99,10 @@
             read(lineStore(i),*) (Eng_Critr(ii,j),j=1,nMolTypes)
           enddo 
         case("biasalpha")
-!          read(lineStore(iLine),*) dummy, command2
+          if(nMolTypes .eq. 0 ) then
+            write(*,*) "INPUT ERROR! BiasAlpha is called before the number of molecule types has been assigned"
+            stop
+          endif
           call FindCommandBlock(iLine, lineStore, "end_biasalpha", lineBuffer)
           allocate(biasAlpha(1:nMolTypes,1:nMolTypes), stat = AllocateStat)      
           ii = 0
@@ -161,7 +174,7 @@
           nCycle = nint(realValue)
         case("gasdensity")        
           if(.not. allocated(gas_dens)) then
-            write(*,*) "INPUT ERROR! GasDensity is called before the number of molecular types has been assigned"
+            write(*,*) "INPUT ERROR! GasDensity is called before the number of molecule types has been assigned"
             stop
           endif
           read(line,*) dummy, command, (gas_dens(j), j=1, nMolTypes)  
@@ -185,13 +198,13 @@
           biasAlpha = 0E0_dp
         case("molmin")        
           if(.not. allocated(NMIN)) then
-            write(*,*) "INPUT ERROR! molmin is called before the number of molecular types has been assigned"
+            write(*,*) "INPUT ERROR! molmin is called before the number of molecule types has been assigned"
             stop
           endif
           read(line,*) dummy, command, (NMIN(j), j=1, nMolTypes)    
         case("molmax")        
           if(.not. allocated(NMAX)) then
-            write(*,*) "INPUT ERROR! molmax is called before the number of molecular types has been assigned"
+            write(*,*) "INPUT ERROR! molmax is called before the number of molecule types has been assigned"
             stop
           endif
           read(line,*) dummy, command, (NMAX(j), j=1, nMolTypes)
@@ -200,7 +213,7 @@
 !          ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStat)
         case("rosentrials")        
           if(.not. allocated(nRosenTrials)) then
-            write(*,*) "INPUT ERROR! molmax is called before the number of molecular types has been assigned"
+            write(*,*) "INPUT ERROR! molmax is called before the number of molecule types has been assigned"
             stop
           endif
           read(line,*) dummy, command, (nRosenTrials(j), j=1, nMolTypes)
@@ -215,7 +228,12 @@
           screenEcho = logicValue
         case("rng_seed")
           read(line,*) dummy, command, intValue
-          seed = intValue
+          if(seed .gt. 0) then
+            seed = intValue
+          else
+            call system_clock(intValue)
+            seed = mod(intValue,10000)
+          endif
         case("softcutoff")
           read(line,*) dummy, command, realValue
           softCutoff = realValue
@@ -258,6 +276,51 @@
 
      
       end subroutine   
+!========================================================            
+      subroutine setDefaults(seed, screenEcho)
+      use VarPrecision
+      use SimParameters
+      use CBMC_Variables
+      use Coords
+      use EnergyTables
+      use WHAM_Module
+      use AcceptRates
+      use Units
+      implicit none
+      logical, intent(out) :: screenEcho
+      integer, intent(out) :: seed
+
+      seed = -1
+
+      Dist_Critr = 0E0_dp
+      Dist_Critr_sq = 0E0_dp
+      nCycle = 0E0_dp
+      ncycle2 = 0E0_dp
+      maxMol = 0E0_dp
+
+      maxRosenTrial = 1
+    
+      temperature = 0E0_dp
+      beta = 0E0_dp
+
+      screenEcho = .true.
+      softCutoff = 100E0_dp
+
+      outFreq_Screen = 1000
+      outFreq_Traj = 1000  
+      multipleInput = .false.
+
+      outputEConv = FindEngUnit("kb")
+      outputLenConv = FindLengthUnit("ang")
+      useWHAM = .false.
+      intervalWHAM = 10000
+      maxSelfConsist = 100
+      whamEstInterval = -1
+      equilInterval = 10
+      tolLimit = 1E-5_dp
+
+     
+      end subroutine
 !========================================================            
       subroutine variableSafetyCheck
       implicit none
