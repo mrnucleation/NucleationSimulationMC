@@ -259,9 +259,8 @@
       use ForceFieldVariableType
       use VarPrecision
 
-      procedure (MixRule), pointer :: ep_func => GeoMean_MixingFunc
-      procedure (MixRule), pointer :: sig_func => Mean_MixingFunc
-
+      procedure (MixRule), pointer :: ep_func => null()
+      procedure (MixRule), pointer :: sig_func => null()
       real(dp), allocatable :: ep_tab(:,:),sig_tab(:,:)
       real(dp), allocatable :: q_tab(:,:)       
       
@@ -271,6 +270,7 @@
       use VarPrecision
 
       type AtomDefPedone
+        character(len=10) :: atmName
         character(len=5) :: Symb
         real(dp) :: repul, rEq, q, alpha, delta, mass
       end type

@@ -60,7 +60,6 @@
       case("lj_q")
         write(nout,*) "Forcefield Type: Standard Lennard-Jones w/ Eletrostatic"
         ForceFieldName = "LJ_Q"
-!        call ReadForcefield_LJ_Q
         Detailed_ECalc => Detailed_EnergyCalc_LJ_Q
         Shift_ECalc => Shift_EnergyCalc_LJ_Q
         SwapIn_ECalc => SwapIn_EnergyCalc_LJ_Q
@@ -75,7 +74,6 @@
       case("pedone")
         write(nout,*) "Forcefield Type: Pedone"
         ForceFieldName = "Pedone"
-!        call ReadForcefield_Pedone
         Detailed_ECalc => Detailed_EnergyCalc_Pedone
         Shift_ECalc => Shift_EnergyCalc_Pedone
         SwapIn_ECalc => SwapIn_EnergyCalc_Pedone
@@ -670,6 +668,76 @@
         write(35,*) "---------------------------------------------"
         flush(35)
       endif
+
+      ep_func => GeoMean_MixingFunc
+      sig_func => Mean_MixingFunc
+
+      end subroutine
+
+!===================================================================================
+      subroutine Read_Pedone(lineStore)
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_Pedone
+      implicit none
+      character(len=100), intent(in) :: lineStore(:)
+      integer :: i, j, iLine, nLines
+
+       nLines = size(lineStore)
+
+      i = 0
+      do iLine = 2, nLines-1
+        i = i + 1
+        read(lineStore(iLine),*) pedoneData(i)%atmName, pedoneData(i)%Symb, pedoneData(i)%repul, pedoneData(i)%rEq, &
+                                 pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass
+      enddo
+      
+      do i = 1, nMolTypes
+        if(echoInput) then
+          write(35,*) pedoneData(i)%atmName, pedoneData(i)%Symb, pedoneData(i)%repul, pedoneData(i)%rEq, &
+                    pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass
+        endif
+        pedoneData(i)%repul = pedoneData(i)%repul * convEng
+        pedoneData(i)%delta = pedoneData(i)%delta * convEng
+        pedoneData(i)%rEq = pedoneData(i)%rEq * convDist   
+      enddo
+
+      q_tab = 0d0
+      do i = 1,nAtomTypes
+        do j = i,nAtomTypes
+          q_tab(i,j) = pedoneData(i)%q * pedoneData(j)%q * 1.671d5
+          q_tab(j,i) = q_tab(i,j)
+          if(echoInput) then
+             write(35,*) i, j, q_tab(i,j) 
+           endif          
+        enddo
+      enddo
+ 
+      repul_tab = 0d0
+      alpha_Tab = 0d0
+      rEq_tab = 0d0
+      D_Tab = 0d0
+      do i = 1,nAtomTypes
+        repul_tab(i,1) = pedoneData(i)%repul
+        alpha_Tab(i,1) = pedoneData(i)%alpha
+        rEq_tab(i,1) = pedoneData(i)%rEq
+        D_Tab(i,1) = pedoneData(i)%delta
+
+        repul_tab(1,i) = repul_tab(i,1)
+        alpha_Tab(1,i) = alpha_Tab(i,1)
+        rEq_tab(1,i) = rEq_tab(i,1)
+        D_Tab(1,i) = D_Tab(i,1)
+         
+      enddo
+
+   
+      if(echoInput) then
+        do i = 1, nAtomTypes 
+          do j = 1, nAtomTypes 
+            write(35,*) i, j, repul_tab(i,j), alpha_Tab(i,j), rEq_tab(i,j), D_Tab(i,j), q_tab(i,j)
+          enddo
+        enddo
+      endif 
 
 
       end subroutine
