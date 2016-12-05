@@ -84,7 +84,7 @@
         Rosen_Mol_Old => Rosen_BoltzWeight_Pedone_Old
         Quick_Nei_ECalc => QuickNei_ECalc_Inter_Pedone
         boundaryFunction => Bound_PedoneChargeBalance
-!        commonFunction => Allocate_Pedone
+        commonFunction => Allocate_Pedone
 !        interFunction => Read_Pedone
       case("custompairwise")
       case default
@@ -572,6 +572,62 @@
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
   
       end subroutine
+
+!================================================================ 
+      subroutine Allocate_Pedone
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_Pedone
+      use AcceptRates
+      implicit none
+      integer :: AllocateStatus
+      
+      ALLOCATE (pedoneData(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atomData(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (nAtoms(1:nMolTypes), STAT = AllocateStatus)
+
+      nAtoms = 1
+
+      ALLOCATE (r_min(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_sq(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_tab(1:nMolTypes, 1:nMolTypes), STAT = AllocateStatus) 
+
+      ALLOCATE (alpha_Tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (D_Tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (repul_tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (rEq_tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (q_tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+
+      ALLOCATE (totalMass(1:nMolTypes), STAT = AllocateStatus)
+     
+      repul_tab = 0d0
+      D_Tab = 0d0       
+      alpha_Tab = 0d0   
+      rEq_tab = 0d0
+      q_tab = 0d0
+      r_min_tab = 0d0
+
+      ALLOCATE (acptTrans(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpTrans(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptRot(1:nMolTypes),   STAT = AllocateStatus)
+      ALLOCATE (atmpRot(1:nMolTypes),  STAT = AllocateStatus)
+      ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptSwapOut(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpSwapOut(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStatus)
+      ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStatus)
+
+      ALLOCATE (max_dist(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (max_dist_single(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (max_rot(1:nMolTypes), STAT = AllocateStatus) 
+
+      
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+  
+      end subroutine
+
 !===================================================================================
       subroutine Read_LJ_Q(lineStore)
       use SimParameters
