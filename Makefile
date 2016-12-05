@@ -8,14 +8,14 @@ FC := /opt/openmpi/bin/mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
-OPTIMIZE_FLAGS := -O3
+#OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
-#DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
+DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check all -traceback -g
 #DEBUGFLAGS += -pg 
@@ -33,6 +33,8 @@ MODS := $(CUR_DIR)
 OBJ := $(CUR_DIR)/objects
 TRIAL := $(CUR_DIR)/Trials
 ESUB := $(CUR_DIR)/src/EnergyFunctions
+LJ_Q := $(CUR_DIR)/src/EnergyFunctions/LJ_Q
+PEDONE := $(CUR_DIR)/src/EnergyFunctions/Pedone
 CBMC := $(CUR_DIR)/src/CBMC_Functions
 SWAP := $(CUR_DIR)/src/SwapFunctions
 ANALYSIS_SUB := $(CUR_DIR)/src/AnalysisFunctions
@@ -53,47 +55,32 @@ ANALYSIS_SUB := $(CUR_DIR)/src/AnalysisFunctions
 # ====================================
 #        Source Files
 # ====================================
-MOD_FILES := $(MODS)/acceptrates.mod\
-		$(MODS)/bendingfunctions.mod\
-		$(MODS)/bondstretchfunctions.mod\
-		$(MODS)/cbmc_variables.mod\
-		$(MODS)/constants.mod\
-		$(MODS)/coordinatetypes.mod\
-		$(MODS)/coords.mod\
-		$(MODS)/energyCriteria.mod\
-		$(MODS)/forcefield.mod\
-		$(MODS)/forcefieldfunctions.mod\
-		$(MODS)/forcefieldvariabletype.mod\
-		$(MODS)/improperanglefunctions.mod\
-		$(MODS)/indexingfunctions.mod\
-		$(MODS)/interenergy_lj_electro.mod\
-		$(MODS)/intraenergy_lj_electro.mod\
-		$(MODS)/parallelvar.mod\
-		$(MODS)/simparameters.mod\
-		$(MODS)/torsionalfunctions.mod\
-		$(MODS)/umbrellafunctions.mod\
-		$(MODS)/units.mod
+
 MOD_SRC := $(SRC)/VariablePrecision.f90\
  		$(SRC)/Common.f90 \
  		$(SRC)/Units.f90 \
  		$(SRC)/ForceFieldFunctions.f90\
  		$(SRC)/DistanceStorage.f90
-SRC_ENERGY := $(ESUB)/Bending_Functions.f90 \
-            $(ESUB)/BondStretch_Functions.f90 \
-            $(ESUB)/LJ_Electro_Functions_Experimental.f90 \
-            $(ESUB)/Pedone_Functions.f90 \
-            $(ESUB)/Intra_LJ_Electro_Functions.f90\
-            $(ESUB)/Torsional_Functions.f90 \
-            $(ESUB)/Improper_Functions.f90 \
-            $(ESUB)/Rosen_Boltz_Functions.f90\
-            $(ESUB)/Rosen_Pedone_Functions.f90\
-            $(ESUB)/EnergyInterfaceFunctions_LJ_Experimental.f90\
-            $(ESUB)/EnergyInterfaceFunctions_Pedone.f90\
+SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
+            $(LJ_Q)/BondStretch_Functions.f90 \
+            $(LJ_Q)/LJ_Electro_Functions_Experimental.f90 \
+            $(LJ_Q)/Intra_LJ_Electro_Functions.f90\
+            $(LJ_Q)/Torsional_Functions.f90 \
+            $(LJ_Q)/Improper_Functions.f90 \
+            $(LJ_Q)/Rosen_Boltz_Functions.f90\
+            $(LJ_Q)/EnergyInterfaceFunctions_LJ_Experimental.f90\
+            $(PEDONE)/Pedone_Functions_Experimental.f90\
+            $(PEDONE)/Rosen_Pedone_Functions.f90\
+            $(PEDONE)/EnergyInterfaceFunctions_Pedone_Experimental.f90\
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
 SRC_BIAS := $(SRC)/UmbrellaSampling_Version2.f90\
             $(SRC)/WHAM_Version2.f90
+SRC_INPUT := $(SRC)/ScriptInput.f90\
+		$(SRC)/ScriptForceField.f90\
+ 		$(SRC)/Input_Ultility.f90\
+		$(SRC)/ReadInput.f90
 SRC_MAIN := $(SRC)/BasicMovement.f90\
             $(SRC)/MCMove_Module.f90\
             $(SRC)/DebugFunctions.f90\
@@ -101,14 +88,10 @@ SRC_MAIN := $(SRC)/BasicMovement.f90\
  		$(SRC)/RandomNew.f90\
  		$(SRC)/RandomTools.f90\
  		$(SRC)/OutputFunctions.f90\
- 		$(SRC)/Input_Ultility.f90\
- 		$(SRC)/UmbrellaSampling.f\
+ 		$(SRC)/UmbrellaSampling.f90\
  		$(SRC)/AngleIntegration.f90\
  		$(SRC)/CoordinateFunctions.f90\
- 		$(SRC)/SelfAdaptiveDistribution.f90\
-		$(SRC)/ScriptInput.f90\
-		$(SRC)/ScriptForceField.f90\
-		$(SRC)/ReadInput.f90
+ 		$(SRC)/SelfAdaptiveDistribution.f90
 SRC_MAIN2:=  $(SRC)/ETableFunctions.f90
 SRC_CBMC := $(CBMC)/CBMC.f90\
             $(CBMC)/CBMC_Initialize.f90\
@@ -127,37 +110,26 @@ SRC_ANALYSIS := $(ANALYSIS_SUB)/MiscelaniousVariables.f90\
             $(ANALYSIS_SUB)/AnalysisMain.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
 #SRC_SWAP := $(SWAP)/AVBMC_Uniform.f90
+
 # ====================================
 #        Object Files
 # ====================================
-OBJ_TEMP:=$(patsubst $(SRC)/%.f, $(OBJ)/%.o, $(SRC_MAIN))
-OBJ_MAIN:=$(patsubst $(SRC)/%.f90, $(OBJ)/%.o, $(OBJ_TEMP))
+OBJ_MAIN:=$(patsubst $(SRC)/%.f90, $(OBJ)/%.o, $(SRC_MAIN))
+OBJ_MAIN2:=$(patsubst $(SRC)/%.f90, $(OBJ)/%.o, $(SRC_MAIN2))
 
-OBJ_TEMP:=$(patsubst $(SRC)/%.f, $(OBJ)/%.o, $(SRC_MAIN2))
-OBJ_MAIN2:=$(patsubst $(SRC)/%.f90, $(OBJ)/%.o, $(OBJ_TEMP))
-
-OBJ_TEMP:=$(patsubst $(ESUB)/%.f,$(OBJ)/%.o,$(SRC_ENERGY))
+OBJ_TEMP:=$(patsubst $(PEDONE)/%.f90,$(OBJ)/%.o,$(SRC_ENERGY))
+OBJ_TEMP:=$(patsubst $(LJ_Q)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 OBJ_ENERGY:=$(patsubst $(ESUB)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 
-OBJ_TEMP:=$(patsubst $(SRC)/%.f,$(OBJ)/%.o,$(MOD_SRC))
-OBJ_MOD:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
+OBJ_MOD:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(MOD_SRC))
+OBJ_CBMC:=$(patsubst $(CBMC)/%.f90,$(OBJ)/%.o,$(SRC_CBMC))
+OBJ_INPUT:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(SRC_INPUT))
+OBJ_BIAS:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(SRC_BIAS))
+OBJ_SWAP:=$(patsubst $(SWAP)/%.f90,$(OBJ)/%.o,$(SRC_SWAP))
+OBJ_CRIT:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(SRC_CRIT))
+OBJ_ANALYSIS:=$(patsubst $(ANALYSIS_SUB)/%.f90,$(OBJ)/%.o,$(SRC_ANALYSIS))
 
-OBJ_TEMP:=$(patsubst $(CBMC)/%.f, $(OBJ)/%.o, $(SRC_CBMC))
-OBJ_CBMC:=$(patsubst $(CBMC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
-
-OBJ_TEMP:=$(patsubst $(SRC)/%.f, $(OBJ)/%.o, $(SRC_BIAS))
-OBJ_BIAS:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
-
-OBJ_TEMP:=$(patsubst $(SWAP)/%.f,$(OBJ)/%.o,$(SRC_SWAP))
-OBJ_SWAP:=$(patsubst $(SWAP)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
-
-OBJ_TEMP:=$(patsubst $(SRC)/%.f,$(OBJ)/%.o,$(SRC_CRIT))
-OBJ_CRIT:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
-
-OBJ_TEMP:=$(patsubst $(ANALYSIS_SUB)/%.f,$(OBJ)/%.o,$(SRC_ANALYSIS))
-OBJ_ANALYSIS:=$(patsubst $(ANALYSIS_SUB)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
-
-OBJ_COMPLETE:= $(OBJ_CRIT) $(OBJ_ANALYSIS) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_BIAS) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
+OBJ_COMPLETE:= $(OBJ_CRIT) $(OBJ_ENERGY) $(OBJ_BIAS) $(OBJ_INPUT) $(OBJ_ANALYSIS) $(OBJ_MAIN2) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
 # ====================================
 #        Compile Commands
 # ====================================
@@ -179,6 +151,14 @@ OBJ_COMPLETE:= $(OBJ_CRIT) $(OBJ_ANALYSIS) $(OBJ_ENERGY) $(OBJ_MAIN2) $(OBJ_BIAS
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 
 $(OBJ)/%.o: $(ESUB)/%.f90
+		@echo Creating $<
+		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
+
+$(OBJ)/%.o: $(PEDONE)/%.f90
+		@echo Creating $<
+		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
+
+$(OBJ)/%.o: $(LJ_Q)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
         
@@ -234,7 +214,7 @@ createMods: $(MOD_SRC)
 		@echo  	
 
        
-generalNucleation: $(OBJ_COMPLETE) $(OBJ_MOD)
+generalNucleation: $(OBJ_MOD)  $(OBJ_COMPLETE) 
 		@echo =============================================
 		@echo     Compiling and Linking Source Files
 		@echo =============================================	
@@ -274,18 +254,45 @@ removeExec:
 # ====================================
 #        Dependencies
 # ====================================
-$(OBJ_COMPLETE): $(OBJ_MOD)
 $(OBJ)/Common.o: $(OBJ)/VariablePrecision.o $(OBJ)/Units.o
+
 $(OBJ)/ForceFieldFunctions.o: $(OBJ)/Common.o $(OBJ)/VariablePrecision.o
+
 $(OBJ)/Units.o: $(OBJ)/VariablePrecision.o
 
-$(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o
+$(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o $(OBJ)/SimplePairDistance.o $(OBJ_ANALYSIS)
+
 $(OBJ)/WHAM_Version2.o: $(OBJ)/SwapBoundaries.o $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o
+
 $(OBJ)/CBMC_ConfigGen.o: $(OBJ)/CoordinateFunctions.o
-$(OBJ)/ClusterCriteria_Energy.o: $(OBJ)/Common.o
+
+$(OBJ)/ClusterCriteria_Energy.o: $(OBJ)/Common.o $(OBJ)/ForceFieldFunctions.o
+
 $(OBJ)/CoordinateFunctions.o: $(OBJ)/Common.o $(OBJ)/RandomTools.o
-$(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o $(OBJ)/RadialDensity.o $(OBJ)/Common.o
+
+$(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o            $(OBJ)/RadialDensity.o $(OBJ)/Common.o
+
+$(OBJ)/EnergyPointers.o: $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o $(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o
+
+$(OBJ)/CBMC.o: $(OBJ)/Common.o $(OBJ_ENERGY) $(OBJ)/UmbrellaSampling_Version2.o 
+
+$(OBJ)/SimplePairDistance.o: $(OBJ)/DistanceStorage.o $(OBJ)/MiscelaniousVariables.o 
+
+$(OBJ)/MCMove_Module.o: $(OBJ_ENERGY) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ)/BasicMovement.o
+
+$(OBJ)/Exchange.o: $(OBJ)/ETableFunctions.o
+
+$(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o: $(OBJ)/LJ_Electro_Functions_Experimental.o $(OBJ)/Rosen_Boltz_Functions.o $(OBJ)/Bending_Functions.o $(OBJ)/BondStretch_Functions.o $(OBJ)/Torsional_Functions.o $(OBJ)/Intra_LJ_Electro_Functions.o $(OBJ)/Improper_Functions.o
+
+$(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o: $(OBJ)/Pedone_Functions_Experimental.o $(OBJ)/Rosen_Pedone_Functions.o
+
+$(OBJ)/Pedone_Functions_Experimental.o: $(OBJ)/DistanceStorage.o
+
 $(OBJ)/MiscelaniousVariables.o: $(OBJ)/Common.o
+
 $(OBJ)/Main.o: $(OBJ)/Common.o $(OBJ)/SelfAdaptiveDistribution.o
+
 $(OBJ)/ScriptInput.o: $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o $(OBJ)/AnalysisMain.o $(OBJ)/MCMove_Module.o $(OBJ)/ScriptForceField.o
+
 $(OBJ)/ScriptForceField.o: $(OBJ)/Common.o 
+

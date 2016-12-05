@@ -26,6 +26,7 @@
       use EnergyCriteria
       use DistanceCriteria      
       use SimParameters
+      use PairStorage, only: CalcAllDistPairs, SetStorageFlags
       implicit none
       
       logical , intent(inout) :: rejMove
@@ -72,6 +73,7 @@
       use EnergyCriteria
       use EnergyTables      
       use InterEnergy_Pedone
+      use PairStorage
       implicit none
       
       logical, intent(in), optional :: useInter
@@ -115,7 +117,7 @@
           endif
           dETable = 0d0
           PairList = 0d0
-          call Shift_ECalc_Inter(E_Inter,disp, PairList, dETable, rejMove)
+          call Shift_ECalc_Inter(E_Inter,disp,newDist, PairList, dETable, rejMove)
 
           if(rejMove) then
             return
@@ -145,12 +147,12 @@
       end subroutine
 !=============================================================================      
       subroutine SwapIn_EnergyCalc_Pedone(E_Inter, E_Intra, PairList, dETable, rejMove, useInter)
-      use InterEnergy_Pedone
-      use EnergyCriteria
-      use EnergyTables        
- 
       use Coords
       use CBMC_Variables      
+      use EnergyCriteria
+      use EnergyTables        
+      use InterEnergy_Pedone
+      use PairStorage
       implicit none
       
       logical, intent(out) :: rejMove
@@ -175,6 +177,10 @@
       E_Bend_Diff = 0d0
       E_Tors_Diff = 0d0
 
+      call CalcSwapInDistPairs(rejMove)
+      if(rejMove) then
+        return
+      endif
       call NewMol_ECalc_Inter(E_Inter, PairList, dETable, rejMove)
       if(rejMove) then
         return

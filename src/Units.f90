@@ -34,7 +34,8 @@
           case("kb")
                 FindEngUnit = 1d0
           case default
-            write(6,*) "Error! Invalid Energy Unit Type!"
+            write(*,*) "Error! Invalid Energy Unit Type!"
+            write(*,*) unitName
             stop
         end select
         
@@ -54,7 +55,8 @@
           case("sigma")
                 FindLengthUnit = 1d0                  
           case default
-            write(6,*) "Error! Invalid Length Unit Type!"
+            write(*,*) "Error! Invalid Length Unit Type!"
+            write(*,*) unitName
             stop
         end select
  
@@ -80,7 +82,8 @@
           case("radians")
                 FindAngularUnit = 1d0                 
           case default
-            write(6,*) "Error! Invalid Angular Unit Type!"
+            write(*,*) "Error! Invalid Angular Unit Type!"
+            write(*,*) unitName
             stop
         end select
  

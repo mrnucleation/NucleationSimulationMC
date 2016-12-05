@@ -25,9 +25,9 @@
       procedure (CommonSub), pointer :: commonFunction => NULL()
       procedure (CommonSub), pointer :: FFSpecificFlags => NULL()
       procedure (interSub), pointer :: interFunction => NULL()
-      real(dp) :: convEng
-      real(dp) :: convDist
-      real(dp) :: convAng
+      real(dp) :: convEng = 1d0
+      real(dp) :: convDist = 1d0
+      real(dp) :: convAng = 1d0
 
 
       public :: SetForcefieldType, ScriptForcefield, fieldTypeSet
@@ -83,7 +83,8 @@
         Quick_Nei_ECalc => QuickNei_ECalc_Inter_Pedone
         boundaryFunction => Bound_PedoneChargeBalance
         commonFunction => Allocate_Pedone
-!        interFunction => Read_Pedone
+        FFSpecificFlags => Pedone_SetFlags
+        interFunction => Read_Pedone
       case("custompairwise")
       case default
         stop "Unknown potential type given in forcefield input"
@@ -162,6 +163,8 @@
           case("create")
             call FindCommandBlock(iLine, lineStore, "end_create", lineBuffer)
             call CreateForcefield(lineStore(iLine:iLine+lineBuffer) )
+          case("set")
+            call SetForcefieldParam(lineStore(iLine))
           case default
             write(*,*) "ERROR! Invalid command in Forcefield file on line:", iLine
             write(*,*) lineStore(iLine)
@@ -272,6 +275,7 @@
             stop
           endif
           call SetRMin(lineStore)
+
         case default 
           write(*,*) "ERROR! Invalid command in Forcefield file on line:"
           write(*,*) lineStore(1)
@@ -279,6 +283,34 @@
       end select
      
       end subroutine 
+!========================================================            
+      subroutine SetForcefieldParam(line)
+      use Coords
+      use ForceField
+      use SimParameters
+      use Units
+      use VarPrecision
+      implicit none
+      character(len=100), intent(in) :: line
+      character(len=30) :: dummy, deftype, stringValue
+      character(len=25) :: command
+
+      read(line,*) dummy, defType
+      call LowerCaseLine(defType)
+      select case(adjustl(trim(defType)))
+      case("lenunits")
+        read(line,*) dummy, defType, stringValue
+        convDist = FindLengthUnit(stringValue)
+      case("engunits")
+        read(line,*) dummy, defType, stringValue
+        convEng = FindEngUnit(stringValue)
+      case("angunits")
+        read(line,*) dummy, defType, stringValue
+        convAng = FindAngularUnit(stringValue)
+      end select
+
+
+      end subroutine
 !========================================================            
       subroutine CreateForcefield(lineStore)
       use Coords
@@ -580,23 +612,23 @@
       implicit none
       integer :: AllocateStatus
       
-      ALLOCATE (pedoneData(1:nMolTypes), STAT = AllocateStatus)
-      ALLOCATE (atomData(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (pedoneData(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (atomData(1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (nAtoms(1:nMolTypes), STAT = AllocateStatus)
 
       nAtoms = 1
 
-      ALLOCATE (r_min(1:nMolTypes), STAT = AllocateStatus)
-      ALLOCATE (r_min_sq(1:nMolTypes), STAT = AllocateStatus)
-      ALLOCATE (r_min_tab(1:nMolTypes, 1:nMolTypes), STAT = AllocateStatus) 
+      ALLOCATE (r_min(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_sq(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_tab(1:nAtomTypes, 1:nAtomTypes), STAT = AllocateStatus) 
 
-      ALLOCATE (alpha_Tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
-      ALLOCATE (D_Tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
-      ALLOCATE (repul_tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
-      ALLOCATE (rEq_tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
-      ALLOCATE (q_tab(1:nMolTypes,1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (alpha_Tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (D_Tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (repul_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (rEq_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (q_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
 
-      ALLOCATE (totalMass(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (totalMass(1:nAtomTypes), STAT = AllocateStatus)
      
       repul_tab = 0d0
       D_Tab = 0d0       
@@ -692,7 +724,7 @@
                                  pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass
       enddo
       
-      do i = 1, nMolTypes
+      do i = 1, nAtomTypes
         if(echoInput) then
           write(35,*) pedoneData(i)%atmName, pedoneData(i)%Symb, pedoneData(i)%repul, pedoneData(i)%rEq, &
                     pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass
@@ -750,6 +782,17 @@
       implicit none
 
       call IntegrateBendAngleProb
+      call SetStorageFlags(q_tab) 
+
+      end subroutine
+!===================================================================================
+      subroutine Pedone_SetFlags
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_Pedone
+      use PairStorage, only: SetStorageFlags
+      implicit none
+
       call SetStorageFlags(q_tab) 
 
       end subroutine

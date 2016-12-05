@@ -32,7 +32,7 @@
       use DistanceCriteria      
       use SimParameters
       use ForceFieldPara_LJ_Q, only: q_tab
-      use PairStorage, only: CalcAllDistPairs, SetStorageFlags
+      use PairStorage, only: CalcAllDistPairs
       implicit none
       
       logical , intent(inout) :: rejMove

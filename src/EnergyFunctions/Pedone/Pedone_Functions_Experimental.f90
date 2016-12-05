@@ -36,12 +36,14 @@
       use Coords
       use SimParameters
       use EnergyTables
+      use PairStorage, only: rPair, distStorage, nTotalAtoms
       implicit none
       real(dp), intent(inOut) :: E_T
       real(dp), intent(inOut) :: PairList(:,:)
       integer :: iType,jType,iMol, jMol
       integer(kind=atomIntType) :: atmType1,atmType2      
       integer :: iIndx, jIndx, jMolMin
+      integer :: gloIndx1, gloIndx2
       real(dp) :: r, r_sq
       real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
@@ -75,12 +77,12 @@
              jMolMin = 1        
            endif
            iIndx = MolArray(iType)%mol(iMol)%indx
-           globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(1)
+           gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(1)
            do jMol = jMolMin,NPART(jType)
              jIndx = MolArray(jType)%mol(jMol)%indx  
-             globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1)
-             r_sq = rPair(globIndx1, globIndx2)%p%r_sq
-             r = rPair(globIndx1, globIndx2)%p%r
+             gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1)
+             r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
+             r = rPair(gloIndx1, gloIndx2)%p%r
 
              if(distCriteria) then
                PairList(iIndx, jIndx) = r_sq
@@ -143,14 +145,16 @@
       
       end subroutine
 !======================================================================================      
-      pure subroutine Shift_ECalc_Inter(E_Trial, disp, PairList, dETable, rejMove)
+      pure subroutine Shift_ECalc_Inter(E_Trial, disp, newDist, PairList, dETable, rejMove)
       use ForceField
       use ForceFieldPara_Pedone
       use Coords
       use SimParameters
+      use PairStorage, only: distStorage, DistArrayNew, nNewDist, oldIndxArray
       implicit none
-      
+       
       type(Displacement), intent(in) :: disp(:)      
+      type(DistArrayNew), intent(inout) :: newDist(:)
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       logical, intent(out) :: rejMove
@@ -158,13 +162,14 @@
       
       integer :: iType,jType,iMol,jMol, iPair
       integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
+      integer :: gloIndx1, gloIndx2
       integer :: sizeDisp 
       real(dp) :: rx,ry,rz
-      real(dp) :: r_new, r_old
-      real(dp) :: r_min1_sq      
+      real(dp) :: r, r_sq
       real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
-      real(dp) :: Morse, LJ, Ele
+      real(dp) :: Morse, LJ, Ele, Solvent
+      real(dp) :: E_LJ, E_Ele, E_Morse, E_Solvent
       real(dp) :: E_Old, E_PairOld
       real(dp) :: rmin_ij    
       real(dp) :: born1, born2
@@ -172,7 +177,8 @@
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
       atmType1 = atomArray(iType,1)
-      gloIndx1 = newDist(iPair)%indx1
+      iIndx = molArray(iType)%mol(iMol)%indx
+
       E_LJ = 0d0
       E_Ele = 0d0
       E_Morse = 0d0
@@ -181,6 +187,7 @@
       Solvent = 0E0_dp
 
       do iPair = 1, nNewDist
+        gloIndx1 = newDist(iPair)%indx1
         gloIndx2 = newDist(iPair)%indx2
         jType = atomIndicies(gloIndx2)%nType
         jMol  = atomIndicies(gloIndx2)%nMol
@@ -192,19 +199,15 @@
           alpha = alpha_Tab(atmType1, atmType2)
           delta = D_Tab(atmType1, atmType2)
           repul_C = repul_tab(atmType1, atmType2)   
-          r_sq = rPair(globIndx1, globIndx2)%p%r_sq
-          r = rPair(globIndx1, globIndx2)%p%r
+          r_sq = newDist(iPair)%r_sq
+          r = newDist(iPair)%r
        
           if(distCriteria) then
-            if(iAtom .eq. 1) then
-              if(jAtom .eq. 1) then
-                PairList(jIndx) = newDist(iPair)%r_sq
-              endif
-            endif
+            PairList(jIndx) = newDist(iPair)%r_sq
           endif
           LJ = 0E0_dp
           if(repul_C .ne. 0d0) then
-            LJ = (1d0/r_sq)**3
+            LJ = (1d0/r_sq)**6
             LJ = repul_C * LJ
             if(.not. distCriteria) then
               PairList(jIndx) = PairList(jIndx) + LJ
@@ -254,6 +257,7 @@
       use ForceFieldPara_Pedone
       use Coords
       use SimParameters
+      use PairStorage
       implicit none
       integer, intent(in) :: iType, iMol     
       real(dp), intent(out) :: E_Trial
@@ -261,11 +265,12 @@
       
       integer :: iIndx,jType,jIndx,jMol
       integer(kind=atomIntType)  :: atmType1,atmType2
+      integer :: gloIndx1, gloIndx2
       real(dp) :: rx,ry,rz,r
       real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
       real(dp) :: LJ, Ele, Morse
-      real(dp) :: E_Ele, E_LJ, E_Morse, E_Solvent
+      real(dp) :: E_Ele, E_LJ, E_Morse, E_Solvent, E_Pair
       real(dp) :: born1, born2
       
 
@@ -274,37 +279,37 @@
       iIndx = MolArray(iType)%mol(iMol)%indx
       gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(1) 
       do jType = 1, nMolTypes
-          do jMol=1, NPART(jType)
-            jIndx = MolArray(jType)%mol(jMol)%indx  
-            if(iIndx .ne. jIndx) then
-              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1) 
-              E_Pair = rPair(gloIndx1, gloIndx2)%p%E_Pair
-              E_Trial = E_Trial + E_Pair
-              dETable(iIndx) = dETable(iIndx) + E_Pair
-              dETable(jIndx) = dETable(jIndx) + E_Pair
-            endif
-          enddo
+        do jMol=1, NPART(jType)
+          jIndx = MolArray(jType)%mol(jMol)%indx  
+          if(iIndx .ne. jIndx) then
+            gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1) 
+            E_Pair = rPair(gloIndx1, gloIndx2)%p%E_Pair
+            E_Trial = E_Trial + E_Pair
+            dETable(iIndx) = dETable(iIndx) + E_Pair
+            dETable(jIndx) = dETable(jIndx) + E_Pair
+          endif
         enddo
       enddo
       
       end subroutine
 
 !======================================================================================      
-      pure subroutine NewMol_ECalc_Inter(E_Trial, PairList, dETable, rejMove)
+      subroutine NewMol_ECalc_Inter(E_Trial, PairList, dETable, rejMove)
       use ForceField
       use ForceFieldPara_Pedone
       use Coords
       use SimParameters
+      use PairStorage
       implicit none
       logical, intent(out) :: rejMove
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
-      integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom
+      integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom, iPair
       integer(kind=atomIntType) :: atmType1,atmType2
-
+      integer :: gloIndx1, gloIndx2
       real(dp) :: rx,ry,rz
-      real(dp) :: r
+      real(dp) :: r, r_sq
       real(dp) :: r_min1_sq      
       real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
@@ -336,12 +341,12 @@
           alpha = alpha_Tab(atmType1, atmType2)
           delta = D_Tab(atmType1, atmType2)
           repul_C = repul_tab(atmType1, atmType2)   
-          r_sq = rPair(globIndx1, globIndx2)%p%r_sq
-          r = rPair(globIndx1, globIndx2)%p%r
+          r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
+          r = rPair(gloIndx1, gloIndx2)%p%r
 
           LJ = 0E0_dp
           if(repul_C .ne. 0d0) then
-            LJ = (1d0/r_sq)**3
+            LJ = (1d0/r_sq)**6
             LJ = repul_C * LJ
             dETable(iIndx) = dETable(iIndx) + LJ
             dETable(jIndx) = dETable(jIndx) + LJ
@@ -405,6 +410,7 @@
       
       integer :: iAtom,jAtom
       integer(kind=atomIntType)  :: atmType1,atmType2
+
       real(dp) :: rx,ry,rz,r
       real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
@@ -439,7 +445,7 @@
       endif          
 
       if(repul_C .ne. 0d0) then
-        LJ = ( 1d0/r_sq )**3
+        LJ = ( 1d0/r )**6
         LJ = repul_C * LJ
         E_LJ = E_LJ + LJ
       endif
