@@ -60,6 +60,19 @@
 
        end subroutine
      !--------------------------------------------------------------------------------
+!       subroutine UmbrellaVar_Q6(biasVar, biasVarNew, UBinSize, binMin, binMax, outputFormat)
+!         implicit none 
+!
+!
+!         biasvar(iUmbrella) % varType = 2
+!         biasvar(iUmbrella) % realVar => miscCoord(q6ArrayIndx)
+!         biasvarnew(iUmbrella) % varType = 2
+!         biasvarnew(iUmbrella) % realVar => miscCoord_New(q6ArrayIndx)
+!
+!         outputFormat(iUmbrella) = "2x,F12.6,"
+!
+!       end subroutine
+     !--------------------------------------------------------------------------------
        subroutine CalcQ6
          use MiscelaniousVars
          use Coords

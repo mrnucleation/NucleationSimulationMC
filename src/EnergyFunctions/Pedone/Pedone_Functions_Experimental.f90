@@ -112,6 +112,7 @@
                PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ + Morse + Solvent
                PairList(jIndx, iIndx) = PairList(iIndx, jIndx)
              endif
+             rPair(gloIndx1, gloIndx2)%p%E_Pair = + Ele + LJ + Morse + Solvent
              ETable(iIndx) = ETable(iIndx) + Ele + LJ + Morse + Solvent
              ETable(jIndx) = ETable(jIndx) + Ele + LJ + Morse + Solvent
             enddo
@@ -145,11 +146,12 @@
       
       end subroutine
 !======================================================================================      
-      pure subroutine Shift_ECalc_Inter(E_Trial, disp, newDist, PairList, dETable, rejMove)
+      subroutine Shift_ECalc_Inter(E_Trial, disp, newDist, PairList, dETable, rejMove)
       use ForceField
       use ForceFieldPara_Pedone
       use Coords
       use SimParameters
+      use EnergyTables
       use PairStorage, only: distStorage, DistArrayNew, nNewDist, oldIndxArray
       implicit none
        
@@ -179,10 +181,10 @@
       atmType1 = atomArray(iType,1)
       iIndx = molArray(iType)%mol(iMol)%indx
 
-      E_LJ = 0d0
-      E_Ele = 0d0
-      E_Morse = 0d0
-      E_Solvent = 0d0
+      E_LJ = 0E0_dp
+      E_Ele = 0E0_dp
+      E_Morse = 0E0_dp
+      E_Solvent = 0E0_dp
       E_Old = 0E0_dp
       Solvent = 0E0_dp
 
@@ -201,13 +203,13 @@
           repul_C = repul_tab(atmType1, atmType2)   
           r_sq = newDist(iPair)%r_sq
           r = newDist(iPair)%r
-       
+
           if(distCriteria) then
             PairList(jIndx) = newDist(iPair)%r_sq
           endif
           LJ = 0E0_dp
-          if(repul_C .ne. 0d0) then
-            LJ = (1d0/r_sq)**6
+          if(repul_C .ne. 0E0_dp) then
+            LJ = (1E0_dp/r_sq)**6
             LJ = repul_C * LJ
             if(.not. distCriteria) then
               PairList(jIndx) = PairList(jIndx) + LJ
@@ -228,9 +230,9 @@
           endif
 
           Morse = 0E0_dp
-          if(delta .ne. 0d0) then
-            Morse = 1d0 - exp(-alpha*(r-r_eq))
-            Morse = delta*(Morse*Morse - 1d0)
+          if(delta .ne. 0E0_dp) then
+            Morse = 1E0_dp - exp(-alpha*(r-r_eq))
+            Morse = delta*(Morse*Morse - 1E0_dp)
             if(.not. distCriteria) then            
               PairList(jIndx) = PairList(jIndx) + Morse 
             endif
@@ -247,7 +249,7 @@
 
 
       E_Trial = E_LJ + E_Ele + E_Morse - E_Old
-      
+      E_Inter_T =  E_LJ + E_Ele + E_Morse - E_Old    
       
       end subroutine
 
@@ -274,8 +276,8 @@
       real(dp) :: born1, born2
       
 
-      E_Trial = 0E0
-      dETable = 0E0
+      E_Trial = 0E0_dp
+      dETable = 0E0_dp
       iIndx = MolArray(iType)%mol(iMol)%indx
       gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(1) 
       do jType = 1, nMolTypes

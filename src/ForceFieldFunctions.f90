@@ -270,12 +270,12 @@
       use VarPrecision
 
       type AtomDefPedone
-        character(len=10) :: atmName
+        character(len=20) :: atmName
         character(len=5) :: Symb
         real(dp) :: repul, rEq, q, alpha, delta, mass
       end type
 
-      logical :: implcSolvent
+      logical :: implcSolvent = .false.
 
       type(AtomDefPedone), allocatable :: pedoneData(:)
       real(dp), allocatable :: repul_tab(:,:), rEq_tab(:,:)

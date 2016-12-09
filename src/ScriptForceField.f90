@@ -649,6 +649,9 @@
       ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStatus)
       ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStatus)
 
+      acptInSize = 0E0_dp
+      atmpInSize = 1E-100_dp
+
       ALLOCATE (max_dist(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (max_dist_single(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (max_rot(1:nMolTypes), STAT = AllocateStatus) 
@@ -732,6 +735,8 @@
         pedoneData(i)%repul = pedoneData(i)%repul * convEng
         pedoneData(i)%delta = pedoneData(i)%delta * convEng
         pedoneData(i)%rEq = pedoneData(i)%rEq * convDist   
+        atomData(i)%atmName = pedoneData(i)%atmName
+        atomData(i)%Symb = pedoneData(i)%Symb
       enddo
 
       q_tab = 0d0

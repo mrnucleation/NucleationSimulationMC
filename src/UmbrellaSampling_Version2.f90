@@ -284,7 +284,7 @@
 
 
       call AllocateUmbrellaArray
-      call ReadUmbrellaInput
+      call ReadInitialBias
 
 !      Use the input to specify the reference bin
       allocate(refSizeNumbers(1:nBiasVariables),STAT = AllocateStatus)
@@ -364,6 +364,10 @@
           nSwapInFunc = nSwapInFunc + 1
           nSwapOutFunc = nSwapOutFunc + 1
         case("q6")
+          nDispFunc = nDispFunc + 1
+          nSwapInFunc = nSwapInFunc + 1
+          nSwapOutFunc = nSwapOutFunc + 1
+        case("analysisvar")
           nDispFunc = nDispFunc + 1
           nSwapInFunc = nSwapInFunc + 1
           nSwapOutFunc = nSwapOutFunc + 1
@@ -478,7 +482,7 @@
       allocate(varValues(1:nBiasVariables))
       allocate(UArray(1:nBiasVariables))
       call AllocateUmbrellaArray
-      call ReadUmbrellaInput
+      call ReadInitialBias
 
 !      Use the input to specify the reference bin
       allocate(refSizeNumbers(1:nBiasVariables),STAT = AllocateStatus)
@@ -542,7 +546,7 @@
      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
      end subroutine
 !==========================================================================================
-    subroutine ReadUmbrellaInput
+    subroutine ReadInitialBias
     implicit none
     integer :: AllocateStatus
     integer :: j, iInput, iBias, inStat, biasIndx
