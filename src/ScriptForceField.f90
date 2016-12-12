@@ -41,7 +41,7 @@
       use EnergyPointers
       use SwapBoundary
       use ParallelVar, only: nout
-      use UmbrellaSamplingNew, only: ReadInput_Umbrella
+!      use UmbrellaSamplingNew, only: ReadInput_Umbrella
       use WHAM_Functions
       implicit none
       character(len=10) :: potenType
@@ -71,6 +71,7 @@
         commonFunction => Allocate_LJ_Q
         FFSpecificFlags => LJ_SetFlags
         interFunction => Read_LJ_Q
+        fieldTypeSet = .true.
       case("pedone")
         write(nout,*) "Forcefield Type: Pedone"
         ForceFieldName = "Pedone"
@@ -85,11 +86,14 @@
         commonFunction => Allocate_Pedone
         FFSpecificFlags => Pedone_SetFlags
         interFunction => Read_Pedone
+        fieldTypeSet = .true.
       case("custompairwise")
       case default
         stop "Unknown potential type given in forcefield input"
       end select
  
+
+
 
       end subroutine
 
@@ -115,6 +119,11 @@
       integer :: nTorsMax, nImpropMax, nNonBondMax
       real(dp) :: realValue
       
+      if(.not. fieldTypeSet) then
+        write(*,*) "ERROR! Forcefield input has been called before the forcefield type has been set!"
+        stop
+      endif
+
       if(nMolTypes .eq. 0) then
         write(*,*) "ERROR! Forcefield input has been called before the number of molecule types have been defined"
         stop
@@ -156,6 +165,7 @@
           cycle
         endif 
         call LowerCaseLine(command)
+!        write(*,*) lineStore(iLine)
         select case( adjustl(trim(command)) )
           case("define")
             call FindCommandBlock(iLine, lineStore, "end_define", lineBuffer)
@@ -191,7 +201,6 @@
       call CreateJointArray  
       call FFSpecificFlags
 
-
      
       end subroutine   
 !========================================================            
@@ -222,7 +231,9 @@
           nAtomTypes = intValue
           ALLOCATE (atomData(1:nAtomTypes), STAT = AllocateStat)
           call commonFunction
+          write(*,*) "Common"
           call interFunction(lineStore)
+          write(*,*) "Inter"   
         case("bondtypes")
           read(lineStore(1),*) dummy, defType, intValue
           nBondTypes = intValue
@@ -556,8 +567,6 @@
       ALLOCATE (r_min_sq(1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (r_min_tab(1:nAtomTypes, 1:nAtomTypes), STAT = AllocateStatus) 
 
- 
-
       ALLOCATE (ep_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (sig_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (q_tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
@@ -672,13 +681,15 @@
 
       nLines = size(lineStore)
 
+
       i = 0
       do iLine = 2, nLines-1
         i = i + 1
         read(lineStore(iLine),*) atomData(i)%atmName, atomData(i)%Symb, atomData(i)%ep, &
                                  atomData(i)%sig, atomData(i)%q, atomData(i)%mass
       enddo
-
+      ep_func => GeoMean_MixingFunc
+      sig_func => Mean_MixingFunc
 !      Generate the look up tables for the inter molecular interactions
       if(echoInput) then
         write(35,*) "---------------------------------------------"
@@ -704,8 +715,6 @@
         flush(35)
       endif
 
-      ep_func => GeoMean_MixingFunc
-      sig_func => Mean_MixingFunc
 
       end subroutine
 

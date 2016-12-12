@@ -1,6 +1,7 @@
-!****** Energy Biased Aggregation-Volume-Bias Monte Carlo (AVBMC) algorithm *******
-!   This file contains the nessisary functions to impliment the energy biased swap
-!   move for cluster simulations. 
+!***********************************************************************************
+!     This module contains experiemntal functions used to perform an exchange move.
+!     In an exchange move one molecule is swapped out of the cluster at the same time
+!     another molecule is swapped into the cluster. 
 !===================================================================================            
       module Exchange_Module
       contains

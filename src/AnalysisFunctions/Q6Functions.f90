@@ -11,6 +11,7 @@
 
        logical :: useQ6 = .false.
        integer :: q6ArrayIndx
+       integer :: analysisIndx
 
        logical :: initialized = .false.
        logical :: newData = .false.
@@ -23,6 +24,7 @@
 
        public :: Initialize_q6, CalcQ6, useQ6, q6Dist, q6DistSq, q6ArrayIndx
        public :: CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut, q6Neigh
+       public :: UmbrellaVar_Q6
        contains
      !--------------------------------------------------------------------------------
        subroutine Initialize_q6
@@ -60,18 +62,34 @@
 
        end subroutine
      !--------------------------------------------------------------------------------
-!       subroutine UmbrellaVar_Q6(biasVar, biasVarNew, UBinSize, binMin, binMax, outputFormat)
-!         implicit none 
-!
-!
-!         biasvar(iUmbrella) % varType = 2
-!         biasvar(iUmbrella) % realVar => miscCoord(q6ArrayIndx)
-!         biasvarnew(iUmbrella) % varType = 2
-!         biasvarnew(iUmbrella) % realVar => miscCoord_New(q6ArrayIndx)
-!
-!         outputFormat(iUmbrella) = "2x,F12.6,"
-!
-!       end subroutine
+       subroutine UmbrellaVar_Q6(iUmbrella, biasVar, biasVarNew, outputFormat, &
+                                 iDisp, DispUmbrella, iSwapIn, SwapInUmbrella, iSwapOut, SwapOutUmbrella)
+         use MiscelaniousVars
+         use UmbrellaTypes
+         implicit none 
+         integer, intent(in) :: iUmbrella
+         integer, intent(inout) :: iDisp, iSwapIn, iSwapOut
+         
+         type(BiasVariablePointer), intent(inout) :: biasvar(:)
+         type(BiasVariablePointer), intent(inout) :: biasvarnew(:)
+         type(DispUmbrellaArray), intent(inout)  :: DispUmbrella(:)
+         type(SwapInUmbrellaArray), intent(inout)  :: SwapInUmbrella(:)
+         type(SwapOutUmbrellaArray), intent(inout)  :: SwapOutUmbrella(:)
+         character(len=10), intent(inout) :: outputFormat(:)
+
+         biasvar(iUmbrella) % varType = 2
+         biasvar(iUmbrella) % realVar => miscCoord(q6ArrayIndx)
+         biasvarnew(iUmbrella) % varType = 2
+         biasvarnew(iUmbrella) % realVar => miscCoord_New(q6ArrayIndx)
+         outputFormat(iUmbrella) = "2x,F12.6,"
+
+         iDisp = iDisp + 1
+         DispUmbrella(iDisp) % func => CalcQ6_Disp
+         iSwapIn = iSwapIn + 1
+         SwapInUmbrella(iSwapIn) % func => CalcQ6_SwapIn
+         iSwapOut = iSwapOut + 1
+         SwapOutUmbrella(iSwapOut) % func => CalcQ6_SwapOut
+       end subroutine
      !--------------------------------------------------------------------------------
        subroutine CalcQ6
          use MiscelaniousVars

@@ -23,6 +23,7 @@
       use MiscelaniousVars, only: CollectHistograms
       use MoveTypeModule
       use ParallelVar
+      use ScriptInput, only: Script_ReadParameters
       use SelfAdaptive
       use SimParameters
       use VarPrecision
@@ -86,8 +87,9 @@
       
 !      This block calls the input functions required to set up the simulation. For more information
 !      on the specific role of each function see the comments in the corresponding subfunction.
-      call ReadParameters(seed, screenEcho)
-
+!      call ReadParameters(seed, screenEcho)
+      
+      call Script_ReadParameters(seed, screenEcho)
 !       This block assigns the root thread (myid=0) to output to the screen if the screen
 !       echo input parameter is true.  Otherwise the screen data is exported to 100+myid      
       if(screenEcho) then      

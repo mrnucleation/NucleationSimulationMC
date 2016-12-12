@@ -8,14 +8,14 @@ FC := /opt/openmpi/bin/mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
-OPTIMIZE_FLAGS := -O3
+#OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 #OPEN_MP_FLAGS := -fopenmp
-#DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
+DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += -check all -traceback -g
 #DEBUGFLAGS += -pg 
@@ -76,11 +76,12 @@ SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
 SRC_BIAS := $(SRC)/UmbrellaSampling_Version2.f90\
+            $(SRC)/Umbrella_Types.f90\
             $(SRC)/WHAM_Version2.f90
 SRC_INPUT := $(SRC)/ScriptInput.f90\
 		$(SRC)/ScriptForceField.f90\
- 		$(SRC)/Input_Ultility.f90\
-		$(SRC)/ReadInput.f90
+ 		$(SRC)/Input_Ultility.f90
+#		$(SRC)/ReadInput.f90
 SRC_MAIN := $(SRC)/BasicMovement.f90\
             $(SRC)/MCMove_Module.f90\
             $(SRC)/DebugFunctions.f90\
@@ -260,7 +261,9 @@ $(OBJ)/ForceFieldFunctions.o: $(OBJ)/Common.o $(OBJ)/VariablePrecision.o
 
 $(OBJ)/Units.o: $(OBJ)/VariablePrecision.o
 
-$(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o $(OBJ)/SimplePairDistance.o $(OBJ_ANALYSIS)
+$(OBJ)/Umbrella_Types.o: $(OBJ)/VariablePrecision.o 
+
+$(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o $(OBJ)/SimplePairDistance.o $(OBJ)/Umbrella_Types.o $(OBJ_ANALYSIS)
 
 $(OBJ)/WHAM_Version2.o: $(OBJ)/SwapBoundaries.o $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o
 
