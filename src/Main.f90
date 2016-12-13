@@ -97,11 +97,7 @@
           nout = 6        
         endif
       endif         
-!      call ReadForcefield
-      call ReadInitialConfiguration
-      call RecenterCoordinates
-      call ReadInitialGasPhase      
-    
+
       
 
 !   Counter for the number of Accepted Monte Carlo Moves   

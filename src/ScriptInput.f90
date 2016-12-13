@@ -3,18 +3,19 @@
       contains
 !========================================================            
       subroutine Script_ReadParameters(seed, screenEcho)
-      use SimParameters
-      use Constants
-      use ForceField
-      use Units
-      use ParallelVar
-      use CBMC_Variables
-      use Coords
-      use EnergyTables
       use AnalysisMain,only: ScriptAnalysisInput
-      use MoveTypeModule, only: ScriptInput_MCMove
-      use UmbrellaSamplingNew,only: ScriptInput_Umbrella
+      use CBMC_Variables
+      use Constants
+      use Coords
+      use CoodinateFunctions
+      use EnergyTables
+      use ForceField
       use ForceFieldInput, only: SetForcefieldType, ScriptForcefield, fieldTypeSet
+      use MoveTypeModule, only: ScriptInput_MCMove
+      use ParallelVar
+      use SimParameters
+      use UmbrellaSamplingNew, only: ScriptInput_Umbrella
+      use Units
       use WHAM_Functions
       implicit none
       logical, intent(OUT)  :: screenEcho
@@ -38,6 +39,7 @@
       if(nArgs > 1) then
         stop "This program only takes one argument"
       endif
+!      Read in the script file
       call get_command_argument(1, fileName)
 
 !      fileName = "ScriptTest.dat"
@@ -130,10 +132,14 @@
         call WHAM_Initialize
       endif
       write(nout,*) "Forcefield read!"
-
       if(allocated(forcefieldStore)) then
         deallocate(forcefieldStore)
       endif
+
+      call ReadInitialConfiguration
+      call RecenterCoordinates
+      call ReadInitialGasPhase      
+    
 
 
       end subroutine

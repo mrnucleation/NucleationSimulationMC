@@ -201,6 +201,8 @@
       call CreateJointArray  
       call FFSpecificFlags
 
+
+
      
       end subroutine   
 !========================================================            
@@ -231,9 +233,7 @@
           nAtomTypes = intValue
           ALLOCATE (atomData(1:nAtomTypes), STAT = AllocateStat)
           call commonFunction
-          write(*,*) "Common"
           call interFunction(lineStore)
-          write(*,*) "Inter"   
         case("bondtypes")
           read(lineStore(1),*) dummy, defType, intValue
           nBondTypes = intValue

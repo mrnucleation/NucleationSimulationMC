@@ -8,20 +8,20 @@ FC := /opt/openmpi/bin/mpif90
 #FC := mpifort
 #FC := gfortran
 CC := mpicc
-#OPTIMIZE_FLAGS := -O3
+OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
-#OPEN_MP_FLAGS := -fopenmp
-DEBUGFLAGS := -g -fbacktrace -fcheck=all -Og
+DETAILEDDEBUG:= -g -fbacktrace -fcheck=all -Og
 #DEBUGFLAGS += -heap-arrays 1024
+#DEBUGFLAGS += $(DETAILEDDEBUG)
 #DEBUGFLAGS += -check all -traceback -g
 #DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
-COMPFLAGS := $(OPEN_MP_FLAGS) $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
+COMPFLAGS := $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
 
 
 # ====================================
@@ -188,6 +188,7 @@ $(OBJ)/%.o: $(SRC)/%.f90
 #        Compile Commands
 # ====================================
 default: startUP generalNucleation finale
+debug: startUP_debug generalNucleation_debug finale
 quick: startUP generalNucleation finale
 neat: startUP generalNucleation removeObject finale
 clean: removeObjects removeExec finale    
@@ -215,18 +216,33 @@ createMods: $(MOD_SRC)
 		@echo  	
 
        
+	
+       
 generalNucleation: $(OBJ_MOD)  $(OBJ_COMPLETE) 
 		@echo =============================================
 		@echo     Compiling and Linking Source Files
 		@echo =============================================	
-		@$(FC) $(COMPFLAGS) $(MODFLAGS)  $^ -o $@ 		
-		
+		@$(FC) $(COMPFLAGS) $(MODFLAGS)  $^ -o $@ 	
+	
+
+generalNucleation_debug: $(OBJ_MOD)  $(OBJ_COMPLETE) 
+		@echo =============================================
+		@echo     Compiling and Linking Source Files
+		@echo =============================================	
+		@$(FC) $(DETAILEDDEBUG) $(MODFLAGS)  $^ -o $@ 	
 		
 startUP:
 		@echo ==================================================================
 		@echo ---------------------- Begin ---------------------------------		
 		@echo Current Directory:$(CUR_DIR)		
 		@echo Compiler and Flags used:	$(FC) $(COMPFLAGS) 		
+		@echo		
+
+startUP_debug:
+		@echo ==================================================================
+		@echo ---------------------- Begin ---------------------------------		
+		@echo Current Directory:$(CUR_DIR)		
+		@echo Compiler and Flags used:	$(FC) $(DETAILEDDEBUG) 		
 		@echo		
 
 finale:
@@ -248,7 +264,8 @@ removeObjects:
 removeExec:
 		@rm -f $(CUR_DIR)/generalNucleation
 		@rm -f $(CUR_DIR)/generalNucleation.exe            
-
+		@rm -f $(CUR_DIR)/generalNucleation_debug
+		@rm -f $(CUR_DIR)/generalNucleation_debug.exe            
 
 
 
