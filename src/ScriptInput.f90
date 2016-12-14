@@ -83,6 +83,16 @@
           read(lineStore(iLine),*) dummy, command2
           forcefieldFile =  trim( adjustl( command2 ) )
           call LoadFile(forcefieldStore, nForceLines, ffLineNumber, forcefieldFile)
+!      write(nout,*) "Input parameters read,  reading forcefield........."
+          call ScriptForcefield(forcefieldStore)
+          if(useWHAM) then
+            nWhamItter = ceiling(dble(ncycle)/dble(intervalWHAM))
+            call WHAM_Initialize
+          endif
+!      write(nout,*) "Forcefield read!"
+          if(allocated(forcefieldStore)) then
+            deallocate(forcefieldStore)
+          endif
         case("forcefieldtype")
           read(lineStore(iLine),*) dummy, command2
           call LowerCaseLine(command2)
@@ -125,16 +135,7 @@
       
       deallocate(lineStore)
 
-      write(nout,*) "Input parameters read,  reading forcefield........."
-      call ScriptForcefield(forcefieldStore)
-      if(useWHAM) then
-        nWhamItter = ceiling(dble(ncycle)/dble(intervalWHAM))
-        call WHAM_Initialize
-      endif
-      write(nout,*) "Forcefield read!"
-      if(allocated(forcefieldStore)) then
-        deallocate(forcefieldStore)
-      endif
+
 
       call ReadInitialConfiguration
       call RecenterCoordinates

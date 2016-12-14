@@ -43,6 +43,7 @@
     public :: AllocateUmbrellaVariables,  AllocateUmbrellaArray, UmbrellaHistAdd
     public :: useUmbrella, OutputUmbrellaHist, GetUmbrellaBias_Disp, findVarValues, getBiasIndex
     public :: nBiasVariables, umbrellaLimit, UBias, UHist, UBinSize, outputFormat, curUIndx
+    public :: DispUmbrella, SwapInUmbrella, SwapOutUmbrella, biasVar, biasVarnew
     public :: GetUmbrellaBias_SwapIn, GetUmbrellaBias_SwapOut, ScreenOutputUmbrella, screenFormat
     public :: CheckInitialValues, energyAnalytics, OutputUmbrellaAnalytics
     public :: ScriptInput_Umbrella
@@ -53,31 +54,60 @@
     subroutine AllocateUmbrellaVariables
     implicit none
     integer :: AllocateStatus
+    integer :: i
         
     allocate( binMin(1:nBiasVariables), STAT = AllocateStatus )
     allocate( binMax(1:nBiasVariables), STAT = AllocateStatus )
     allocate( UBinSize(1:nBiasVariables), STAT = AllocateStatus )
+
     allocate( biasvar(1:nBiasVariables), STAT = AllocateStatus )
+    do i = 1, nBiasVariables
+      biasvar(i) % varType = 0
+      biasvar(i) % intVar => null()
+      biasvar(i) % realVar => null()
+    enddo
+
     allocate( biasvarnew(1:nBiasVariables), STAT = AllocateStatus )
+    do i = 1, nBiasVariables
+      biasvarnew(i) % varType = 0
+      biasvarnew(i) % intVar => null()
+      biasvarnew(i) % realVar => null()
+    enddo
+
     allocate( binIndx(1:nBiasVariables), STAT = AllocateStatus )
     allocate( indexCoeff(1:nBiasVariables), STAT = AllocateStatus )
     allocate( outputFormat(1:nBiasVariables), STAT = AllocateStatus )
+    do i = 1, nBiasVariables
+     outputFormat(i) = " "
+    enddo
 
     allocate( DispUmbrella(1:nDispFunc), STAT = AllocateStatus )
+    do i = 1, nDispFunc
+      DispUmbrella(i) % func => null()
+    enddo
+
     allocate( SwapInUmbrella(1:nSwapInFunc), STAT = AllocateStatus )
+    do i = 1, nSwapInFunc
+      SwapInUmbrella(i) % func => null()
+    enddo
+
     allocate( SwapOutUmbrella(1:nSwapOutFunc), STAT = AllocateStatus )
+    do i = 1, nSwapOutFunc
+      SwapOutUmbrella(i) % func => null()
+    enddo
 
     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
     end subroutine
 !==========================================================================================
     subroutine ScriptInput_Umbrella(inputLines)
-      use AnalysisMain, only: internalIndx, loadUmbArray
+      use AnalysisMain, only: internalIndx, loadUmbArray, nAnalysisVar
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx, CalcDistPairs_New
       use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, maxMol, echoInput, NTotal, NTotal_New
       use Q6Functions, only: q6ArrayIndx, CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut
       use ParallelVar, only: nout
       use WHAM_Module, only: refBin, refSizeNumbers
+      use Q6Functions, only: UmbrellaVar_Q6
       implicit none
       character(len=100), intent(in) :: inputLines(:)
       integer :: nLines
@@ -114,6 +144,10 @@
      read(inputLines(1), *) labelField, inputFile
 
 
+!     This first block performs an initial run through the input script to determine 
+!     how large the various pointer arrays must be to satisfy the various needs
+!     of each
+
      nDispFunc = 0
      nSwapInFunc = 0
      nSwapOutFunc = 0
@@ -121,11 +155,9 @@
         read(inputLines(iUmbrella+2), *) umbrellaName
         select case( trim(adjustl(umbrellaName)) )
         case("clustersize")
-!          nSwapInFunc = nSwapInFunc + 1
-!          nSwapOutFunc = nSwapOutFunc + 1
+          continue
         case("totalclustersize")
-!          nSwapInFunc = nSwapInFunc + 1
-!          nSwapOutFunc = nSwapOutFunc + 1
+          continue
         case("pairdist")
           nDispFunc = nDispFunc + 1
           nSwapInFunc = nSwapInFunc + 1
@@ -149,11 +181,17 @@
 
       call AllocateUmbrellaVariables
 
+
+!      In the next block all pointers used by the simulation are assigned to the user defined variables. And
+!      parameters such as the largest and smallest allowed values for each variable are assigned. 
+!     
+
       iDisp = 0
       iSwapIn = 0
       iSwapOut = 0
       do iUmbrella = 1, nBiasVariables
         read(inputLines(iUmbrella+2), *) umbrellaName
+!        write(*,*) inputLines(iUmbrella+2)
         select case( trim(adjustl(umbrellaName)) )
         case("clustersize")
           read(inputLines(iUmbrella+2), *) labelField, indxVar
@@ -221,7 +259,7 @@
           SwapOutUmbrella(iSwapOut) % func => CalcDistPairs_SwapOut
 
         case("q6")
-          read(inputLines(iUmbrella), *) labelField, valMin, valMax, binSize
+          read(inputLines(iUmbrella+2), *) labelField, valMin, valMax, binSize
           biasvar(iUmbrella) % varType = 2
           biasvar(iUmbrella) % realVar => miscCoord(q6ArrayIndx)
           biasvarnew(iUmbrella) % varType = 2
@@ -239,17 +277,17 @@
           SwapOutUmbrella(iSwapOut) % func => CalcQ6_SwapOut
 !          write(*,*) labelField, valMin, valMax, binSize
         case("analysisvar")
-          read(inputLines(iUmbrella), *) labelField, indxVar, valMin, valMax, binSize
-
+          read(inputLines(iUmbrella+2), *) labelField, indxVar, valMin, valMax, binSize
+          if(indxVar .gt. nAnalysisVar) then
+            write(*,*) "ERROR! The analysis index is above the maximum index of", nAnalysisVar
+            write(*,*) inputLines(iUmbrella)
+            stop 
+          endif
           call loadUmbArray(indxVar)%func(iUmbrella, biasVar, biasVarNew, outputFormat, &
                                           iDisp, DispUmbrella, iSwapIn, SwapInUmbrella, iSwapOut, SwapOutUmbrella)
           UBinSize(iUmbrella) = binSize
           binMin(iUmbrella) = nint(valMin / binSize)
           binMax(iUmbrella) = nint(valMax / binSize)
-!          outputFormat(iUmbrella) = "2x,F12.6,"
-
-
-!          write(*,*) labelField, valMin, valMax, binSize
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) umbrellaName
@@ -257,7 +295,6 @@
         end select
       enddo
       write(screenFormat,*) "(", (trim(adjustl(outputFormat(iUmbrella))), iUmbrella=1,nBiasVariables), "1x)"
-
       allocate(varValues(1:nBiasVariables))
       allocate(UArray(1:nBiasVariables))
       call AllocateUmbrellaArray
@@ -493,10 +530,11 @@
     do iBias = 1, nBiasVariables
       if(biasvar(iBias)%varType .eq. 1) then
         varValues(iBias) = real(biasvar(iBias)%intVar,dp)
-      else
+      elseif(biasvar(iBias)%varType .eq. 2) then
         varValues(iBias) = biasvar(iBias)%realVar
       endif
     enddo
+    
     write(nout,screenFormat) (varValues(j), j=1,nBiasVariables)
 
     end subroutine

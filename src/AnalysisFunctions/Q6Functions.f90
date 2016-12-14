@@ -40,7 +40,6 @@
          if(.not. useQ6) then
            return
          endif
-
          call ReserveSpace_Coord(1, startIndx, endIndx)
          q6ArrayIndx = startIndx
 
@@ -77,11 +76,13 @@
          type(SwapOutUmbrellaArray), intent(inout)  :: SwapOutUmbrella(:)
          character(len=10), intent(inout) :: outputFormat(:)
 
+
          biasvar(iUmbrella) % varType = 2
          biasvar(iUmbrella) % realVar => miscCoord(q6ArrayIndx)
          biasvarnew(iUmbrella) % varType = 2
          biasvarnew(iUmbrella) % realVar => miscCoord_New(q6ArrayIndx)
          outputFormat(iUmbrella) = "2x,F12.6,"
+!         write(*,*) outputFormat
 
          iDisp = iDisp + 1
          DispUmbrella(iDisp) % func => CalcQ6_Disp

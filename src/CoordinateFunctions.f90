@@ -1,5 +1,6 @@
 !========================================================================
       module CoodinateFunctions
+      character(len=50) :: configFile
       contains
 !========================================================================
       subroutine AllocateCoordinateArrays

@@ -60,7 +60,7 @@
 !     type(TrialFunctionArray), allocatable :: UpdateArray(:)
 
      public :: useAnalysis, ReadAnalysisInput, DummyAnalysisTest2, PostMoveAnalysis, OutputAnalysis
-     public :: ScriptAnalysisInput, internalIndx, loadUmbArray
+     public :: ScriptAnalysisInput, internalIndx, loadUmbArray, nAnalysisVar
 
 !======================================================
      contains
@@ -100,6 +100,11 @@
       allocate( internalIndx(1:nAnalysisVar) ) 
       allocate( loadUmbArray(1:nAnalysisVar) )
 
+      do iAnalysis = 1, nAnalysisVar
+        loadUmbArray(iAnalysis)%func => Null()
+      enddo
+
+
       internalIndx = 0
       do iAnalysis = 1, nAnalysisVar
         read(inputLines(iAnalysis+1), *) analysisName
@@ -126,7 +131,7 @@
           else
             stop "ERROR! The Q6 analysis function has been defined more than once in the input script."
           endif
-          loadUmbArray(iOutPut)%func => UmbrellaVar_Q6
+
         case("radialdensity")
           nRadialDens = nRadialDens + 1
           internalIndx(iAnalysis) = nRadialDens
@@ -144,9 +149,15 @@
 !      Now that we know how much memory is required, allocate all relevent arrays
       if(nPostMove .ne. 0) then
         allocate( postMoveArray(1:nPostMove) )
+        do iPostMove = 1, nPostMove
+          postMoveArray(iPostMove)%func => null()
+        enddo
       endif
       if(nOutput .ne. 0) then
         allocate( outputArray(1:nOutput) )
+        do iOutPut = 1, nOutput
+          outputArray(iOutPut)%func => null()
+        enddo
       endif 
 
 
@@ -205,6 +216,7 @@
           q6Dist = realVar
           q6DistSq = q6Dist*q6Dist
           postMoveArray(iPostMove)%func => CalcQ6
+          loadUmbArray(iAnalysis)%func => UmbrellaVar_Q6
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) analysisName
