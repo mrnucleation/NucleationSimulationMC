@@ -102,7 +102,7 @@
     subroutine ScriptInput_Umbrella(inputLines)
       use AnalysisMain, only: internalIndx, loadUmbArray, nAnalysisVar
       use MiscelaniousVars
-      use SimpleDistPair, only: nDistPair, pairArrayIndx, CalcDistPairs_New
+      use SimpleDistPair, only: nDistPair, pairArrayIndx, CalcDistPairs_New, UmbrellaVar_DistPair
       use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, maxMol, echoInput, NTotal, NTotal_New
       use Q6Functions, only: q6ArrayIndx, CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut
       use ParallelVar, only: nout
@@ -283,7 +283,8 @@
             write(*,*) inputLines(iUmbrella)
             stop 
           endif
-          call loadUmbArray(indxVar)%func(iUmbrella, biasVar, biasVarNew, outputFormat, &
+          write(*,*) "BLAH!"
+          call loadUmbArray(indxVar)%func(iUmbrella,indxVar, biasVar, biasVarNew, outputFormat, &
                                           iDisp, DispUmbrella, iSwapIn, SwapInUmbrella, iSwapOut, SwapOutUmbrella)
           UBinSize(iUmbrella) = binSize
           binMin(iUmbrella) = nint(valMin / binSize)

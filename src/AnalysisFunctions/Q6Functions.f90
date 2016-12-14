@@ -61,12 +61,12 @@
 
        end subroutine
      !--------------------------------------------------------------------------------
-       subroutine UmbrellaVar_Q6(iUmbrella, biasVar, biasVarNew, outputFormat, &
+       subroutine UmbrellaVar_Q6(iUmbrella,varIndx, biasVar, biasVarNew, outputFormat, &
                                  iDisp, DispUmbrella, iSwapIn, SwapInUmbrella, iSwapOut, SwapOutUmbrella)
          use MiscelaniousVars
          use UmbrellaTypes
          implicit none 
-         integer, intent(in) :: iUmbrella
+         integer, intent(in) :: iUmbrella, varIndx
          integer, intent(inout) :: iDisp, iSwapIn, iSwapOut
          
          type(BiasVariablePointer), intent(inout) :: biasvar(:)

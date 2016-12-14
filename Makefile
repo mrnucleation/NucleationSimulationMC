@@ -292,6 +292,8 @@ $(OBJ)/CoordinateFunctions.o: $(OBJ)/Common.o $(OBJ)/RandomTools.o
 
 $(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o            $(OBJ)/RadialDensity.o $(OBJ)/Common.o
 
+$(OBJ)/SimplePairDistance.o: $(OBJ)/Umbrella_Types.o
+
 $(OBJ)/EnergyPointers.o: $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o $(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o
 
 $(OBJ)/CBMC.o: $(OBJ)/Common.o $(OBJ_ENERGY) $(OBJ)/UmbrellaSampling_Version2.o 

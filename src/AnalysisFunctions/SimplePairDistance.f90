@@ -8,13 +8,14 @@
 
         private
         integer :: nDistPair
-        integer, allocatable :: pairArrayIndx(:)
+        integer, allocatable :: pairArrayIndx(:), analysisIndx(:)
         integer, allocatable :: pairGloIndx1(:), pairGloIndx2(:)
         integer, allocatable :: molIndx1(:), molIndx2(:)  
 
         public :: nDistPair, pairArrayIndx
         public :: Initialize_DistPair
         public :: SetPairVariables
+        public :: UmbrellaVar_DistPair
         public :: CalcDistPairs
         public :: CalcDistPairs_New, CalcDistPairs_SwapIn, CalcDistPairs_SwapOut
 
@@ -31,6 +32,7 @@
              return
            endif 
 
+           allocate(analysisIndx(1:nDistPair), STAT = AllocationStatus)
            allocate(pairArrayIndx(1:nDistPair), STAT = AllocationStatus)
            allocate(pairGloIndx1(1:nDistPair), STAT = AllocationStatus)
            allocate(pairGloIndx2(1:nDistPair), STAT = AllocationStatus)
@@ -43,12 +45,58 @@
              pairArrayIndx(iPair) = startIndx + iPair - 1
            enddo
         end subroutine
+
      !--------------------------------------------------------------------------------
-        subroutine SetPairVariables(nPair, nType1, nMol1, nAtom1, nType2, nMol2, nAtom2)
+       subroutine UmbrellaVar_DistPair(iUmbrella, varIndx, biasVar, biasVarNew, outputFormat, &
+                                 iDisp, DispUmbrella, iSwapIn, SwapInUmbrella, iSwapOut, SwapOutUmbrella)
+         use MiscelaniousVars
+         use UmbrellaTypes
+         implicit none 
+         integer, intent(in) :: iUmbrella, varIndx
+         integer, intent(inout) :: iDisp, iSwapIn, iSwapOut
+         
+         type(BiasVariablePointer), intent(inout) :: biasvar(:)
+         type(BiasVariablePointer), intent(inout) :: biasvarnew(:)
+         type(DispUmbrellaArray), intent(inout)  :: DispUmbrella(:)
+         type(SwapInUmbrellaArray), intent(inout)  :: SwapInUmbrella(:)
+         type(SwapOutUmbrellaArray), intent(inout)  :: SwapOutUmbrella(:)
+         character(len=10), intent(inout) :: outputFormat(:)
+
+         integer :: i, localIndx
+
+         localIndx = 0
+         do i = 1, nDistPair
+           write(*,*) i, analysisIndx(i), varIndx
+           if(varIndx .eq. analysisIndx(i) ) then
+             localIndx = i
+             exit
+           endif
+         enddo
+         if(localIndx .eq. 0 ) then
+           write(*,*) "ERROR! Local Index not found in UmbrellaVar_DistPair"
+           stop
+         endif
+
+         biasvar(iUmbrella) % varType = 2
+         biasvar(iUmbrella) % realVar => miscCoord(pairArrayIndx(localIndx))
+         biasvarnew(iUmbrella) % varType = 2
+         biasvarnew(iUmbrella) % realVar => miscCoord_New(pairArrayIndx(localIndx))
+
+         outputFormat(iUmbrella) = "2x,F12.6,"
+
+         iDisp = iDisp + 1
+         DispUmbrella(iDisp) % func => CalcDistPairs_New
+         iSwapIn = iSwapIn + 1
+         SwapInUmbrella(iSwapIn) % func => CalcDistPairs_SwapIn
+         iSwapOut = iSwapOut + 1
+         SwapOutUmbrella(iSwapOut) % func => CalcDistPairs_SwapOut
+       end subroutine
+     !--------------------------------------------------------------------------------
+        subroutine SetPairVariables(nPair, nType1, nMol1, nAtom1, nType2, nMol2, nAtom2, varIndx)
            use MiscelaniousVars
            use Coords, only: molArray
            implicit none 
-           integer, intent(in) :: nPair 
+           integer, intent(in) :: nPair , varIndx
            integer, intent(in) :: nType1, nMol1, nAtom1
            integer, intent(in) :: nType2, nMol2, nAtom2
            integer :: gloIndx1, gloIndx2, indx1, indx2
@@ -57,6 +105,9 @@
            gloIndx2 = molArray(nType2)%mol(nMol2)%globalIndx(nAtom2)
            indx1 = molArray(nType1)%mol(nMol1)%indx
            indx2 = molArray(nType2)%mol(nMol2)%indx
+
+           analysisIndx(nPair) = varIndx
+           write(*,*) analysisIndx
 
            pairGloIndx1(nPair) = gloIndx1
            pairGloIndx2(nPair) = gloIndx2

@@ -16,12 +16,12 @@
      end interface
 
      interface 
-       subroutine UmbrellaLoader(iUmbrella, biasVar, biasVarNew, outputFormat, &
+       subroutine UmbrellaLoader(iUmbrella,varIndx, biasVar, biasVarNew, outputFormat, &
                                  iDisp, DispUmbrella, iSwapIn, SwapInUmbrella, iSwapOut, SwapOutUmbrella)
          use MiscelaniousVars
          use UmbrellaTypes
          implicit none 
-         integer, intent(in) :: iUmbrella
+         integer, intent(in) :: iUmbrella, varIndx
          integer, intent(inout) :: iDisp, iSwapIn, iSwapOut
          
          type(BiasVariablePointer), intent(inout) :: biasvar(:)
@@ -67,7 +67,7 @@
 !======================================================
      subroutine ScriptAnalysisInput(inputLines)
       use MiscelaniousVars
-      use SimpleDistPair, only: nDistPair, pairArrayIndx
+      use SimpleDistPair, only: nDistPair, pairArrayIndx, UmbrellaVar_DistPair
       use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes
       use Q6Functions, only: CalcQ6, Initialize_q6, useQ6, q6Dist, q6DistSq, UmbrellaVar_Q6
       implicit none
@@ -193,12 +193,12 @@
         case("pairdist")
           iDistPair = iDistPair + 1
           read(inputLines(iAnalysis+1), *)  analysisName, type1, mol1, atom1, type2, mol2, atom2
-          call SetPairVariables(iDistPair, Type1, Mol1, Atom1, Type2, Mol2, Atom2)
+          call SetPairVariables(iDistPair, Type1, Mol1, Atom1, Type2, Mol2, Atom2, iAnalysis)
           if(iDistPair .eq. 1) then
             iPostMove = iPostMove + 1
             postMoveArray(iPostMove)%func => CalcDistPairs
           endif 
-
+          loadUmbArray(iAnalysis)%func => UmbrellaVar_DistPair
         case("radialdensity")
           read(inputLines(iAnalysis+1), *)  analysisName, type1, binSize, nBins, fileName
           iRadDens = iRadDens + 1
