@@ -85,10 +85,7 @@
           call LoadFile(forcefieldStore, nForceLines, ffLineNumber, forcefieldFile)
 !      write(nout,*) "Input parameters read,  reading forcefield........."
           call ScriptForcefield(forcefieldStore)
-          if(useWHAM) then
-            nWhamItter = ceiling(dble(ncycle)/dble(intervalWHAM))
-            call WHAM_Initialize
-          endif
+
 !      write(nout,*) "Forcefield read!"
           if(allocated(forcefieldStore)) then
             deallocate(forcefieldStore)
@@ -140,7 +137,10 @@
       call ReadInitialConfiguration
       call RecenterCoordinates
       call ReadInitialGasPhase      
-    
+      if(useWHAM) then
+        nWhamItter = ceiling(dble(ncycle)/dble(intervalWHAM))
+        call WHAM_Initialize
+      endif
 
 
       end subroutine

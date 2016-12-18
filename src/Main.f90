@@ -111,7 +111,10 @@
       distGen_atmp = 0E0_dp
       angGen_atmp = 0E0_dp
       dihedGen_atmp = 0E0_dp
-      atmpRot = 1E-30_dp
+      acptTrans = 0E0_dp
+      atmpTrans = 1E-40_dp
+      acptRot = 0E0_dp
+      atmpRot = 1E-40_dp
 !  Counter for the number of moves rejected due to the cluster criteria
       NeighRej = 0E0_dp
 !      NHist = 0E0
@@ -304,6 +307,9 @@
          
          if(mod(iCycle, 100) .eq. 0 ) then
            do i = 1, nMolTypes
+             if(NMAX(i) .le. 0) then
+               cycle
+             endif
              call AdjustMax(acptTrans(i), atmpTrans(i), max_dist(i), dist_limit)
 !             call AdjustMax(acc_2,atmp_2,max_dist_single, 0.1E0)
              call AdjustMax(acptRot(i), atmpRot(i), max_rot(i), rot_limit)   
@@ -525,14 +531,14 @@
         enddo       
       enddo      
 
-      if(any(atmpInSize .ne. 0E0_dp)) then
-        write(35,*) "Acceptance Rate by Cluster Size:"           
-        do i=1,maxMol      
-          if(atmpInSize(i) .ne. 0E0_dp) then
-           write(35,*) i, 1E2*acptInSize(i)/atmpInSize(i)
-          endif
-        enddo
-      endif
+!      if(any(atmpInSize .ne. 0E0_dp)) then
+!        write(35,*) "Acceptance Rate by Cluster Size:"           
+!        do i=1,maxMol      
+!          if(atmpInSize(i) .ne. 0E0_dp) then
+!           write(35,*) i, 1E2*acptInSize(i)/atmpInSize(i)
+!          endif
+!        enddo
+!      endif
 
 !      call OutputDihedral
       close(35)
@@ -540,11 +546,11 @@
 
 
 
-      do i=1,maxMol      
-        if(atmpInSize(i) .ne. 0E0_dp) then
-          write(35,*) i, 1E2*acptInSize(i)/atmpInSize(i)
-        endif
-      enddo
+!      do i=1,maxMol      
+!        if(atmpInSize(i) .ne. 0E0_dp) then
+!          write(35,*) i, 1E2*acptInSize(i)/atmpInSize(i)
+!        endif
+!      enddo
 
       if(useWham) then
         call WHAM_Finalize

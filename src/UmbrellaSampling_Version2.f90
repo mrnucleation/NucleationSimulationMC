@@ -213,7 +213,7 @@
           biasvarnew(iUmbrella) % intVar => NPart_New(indxVar)
           binMax(iUmbrella) = NMAX(indxVar)
           binMin(iUmbrella) = NMin(indxVar)
-          UBinSize(iUmbrella) = 1E0
+          UBinSize(iUmbrella) = 1E0_dp
           outputFormat(iUmbrella) = "2x,F5.1,"
           
 !          iSwapIn = iSwapIn + 1
@@ -225,7 +225,7 @@
           biasvarnew(iUmbrella) % intVar => NTotal_New
           binMax(iUmbrella) = maxMol
           binMin(iUmbrella) = 1
-          UBinSize(iUmbrella) = 1E0
+          UBinSize(iUmbrella) = 1E0_dp
           outputFormat(iUmbrella) = "2x,F5.1,"
         case("pairdist")
           indxVar = 0
@@ -289,6 +289,8 @@
           UBinSize(iUmbrella) = binSize
           binMin(iUmbrella) = nint(valMin / binSize)
           binMax(iUmbrella) = nint(valMax / binSize)
+          write(*,*) valMin, valMax, binSize
+          write(*,*) binMin(iUmbrella), binMax(iUmbrella)
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) umbrellaName
@@ -726,7 +728,6 @@
      do iBias = 1, nBiasVariables
 !       binIndx(iBias) = floor( varArray(iBias) / UBinSize(iBias) + 1E-8 )
        binIndx(iBias) = nint( varArray(iBias) / UBinSize(iBias) )
-!       write(*,*) nint( varArray(iBias) / UBinSize(iBias) ), floor( varArray(iBias) / UBinSize(iBias) + 1E-7 )
        if(binIndx(iBias) .gt. binMax(iBias)) then
          stat = 1
          return
@@ -769,18 +770,25 @@
 
      do iBias = 1, nBiasVariables
        if(biasvar(iBias) % varType .eq. 1) then
-         binIndx(iBias) = floor( biasvar(iBias) % intVar / UBinSize(iBias) )
+         binIndx(iBias) = nint( biasvar(iBias) % intVar / UBinSize(iBias) )
        elseif(biasvar(iBias) % varType .eq. 2) then
          binIndx(iBias) = floor( biasvar(iBias) % realVar / UBinSize(iBias) )
        endif
+       
        if(binIndx(iBias) .gt. binMax(iBias)) then
          write(*,*) "The initital system state is above the upper bounds"         
-         write(*,*) "specified by the umbrella sampling input"         
+         write(*,*) "specified by the umbrella sampling input"   
+         write(*,*) "Umbrella Variable:", iBias
+         write(*,*) "Bin Index:", binIndx(iBias)  
+         write(*,*) "Largest allowed bin:", binMax(iBias)          
          stop
        endif
        if(binIndx(iBias) .lt. binMin(iBias)) then
          write(*,*) "The initital system state is below the lower bounds"         
-         write(*,*) "specified by the umbrella sampling input"         
+         write(*,*) "specified by the umbrella sampling input"
+         write(*,*) "Umbrella Variable:", iBias
+         write(*,*) "Bin Index:", binIndx(iBias)  
+         write(*,*) "Smallest allowed bin:", binMin(iBias)              
          stop
        endif
      enddo

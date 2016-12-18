@@ -88,6 +88,7 @@
         write(*,*) labelField, nAnalysisVar
         stop
       endif
+      useAnalysis = .true.
 
 !      Begin by counting how many entries are required for each function array.
 !      These will be used in the next step to allocate the arrays. 

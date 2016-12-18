@@ -150,23 +150,23 @@
 !     This block ensures the initial configuration is within the min/max bounds set in the input parameter file      
       do iType = 1, nMolTypes
         if(NPART(iType) .gt. NMAX(iType)) then
-          write(nout,*) "Error! Number of particles in the initial"
-          write(nout,*) "configuration are greater than the maxmium bounds set in the"
-          write(nout,*) "input parameters."          
-          write(nout,*) "Molecule Type:", iType
-          write(nout,*) "Initial Size:", NPART(iType)          
-          write(nout,*) "Maximum Allowed:", NMAX(iType)
+          write(*,*) "Error! Number of particles in the initial"
+          write(*,*) "configuration are greater than the maxmium bounds set in the"
+          write(*,*) "input parameters."          
+          write(*,*) "Molecule Type:", iType
+          write(*,*) "Initial Size:", NPART(iType)          
+          write(*,*) "Maximum Allowed:", NMAX(iType)
           stop "Error! Configuration above maximum particle bounds!"
         endif
       enddo
       do iType = 1, nMolTypes
         if(NPART(iType) .lt. NMIN(iType)) then
-          write(nout,*) "Error! Number of particles in the initial"
-          write(nout,*) "configuration are less than the minimum bounds set in the"
-          write(nout,*) "input parameters."          
-          write(nout,*) "Molecule Type:", iType
-          write(nout,*) "Initial Size:", NPART(iType)          
-          write(nout,*) "Minimum Allowed:", NMIN(iType)
+          write(*,*) "Error! Number of particles in the initial"
+          write(*,*) "configuration are less than the minimum bounds set in the"
+          write(*,*) "input parameters."          
+          write(*,*) "Molecule Type:", iType
+          write(*,*) "Initial Size:", NPART(iType)          
+          write(*,*) "Minimum Allowed:", NMIN(iType)
           stop "Error! Configuration below minimum particle bounds!"
         endif
       enddo      
@@ -239,11 +239,16 @@
       implicit none
       integer :: iType,iMol,iAtom
       real(dp) :: xcm, ycm, zcm
-      
-      xcm = MolArray(1)%mol(1)%x(1)
-      ycm = MolArray(1)%mol(1)%y(1)
-      zcm = MolArray(1)%mol(1)%z(1)
-      
+
+      do iType = 1, nMolTypes
+        if(nMax(iType) .gt. 0) then
+          xcm = MolArray(iType)%mol(1)%x(1)
+          ycm = MolArray(iType)%mol(1)%y(1)
+          zcm = MolArray(iType)%mol(1)%z(1)
+          exit
+        endif
+      enddo      
+
       do iType=1,nMolTypes
         do iMol=1,NPART(iType)
           do iAtom=1,nAtoms(iType)

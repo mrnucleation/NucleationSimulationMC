@@ -14,7 +14,7 @@ OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
-DETAILEDDEBUG:= -g -fbacktrace -fcheck=all -Og -ffpe-trap=all
+DETAILEDDEBUG:= -g -fbacktrace -fcheck=all
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += $(DETAILEDDEBUG)
 #DEBUGFLAGS += -check all -traceback -g

@@ -648,13 +648,26 @@
 
       ALLOCATE (acptTrans(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (atmpTrans(1:nMolTypes), STAT = AllocateStatus)
+      acptTrans = 0E0_dp
+      atmpTrans = 1E-40_dp
+
+
       ALLOCATE (acptRot(1:nMolTypes),   STAT = AllocateStatus)
       ALLOCATE (atmpRot(1:nMolTypes),  STAT = AllocateStatus)
-      ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      acptRot = 0E0_dp
+      atmpRot = 1E-40_dp
+
       ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (atmpSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      acptSwapIn = 0E0_dp
+      atmpSwapIn = 1E-40_dp
+
       ALLOCATE (acptSwapOut(1:nMolTypes), STAT = AllocateStatus)
       ALLOCATE (atmpSwapOut(1:nMolTypes), STAT = AllocateStatus)
+      acptSwapOut = 0E0_dp
+      atmpSwapOut = 1E-40_dp
+
+
       ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStatus)
       ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStatus)
 

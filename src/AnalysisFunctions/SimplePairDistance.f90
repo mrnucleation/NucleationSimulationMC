@@ -66,7 +66,7 @@
 
          localIndx = 0
          do i = 1, nDistPair
-           write(*,*) i, analysisIndx(i), varIndx
+!           write(*,*) i, analysisIndx(i), varIndx
            if(varIndx .eq. analysisIndx(i) ) then
              localIndx = i
              exit
@@ -107,7 +107,7 @@
            indx2 = molArray(nType2)%mol(nMol2)%indx
 
            analysisIndx(nPair) = varIndx
-           write(*,*) analysisIndx
+!           write(*,*) analysisIndx
 
            pairGloIndx1(nPair) = gloIndx1
            pairGloIndx2(nPair) = gloIndx2

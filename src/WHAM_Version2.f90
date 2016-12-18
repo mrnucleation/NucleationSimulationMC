@@ -72,7 +72,7 @@
       call MPI_REDUCE(UHist, TempHist, arraySize, &
                 MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)       
 
-    
+!      write(*,*) "UHIST!"
       if(myid .eq. 0) then
 !        This block calculates the terms needed to 
         norm = sum(TempHist)
