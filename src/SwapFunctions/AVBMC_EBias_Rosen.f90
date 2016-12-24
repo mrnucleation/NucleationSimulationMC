@@ -54,30 +54,24 @@
       logical :: rejMove
       logical :: isIncluded(1:maxMol)
       integer :: NDiff(1:nMolTypes)
-      integer :: i, iType, nTargType, nTargMol, nTargIndx, nTarget
-      integer :: nType, nIndx, bIndx
-      integer :: atmType1, atmType2, nSel
+      integer :: i, nTargType, nTargMol, nTargIndx, nTarget
+      integer :: nType, nIndx
       real(dp) :: grnd
-      real(dp) :: dx, dy, dz, r
       real(dp) :: genProbRatio, rosenRatio
       real(dp) :: E_Inter, E_Intra, biasDiff
-      real(dp) :: biasOld, biasNew
       real(dp) :: PairList(1:maxMol)
       real(dp) :: dETable(1:maxMol)
       real(dp) :: newNeiETable(1:maxMol)      
-      real(dp) :: x1, y1, z1
       real(dp) :: ProbTarg_In, ProbTarg_Out, ProbSel_Out
-      real(dp) :: rmin_ij
-      real(dp) :: biasArray(1:nMolTypes)
       real(dp) :: Boltzterm
-      real(dp) :: ProbMol(1:nMolTypes), sumInt, ranNum, norm
+      real(dp) :: sumInt, ranNum
 
       if(NTotal .eq. maxMol) then
         boundaryRej = boundaryRej + 1d0
         totalRej = totalRej + 1d0
         return
       endif
-
+!a
 !      Choose the type of molecule to be inserted      
       if(nMolTypes .eq. 1) then
         nType = 1
@@ -91,7 +85,7 @@
           sumInt = sumInt + swapProb(nType)
         enddo
       endif
-
+!!!
       NDiff = 0
       NDiff(nType) = 1
       rejMove = boundaryFunction(NPART, NDiff)
@@ -242,19 +236,16 @@
       real(dp), intent(inout) :: acc_x, atmp_x
       
       logical :: rejMove  
-      integer :: i, nTarget, nIndx, bIndx, iType
+      integer :: nTarget, nIndx
       integer :: nSel,nType, nMol,nTargMol,nTargType
       integer :: NDiff(1:nMolTypes)      
-      integer :: nMolCanidates
       real(dp) :: grnd
       real(dp) :: genProbRatio
-      real(dp) :: biasDiff      
-      real(dp) :: biasOld, biasNew      
+      real(dp) :: biasDiff           
       real(dp) :: E_Inter, E_Intra
       real(dp) :: dETable(1:maxMol)
       real(dp) :: ProbTargOut, ProbSel, ProbTargIn
-      real(dp) :: rx, ry, rz, dist, rosenRatio, gasNorm
-      real(dp) :: biasArray(1:nMolTypes)
+      real(dp) :: rx, ry, rz, dist, rosenRatio
       real(dp) :: ranNum, sumInt
 
 
@@ -444,7 +435,6 @@
       use SimParameters  
       use Coords
       use EnergyTables
-      use ParallelVar, only: myid
       implicit none
       integer, intent(in) :: nTarget,nType
       real(dp), intent(in) :: newNeiETable(:)
@@ -481,9 +471,8 @@
       real(dp), intent(in) :: dE(:)
       real(dp), intent(out) :: ProbRev
       
-      integer :: iMol, iType, iIndx, nIndx, bIndx
-      integer :: NDiff(1:nMolTypes)
-      real(dp) :: norm, bias_diff, biasOld, biasNew       
+      integer :: iMol, iIndx, nIndx
+      real(dp) :: norm    
       
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
       norm = 0d0
@@ -499,9 +488,9 @@
       end subroutine
 !=================================================================================    
       subroutine EBias_Remove_ChooseTarget(nTarget, nTargType, nTargMol, ProbTarget)
-      use SimParameters  
       use Coords
       use EnergyTables
+      use SimParameters 
       implicit none
       integer, intent(out) :: nTarget, nTargType, nTargMol
       real(dp), intent(out) :: ProbTarget
@@ -549,7 +538,7 @@
       integer, intent(out) ::  nSel
       real(dp), intent(out) :: ProbTarget
       
-      integer :: iIndx, iType, iMol
+      integer :: iIndx, iMol
       real(dp) :: ProbTable(1:maxMol)
       real(dp) :: grnd, norm       
       real(dp) :: ranNum, sumInt   
@@ -596,7 +585,7 @@
 
       real(dp) :: avgE(1:nMolTypes)
       real(dp) :: ProbTable(1:maxMol)
-      real(dp) :: grnd, norm       
+      real(dp) :: norm       
         
       if(NTotal .eq. 2) then
          ProbSel=1d0

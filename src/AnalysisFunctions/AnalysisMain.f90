@@ -50,7 +50,7 @@
      private
      logical :: useAnalysis = .false.
      integer :: nAnalysisVar = 0
-     integer :: nPostMove, nOutput, nTrialVar
+     integer :: nPostMove, nOutput
 !     type(TrialFunctionArray), allocatable :: TrialArray(:)
      type(AnalysisFunctionArray), allocatable :: postMoveArray(:)
      type(AnalysisFunctionArray), allocatable :: outputArray(:)
@@ -59,7 +59,7 @@
      type(UmbrellaLoaderArray), allocatable :: loadUmbArray(:)
 !     type(TrialFunctionArray), allocatable :: UpdateArray(:)
 
-     public :: useAnalysis, ReadAnalysisInput, DummyAnalysisTest2, PostMoveAnalysis, OutputAnalysis
+     public :: useAnalysis, PostMoveAnalysis, OutputAnalysis
      public :: ScriptAnalysisInput, internalIndx, loadUmbArray, nAnalysisVar
 
 !======================================================
@@ -68,12 +68,12 @@
      subroutine ScriptAnalysisInput(inputLines)
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx, UmbrellaVar_DistPair
-      use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes
+      use SimParameters, only: NPART
       use Q6Functions, only: CalcQ6, Initialize_q6, useQ6, q6Dist, q6DistSq, UmbrellaVar_Q6
       implicit none
       character(len=100), intent(in) :: inputLines(:)
       integer :: nLines
-      integer :: iAnalysis, AllocateStatus
+      integer :: iAnalysis
       integer :: indxVar, nBins
       integer :: iRadial, iDistPair, iRadDens, iPostMove, iOutput
       integer :: type1, type2, mol1, mol2, atom1, atom2

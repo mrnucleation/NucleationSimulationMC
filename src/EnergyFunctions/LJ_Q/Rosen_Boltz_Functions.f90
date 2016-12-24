@@ -238,7 +238,7 @@
       integer, intent(in) :: nType, nAtom, nMol
       real(dp), intent(out) :: E_Trial
       
-      integer :: iAtom, jType, jIndx, jMol, jAtom
+      integer :: jType, jIndx, jMol, jAtom
       integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
@@ -309,18 +309,18 @@
       logical, intent(inout) :: overlap
       real(dp), intent(out) :: E_Trial
       
-      integer :: temp, iPair, jIndx, iAtom, jAtom
+      integer :: temp, iPair, iAtom, jAtom
       integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
-      real(dp) :: rmin_ij
 
       E_LJ = 0E0
       E_Ele = 0E0      
       E_Trial = 0E0
-      
+      overlap = .false.
+
       do iPair = 1,nIntraNonBond(nType)
         if(all(nonBondArray(nType,iPair)%nonMembr .ne. nAtom)) then
           cycle
@@ -377,13 +377,12 @@
       integer, intent(in) :: nType, nAtom, nMol
       real(dp), intent(out) :: E_Trial
       
-      integer :: temp, iPair, jIndx, iAtom, jAtom
+      integer :: temp, iPair, iAtom, jAtom
       integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
       real(dp) :: E_Ele,E_LJ
-      real(dp) :: rmin_ij
 
       E_LJ = 0E0
       E_Ele = 0E0      

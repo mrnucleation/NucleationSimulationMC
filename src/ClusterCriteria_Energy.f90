@@ -100,9 +100,8 @@
       logical :: neiFlipped, memberAdded
       logical :: ClusterMember(1:maxMol)      
       logical :: flipped(1:maxMol)
-      integer :: i,j,h,cnt
-      integer :: nType, jType
-      integer :: jlowerIndx      
+      integer :: i,j,h
+      integer :: nType, jType      
       integer :: curNeigh(1:60), neiMax
       
       rejMove=.false.
@@ -240,7 +239,7 @@
       logical :: neiFlipped, memberAdded
       logical :: clusterMember(1:maxMol)      
       logical :: flipped(1:maxMol)
-      integer :: i,j,h,cnt
+      integer :: i,j,h
       integer :: curNeigh(1:60), neiMax
       
       rejMove=.false.
@@ -248,6 +247,7 @@
 
       ClusterMember=.false.
       flipped=.false.
+      neiFlipped = .false.
       
       do i=1,maxMol
         if(.not. isActive(i)) then
@@ -417,7 +417,6 @@
       logical :: flipped(1:maxMol)
       integer :: i,j,h
       integer :: jType
-      integer :: jlowerIndx      
       integer :: curNeigh(1:60), neiMax
  
 

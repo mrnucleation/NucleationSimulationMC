@@ -46,18 +46,17 @@
       use Coords
       use SimParameters
       use EnergyTables
-      use PairStorage, only: rPair, distStorage, nTotalAtoms
+      use PairStorage, only: rPair
       implicit none
       real(dp), intent(inOut) :: E_T
       real(dp), intent(inOut) :: PairList(:,:)
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1,atmType2      
       integer :: iIndx, jIndx, globIndx1, globIndx2, jMolMin
-      real(dp) :: rx,ry,rz,r_sq, r
+      real(dp) :: r_sq, r
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele
-      real(dp) :: E_Ele,E_LJ
-      real(dp) :: rmin_ij      
+      real(dp) :: E_Ele,E_LJ    
 
 
 
@@ -153,20 +152,15 @@
       logical, intent(out) :: rejMove
 
       
-      integer :: iType,jType,iMol,jMol,iAtom,jAtom,iDisp, iPair
+      integer :: iType,jType,iMol,jMol,iAtom,jAtom, iPair
       integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
       integer :: sizeDisp
 !      integer, pointer :: oldIndx 
       integer :: gloIndx1, gloIndx2
-      real(dp) :: r_new, r_new_sq
-      real(dp) :: r_min1_sq      
+      real(dp) :: r_new, r_new_sq   
       real(dp) :: ep,sig_sq,q
       real(dp) :: LJ, Ele, E_PairOld, E_Old
       real(dp) :: E_Ele,E_LJ
-      real(dp) :: rmin_ij    
-      real(dp) :: time_r, time_LJ, time_Ele
-      real(dp) :: cnt_r, cnt_LJ, cnt_Ele
-      real(dp) :: time1, time2
 
 
       E_LJ = 0E0
@@ -269,7 +263,7 @@
       real(dp), intent(inout) :: PairList(:)
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
-      integer(kind=atomIntType) :: atmType1,atmType2, jIndx, iIndx
+      integer(kind=atomIntType) :: jIndx, iIndx
       integer :: sizeDisp 
       integer :: gloIndx1, gloIndx2
       real(dp) :: E_Pair
@@ -359,7 +353,6 @@
       real(dp) :: LJ, Ele
 
       real(dp) :: E_Ele,E_LJ
-      real(dp) :: rmin_ij
 
       E_LJ = 0E0
       E_Ele = 0E0      

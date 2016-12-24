@@ -43,10 +43,8 @@
     contains
 !=====================================================================
       subroutine CreateDistArrays
-      use ForceField, only: nAtoms
-      use SimParameters, only: NMAX, nMolTypes, maxAtoms
       implicit none
-      integer :: iType, AllocationStat
+      integer :: AllocationStat
       integer :: i, j, cnt
 
       nMaxPairs = nint( dble(nTotalAtoms * (nTotalAtoms - 1)) / 2d0 )
@@ -91,7 +89,7 @@
      subroutine SetStorageFlags(q_tab)
      use Coords
      use ForceField
-     use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+     use SimParameters, only: NMAX, nMolTypes
      implicit none
      real(dp), intent(in) :: q_tab(:,:)
      integer :: i, iType,jType,iMol,jMol,iAtom,jAtom
@@ -131,13 +129,13 @@
      subroutine CalcAllDistPairs
       use Coords
       use ForceField
-      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+      use SimParameters, only: NPART, nMolTypes
       implicit none
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer :: iIndx, jIndx
       integer(kind=atomIntType) :: atmType1, atmType2      
       integer :: globIndx1, globIndx2 
-      real(dp) :: rx, ry, rz, r_sq, q_ij
+      real(dp) :: rx, ry, rz, r_sq
       real(dp) :: rmin_ij   
 
       do iType = 1,nMolTypes
@@ -187,15 +185,14 @@
      subroutine CalcNewDistPairs(disp, rejMove)
       use Coords
       use ForceField
-      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+      use SimParameters, only: NPART, nMolTypes
       implicit none
       type(Displacement), intent(in) :: disp(:)
       logical, intent(out) :: rejMove
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer :: iIndx, jIndx
       integer(kind=atomIntType) :: atmType1,atmType2      
-      integer :: iDisp, sizeDisp, gloIndx1, gloIndx2, oldIndx
-      integer :: jMolMin
+      integer :: iDisp, sizeDisp, gloIndx1, gloIndx2
       real(dp) :: rx,ry,rz,r_sq
       real(dp) :: rmin_ij   
 
@@ -261,13 +258,12 @@
      subroutine CalcSwapInDistPairs(rejMove)
       use Coords
       use ForceField
-      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+      use SimParameters, only: NPART, nMolTypes
       implicit none
       logical, intent(out) :: rejMove
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1,atmType2      
-      integer :: iDisp, gloIndx1, gloIndx2, oldIndx
-      integer :: jMolMin
+      integer :: gloIndx1, gloIndx2
       real(dp) :: rx,ry,rz,r_sq
       real(dp) :: rmin_ij   
 
@@ -341,7 +337,7 @@
      subroutine UpdateDistArray_SwapOut(nType, nMol)
       use Coords
       use Forcefield, only: nAtoms
-      use SimParameters, only: NMAX, NPART, nMolTypes, maxAtoms
+      use SimParameters, only: NPART
       implicit none
       integer, intent(in) :: nType, nMol
       integer :: iAtom, nMol2

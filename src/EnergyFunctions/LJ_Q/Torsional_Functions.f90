@@ -215,7 +215,7 @@
         dot2 = dot2/(r3)    
         angle = atan2(dot2,dot1)        
             
-	eng = Trappe_CosNx(Angle, torsData(torsType)%a)
+        eng = Trappe_CosNx(Angle, torsData(torsType)%a)
         E_Tors = E_Tors + eng
         
         x12 = x_old(2) - x_old(1)
@@ -257,7 +257,7 @@
         dot2 = dot2/(r3)    
         angle = atan2(dot2,dot1)         
             
-	eng = Trappe_CosNx(Angle, torsData(torsType)%a)
+        eng = Trappe_CosNx(Angle, torsData(torsType)%a)
         E_Tors = E_Tors - eng
       enddo
       

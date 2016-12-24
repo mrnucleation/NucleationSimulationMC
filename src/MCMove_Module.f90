@@ -54,7 +54,7 @@
       integer :: i, iMoves, AllocateStatus
 
       real(dp) :: norm
-      character(len=30) :: labelField 
+!      character(len=30) :: labelField 
       character(len=30) :: moveName_temp
 
       nLines = size(lines)

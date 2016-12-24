@@ -49,7 +49,7 @@
       end subroutine
 !======================================================================================    
       subroutine SetRadialParameters(iRadial, type1, type2, atom1, atom2)
-      use PairStorage, only: distStorage, rPair
+      use PairStorage, only: rPair
       use SimParameters, only: NMAX
       use Coords
       implicit none 
@@ -98,7 +98,6 @@
       end subroutine
 !======================================================================================    
       subroutine Calc_RadialDist
-        use ParallelVar, only: nout
         use SimParameters, only: NPART
         use Coords
         implicit none
@@ -106,9 +105,7 @@
         integer :: bin, nBins
         integer :: nType1, nType2, nAtom1, nAtom2
         integer :: jMol, iMol
-        integer :: radialIndx
-        integer :: gloIndx1, gloIndx2
-        real(dp) :: r_sq, r
+        integer :: gloIndx1, gloIndx2, radialIndx
 
         do iRadial = 1, nRadialDist
           nType1 = radType1(iRadial)
@@ -154,8 +151,6 @@
         use Constants
         implicit none
         integer :: iRadial, iBin
-        integer :: radialIndx
-        integer :: gloIndx1, gloIndx2
         real(dp) :: d_bin
         real(dp) :: r, norm, rFactor
 

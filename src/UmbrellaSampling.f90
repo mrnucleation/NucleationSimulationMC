@@ -33,7 +33,7 @@
       integer,allocatable :: arrayIndx(:)   
       integer :: curIndx
       character(len=30) :: fileName   
-      real(dp) :: curValue, defaultVal
+      real(dp) :: curValue
         
       umbrellaLimit = 1
       do i=1,nMolTypes
@@ -48,9 +48,7 @@
       NHist = 0d0
       NBias = 0d0
       open( unit = 25, file = trim( adjustl(fileName) ), status='OLD')
-!      read(25,*)
-!      read(25,*) defaultVal
-!      NBias = defaultVal
+
       write(35,*) ""
       do i = 1,umbrellaLimit
 !      do i = 1,nint(1d7)

@@ -86,8 +86,7 @@
       
       logical :: interSwitch
       integer :: nIndx, nDisp
-      real(dp) :: E_NonBond, E_Stretch, E_Bend
-      real(dp) :: E_Torsion, E_Improper
+
 
       nDisp = size(disp)
       rejMove = .false.
@@ -160,10 +159,6 @@
       real(dp), intent(out) :: E_Inter, E_Intra
       real(dp), intent(inout) :: PairList(:), dETable(:)      
 
-      logical :: interSwitch
-      real(dp) :: E_NonBond, E_Stretch, E_Bend
-      real(dp) :: E_Torsion, E_Improper
-
       
       rejMove = .false.      
       E_Inter = 0d0
@@ -205,9 +200,7 @@
       logical, intent(in), optional :: useInter
       real(dp), intent(out) :: E_Inter, E_Intra      
       integer, intent(in) :: nType, nMol
-      real(dp), intent(inout) :: dETable(:)      
-
-      logical :: interSwitch      
+      real(dp), intent(inout) :: dETable(:)         
       
       E_Inter = 0d0
       E_Intra = 0d0

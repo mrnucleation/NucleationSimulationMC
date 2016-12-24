@@ -22,7 +22,7 @@
       rejMove = .false.
       NeighborList = .false.
       if(NTotal .eq. 1) then
-         return      
+        return      
       endif
 
       

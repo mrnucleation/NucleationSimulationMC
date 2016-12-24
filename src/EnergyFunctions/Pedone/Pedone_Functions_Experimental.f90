@@ -36,7 +36,7 @@
       use Coords
       use SimParameters
       use EnergyTables
-      use PairStorage, only: rPair, distStorage, nTotalAtoms
+      use PairStorage, only: rPair
       implicit none
       real(dp), intent(inOut) :: E_T
       real(dp), intent(inOut) :: PairList(:,:)
@@ -58,6 +58,8 @@
       E_Solvent = 0d0
       PairList = 0d0      
       ETable = 0d0
+
+      Solvent = 0E0_dp
 
 !      This first loop calculates oxide-oxide and oxide-metal interactions.
       do iType = 1, nMolTypes
@@ -88,6 +90,7 @@
                PairList(iIndx, jIndx) = r_sq
                PairList(jIndx, iIndx) = PairList(iIndx,jIndx)                    
              endif
+             LJ = 0E0_dp
              if(repul_C .ne. 0d0) then
                LJ = (1d0/r_sq)**6
                LJ = repul_C * LJ
@@ -103,6 +106,7 @@
              endif
              E_Ele = E_Ele + Ele
 
+             Morse = 0E0_dp
              if(delta .ne. 0d0) then
                Morse = 1d0 - exp(-alpha*(r-r_eq))
                Morse = delta*(Morse*Morse - 1d0)
@@ -165,15 +169,12 @@
       integer :: iType,jType,iMol,jMol, iPair
       integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
       integer :: gloIndx1, gloIndx2
-      integer :: sizeDisp 
-      real(dp) :: rx,ry,rz
       real(dp) :: r, r_sq
       real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
       real(dp) :: Morse, LJ, Ele, Solvent
       real(dp) :: E_LJ, E_Ele, E_Morse, E_Solvent
       real(dp) :: E_Old, E_PairOld
-      real(dp) :: rmin_ij    
       real(dp) :: born1, born2
 
       iType = disp(1)%molType
@@ -187,6 +188,7 @@
       E_Solvent = 0E0_dp
       E_Old = 0E0_dp
       Solvent = 0E0_dp
+      rejMove = .false.
 
       do iPair = 1, nNewDist
         gloIndx1 = newDist(iPair)%indx1
@@ -266,15 +268,9 @@
       real(dp), intent(inout) :: dETable(:)
       
       integer :: iIndx,jType,jIndx,jMol
-      integer(kind=atomIntType)  :: atmType1,atmType2
       integer :: gloIndx1, gloIndx2
-      real(dp) :: rx,ry,rz,r
-      real(dp) :: r_eq, repul_C, q_ij
-      real(dp) :: alpha, delta
-      real(dp) :: LJ, Ele, Morse
-      real(dp) :: E_Ele, E_LJ, E_Morse, E_Solvent, E_Pair
-      real(dp) :: born1, born2
-      
+      real(dp) :: E_Pair
+
 
       E_Trial = 0E0_dp
       dETable = 0E0_dp
@@ -307,25 +303,24 @@
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
-      integer :: iAtom, iIndx, jType, jIndx, jMol, jAtom, iPair
+      integer :: iIndx, jType, jIndx, jMol, iPair
       integer(kind=atomIntType) :: atmType1,atmType2
       integer :: gloIndx1, gloIndx2
-      real(dp) :: rx,ry,rz
-      real(dp) :: r, r_sq
-      real(dp) :: r_min1_sq      
+      real(dp) :: r, r_sq      
       real(dp) :: r_eq, repul_C, q_ij
       real(dp) :: alpha, delta
       real(dp) :: LJ, Ele, Morse
       real(dp) :: E_Ele,E_LJ, E_Morse, E_Solvent
-      real(dp) :: rmin_ij    
       real(dp) :: born1, born2
 
       E_LJ = 0d0
       E_Ele = 0d0      
       E_Morse = 0d0      
       E_Trial = 0d0
+      E_Solvent = 0d0
       PairList = 0d0      
       dETable = 0d0
+      rejMove = .false.
 
       iIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
       atmType1 = atomArray(newMol%molType, 1)
@@ -409,8 +404,7 @@
       implicit none
       integer, intent(in) :: jType, jMol     
       logical, intent(out) :: rejMove
-      
-      integer :: iAtom,jAtom
+
       integer(kind=atomIntType)  :: atmType1,atmType2
 
       real(dp) :: rx,ry,rz,r

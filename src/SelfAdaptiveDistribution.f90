@@ -9,8 +9,7 @@
      implicit none
      integer :: iDihed, iBin
      real(dp) :: histNorm, probNorm
-     real(dp) :: avg, tempConst
-     real(dp) :: maxProb, minProb
+     real(dp) :: avg
 
      do iDihed = 1, totalDihed
        histNorm = sum(dihedData(iDihed)%Hist)
@@ -55,9 +54,7 @@
      use CBMC_Variables
      implicit none
      integer :: iDihed, iBin
-     real(dp) :: histNorm, probNorm
-     real(dp) :: avg, tempConst
-     real(dp) :: maxProb, minProb
+     real(dp) :: histNorm
 
      do iDihed = 1, totalDihed
        histNorm = sum(dihedData(iDihed)%Hist)

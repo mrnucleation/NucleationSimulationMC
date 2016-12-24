@@ -21,12 +21,11 @@
       logical, intent(OUT)  :: screenEcho
       integer, intent(OUT) :: seed
 !      integer(kind=8), intent(OUT) :: ncycle,nmoves
-      integer :: i, ii, j, nRawLines, nArgs
+      integer :: i, ii, j, nArgs
       integer :: iLine, lineStat, AllocateStat
       integer :: nLines, nForceLines, lineBuffer
       integer, allocatable :: lineNumber(:), ffLineNumber(:)
-      real(dp) :: varValue
-      character(len=100), allocatable :: rawLines(:), lineStore(:)
+      character(len=100), allocatable :: lineStore(:)
       character(len=100), allocatable :: forcefieldStore(:)
       character(len=25) :: command, command2, dummy
       character(len=50) :: fileName
@@ -35,7 +34,7 @@
 
     
 !      Get the filename from the command line. 
-      nArgs=command_argument_count()
+      nArgs = command_argument_count()
       if(nArgs > 1) then
         stop "This program only takes one argument"
       endif
@@ -159,8 +158,8 @@
       logical, intent(out) :: screenEcho
       integer, intent(out) :: seed, lineStat
 
-      character(len=30) :: dummy, command, stringValue
-      character(len=15) :: fileName      
+      character(len=30) :: dummy, command!, stringValue
+!      character(len=15) :: fileName      
       logical :: logicValue
       integer :: j
       integer :: intValue, AllocateStat
@@ -301,9 +300,9 @@
 
       Dist_Critr = 0E0_dp
       Dist_Critr_sq = 0E0_dp
-      nCycle = 0E0_dp
-      ncycle2 = 0E0_dp
-      maxMol = 0E0_dp
+      nCycle = 0
+      ncycle2 = 0
+      maxMol = 0
 
       maxRosenTrial = 1
     

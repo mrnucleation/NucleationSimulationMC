@@ -36,7 +36,6 @@
       contains
 !========================================================  
       subroutine SetForcefieldType(potenType)
-      use AnalysisMain, only: ReadAnalysisInput
       use ForceField, only: ForceFieldName
       use EnergyPointers
       use SwapBoundary

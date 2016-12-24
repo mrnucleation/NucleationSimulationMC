@@ -31,13 +31,11 @@
       use EnergyCriteria
       use DistanceCriteria      
       use SimParameters
-      use ForceFieldPara_LJ_Q, only: q_tab
       use PairStorage, only: CalcAllDistPairs
       implicit none
       
       logical , intent(inout) :: rejMove
       real(dp), intent(inout) :: E_T
-      integer :: i,j
       real(dp) :: PairList(1:maxMol,1:maxMol)
       
       E_T = 0E0
@@ -102,7 +100,7 @@
       real(dp), intent(InOut) :: PairList(:)
       
       logical :: interSwitch
-      integer :: i, nIndx, nDisp
+      integer :: nIndx, nDisp
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
 

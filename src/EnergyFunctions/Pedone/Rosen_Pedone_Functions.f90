@@ -1,3 +1,4 @@
+!======================================================================================================
       module Rosenbluth_Functions_Pedone
       contains
 !======================================================================================================
@@ -17,7 +18,7 @@
       logical, intent(out) :: overlap
       real(dp), intent(out) :: E_Trial
       
-      integer :: iAtom, jType, jIndx, jMol, jAtom
+      integer :: jType, jIndx, jMol
       integer(kind=atomIntType) :: atmType1,atmType2
       real(dp) :: rx,ry,rz,r
       real(dp) :: q, alpha, delta, repul_C, r_eq
@@ -26,12 +27,12 @@
       real(dp) :: rmin_ij
       real(dp) :: born1, born2
 
-      E_Trial = 0E0
+      E_Trial = 0E0_dp
       overlap = .false.
       
-      E_LJ = 0E0
-      E_Ele = 0E0      
-      E_Morse = 0E0
+      E_LJ = 0E0_dp
+      E_Ele = 0E0_dp
+      E_Morse = 0E0_dp
 
       atmType1 = atomArray(nType, 1)
       do jType = 1, nMolTypes
@@ -98,7 +99,7 @@
       
       real(dp), intent(out) :: E_Trial
       
-      integer :: iAtom, jType, jIndx, jMol, jAtom
+      integer :: jType, jIndx, jMol
       integer(kind=atomIntType) :: atmType1, atmType2
       real(dp) :: rx, ry, rz, r
       real(dp) :: q, alpha, delta, repul_C, r_eq
@@ -107,10 +108,10 @@
       real(dp) :: rmin_ij
       real(dp) :: born1, born2
 
-      E_Trial = 0E0
-      E_LJ = 0E0
-      E_Ele = 0E0      
-
+      E_Trial = 0E0_dp
+      E_LJ = 0E0_dp
+      E_Ele = 0E0_dp 
+      E_Morse = 0E0_dp
       atmType1 = atomArray(nType, 1)
       do jType = 1, nMolTypes
         atmType2 = atomArray(jType, 1)

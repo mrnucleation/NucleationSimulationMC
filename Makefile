@@ -20,7 +20,7 @@ DETAILEDDEBUG:= -g -fbacktrace -fcheck=all
 #DEBUGFLAGS += -check all -traceback -g
 #DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
-#DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wimplicit-interface -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
+#DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
 
 

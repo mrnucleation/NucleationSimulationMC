@@ -93,7 +93,7 @@
     use ParallelVar
     implicit none
     include 'mpif.h'
-    integer :: iHist, iBin, AllocationStat, nBins 
+    integer :: iHist, iBin, nBins 
     real(dp), allocatable :: TempHist(:)
 
     call MPI_BARRIER(MPI_COMM_WORLD, ierror)
