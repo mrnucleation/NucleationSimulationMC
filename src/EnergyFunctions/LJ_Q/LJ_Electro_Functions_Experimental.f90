@@ -194,13 +194,13 @@
           ep = ep_tab(atmType2, atmType1)
           q  = q_tab(atmType2, atmType1)
          
-          if(distCriteria) then
-            if(iAtom .eq. 1) then
-              if(jAtom .eq. 1) then
-                PairList(jIndx) = newDist(iPair)%r_sq
-              endif
-            endif
-          endif
+!          if(distCriteria) then
+!            if(iAtom .eq. 1) then
+!              if(jAtom .eq. 1) then
+!                PairList(jIndx) = newDist(iPair)%r_sq
+!              endif
+!            endif
+!          endif
 
           LJ = 0E0
           Ele = 0E0
@@ -226,7 +226,7 @@
             endif
 !            dETable(iIndx) = dETable(iIndx) + Ele
 !            dETable(jIndx) = dETable(jIndx) + Ele
-            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + Ele
+!            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + Ele
           endif
           newDist(iPair)%E_Pair = Ele + LJ
           E_PairOld = distStorage(oldIndxArray(iPair))%E_Pair

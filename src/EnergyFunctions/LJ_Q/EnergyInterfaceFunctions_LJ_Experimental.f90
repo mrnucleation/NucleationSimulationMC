@@ -83,6 +83,7 @@
       use Coords      
       use DistanceCriteria            
       use EnergyCriteria
+      use EnergyCriteria_new
       use EnergyTables      
       use ImproperAngleFunctions      
       use InterEnergy_LJ_Electro
@@ -99,7 +100,7 @@
       real(dp), intent(out) :: E_Intra, E_Inter
       real(dp), intent(InOut) :: PairList(:)
       
-      logical :: interSwitch
+      logical :: interSwitch, rejMove2
       integer :: nIndx, nDisp
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
@@ -159,6 +160,7 @@
           endif
         else      
           call Shift_EnergyCriteria(PairList, nIndx, rejMove)
+!          call Shift_EnergyCriteria2(nIndx, rejMove)
         endif        
         if(rejMove) then
           return

@@ -31,9 +31,10 @@
      !Variable used to create a 2D array of pointers to make
      !accessing the distance storage easier to work with
     type DistPointer
-      type(DistArray), pointer :: p      
+      type(DistArray), pointer :: p 
     end type
 
+    logical :: coordShift = .false.
     integer :: nMaxPairs, nTotalAtoms, nNewDist
     integer, allocatable, target :: oldIndxArray(:)
     type(DistArray), allocatable, target :: distStorage(:)
@@ -53,6 +54,8 @@
       allocate(newDist(1:nMaxPairs), stat = AllocationStat) 
       allocate(oldIndxArray(1:nMaxPairs), stat = AllocationStat) 
 
+
+!     This block assigns all the relevent indicies and flags to the distanceStorage array.
       cnt = 0
       do i = 1, nTotalAtoms-1
         do j = i+1, nTotalAtoms
@@ -71,8 +74,7 @@
       enddo
 
 !     To avoid problems with unassocaited pointers, the diagonal of the pair array pointer
-!     is set to reference the 0-th value of the array.  This will hopefully make errors
-!     with 
+!     is set to reference the 0-th value of the array. 
       distStorage(0)%arrayIndx = 0
       distStorage(0)%indx1 = 0
       distStorage(0)%indx2 = 0

@@ -38,6 +38,7 @@ PEDONE := $(CUR_DIR)/src/EnergyFunctions/Pedone
 CBMC := $(CUR_DIR)/src/CBMC_Functions
 SWAP := $(CUR_DIR)/src/SwapFunctions
 ANALYSIS_SUB := $(CUR_DIR)/src/AnalysisFunctions
+BOUNDARY := $(CUR_DIR)/src/BoundaryFunctions
 
 #RUN_DIR := $(TRIAL)/Trial1_TransRot_Test
 #RUN_DIR := $(TRIAL)/Trial2_Water_Test
@@ -75,6 +76,7 @@ SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
+SRC_BOUNDARY := $(BOUNDARY)/ClusterCriteria_Energy_New.f90
 SRC_BIAS := $(SRC)/UmbrellaSampling_Version2.f90\
             $(SRC)/Umbrella_Types.f90\
             $(SRC)/WHAM_Version2.f90
@@ -129,8 +131,9 @@ OBJ_BIAS:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(SRC_BIAS))
 OBJ_SWAP:=$(patsubst $(SWAP)/%.f90,$(OBJ)/%.o,$(SRC_SWAP))
 OBJ_CRIT:=$(patsubst $(SRC)/%.f90,$(OBJ)/%.o,$(SRC_CRIT))
 OBJ_ANALYSIS:=$(patsubst $(ANALYSIS_SUB)/%.f90,$(OBJ)/%.o,$(SRC_ANALYSIS))
+OBJ_BOUNDARY:=$(patsubst $(BOUNDARY)/%.f90,$(OBJ)/%.o,$(SRC_BOUNDARY))
 
-OBJ_COMPLETE:= $(OBJ_CRIT) $(OBJ_ENERGY) $(OBJ_BIAS) $(OBJ_INPUT) $(OBJ_ANALYSIS) $(OBJ_MAIN2) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
+OBJ_COMPLETE:= $(OBJ_CRIT) $(OBJ_BOUNDARY) $(OBJ_ENERGY) $(OBJ_BIAS) $(OBJ_INPUT) $(OBJ_ANALYSIS) $(OBJ_MAIN2) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ_MAIN) 
 # ====================================
 #        Compile Commands
 # ====================================
@@ -170,6 +173,7 @@ $(OBJ)/%.o: $(CBMC)/%.f90
 $(OBJ)/%.o: $(SRC_ANALYSIS)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
+
 $(OBJ)/%.o: $(SWAP)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
@@ -182,6 +186,9 @@ $(OBJ)/%.o: $(SRC)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 
+$(OBJ)/%.o: $(BOUNDARY)/%.f90
+		@echo Creating $<
+		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 
 
 # ====================================

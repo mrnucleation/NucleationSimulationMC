@@ -1,11 +1,11 @@
 !=================================================================================
-      module EnergyCriteria
+      module EnergyCriteria_new
       contains
 !=================================================================================     
 !     Extensive Cluster Criteria Check.  Used at the start and end of the simulation. 
 !     This ensures that all particles in the cluster are properly connected to each other.
 !     This function also calculates the initial Neighborlist that is used throughout the simulation. 
-      subroutine Detailed_EnergyCriteria(PairList,rejMove)
+      subroutine Detailed_EnergyCriteria(rejMove)
       use SimParameters
       use Coords
       use IndexingFunctions
@@ -16,13 +16,43 @@
       
       logical :: ClusterMember(1:maxMol)
       integer :: i,j,h,cnt
-      integer :: iType,jType, iMol, jMol, iIndx, jIndx
+      integer :: iType,jType, iMol, jMol, iIndx, jIndx, jMolMin
+
 
       rejMove = .false.
       NeighborList = .false.
       if(NTotal .eq. 1) then
          return      
       endif
+
+
+      PairList = 0E0_dp
+      do iType = 1,nMolTypes
+        do jType = iType, nMolTypes
+          do iMol=1,NPART(iType)
+            if(iType .eq. jType) then
+              jMolMin = iMol+1
+            else
+              jMolMin = 1        
+            endif
+            do jMol = jMolMin, NPART(jType)
+              iIndx = MolArray(iType)%mol(iMol)%indx
+              jIndx = MolArray(jType)%mol(jMol)%indx  
+              do iAtom = 1,nAtoms(iType)
+                atmType1 = atomArray(iType,iAtom)
+                globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
+                do jAtom = 1,nAtoms(jType)        
+                  atmType2 = atomArray(jType,jAtom)  
+                  globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+                  PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + rPair(globIndx1, globIndx2)%p%E_Pair        
+                  PairList(jIndx, iIndx) = PairList(jIndx, iIndx) + rPair(globIndx1, globIndx2)%p%E_Pair  
+                enddo
+              enddo
+            enddo
+          enddo
+        enddo
+      enddo
+
       
       do iType = 1, nMolTypes
         do jType = iType, nMolTypes
@@ -85,14 +115,13 @@
       end subroutine
 !=================================================================================     
 !     This function determines if a given translational move will destroy a cluster. 
-      subroutine Shift_EnergyCriteria(PairList, nIndx, rejMove)
+      subroutine Shift_EnergyCriteria2(nIndx, rejMove)
       use SimParameters     
       use Coords
       use IndexingFunctions
       implicit none     
       
       logical, intent(out) :: rejMove      
-      real(dp), intent(in) :: PairList(1:maxMol)
       integer,intent(in) :: nIndx
       
       logical :: neiFlipped, memberAdded
@@ -101,6 +130,7 @@
       integer :: i,j,h
       integer :: nType, jType      
       integer :: curNeigh(1:60), neiMax
+      real(dp) :: PairList(1:maxMol)
       
       rejMove=.false.
       if(NTotal .eq. 1) return        
@@ -108,6 +138,21 @@
       flipped=.false.
       
       nType = Get_MolType(nIndx,NMAX)
+      PairList = 0E0_dp
+      do iPair = 1, nNewDist
+        gloIndx2 = newDist(iPair)%indx2
+        jType = atomIndicies(gloIndx2)%nType
+        jMol  = atomIndicies(gloIndx2)%nMol
+        jIndx = MolArray(jType)%mol(jMol)%indx
+        if(jIndx .ne. iIndx) then
+          gloIndx1 = newDist(iPair)%indx1
+          jAtom = atomIndicies(gloIndx2)%nAtom
+          iAtom = atomIndicies(gloIndx1)%nAtom
+          PairList(jIndx) = PairList(jIndx) + newDist(iPair)%E_Pair 
+        endif
+      enddo
+
+
      
 !     This section dermines which molecules are neighbored with the new trial position.  In the event
 !     that the molecule's new location has no neghibors all further calcualtions are skipped and the move is
@@ -225,7 +270,7 @@
       end subroutine
 !=================================================================================     
 !     This function determines if a given translational move will destroy a cluster. 
-      subroutine SwapOut_EnergyCriteria(nSwap,rejMove)
+      subroutine SwapOut_EnergyCriteria(nSwap, rejMove)
       use SimParameters     
       use Coords
       use IndexingFunctions
