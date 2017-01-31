@@ -113,7 +113,9 @@
       case(1)
         call Simple_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)   
       case(2)
-        call StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)   
+        call StraightChain_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)
+      case(3)
+        call BranchedMol_RosenConfigGen(nType, nIndx, nTarget, nTargType, isIncluded, rosenRatio, rejMove)
       case default
         write(*,*) "Error! EBias can not regrow a molecule of regrow type:", regrowType(nType)
         stop
@@ -330,6 +332,8 @@
         call Simple_RosenConfigGen_Reverse(nType, nMol, nTarget, nTargType, rosenRatio)
       case(2)
         call StraightChain_RosenConfigGen_Reverse(nType, nMol, nTarget, nTargType, rosenRatio)
+      case(3)
+        call BranchedMol_RosenConfigGen_Reverse(nType, nMol, nTarget, nTargType, rosenRatio)
       case default
         write(*,*) "Error! EBias can not regrow a molecule of regrow type:", nType
         stop

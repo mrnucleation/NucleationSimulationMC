@@ -14,7 +14,7 @@
       use AVBMC_RejectionVar
       use CBMC_Variables
       use Coords
-      use CoodinateFunctions
+      use CoordinateFunctions
       use Constants
       use EnergyPointers, only: Detailed_ECalc
       use EnergyTables

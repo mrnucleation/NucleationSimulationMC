@@ -145,6 +145,19 @@
 
       integer :: totalDihed
       type(DihedralAngle), allocatable :: dihedData(:)
+
+      integer, parameter :: maxBranches = 6
+      integer, parameter :: nRosenTwoBranch = 5
+      integer, parameter :: nRosenThreeBranch = 1
+      integer, parameter :: nRosenTorsion = 100
+	  
+      type GrowthSchedule
+        integer :: GrowthSteps
+        integer, allocatable :: GrowFrom(:),GrowPrev(:),GrowNum(:),TorNum(:)
+        integer, allocatable :: GrowList(:,:),TorList(:,:)
+      end type
+	  
+      type(GrowthSchedule), allocatable :: SwapGrowOrder(:)
       
       end module
 

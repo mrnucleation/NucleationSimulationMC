@@ -43,25 +43,6 @@
       allocate(usedByPath(1:nMolTypes,1:maxAtoms), STAT = AllocateStatus)
       allocate(atomPathIndex(1:nMolTypes,1:maxAtoms), STAT = AllocateStatus)
       allocate(probTypeCBMC(1:nMolTypes), STAT = AllocateStatus)
-      allocate(SwapGrowOrder(1:nMolTypes), STAT = AllocateStatus)
-	  
-	  
-!     Allocate Arrays for Growing Branched Molecules
-      do iType = 1, nMolTypes
-!       GrowFrom(i) is the atom number where growing at step "i" occurs from.
-        allocate(SwapGrowOrder(iType)%GrowFrom(1:maxAtoms), STAT = AllocateStatus)
-!       GrowPrev(i) is the atom number that has already been grown and connected to GrowFrom(i) in step "i"
-        allocate(SwapGrowOrder(iType)%GrowPrev(1:maxAtoms), STAT = AllocateStatus)
-!       GrowNum(i) is the number of atoms that are supposed to be grown in step "i"
-        allocate(SwapGrowOrder(iType)%GrowNum(1:maxAtoms), STAT = AllocateStatus)
-!       GrowList(i,j) is the jth atom that is grown in ith step (1 <= j <= GrowNum(i))
-        allocate(SwapGrowOrder(iType)%GrowList(1:maxAtoms,1:maxBranches), STAT = AllocateStatus)
-!       TorNum(i) is the number of atoms that are connetcted to GrowPrev(i), except GrowFrom(i), that are used to 
-!       calculate torsional energies for growing atoms in step "i"
-        allocate(SwapGrowOrder(iType)%TorNum(1:maxAtoms), STAT = AllocateStatus)
-!       TorList(i,j) is the jth atom that is connected to GrowPrev(i) in ith step (1 <= j <= TorNum(i))
-        allocate(SwapGrowOrder(iType)%TorList(1:maxAtoms,1:maxBranches), STAT = AllocateStatus)
-      enddo
       
 !      Search through each molecule and determine the number of bonds each atom is
 !      a part of. This is done in order to classify each atom as either a Terminal atom(numBonds = 1),
@@ -118,6 +99,9 @@
         endif
         if(nHub .ne. 0) then
            allocate(pathArray(iType)%hubAtoms(1:nHub),STAT = AllocateStatus)        
+           if(nHub .gt. 1) then
+             stop "Molecule contains Multiple Hubs, not yet supported"
+           endif
         endif        
 
 
@@ -219,106 +203,91 @@
       use Coords
       use CBMC_Variables
       implicit none
+      logical :: atomUsed(1:maxAtoms)
       integer :: i,cnt
       integer :: iType,iAtom, iPath
       integer :: nPaths,curBonds      
       integer, allocatable :: tempArray(:,:)
       integer :: atmPrev, atmCur, atmNext
       integer :: AllocateStatus      
-	  
-      integer :: nTerminal,nBranch,iBranch,nRemainPaths,pathMax
-      integer :: atmFirst,atmLast
-      integer, allocatable :: OnePath(:),tempPathMax(:),BondedAtoms(:)
 
 
       allocate(tempArray(1:50,1:maxAtoms))
-      allocate(OnePath(1:maxAtoms))
-      allocate(tempPathMax(1:50))
-      allocate(BondedAtoms(1:maxBranches))
 
 
       do iType = 1, nMolTypes
+!         This first segment finds all the segments that begin at a terminal atom
          tempArray = 0
-!     For a monoatomic molecule, there is only one path with one member
-         if (nAtoms(iType) .eq. 1) then
-            nPaths = 1
-            tempArray(1,1:1) = 1
-            goto 56
+         atomUsed = .false.
+         pathArray(iType)%nPaths = 0
+         do iAtom = nAtoms(iType) + 1,maxAtoms
+           atomUsed(iAtom) = .true.
+         enddo
+
+         if(nAtoms(iType) .eq. 1) then
+          pathArray(iType)%nPaths = 1
+          nPaths = pathArray(iType)%nPaths
+          tempArray(1,1:1) = 1
+          goto 56
          endif
-!     Starting with the first Terminal
-         nTerminal = 1
-!     There is no previous atom
-         atmPrev = 0
-         atmCur = pathArray(iType)%termAtoms(nTerminal)
-!     Find the atom connected to atmCur
-         call getNextAtom(iType,atmPrev,atmCur,atmNext)
-         nPaths = 1
-         nRemainPaths = 1
-         iPath = 1
-         tempArray(nPaths,1) = atmCur
-         tempArray(nPaths,2) = atmNext
-         atmPrev = atmCur
-         atmCur = atmNext
-         cnt = 2
-!     Start forming all paths
-         do while (nRemainPaths .gt. 0)
-            curBonds = topolArray(iType)%atom(atmCur)
-!     Find all the linkers on the path until a terminal or hud is found (the end of the path)
-            do while (curBonds .eq. 2)
-               call getNextAtom(iType,atmPrev,atmCur,atmNext)
-               atmPrev = atmCur
-               atmCur = atmNext
-               cnt = cnt + 1
-               tempArray(iPath,cnt) = atmCur
-               curBonds = topolArray(iType)%atom(atmCur)
+         do i = 1, pathArray(iType)%nTerminal
+            atmPrev = 0
+            atmCur = pathArray(iType)%termAtoms(i)
+            tempArray(i,1) = atmCur
+            atomUsed(atmCur) = .true.
+            curBonds = 2
+            cnt = 1
+            do while(curBonds .eq. 2)
+              call getNextAtom(iType,atmPrev,atmCur,atmNext)
+              atmPrev = atmCur
+              atmCur = atmNext
+              cnt = cnt + 1
+              tempArray(i,cnt) = atmNext
+              atomUsed(atmNext) = .true.
+              curBonds = topolArray(iType)%atom(atmNext)
             enddo
-!     Number of atoms in iPath
-            tempPathMax(iPath) = cnt
-            nRemainPaths = nRemainPaths - 1 + curBonds - 1
-            if (curBonds .gt. 2) then
-               nBranch = curBonds - 1
-!     Find all branches that are connected to "atmCur" except "atmPrev"
-               call getBondedAtoms(iType,atmPrev,atmCur,nBranch,BondedAtoms)
-               do iBranch = 1,nBranch
-                  nPaths = nPaths + 1
-!     Allocate the first two atms in the path
-                  tempArray(nPaths,1) = atmCur
-                  tempArray(nPaths,2) = BondedAtoms(iBranch)
-               enddo
-            endif
-            iPath = iPath + 1
-            atmPrev = tempArray(iPath,1)
-            atmCur = tempArray(iPath,2)
-            cnt = 2
-         enddo
-         iPath = iPath - 1
-         if (iPath .ne. nPaths) then
-            write(*,*) "Failed to trace paths", iPath, nPaths
-            stop
-         endif
-56       pathArray(iType)%nPaths = nPaths
-         allocate(pathArray(iType)%path(1:nPaths,1:nAtoms(iType)), STAT = AllocateStatus)
-         allocate(pathArray(iType)%pathMax(1:nPaths), STAT = AllocateStatus)
-         do iPath = 1,nPaths
-            pathArray(iType)%pathMax(iPath) = tempPathMax(iPath)
-            atmFirst = tempArray(iPath,1)
-            atmLast = tempArray(iPath,tempPathMax(iPath))
-!     For those paths that has one Terminal and one hub, the Terminal must be the first atom and the hub must be the last atom
-            if (topolArray(iType)%atom(atmFirst) .gt. 2) then
-               if (topolArray(iType)%atom(atmLast) .eq. 1) then
-                  OnePath = 0
-                  do iAtom = 1,tempPathMax(iPath)
-                     OnePath(tempPathMax(iPath) - iAtom + 1) = tempArray(iPath,iAtom)
-                  enddo
-                  do iAtom = 1,tempPathMax(iPath)
-                     tempArray(iPath,iAtom) = OnePath(iAtom)
-                  enddo
-               endif
+!            If curBonds = 1 we have gone from a Terminal atom to another Terminal atom
+!            implying we have a perfectly straight chain molecule.  Thus only one segment is
+!            present.  If curBonds >=3 we have reached a hub atom which ends the current
+!            path and the hub will now.
+            if(curBonds .ne. 2) then
+              pathArray(iType)%nPaths = pathArray(iType)%nPaths + 1
+              if(all(atomUsed .eqv. .true.) ) then
+                goto 56
+              endif              
             endif
          enddo
-         do iPath = 1, nPaths
-           pathArray(iType)%path(iPath,1:nAtoms(iType)) = tempArray(iPath,1:nAtoms(iType))
+!         If all atoms have been accounted for then no further calculations are required
+
+!        --------------------------------------------------------------------         
+!            This section will create pathways between two hubs.  Not yet completed.
+            stop "Hub to Hub Regrowth not currently supported"
+!        --------------------------------------------------------------------
+56       continue
+
+         nPaths = pathArray(iType)%nPaths
+         allocate(pathArray(iType)%path(1:nPaths,1:nAtoms(iType)),STAT = AllocateStatus) 
+         pathArray(iType)%path = 0
+
+         do i = 1, nPaths
+           pathArray(iType)%path(i,1:nAtoms(iType)) = tempArray(i,1:nAtoms(iType))
+
          enddo
+      enddo
+      
+      do iType = 1, nMolTypes
+        nPaths = pathArray(iType)%nPaths
+        allocate(pathArray(iType)%pathMax(1:nPaths), STAT = AllocateStatus)    
+
+        do iPath = 1, nPaths
+          pathArray(iType)%pathMax(iPath) = nAtoms(iType)
+          do iAtom = 1, nAtoms(iType)
+            if(pathArray(iType)%path(iPath,iAtom) .eq. 0) then
+              pathArray(iType)%pathMax(iPath) = iAtom-1
+              exit
+            endif
+          enddo
+        enddo
       enddo
 
       write(35,*) "------------------------------------------------------------------"
@@ -370,53 +339,6 @@
       
       write(*,*) "Error in getNextAtom subroutine!!" 
       write(*,*) "Dead End! Unable to find next atom in the chain"
-      write(*,*) "Mol Type:", iType
-      write(*,*) "Previous Atom:", atmPrev
-      write(*,*) "Current Atom:", atmCur
-      stop
-      
-      end subroutine
-!===============================================================================
-      subroutine getBondedAtoms(iType,atmPrev,atmCur,nBranch,BondedAtoms)
-      use Forcefield
-      use SimParameters
-      use Coords
-      use CBMC_Variables
-      implicit none
-	  
-      integer, intent(in) :: iType,atmPrev,atmCur,nBranch
-      integer :: atmNext
-      
-      logical :: atmFound
-      integer :: iBond,BondedAtoms(1:maxBranches),iBranch
-	  
-	  
-      iBranch = 0
-      BondedAtoms = 0
-	  
-      do iBond = 1, nBonds(iType)
-         atmFound = .false.      
-         if(any(bondArray(iType,iBond)%bondMembr .eq. atmCur)) then
-           atmFound = .true.     
-         endif
-         if(atmFound) then
-           if(all(bondArray(iType,iBond)%bondMembr .ne. atmPrev) ) then
-              iBranch = iBranch + 1
-              if(bondArray(iType,iBond)%bondMembr(1) .eq. atmCur) then
-                BondedAtoms(iBranch) = bondArray(iType,iBond)%bondMembr(2)
-                if (iBranch .eq. nBranch) return
-              else
-                BondedAtoms(iBranch) = bondArray(iType,iBond)%bondMembr(1)
-                if (iBranch .eq. nBranch) return              
-              endif
-           endif
-         endif
-      enddo
-	  
-	  
-	  
-      write(*,*) "Error in getBondedAtoms subroutine!!" 
-      write(*,*) "Dead End! Unable to find all branches"
       write(*,*) "Mol Type:", iType
       write(*,*) "Previous Atom:", atmPrev
       write(*,*) "Current Atom:", atmCur
@@ -515,7 +437,6 @@
       logical :: bondRidgid, bendRidgid
       integer :: iType, iAtom, Atom1Loc, nextAtom
       integer :: cnt
-      integer :: iPath
       
       regrowOrder = 0
       
@@ -556,53 +477,11 @@
               regrowOrder(iType,cnt) = pathArray(iType)%path(1,iAtom) 
             enddo 
           endif
-        case (3)
-          SwapGrowOrder(iType)%GrowFrom = 0
-          SwapGrowOrder(iType)%GrowPrev = 0
-          SwapGrowOrder(iType)%GrowNum = 0
-          SwapGrowOrder(iType)%GrowList = 0
-          SwapGrowOrder(iType)%TorNum = 0
-          SwapGrowOrder(iType)%TorList = 0
-          if (topolArray(iType)%atom(1) .eq. 1) then
-             do iPath = 1,pathArray(iType)%nPaths
-                if (pathArray(iType)%path(iPath,1) .eq. 1) then
-                   if (pathArray(iType)%path(iPath,2) .ne. 2) then
-                      write(*,*) "Error! The first and the second atoms in type", iType, "must be connected"
-                      stop
-                   endif
-                   exit
-                endif
-             enddo
-             SwapGrowOrder(iType)%GrowPrev(1) = 1
-             SwapGrowOrder(iType)%GrowFrom(1) = 2
-          elseif (topolArray(iType)%atom(2) .eq. 1) then
-             do iPath = 1,pathArray(iType)%nPaths
-                if (pathArray(iType)%path(iPath,1) .eq. 2) then
-                   if (pathArray(iType)%path(iPath,2) .ne. 1) then
-                      write(*,*) "Error! The first and the second atoms in type", iType, "must be connected"
-                      stop
-                   endif
-                   exit
-                endif
-             enddo
-             SwapGrowOrder(iType)%GrowPrev(1) = 2
-             SwapGrowOrder(iType)%GrowFrom(1) = 1
-          else
-            write(*,*) iType, regrowType(iType)
-            write(*,*) "Error in DetermineRegrowOrder function!"
-            write(*,*) "Invalid Regrow Type!"
-            write(*,*) "The first or the second atom must be a terminal!"
-            stop 
-          endif
-		  
-          call Schedule_BranchedMol_Swap(iType)
-		  
         case default
           write(*,*) iType, regrowType(iType)
           write(*,*) "Error in DetermineRegrowOrder function!"
           write(*,*) "Invalid Regrow Type!"
           stop 
-
 
         end select
 
@@ -611,101 +490,5 @@
 
       
       end subroutine  
-!=========================================================      
-      
-      subroutine Schedule_BranchedMol_Swap(nType)
-      use SimParameters
-      use CBMC_Variables
-      use CBMC_Utility, only: getRandomBondedAtoms
-      implicit none
-	  
-      integer, intent(in) :: nType
-      logical :: LGrowing
-      integer :: atmCur, atmPrev, atmNext, curBonds, preBonds, TotalGrowing, OuterNum, OuterAtoms(1:maxAtoms)
-      integer :: OuterPrev(1:maxAtoms), iBond, iu, iufrom, iCBunit, BondedAtoms(1:maxAtoms), OuterTry, nGrow, iGrow
-      real(dp) :: grnd
-	  
-      nGrow = 1
-      atmCur = SwapGrowOrder(nType)%GrowFrom(nGrow)
-      atmPrev = SwapGrowOrder(nType)%GrowPrev(nGrow)
-      SwapGrowOrder(nType)%TorNum(nGrow) = 0
-      curBonds = topolArray(nType)%atom(atmCur)
-	  
-      select case(curBonds)
-      case(1) ! A Terminal has been selected, an Error happened
-         write(*,*) "Error! This molecule of type", nType, "is Diatomic NOT Branched"
-         stop
-      case(2) ! A Linker is Growing
-         SwapGrowOrder(nType)%GrowNum(nGrow) = curBonds - 1
-         iGrow = SwapGrowOrder(nType)%GrowNum(nGrow)
-         call getNextAtom(nType,atmPrev,atmCur,atmNext)
-         SwapGrowOrder(nType)%GrowList(nGrow,iGrow) = atmNext
-      case default ! A Hub is Growing
-         SwapGrowOrder(nType)%GrowNum(nGrow) = curBonds - 1
-         iGrow = SwapGrowOrder(nType)%GrowNum(nGrow)
-         LGrowing = .true.
-         call getRandomBondedAtoms(nType,atmCur,atmPrev,iGrow,BondedAtoms,LGrowing)
-         do iBond = 1,iGrow
-            SwapGrowOrder(nType)%GrowList(nGrow,iBond) = BondedAtoms(iBond)
-         enddo
-      end select
-      TotalGrowing = 0 
-      OuterNum = 0
-      iufrom = SwapGrowOrder(nType)%GrowFrom(nGrow)
-      do iCBunit = 1,SwapGrowOrder(nType)%GrowNum(nGrow)
-         TotalGrowing = TotalGrowing + 1
-         iu = SwapGrowOrder(nType)%GrowList(nGrow,iCBunit)
-         iBond = topolArray(nType)%atom(iu)
-         if (iBond .gt. 1) then
-            OuterNum = OuterNum + 1
-            OuterAtoms(OuterNum) = iu
-            OuterPrev(OuterNum) = iufrom
-         endif
-      enddo
-      do while (OuterNum .gt. 0)
-         OuterTry = floor(grnd()*OuterNum + 1d0)
-         nGrow = nGrow + 1
-         atmCur = OuterAtoms(OuterTry)
-         atmPrev = OuterPrev(OuterTry)
-         SwapGrowOrder(nType)%GrowFrom(nGrow) = atmCur
-         SwapGrowOrder(nType)%GrowPrev(nGrow) = atmPrev
-         SwapGrowOrder(nType)%GrowNum(nGrow) = topolArray(nType)%atom(atmCur) - 1
-         iGrow = SwapGrowOrder(nType)%GrowNum(nGrow)
-         LGrowing = .true.
-         call getRandomBondedAtoms(nType,atmCur,atmPrev,iGrow,BondedAtoms,LGrowing)
-         do iBond = 1,iGrow
-            SwapGrowOrder(nType)%GrowList(nGrow,iBond) = BondedAtoms(iBond)
-         enddo
-         preBonds = topolArray(nType)%atom(atmPrev)
-         SwapGrowOrder(nType)%TorNum(nGrow) = preBonds - 1
-         iGrow = SwapGrowOrder(nType)%TorNum(nGrow)
-         if (iGrow .gt. 0) then
-            LGrowing = .false.
-            call getRandomBondedAtoms(nType,atmPrev,atmCur,iGrow,BondedAtoms,LGrowing)
-            do iBond = 1,iGrow
-               SwapGrowOrder(nType)%TorList(nGrow,iBond) = BondedAtoms(iBond)
-            enddo
-         endif
-! Update list of "Outer" beads: Remove bead that was just grown from Outer list
-         OuterAtoms(OuterTry) = OuterAtoms(OuterNum)
-         OuterPrev(OuterTry) = OuterPrev(OuterNum)
-         OuterNum = OuterNum - 1
-! Add the new beads if they have more to be grown
-         iufrom = atmCur
-         do iCBunit = 1,SwapGrowOrder(nType)%GrowNum(nGrow)
-            TotalGrowing = TotalGrowing + 1
-            iu = SwapGrowOrder(nType)%GrowList(nGrow,iCBunit)
-            iBond = topolArray(nType)%atom(iu)
-            if (iBond .gt. 1) then
-               OuterNum = OuterNum + 1
-               OuterAtoms(OuterNum) = iu
-               OuterPrev(OuterNum) = iufrom
-            endif
-         enddo
-      enddo
-      SwapGrowOrder(nType)%GrowthSteps = nGrow
-      
-      end subroutine  
-	  
 !=========================================================      
       

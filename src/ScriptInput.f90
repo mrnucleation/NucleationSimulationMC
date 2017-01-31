@@ -7,7 +7,7 @@
       use CBMC_Variables
       use Constants
       use Coords
-      use CoodinateFunctions
+      use CoordinateFunctions
       use EnergyTables
       use ForceField
       use ForceFieldInput, only: SetForcefieldType, ScriptForcefield, fieldTypeSet

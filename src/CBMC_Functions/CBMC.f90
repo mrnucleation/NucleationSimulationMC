@@ -4,6 +4,7 @@
       subroutine CBMC(E_T, acc_x, atmp_x)  
       use SimParameters
       use CBMC_Variables
+      use CBMC_Utility
       use Coords
 !      use E_Interface
       use EnergyPointers, only: Shift_ECalc, Update_SubEnergies
@@ -22,17 +23,22 @@
 
       logical :: rejMove      
       logical :: regrown(1:maxAtoms)
+      logical :: regrowDirection
+
       integer :: i, j, iPath, nType, nMol, nIndx, nMove, nPath, nAtom
       integer :: iAtom, nAtomLoc, nDisp
-      logical :: regrowDirection
+      integer :: nGrow,GrowFrom(1:maxAtoms),GrowPrev(1:maxAtoms),GrowNum(1:maxAtoms),TorNum(1:maxAtoms)
+      integer :: TorList(1:maxAtoms,1:maxBranches),GrowList(1:maxAtoms,1:maxBranches)
+
       real(dp) :: grnd, ranNum, sumInt
       real(dp) :: dx,dy,dz      
       real(dp) :: E_Diff, biasDiff
-      type (displacement) :: disp(1:maxAtoms)
       real(dp) :: PairList(1:maxMol)
       real(dp) :: dETable(1:maxMol)
       real(dp) :: rosenProb_New, rosenProb_Old, rosenRatio      
       real(dp) :: E_Inter, E_Intra
+
+      type (displacement) :: disp(1:maxAtoms)
 
       rejMove = .false.
 
@@ -105,39 +111,18 @@
         nPath = floor(grnd()*pathArray(nType)%nPaths + 1d0)
         nAtomLoc = floor(grnd()*pathArray(nType)%pathMax(nPath) + 1d0)
         nAtom = pathArray(nType)%path(nPath, nAtomLoc)
+		
+        call Schedule_BranchedMol_Growth(nType, nPath, nAtomLoc, nAtom, nGrow, regrown, GrowFrom, GrowPrev, &
+                                           GrowNum, GrowList, TorNum, TorList)
 
-        if(grnd() .gt. 0.5d0) then
-          regrowDirection = .true.
-        else
-          regrowDirection = .false.
+        call BranchedMol_Partial_ConfigGen(nType, nMol, regrown(1:maxatoms), nGrow,  &
+                                           GrowFrom, GrowPrev, GrowNum, GrowList, TorNum, TorList, rosenProb_New, rejMove)
+        if(rejMove) then
+          return
         endif
 
-        if(regrowDirection) then
-          do i = nAtomLoc, pathArray(nType)%pathMax(nPath)
-            iAtom = pathArray(nType)%path(nPath, i)
-            regrown(iAtom) = .false. 
-          enddo
-        else
-          do i = 1, nAtomLoc
-            iAtom = pathArray(nType)%path(nPath, i)
-            regrown(iAtom) = .false. 
-          enddo
-        endif
-        
-        do i = 1, pathArray(nType)%nHub
-          if(regrown( pathArray(nType)%hubAtoms(i) ) .eqv. .false.) then
-            do iPath = 1, pathArray(nType)%nPaths
-              if(any(pathArray(nType)%path(nPath, :) .eq. i) ) then
-                if(iPath .ne. nPath) then
-                  do j = 1, pathArray(nType)%pathMax(iPath)
-                    iAtom = pathArray(nType)%path(iPath, j)
-                    regrown(iAtom) = .false.
-                  enddo
-                endif
-              endif
-            enddo
-          endif
-        enddo
+        call BranchedMol_Partial_ConfigGen_Reverse(nType, nMol, regrown(1:maxatoms), nGrow,  &
+                                                   GrowFrom, GrowPrev, GrowNum, GrowList, TorNum, TorList, rosenProb_Old)
 
         if( all(regrown .eqv. .false.) ) then
           regrown(nAtom) = .true.

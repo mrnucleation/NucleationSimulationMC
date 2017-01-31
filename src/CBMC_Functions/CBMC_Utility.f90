@@ -109,6 +109,146 @@
       included(nTarget) = .true.
       
       end subroutine 
+
+
+!=======================================================================
+      subroutine Schedule_BranchedMol_Growth(nType,nPath,nAtomLoc,nAtom,nGrow,regrown,GrowFrom,GrowPrev, &
+                                               GrowNum,GrowList,TorNum,TorList)
+      use SimParameters
+      use CBMC_Variables
+      implicit none
+	  
+      integer, intent(in) :: nType, nPath, nAtomLoc, nAtom
+      integer :: nGrow
+      integer :: GrowFrom(1:maxAtoms),GrowPrev(1:maxAtoms),GrowNum(1:maxAtoms),TorNum(1:maxAtoms)
+      integer :: TorList(1:maxAtoms,1:maxBranches),GrowList(1:maxAtoms,1:maxBranches)
+      logical :: regrown(1:maxAtoms)
+      logical :: LGrowing
+      integer :: atmCur, atmPrev, atmNext, curBonds, preBonds, TotalGrowing, OuterNum, OuterAtoms(1:maxAtoms), OuterPrev(1:maxAtoms)
+      integer :: Incrmt, iBond, iu, iufrom, iCBunit, BondedAtoms(1:maxBranches), OuterTry
+      real(dp) :: grnd
+	  
+      GrowFrom = 0
+      GrowPrev = 0
+      GrowNum = 0
+      TorNum = 0
+      TorList = 0
+      GrowList = 0
+      nGrow = 1
+      atmCur = nAtom
+      GrowFrom(nGrow) = atmCur
+      curBonds = topolArray(nType)%atom(atmCur)
+      select case(curBonds)
+      case(1) ! A Terminal has been selected, the whole molecule is regrown
+         GrowPrev(nGrow) = 0
+         TorNum(nGrow) = 0
+         GrowNum(nGrow) = curBonds
+         atmNext = pathArray(nType)%path(nPath,nAtomLoc + 1)
+         GrowList(nGrow,GrowNum(nGrow)) = atmNext
+         regrown(atmNext) = .false.
+      case(2) ! A Linker has been selected, regrow to left or right randomly
+         if (grnd() .gt. 0.5d0) then
+            Incrmt = 1
+         else
+            Incrmt = -1
+         endif
+         atmPrev = pathArray(nType)%path(nPath,nAtomLoc - Incrmt)
+         GrowPrev(nGrow) = atmPrev
+         GrowNum(nGrow) = curBonds - 1
+         atmNext = pathArray(nType)%path(nPath,nAtomLoc + Incrmt)
+         GrowList(nGrow,GrowNum(nGrow)) = atmNext
+         regrown(atmNext) = .false.
+         preBonds = topolArray(nType)%atom(atmPrev)
+         TorNum(nGrow) = preBonds - 1
+         if (TorNum(nGrow) .gt. 0) then
+            LGrowing = .false.
+            call getRandomBondedAtoms(nType,atmPrev,atmCur,TorNum(nGrow),BondedAtoms,LGrowing)
+            do iBond = 1,TorNum(nGrow)
+               TorList(nGrow,iBond) = BondedAtoms(iBond)
+            enddo
+         endif
+      case default ! A Hub has been selected, the selected path is kept and regrow the other paths of the hub
+         if (nAtomLoc .eq. 1) then
+            Incrmt = 1
+         else
+            Incrmt = -1
+         endif	
+         atmPrev = pathArray(nType)%path(nPath,nAtomLoc + Incrmt)
+         GrowPrev(nGrow) = atmPrev
+         GrowNum(nGrow) = curBonds - 1
+         LGrowing = .true.
+         call getRandomBondedAtoms(nType,atmCur,atmPrev,GrowNum(nGrow),BondedAtoms,LGrowing)
+         do iBond = 1,GrowNum(nGrow)
+            GrowList(nGrow,iBond) = BondedAtoms(iBond)
+            regrown(BondedAtoms(iBond)) = .false.
+         enddo
+         preBonds = topolArray(nType)%atom(atmPrev)
+         TorNum(nGrow) = preBonds - 1
+         if (TorNum(nGrow) .gt. 0) then
+            LGrowing = .false.
+            call getRandomBondedAtoms(nType,atmPrev,atmCur,TorNum(nGrow),BondedAtoms,LGrowing)
+            do iBond = 1,TorNum(nGrow)
+               TorList(nGrow,iBond) = BondedAtoms(iBond)
+            enddo
+         endif
+      end select
+      TotalGrowing = 0 
+      OuterNum = 0
+      iufrom = GrowFrom(nGrow)
+      do iCBunit = 1,GrowNum(nGrow)
+         TotalGrowing = TotalGrowing + 1
+         iu = GrowList(nGrow,iCBunit)
+         iBond = topolArray(nType)%atom(iu)
+         if (iBond .gt. 1) then
+            OuterNum = OuterNum + 1
+            OuterAtoms(OuterNum) = iu
+            OuterPrev(OuterNum) = iufrom
+         endif
+      enddo
+      do while (OuterNum .gt. 0)
+         OuterTry = floor(grnd()*OuterNum + 1d0)
+         nGrow = nGrow + 1
+         atmCur = OuterAtoms(OuterTry)
+         atmPrev = OuterPrev(OuterTry)
+         GrowFrom(nGrow) = atmCur
+         GrowPrev(nGrow) = atmPrev
+         GrowNum(nGrow) = topolArray(nType)%atom(atmCur) - 1
+         LGrowing = .true.
+         call getRandomBondedAtoms(nType,atmCur,atmPrev,GrowNum(nGrow),BondedAtoms,LGrowing)
+         do iBond = 1,GrowNum(nGrow)
+            GrowList(nGrow,iBond) = BondedAtoms(iBond)
+            regrown(BondedAtoms(iBond)) = .false.
+         enddo
+         preBonds = topolArray(nType)%atom(atmPrev)
+         TorNum(nGrow) = preBonds - 1
+         if (TorNum(nGrow) .gt. 0) then
+            LGrowing = .false.
+            call getRandomBondedAtoms(nType,atmPrev,atmCur,TorNum(nGrow),BondedAtoms,LGrowing)
+            do iBond = 1,TorNum(nGrow)
+               TorList(nGrow,iBond) = BondedAtoms(iBond)
+            enddo
+         endif
+! Update list of "Outer" beads: Remove bead that was just grown from Outer list
+         OuterAtoms(OuterTry) = OuterAtoms(OuterNum)
+         OuterPrev(OuterTry) = OuterPrev(OuterNum)
+         OuterNum = OuterNum - 1
+! Add the new beads if they have more to be grown
+         iufrom = atmCur
+         do iCBunit = 1,GrowNum(nGrow)
+            TotalGrowing = TotalGrowing + 1
+            iu = GrowList(nGrow,iCBunit)
+            iBond = topolArray(nType)%atom(iu)
+            if (iBond .gt. 1) then
+               OuterNum = OuterNum + 1
+               OuterAtoms(OuterNum) = iu
+               OuterPrev(OuterNum) = iufrom
+            endif
+         enddo
+      enddo
+
+	  
+      end subroutine
+
 !=======================================================================
       subroutine FindAtomsFromPath(nType, regrown, pathNum, Atm4, Atm1, Atm2, Atm3)
       use Forcefield
@@ -217,6 +357,85 @@
       stop
       
       end subroutine 
+
+!=======================================================================
+      subroutine getRandomBondedAtoms(iType,atm1,atm2,BondedNum,BondedAtoms,LGrowing)
+      use SimParameters
+      use CBMC_Variables
+      implicit none
+      integer, intent(in) :: iType, atm1, atm2, BondedNum
+      logical, intent(in) :: LGrowing
+      integer :: BondedAtoms(1:maxBranches), iBond, iLast, iPath, iAtom, atmConnect
+
+	  
+      BondedAtoms = 0
+      iBond = 0
+      select case(BondedNum)
+      case(1) ! atm1 is a Linker
+         do iPath = 1,pathArray(iType)%nPaths
+            iLast = pathArray(iType)%pathMax(iPath)
+            do iAtom = 2,iLast - 1
+               if (atm1 .eq. pathArray(iType)%path(iPath,iAtom)) then
+                  if (atm2 .eq. pathArray(iType)%path(iPath,iAtom+1)) then
+                     BondedAtoms(1) = pathArray(iType)%path(iPath,iAtom-1)
+                  else
+                     BondedAtoms(1) = pathArray(iType)%path(iPath,iAtom+1)
+                  endif
+                  return
+               endif
+            enddo
+         enddo
+      case default ! atm1 is a Hub
+         do iPath = 1,pathArray(iType)%nPaths
+            if (atm1 .eq. pathArray(iType)%path(iPath,1)) then
+               atmConnect = pathArray(iType)%path(iPath,2)
+               if (atm2 .ne. atmConnect) then
+                  iBond = iBond + 1
+                  BondedAtoms(iBond) = atmConnect
+                  if (iBond .eq. BondedNum) goto 58
+               endif
+            endif
+            iLast = pathArray(iType)%pathMax(iPath)
+            if (atm1 .eq. pathArray(iType)%path(iPath,iLast)) then
+               atmConnect = pathArray(iType)%path(iPath,iLast - 1)
+               if (atm2 .ne. atmConnect) then
+                  iBond = iBond + 1
+                  BondedAtoms(iBond) = atmConnect
+                  if (iBond .eq. BondedNum) goto 58
+               endif
+            endif
+         enddo
+      end select
+      write(*,*) "Error! Bonded Atom Not Found"
+      stop
+58    if (LGrowing) call RandomSort(BondedAtoms,BondedNum)
+	  
+      end subroutine
+!=======================================================================
+      subroutine RandomSort(BondedAtoms,nBranch)
+      use SimParameters
+      use CBMC_Variables
+      implicit none
+      integer :: BondedAtoms(1:maxBranches),nBranch
+      integer :: temp_store(1:maxBranches),zz,iBranch,itry,iut
+      real(dp) :: grnd
+      temp_store = 0
+      do iBranch = 1,nBranch
+         temp_store(iBranch) = BondedAtoms(iBranch)
+      enddo
+      iBranch = 0
+      do zz = nBranch,1,-1
+         itry = floor(grnd()*zz + 1d0)
+         iut = temp_store(itry)
+         iBranch = iBranch + 1
+         BondedAtoms(iBranch) = iut
+         temp_store(itry) = temp_store(zz)
+      enddo
+      if (iBranch .ne. nBranch) then
+         write(*,*) "Error! Bonded Atom Not Sorted"
+         stop
+      endif
+      end subroutine
 !=======================================================================
       subroutine FindNextAngleFromPath(nType, regrown, pathNum, Atm3, Atm1, Atm2)
       use Forcefield
@@ -321,6 +540,58 @@
       newMol%y(atomNumber) = trialPos(nSel)%y 
       newMol%z(atomNumber) = trialPos(nSel)%z
 
+      end subroutine
+!=======================================================================
+      subroutine ChooseRosenTrial_Branched(nToGrow, atmGrow, nType, trialPos_Branched, regrown, E_Trial, wBending, &
+                                           wTorsion, overlap, rosenRatio, rejMove)
+      use SimParameters
+      use Coords
+      use ForceField
+      use Constants
+      use CBMC_Variables
+      implicit none
+      logical, intent(in) :: overlap(:)
+      integer, intent(in) :: nToGrow, atmGrow(:), nType
+      real(dp), intent(in) :: wBending(:), wTorsion(:)
+      type(SimpleAtomCoords), intent(in) :: trialPos_Branched(:,:)
+      logical, intent(inout) :: regrown(:)
+      real(dp), intent(inout) :: E_Trial(:)
+      real(dp), intent(inout) :: rosenRatio 
+      logical,intent(out) :: rejMove
+	  
+      integer :: nSel, iRosen, iAtom
+      real(dp) :: E_Min, ProbRosen(1:maxRosenTrial), rosenNorm, grnd
+      real(dp) :: ranNum, sumInt
+	  
+      rejMove = .false.
+      E_Min = minval(E_Trial)
+      ProbRosen = 0d0
+      do iRosen = 1, nRosenTrials(nType)
+         ProbRosen(iRosen) = wBending(iRosen) * wTorsion(iRosen) * exp(-beta*(E_Trial(iRosen)-E_Min))         
+      enddo
+      if(all(ProbRosen .le. 0d0)) then
+        rejMove = .true.
+        return
+      endif
+      rosenNorm = sum(ProbRosen)
+      ranNum = grnd() * rosenNorm
+      sumInt = ProbRosen(1)
+      nSel = 1
+      do while(sumInt .lt. ranNum)
+        nSel = nSel + 1
+        sumInt = sumInt + ProbRosen(nSel)
+      enddo
+      if(overlap(nSel) .eqv. .true.) then
+        rejMove = .true.
+        return
+      endif
+      rosenRatio = rosenRatio*ProbRosen(nSel)/rosenNorm
+      do iAtom = 1, nToGrow
+        regrown(atmGrow(iAtom)) = .true.
+        newMol%x(atmGrow(iAtom)) = trialPos_Branched(nSel,iAtom)%x 
+        newMol%y(atmGrow(iAtom)) = trialPos_Branched(nSel,iAtom)%y 
+        newMol%z(atmGrow(iAtom)) = trialPos_Branched(nSel,iAtom)%z
+      enddo
       end subroutine
 !=======================================================================
       end module

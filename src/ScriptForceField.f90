@@ -101,7 +101,7 @@
       subroutine ScriptForcefield(lineStore)
       use CBMC_Variables
       use Coords
-      use CoodinateFunctions
+      use CoordinateFunctions
       use EnergyTables
       use ForceField
       use SimParameters

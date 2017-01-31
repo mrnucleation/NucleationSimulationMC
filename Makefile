@@ -14,7 +14,8 @@ OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
-DETAILEDDEBUG:= -g -fbacktrace -fcheck=all
+#DETAILEDDEBUG:= -g -fbacktrace -check=all
+DETAILEDDEBUG:= -check all -traceback -g
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += $(DETAILEDDEBUG)
 #DEBUGFLAGS += -check all -traceback -g
@@ -285,36 +286,28 @@ $(OBJ)/ForceFieldFunctions.o: $(OBJ)/Common.o $(OBJ)/VariablePrecision.o
 
 $(OBJ)/Units.o: $(OBJ)/VariablePrecision.o
 
-$(OBJ)/Umbrella_Types.o: $(OBJ)/VariablePrecision.o 
+$(OBJ)/MCMove_Module.o: $(OBJ_ENERGY) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ)/BasicMovement.o
+$(OBJ)/Exchange.o: $(OBJ)/ETableFunctions.o
 
-$(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o $(OBJ)/SimplePairDistance.o $(OBJ)/Umbrella_Types.o $(OBJ_ANALYSIS)
 
-$(OBJ)/WHAM_Version2.o: $(OBJ)/SwapBoundaries.o $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o
-
+$(OBJ)/CBMC.o: $(OBJ)/Common.o $(OBJ_ENERGY) $(OBJ)/UmbrellaSampling_Version2.o  $(OBJ)/CBMC_Utility.o
 $(OBJ)/CBMC_ConfigGen.o: $(OBJ)/CoordinateFunctions.o
 
 $(OBJ)/ClusterCriteria_Energy.o: $(OBJ)/Common.o $(OBJ)/ForceFieldFunctions.o
 
-$(OBJ)/CoordinateFunctions.o: $(OBJ)/Common.o $(OBJ)/RandomTools.o
+$(OBJ)/CoordinateFunctions.o: $(OBJ)/Common.o $(OBJ)/RandomTools.o $(OBJ)/CBMC_Utility.o
 
-$(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o            $(OBJ)/RadialDensity.o $(OBJ)/Common.o
+$(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o $(OBJ)/SimplePairDistance.o $(OBJ)/MiscelaniousVariables.o $(OBJ)/RadialDensity.o $(OBJ)/Common.o
 
 $(OBJ)/SimplePairDistance.o: $(OBJ)/Umbrella_Types.o
 
 $(OBJ)/EnergyPointers.o: $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o $(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o
 
-$(OBJ)/CBMC.o: $(OBJ)/Common.o $(OBJ_ENERGY) $(OBJ)/UmbrellaSampling_Version2.o 
-
 $(OBJ)/SimplePairDistance.o: $(OBJ)/DistanceStorage.o $(OBJ)/MiscelaniousVariables.o 
 
-$(OBJ)/MCMove_Module.o: $(OBJ_ENERGY) $(OBJ_CBMC) $(OBJ_SWAP) $(OBJ)/BasicMovement.o
-
-$(OBJ)/Exchange.o: $(OBJ)/ETableFunctions.o
 
 $(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o: $(OBJ)/LJ_Electro_Functions_Experimental.o $(OBJ)/Rosen_Boltz_Functions.o $(OBJ)/Bending_Functions.o $(OBJ)/BondStretch_Functions.o $(OBJ)/Torsional_Functions.o $(OBJ)/Intra_LJ_Electro_Functions.o $(OBJ)/Improper_Functions.o
-
 $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o: $(OBJ)/Pedone_Functions_Experimental.o $(OBJ)/Rosen_Pedone_Functions.o
-
 $(OBJ)/Pedone_Functions_Experimental.o: $(OBJ)/DistanceStorage.o
 
 $(OBJ)/MiscelaniousVariables.o: $(OBJ)/Common.o
@@ -322,6 +315,9 @@ $(OBJ)/MiscelaniousVariables.o: $(OBJ)/Common.o
 $(OBJ)/Main.o: $(OBJ)/Common.o $(OBJ)/SelfAdaptiveDistribution.o
 
 $(OBJ)/ScriptInput.o: $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o $(OBJ)/AnalysisMain.o $(OBJ)/MCMove_Module.o $(OBJ)/ScriptForceField.o
-
 $(OBJ)/ScriptForceField.o: $(OBJ)/Common.o 
+
+$(OBJ)/Umbrella_Types.o: $(OBJ)/VariablePrecision.o 
+$(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o $(OBJ)/SimplePairDistance.o $(OBJ)/Umbrella_Types.o $(OBJ_ANALYSIS)
+$(OBJ)/WHAM_Version2.o: $(OBJ)/SwapBoundaries.o $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o
 

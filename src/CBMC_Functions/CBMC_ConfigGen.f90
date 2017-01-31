@@ -1,7 +1,7 @@
 !=======================================================================
       subroutine Ridgid_ConfigGen(nType)
       use Coords
-      use CoodinateFunctions
+      use CoordinateFunctions
       use ForceField
       use Constants
       implicit none
@@ -64,7 +64,7 @@
 !=======================================================================
       subroutine Simple_ConfigGen(nType)
       use Coords
-      use CoodinateFunctions
+      use CoordinateFunctions
       use ForceField
       use Constants
       use CBMC_Variables
