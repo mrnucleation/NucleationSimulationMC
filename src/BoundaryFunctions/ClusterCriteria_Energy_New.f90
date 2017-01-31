@@ -1,6 +1,6 @@
 !=================================================================================
       module EnergyCriteria_new
-
+      use VarPrecision
       real(dp), allocatable :: PairList(:)
       contains
 !=================================================================================     
@@ -21,10 +21,14 @@
       integer :: i,j,h,cnt
       integer :: iType,jType, iMol, jMol, iAtom, jAtom, iIndx, jIndx, jMolMin
       integer :: atmType1, atmType2, globIndx1, globIndx2
-      real(dp) :: PairList(1:maxMol,1:maxMol)
+      real(dp) :: PairListTotal(1:maxMol,1:maxMol)
 
       rejMove = .false.
       NeighborList = .false.
+      if(.not. allocated(PairList)) then
+        allocate( PairList(1:maxMol) )
+      endif
+
       if(NTotal .eq. 1) then
          return      
       endif
@@ -32,7 +36,7 @@
 
 
 
-      PairList = 0E0_dp
+      PairListTotal = 0E0_dp
       do iType = 1,nMolTypes
         do jType = iType, nMolTypes
           do iMol=1,NPART(iType)
@@ -48,8 +52,8 @@
                 globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
                 do jAtom = 1,nAtoms(jType)          
                   globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-                  PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + rPair(globIndx1, globIndx2)%p%E_Pair        
-                  PairList(jIndx, iIndx) = PairList(jIndx, iIndx) + rPair(globIndx1, globIndx2)%p%E_Pair  
+                  PairListTotal(iIndx, jIndx) = PairListTotal(iIndx, jIndx) + rPair(globIndx1, globIndx2)%p%E_Pair        
+                  PairListTotal(jIndx, iIndx) = PairListTotal(jIndx, iIndx) + rPair(globIndx1, globIndx2)%p%E_Pair  
                 enddo
               enddo
             enddo
@@ -64,7 +68,7 @@
             iIndx = MolArray(iType)%mol(iMol)%indx
             do jMol = 1, NPART(jType) 
               jIndx = MolArray(jType)%mol(jMol)%indx        
-              if(PairList(iIndx,jIndx) .le. Eng_Critr(iType,jType) ) then
+              if(PairListTotal(iIndx,jIndx) .le. Eng_Critr(iType,jType) ) then
                 NeighborList(iIndx,jIndx)=.true.         
                 NeighborList(jIndx,iIndx)=.true.          
               endif
@@ -137,7 +141,7 @@
       integer :: curNeigh(1:60), neiMax
       integer :: iPair, iIndx, jIndx, iAtom, jAtom, jMol
       integer :: atmType1, atmType2, gloIndx1, gloIndx2
-      real(dp) :: PairList(1:maxMol)
+!      real(dp) :: PairList(1:maxMol)
       
       rejMove=.false.
       if(NTotal .eq. 1) return        
@@ -212,22 +216,28 @@
       
     
       do h = 1, NTotal
-!        cnt = 0
+!        The memberAdded flag is set to true if new particles are found by the criteria search on this loop.
+!        If no new particles are found the criteria search has hit a dead end and additional calculations are redundant. This usually implies
+!        the cluster criteria has been broken and the move should be rejected. 
         memberAdded = .false.
         do i = 1, maxMol
-            if(ClusterMember(i) .neqv. flipped(i)) then
-              do j=1,maxMol
-                if(NeighborList(i,j)) then
-                  if(j .ne. nIndx) then
-                    ClusterMember(j)=.true.   
-                    memberAdded = .true.
-                  endif
+          if(ClusterMember(i) .neqv. flipped(i)) then
+            do j=1,maxMol
+              if(NeighborList(i,j)) then
+                if(j .ne. nIndx) then
+                  ClusterMember(j)=.true.   
+                  memberAdded = .true.
                 endif
-              enddo        
-              flipped(i)=.true.
-            endif
+              endif
+            enddo        
+            flipped(i)=.true.
+          endif
         enddo
- 
+
+!        This block checks to see if the cluster criteria has been completed or
+!        if further calculations are required.  This is done by checking the neighbors of the particle's old
+!        position to see if they have been accounted for in the criteria search.  Once all the neighbors have
+!        been flipped it is guarenteed that the criteria has been met and the program can now exit the loop. 
         neiFlipped = .true.
         do i = 1, neiMax
           if(.not. clusterMember(curNeigh(i))) then
@@ -251,14 +261,14 @@
       end subroutine
 !=================================================================================     
 !     This function determines if a given translational move will destroy a cluster. 
-      pure subroutine SwapIn_EnergyCriteria(nType,PairList,rejMove)
+      pure subroutine SwapIn_EnergyCriteria(nType, rejMove)
       use SimParameters     
       use Coords
       use IndexingFunctions
       implicit none     
       
       logical, intent(out) :: rejMove      
-      real(dp), intent(in) :: PairList(1:maxMol)
+!      real(dp), intent(in) :: PairList(1:maxMol)
       integer, intent(in) :: nType
       integer :: j, jType
       
@@ -324,8 +334,12 @@
           endif
         endif        
       enddo
+
       
       do h=1,NTotal
+!        The memberAdded flag is set to true if new particles are found by the criteria search on this loop.
+!        If no new particles are found the criteria search has hit a dead end and additional calculations are redundant. This usually implies
+!        the cluster criteria has been broken and the move should be rejected. 
         memberAdded = .false.
         do i=1,maxMol
            if(ClusterMember(i) .neqv. flipped(i)) then
@@ -334,7 +348,6 @@
                 if(NeighborList(i,j)) then
                   if(j .ne. nSwap) then
                     clusterMember(j) = .true. 
-      
                     memberAdded = .true.
                   endif
                 endif
@@ -343,6 +356,11 @@
             endif
           endif
         enddo
+
+!        This block checks to see if the cluster criteria has been completed or
+!        if further calculations are required.  This is done by checking the neighbors of the particle's old
+!        position to see if they have been accounted for in the criteria search.  Once all the neighbors have
+!        been flipped it is guarenteed that the criteria has been met and the program can now exit the loop.
         neiFlipped = .true.
         do i = 1, neiMax
           if(.not. clusterMember(curNeigh(i))) then
@@ -367,13 +385,13 @@
       end subroutine
 !=================================================================================     
 !     This function updates the neighborlist if a move is accepted.
-      subroutine NeighborUpdate(PairList, nIndx)
+      subroutine NeighborUpdate(nIndx)
       use SimParameters
       use IndexingFunctions      
       use Coords      
       implicit none     
       integer iType,j,jType,nIndx
-      real(dp) :: PairList(1:maxMol)
+!      real(dp) :: PairList(1:maxMol)
 
 
 !      do j=1,maxMol

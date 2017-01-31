@@ -83,7 +83,7 @@
       use Coords      
       use DistanceCriteria            
       use EnergyCriteria
-      use EnergyCriteria_new
+!      use EnergyCriteria_new
       use EnergyTables      
       use ImproperAngleFunctions      
       use InterEnergy_LJ_Electro

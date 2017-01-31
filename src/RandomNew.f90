@@ -27,4 +27,16 @@
       end subroutine      
 
 !=======================================================
+      real(dp) function Gaussian() result(num)
+      use Constants
+      use VarPrecision
+      implicit none
+      real(dp) :: y1, w, x1, x2, grnd
 
+      x1 = grnd()
+      x2 = grnd()
+      y1 = sqrt( -2.0d0 * log(x1) ) * cos(two_pi*x2)
+      num = y1
+
+      end function
+!=========================================================
