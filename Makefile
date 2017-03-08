@@ -14,7 +14,7 @@ OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
-#DETAILEDDEBUG:= -g -fbacktrace -check=all
+#DETAILEDDEBUG:= -g -fbacktrace -fcheck=all
 DETAILEDDEBUG:= -check all -traceback -g
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += $(DETAILEDDEBUG)

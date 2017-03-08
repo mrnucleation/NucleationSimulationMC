@@ -346,11 +346,18 @@
         if(lineStat .gt. 0) then
           cycle
         endif 
+        write(*,*) iLine, lineStore(iLine)
         call LowerCaseLine(command)
         select case(adjustl(trim(command)))
           case("atoms")
             call FindCommandBlock(iLine, lineStore, "end_atoms" ,lineBuffer)
             read(lineStore(iLine),*) dummy, intValue
+            if(lineBuffer-1 .ne. intValue) then
+              write(*,*) "Error in Forcefield Def! The Number of Atoms specified is different than the number of lines given."
+              write(*,*) "Number of atoms specified:", intValue
+              write(*,*) "Number of lines in command block:", lineBuffer-1
+              stop
+            endif
             nAtoms(nMol) = intValue
             iUnit = 0
             do jLine = iLine+1, iLine+lineBuffer-1
