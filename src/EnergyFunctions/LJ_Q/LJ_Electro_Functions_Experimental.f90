@@ -375,8 +375,8 @@
           iAtom = atomIndicies(gloIndx1)%nAtom
           jAtom = atomIndicies(gloIndx2)%nAtom
 
-          atmType1 = atomArray(iType,iAtom)
-          atmType2 = atomArray(jType,jAtom)
+          atmType1 = atomArray(iType, iAtom)
+          atmType2 = atomArray(jType, jAtom)
 
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)

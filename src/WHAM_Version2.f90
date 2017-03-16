@@ -59,6 +59,10 @@
       real(dp) :: F_Estimate(1:nWhamItter),F_Old(1:nWhamItter), fSum     
       real(dp) :: tol, refBias, perError, probNorm
 
+      if(.not. useUmbrella) then
+        return
+      endif
+
 
       write(nout,*) "Halting for WHAM"
       call MPI_BARRIER(MPI_COMM_WORLD, ierror) 

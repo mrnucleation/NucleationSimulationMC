@@ -297,6 +297,7 @@
               newDist(nNewDist)%indx2 = gloIndx2
               newDist(nNewDist)%r_sq = r_sq
 !              newDist(nNewDist)%E_Pair = 0d0
+
               if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif

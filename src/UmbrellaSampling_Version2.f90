@@ -283,7 +283,7 @@
             write(*,*) inputLines(iUmbrella)
             stop 
           endif
-          write(*,*) "BLAH!"
+!          write(*,*) "BLAH!"
           call loadUmbArray(indxVar)%func(iUmbrella,indxVar, biasVar, biasVarNew, outputFormat, &
                                           iDisp, DispUmbrella, iSwapIn, SwapInUmbrella, iSwapOut, SwapOutUmbrella)
           UBinSize(iUmbrella) = binSize
@@ -305,6 +305,7 @@
 
 !      Use the input to specify the reference bin
       allocate(refSizeNumbers(1:nBiasVariables),STAT = AllocateStatus)
+      write(*, *) inputLines(2)
       read(inputLines(2), *) labelField, (refVals(iUmbrella), iUmbrella=1,nBiasVariables)
       call getUIndexArray(refVals, refBin, stat)
       do iUmbrella = 1, nBiasVariables

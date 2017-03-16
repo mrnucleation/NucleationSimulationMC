@@ -9,13 +9,13 @@ FC := /opt/openmpi/bin/mpif90
 #FC := gfortran
 CC := mpicc
 OPTIMIZE_FLAGS := -O3
-OPTIMIZE_FLAGS += -xHost
+#OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
-#DETAILEDDEBUG:= -g -fbacktrace -fcheck=all
-DETAILEDDEBUG:= -check all -traceback -g
+DETAILEDDEBUG:= -fbacktrace -fcheck=all -O0 -g
+#DETAILEDDEBUG:= -check all -traceback -g
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += $(DETAILEDDEBUG)
 #DEBUGFLAGS += -check all -traceback -g
@@ -77,7 +77,8 @@ SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
-SRC_BOUNDARY := $(BOUNDARY)/ClusterCriteria_Energy_New.f90
+#SRC_BOUNDARY := $(BOUNDARY)/ClusterCriteria_Energy_New.f90
+#SRC_BOUNDARY := $(SRC)/ClusterCriteria_Energy.f90
 SRC_BIAS := $(SRC)/UmbrellaSampling_Version2.f90\
             $(SRC)/Umbrella_Types.f90\
             $(SRC)/WHAM_Version2.f90

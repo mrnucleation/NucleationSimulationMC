@@ -179,9 +179,9 @@
 !     Calculate acceptance probability and determine if the move is accepted or not          
       genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol  * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
 !      genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol  * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
-
+!      write(*,*) E_Inter
       Boltzterm = exp(-beta*E_Inter + biasDiff)
-
+!      write(*,*) Boltzterm
       if( genProbRatio * Boltzterm .gt. grnd() ) then
          acptSwapIn(nType) = acptSwapIn(nType) + 1d0        
          acptInSize(NTotal) = acptInSize(NTotal) + 1d0         
@@ -450,14 +450,26 @@
   
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
       ProbTable = 0d0
-      EMax = maxval(newNeiETable)
+      EMax = -huge(dp)
       do i = 1, maxMol
         if(neiCount(i) .gt. 0) then
-          ProbTable(i) = exp(beta*(newNeiETable(i)-Emax))
+          if(newNeiETable(i) .gt. EMax) then
+            EMax = newNeiETable(i)
+          endif
+        endif
+      enddo
+!      write(*,*) newNeiETable
+      do i = 1, maxMol
+        if(neiCount(i) .gt. 0) then
+!          write(*,*) beta*(newNeiETable(i)-Emax)
+          if(beta*(newNeiETable(i)-Emax) .gt. -30d0) then
+!            write(*,*) beta*(newNeiETable(i)-Emax)
+            ProbTable(i) = exp(beta*(newNeiETable(i)-Emax))
+          endif
         endif
       enddo
 !      ProbTable(nIndx) = exp(beta*(newNeiETable(nIndx)-Emax))
-      
+!      write(*,*) ProbTable
       
       norm = sum(ProbTable)
       ProbRev = ProbTable(nTarget)/norm

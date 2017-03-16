@@ -70,25 +70,25 @@
           q_ij = q_tab(atmType1, atmType2)
           alpha = alpha_Tab(atmType1, atmType2)
           delta = D_Tab(atmType1, atmType2)
-          repul_C = repul_tab(atmType1, atmType2)          
-          rmin_ij = r_min_tab(atmType1, atmType2)   
+          repul_C = repul_tab(atmType1, atmType2)
+          rmin_ij = r_min_tab(atmType1, atmType2)
           do iMol=1,NPART(iType)
            if(iType .eq. jType) then
              jMolMin = iMol+1
            else
-             jMolMin = 1        
+             jMolMin = 1
            endif
            iIndx = MolArray(iType)%mol(iMol)%indx
            gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(1)
            do jMol = jMolMin,NPART(jType)
-             jIndx = MolArray(jType)%mol(jMol)%indx  
+             jIndx = MolArray(jType)%mol(jMol)%indx
              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1)
              r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
              r = rPair(gloIndx1, gloIndx2)%p%r
 
              if(distCriteria) then
                PairList(iIndx, jIndx) = r_sq
-               PairList(jIndx, iIndx) = PairList(iIndx,jIndx)                    
+               PairList(jIndx, iIndx) = PairList(iIndx,jIndx)
              endif
              LJ = 0E0_dp
              if(repul_C .ne. 0d0) then
@@ -107,11 +107,12 @@
              E_Ele = E_Ele + Ele
 
              Morse = 0E0_dp
-             if(delta .ne. 0d0) then
+             if(delta .ne. 0E0_dp) then
                Morse = 1d0 - exp(-alpha*(r-r_eq))
                Morse = delta*(Morse*Morse - 1d0)
                E_Morse = E_Morse + Morse
              endif
+
              if(.not. distCriteria) then            
                PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ + Morse + Solvent
                PairList(jIndx, iIndx) = PairList(iIndx, jIndx)
@@ -303,7 +304,7 @@
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       
-      integer :: iIndx, jType, jIndx, jMol, iPair
+      integer :: iType, iMol, iIndx, jType, jIndx, jMol, iPair
       integer(kind=atomIntType) :: atmType1,atmType2
       integer :: gloIndx1, gloIndx2
       real(dp) :: r, r_sq      
@@ -313,75 +314,71 @@
       real(dp) :: E_Ele,E_LJ, E_Morse, E_Solvent
       real(dp) :: born1, born2
 
-      E_LJ = 0d0
-      E_Ele = 0d0      
-      E_Morse = 0d0      
-      E_Trial = 0d0
-      E_Solvent = 0d0
-      PairList = 0d0      
-      dETable = 0d0
+      E_LJ = 0E0_dp
+      E_Ele = 0E0_dp    
+      E_Morse = 0E0_dp
+      E_Trial = 0E0_dp
+      E_Solvent = 0E0_dp
+      PairList = 0E0_dp
+      dETable = 0E0_dp
       rejMove = .false.
 
-      iIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
-      atmType1 = atomArray(newMol%molType, 1)
+
+      iType = newMol%molType
+      iMol = NPART(iType)+1
+      iIndx = molArray(iType)%mol(iMol)%indx
       do iPair = 1, nNewDist
+
         gloIndx1 = newDist(iPair)%indx1
         gloIndx2 = newDist(iPair)%indx2
+
+        iType = atomIndicies(gloIndx1)%nType
+        iMol = atomIndicies(gloIndx1)%nMol
+        iIndx = molArray(iType)%mol(iMol)%indx
 
         jType = atomIndicies(gloIndx2)%nType
         jMol = atomIndicies(gloIndx2)%nMol
         jIndx = MolArray(jType)%mol(jMol)%indx
         if(iIndx .ne. jIndx) then
-          atmType2 = atomArray(jType,1)
+          atmType1 = atomArray(iType, 1)
+          atmType2 = atomArray(jType, 1)
           r_eq = rEq_tab(atmType1, atmType2)
           q_ij = q_tab(atmType1, atmType2)
           alpha = alpha_Tab(atmType1, atmType2)
           delta = D_Tab(atmType1, atmType2)
           repul_C = repul_tab(atmType1, atmType2)   
-          r_sq = rPair(gloIndx1, gloIndx2)%p%r_sq
-          r = rPair(gloIndx1, gloIndx2)%p%r
+          r_sq = newDist(iPair)%r_sq
+          r = newDist(iPair)%r
 
           LJ = 0E0_dp
-          if(repul_C .ne. 0d0) then
-            LJ = (1d0/r_sq)**6
+          if(repul_C .ne. 0E0_dp) then
+            LJ = (1E0_dp/r_sq)**6
             LJ = repul_C * LJ
-            dETable(iIndx) = dETable(iIndx) + LJ
-            dETable(jIndx) = dETable(jIndx) + LJ
-            if(.not. distCriteria) then                
-              PairList(jIndx) = PairList(jIndx) + LJ
-            endif
             E_LJ = E_LJ + LJ
           endif
 
-          r = sqrt(r)
           Ele = q_ij/r
           if(implcSolvent) then
             born1 = bornRad(atmType1)
             born2 = bornRad(atmType2)
             Ele = Ele + solventFunction(r, q_ij, born1, born2)
           endif
-          dETable(iIndx) = dETable(iIndx) + Ele
-          dETable(jIndx) = dETable(jIndx) + Ele
-          if(.not. distCriteria) then                
-            PairList(jIndx) = PairList(jIndx) + Ele
-          endif
           E_Ele = E_Ele + Ele
 
           Morse = 0E0_dp
-          if(delta .ne. 0d0) then
-            Morse = 1d0-exp(-alpha*(r - r_eq))
+          if(delta .ne. 0E0_dp) then
+            Morse = 1d0 - exp(-alpha*(r-r_eq))
             Morse = delta*(Morse*Morse - 1d0)
-            dETable(iIndx) = dETable(iIndx) + Morse
-            dETable(jIndx) = dETable(jIndx) + Morse
-            if(.not. distCriteria) then                
-              PairList(jIndx) = PairList(jIndx) + Morse
-            endif
             E_Morse = E_Morse + Morse
+          endif
+          if(.not. distCriteria) then                
+            PairList(jIndx) = PairList(jIndx) + LJ + Ele + Morse
           endif
           dETable(iIndx) = dETable(iIndx) + LJ + Ele + Morse
           dETable(jIndx) = dETable(jIndx) + LJ + Ele + Morse
           newDist(iPair)%E_Pair = LJ + Ele + Morse
         endif 
+         
       enddo
 
 !      if(implcSolvent) then
