@@ -2,7 +2,8 @@
       module ForceFieldInput
       use VarPrecision
       use Units
-     
+
+      integer, parameter :: maxLineLen = 500     
       abstract interface 
         subroutine CommonSub
           use VarPrecision
@@ -13,7 +14,7 @@
       abstract interface 
         subroutine interSub(lineStore)
           implicit none
-          character(len=100), intent(in) :: lineStore(:)
+          character(len=*), intent(in) :: lineStore(:)
         end subroutine
       end interface 
 
@@ -22,6 +23,7 @@
 
       private
       logical :: fieldTypeSet = .false.
+
       procedure (CommonSub), pointer :: commonFunction => NULL()
       procedure (CommonSub), pointer :: FFSpecificFlags => NULL()
       procedure (interSub), pointer :: interFunction => NULL()
@@ -108,7 +110,7 @@
       use Units
       use VarPrecision
       implicit none
-      character(len=100), intent(in) :: lineStore(:)
+      character(len=maxLineLen), intent(in) :: lineStore(:)
 
       character(len=25) :: dummy, command, command2, stringValue
       logical :: logicValue
@@ -212,7 +214,7 @@
       use Units
       use VarPrecision
       implicit none
-      character(len=100), intent(in) :: lineStore(:)
+      character(len=maxLineLen), intent(in) :: lineStore(:)
       character(len=30) :: dummy, defType, stringValue
       logical :: logicValue
       integer :: i, j, iLine, nLines, nParam
@@ -301,7 +303,7 @@
       use Units
       use VarPrecision
       implicit none
-      character(len=100), intent(in) :: line
+      character(len=maxLineLen), intent(in) :: line
       character(len=30) :: dummy, deftype, stringValue
       character(len=25) :: command
 
@@ -329,7 +331,7 @@
       use Units
       use VarPrecision
       implicit none
-      character(len=100), intent(in) :: lineStore(:)
+      character(len=*), intent(in) :: lineStore(:)
       character(len=30) :: dummy, labelField, stringValue
       character(len=25) :: command
       logical :: logicValue
@@ -346,7 +348,7 @@
         if(lineStat .gt. 0) then
           cycle
         endif 
-        write(*,*) iLine, lineStore(iLine)
+!        write(*,*) iLine, lineStore(iLine)
         call LowerCaseLine(command)
         select case(adjustl(trim(command)))
           case("atoms")
@@ -409,7 +411,7 @@
       subroutine FindCommandBlock(iLine, lineStore, endCommand ,lineBuffer)
       implicit none
       integer, intent(in) :: iLine
-      character(len=100), intent(in) :: lineStore(:)      
+      character(len=*), intent(in) :: lineStore(:)      
       character(len=*), intent(in) :: endCommand
       integer, intent(out) :: lineBuffer
       logical :: found
@@ -444,7 +446,7 @@
       use ForceFieldFunctions
       use SimParameters
       implicit none
-      character(len=100), intent(in) :: lineStore(:)  
+      character(len=maxLineLen), intent(in) :: lineStore(:)  
 
       logical :: custom
       integer :: i, j, iLine, nLines
@@ -636,6 +638,8 @@
       ALLOCATE (r_min(1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (r_min_sq(1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (r_min_tab(1:nAtomTypes, 1:nAtomTypes), STAT = AllocateStatus) 
+      ALLOCATE (bornRad(1:nAtomTypes), STAT = AllocateStatus)
+
 
       ALLOCATE (alpha_Tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
       ALLOCATE (D_Tab(1:nAtomTypes,1:nAtomTypes), STAT = AllocateStatus)
@@ -695,7 +699,7 @@
       use ForceField
       use ForceFieldPara_LJ_Q
       implicit none
-      character(len=100), intent(in) :: lineStore(:)
+      character(len=maxLineLen), intent(in) :: lineStore(:)
       integer :: i, j, iLine, nLines
 
       nLines = size(lineStore)
@@ -743,26 +747,30 @@
       use ForceField
       use ForceFieldPara_Pedone
       implicit none
-      character(len=100), intent(in) :: lineStore(:)
+      character(len=maxLineLen), intent(in) :: lineStore(:)
       integer :: i, j, iLine, nLines
 
-       nLines = size(lineStore)
+      nLines = size(lineStore)
+
+      bornRad = 0E0_dp
 
       i = 0
       do iLine = 2, nLines-1
         i = i + 1
+!        write(*,*)  lineStore(iLine)
         read(lineStore(iLine),*) pedoneData(i)%atmName, pedoneData(i)%Symb, pedoneData(i)%repul, pedoneData(i)%rEq, &
-                                 pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass
+                                 pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass, bornRad(i)
       enddo
       
       do i = 1, nAtomTypes
         if(echoInput) then
           write(35,*) pedoneData(i)%atmName, pedoneData(i)%Symb, pedoneData(i)%repul, pedoneData(i)%rEq, &
-                    pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass
+                    pedoneData(i)%alpha, pedoneData(i)%delta, pedoneData(i)%q, pedoneData(i)%mass, bornRad(i)
         endif
         pedoneData(i)%repul = pedoneData(i)%repul * convEng
         pedoneData(i)%delta = pedoneData(i)%delta * convEng
         pedoneData(i)%rEq = pedoneData(i)%rEq * convDist   
+        bornRad(i) = bornRad(i) * convDist   
         atomData(i)%atmName = pedoneData(i)%atmName
         atomData(i)%Symb = pedoneData(i)%Symb
       enddo
@@ -805,6 +813,12 @@
       endif 
 
 
+      if(any(bornRad .ne. 0E0_dp)) then
+        implcSolvent = .true.
+      else
+        implcSolvent = .false.
+      endif
+
       end subroutine
 !===================================================================================
       subroutine LJ_SetFlags
@@ -835,7 +849,7 @@
       use ForceField
       use ForceFieldPara_LJ_Q
       implicit none
-      character(len=100), intent(in) :: lineStore(:)
+      character(len=maxLineLen), intent(in) :: lineStore(:)
       character(len=*), intent(in) :: targetCommand
       integer, intent(out) :: commandMax
 

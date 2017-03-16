@@ -1,5 +1,6 @@
 !========================================================            
       module ScriptInput
+      integer, parameter :: maxLineLen = 500   
       contains
 !========================================================            
       subroutine Script_ReadParameters(seed, screenEcho)
@@ -25,8 +26,8 @@
       integer :: iLine, lineStat, AllocateStat
       integer :: nLines, nForceLines, lineBuffer
       integer, allocatable :: lineNumber(:), ffLineNumber(:)
-      character(len=100), allocatable :: lineStore(:)
-      character(len=100), allocatable :: forcefieldStore(:)
+      character(len=maxLineLen), allocatable :: lineStore(:)
+      character(len=maxLineLen), allocatable :: forcefieldStore(:)
       character(len=25) :: command, command2, dummy
       character(len=50) :: fileName
       character(len=50) :: forcefieldFile
@@ -154,7 +155,7 @@
       use AcceptRates
       use Units
       implicit none
-      character(len=100), intent(in) :: line      
+      character(len=maxLineLen), intent(in) :: line      
       logical, intent(out) :: screenEcho
       integer, intent(out) :: seed, lineStat
 
@@ -340,11 +341,11 @@
       subroutine LoadFile(lineArray, nLines, lineNumber, fileName)
       use SimParameters, only: echoInput
       implicit none
-      character(len=100),allocatable,intent(inout) :: lineArray(:)
+      character(len=maxLineLen),allocatable,intent(inout) :: lineArray(:)
       character(len=50), intent(in) :: fileName
       integer, allocatable, intent(inout) :: lineNumber(:)
 
-      character(len=100),allocatable :: rawLines(:)
+      character(len=maxLineLen),allocatable :: rawLines(:)
       character(len=25) :: command
       integer, intent(out) :: nLines
       integer :: i,iLine, nRawLines, lineStat, AllocateStat
@@ -453,7 +454,7 @@
       subroutine FindCommandBlock(iLine, lineStore, endCommand, lineBuffer)
       implicit none
       integer, intent(in) :: iLine
-      character(len=100), intent(in) :: lineStore(:)   
+      character(len=maxLineLen), intent(in) :: lineStore(:)   
       character(len=*), intent(in) :: endCommand   
       integer, intent(out) :: lineBuffer
       logical :: found

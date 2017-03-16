@@ -8,6 +8,8 @@
      use SimpleDistPair
      use MiscelaniousVars
 
+     integer, parameter :: maxLineLen = 500  
+
      interface 
        subroutine TrialFunction(disp)
         use CoordinateTypes
@@ -71,7 +73,7 @@
       use SimParameters, only: NPART
       use Q6Functions, only: CalcQ6, Initialize_q6, useQ6, q6Dist, q6DistSq, UmbrellaVar_Q6
       implicit none
-      character(len=100), intent(in) :: inputLines(:)
+      character(len=maxLineLen), intent(in) :: inputLines(:)
       integer :: nLines
       integer :: iAnalysis
       integer :: indxVar, nBins

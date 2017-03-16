@@ -135,11 +135,12 @@
 !          enddo
 !        enddo
 !      endif
-
       write(nout,*) "Lennard-Jones Energy:", E_LJ
       write(nout,*) "Eletrostatic Energy:", E_Ele
       write(nout,*) "Morse Energy:", E_Morse
-      write(nout,*) "Solvent Energy:", E_Solvent
+      if(implcSolvent) then
+        write(nout,*) "Solvent Energy:", E_Solvent
+      endif
 
 !      write(35,*) "Pair List:"
 !      do iMol=1,maxMol

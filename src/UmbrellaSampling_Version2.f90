@@ -6,6 +6,7 @@
     implicit none
     private
 
+    integer, parameter :: maxLineLen = 500  
 
     logical :: useUmbrella = .false.
     logical :: UScreenOut
@@ -109,7 +110,7 @@
       use WHAM_Module, only: refBin, refSizeNumbers
       use Q6Functions, only: UmbrellaVar_Q6
       implicit none
-      character(len=100), intent(in) :: inputLines(:)
+      character(len=maxLineLen), intent(in) :: inputLines(:)
       integer :: nLines
       integer :: iUmbrella, AllocateStatus
       integer :: indxVar, stat
@@ -305,7 +306,7 @@
 
 !      Use the input to specify the reference bin
       allocate(refSizeNumbers(1:nBiasVariables),STAT = AllocateStatus)
-      write(*, *) inputLines(2)
+!      write(*, *) inputLines(2)
       read(inputLines(2), *) labelField, (refVals(iUmbrella), iUmbrella=1,nBiasVariables)
       call getUIndexArray(refVals, refBin, stat)
       do iUmbrella = 1, nBiasVariables

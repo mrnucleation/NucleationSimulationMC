@@ -10,6 +10,7 @@
       use Exchange_Module, only: Exchange
       use SimpleMCMoves_Module, only: Translation, Rotation, SingleAtom_Translation
 
+      integer, parameter :: maxLineLen = 500  
 
       abstract interface 
         subroutine MCMoveSub(E_T, acc_x, atmp_x)
@@ -49,7 +50,7 @@
       use AVBMC_Module, only: swapProb
       use SimParameters
       implicit none
-      character(len=100), intent(in) :: lines(:)
+      character(len=maxLineLen), intent(in) :: lines(:)
       integer :: nLines
       integer :: i, iMoves, AllocateStatus
 
