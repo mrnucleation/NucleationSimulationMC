@@ -15,7 +15,6 @@
       module InterEnergy_Tersoff
       use VarPrecision
 
-      real(dp) :: Zeta = 
 
       contains
 !======================================================================================      
@@ -33,8 +32,6 @@
         val = 0E0_dp
       endif
 
-
-
       end function
 !======================================================================================      
       pure function gik_Func(theta, c, d, h) result(val)
@@ -49,11 +46,33 @@
 
       end function
 
+!======================================================================================
+      pure function angleCalc(rx12, ry12, rz12, r12, rx23, ry23, rz23, r23) result(Angle)
+      implicit none
+      real(dp), intent(in) :: rx12, ry12, rz12, r12, rx23, ry23, rz23, r23
+      real(dp) :: Angle  
+
+      rx12 = MolArray(iType)%mol(iMol)%x(memb1) - MolArray(iType)%mol(iMol)%x(memb2)
+      ry12 = MolArray(iType)%mol(iMol)%y(memb1) - MolArray(iType)%mol(iMol)%y(memb2)
+      rz12 = MolArray(iType)%mol(iMol)%z(memb1) - MolArray(iType)%mol(iMol)%z(memb2)
+
+      rx23 = MolArray(iType)%mol(iMol)%x(memb3) - MolArray(iType)%mol(iMol)%x(memb2)
+      ry23 = MolArray(iType)%mol(iMol)%y(memb3) - MolArray(iType)%mol(iMol)%y(memb2)
+      rz23 = MolArray(iType)%mol(iMol)%z(memb3) - MolArray(iType)%mol(iMol)%z(memb2)          
+            
+      Angle = rx12*rx23 + ry12*ry23 + rz12*rz23
+      Angle = Angle/(r12*r23)
+      if(abs(Angle) .gt. 1E0_dp) then
+        Angle = sign(1E0_dp, Angle)
+      endif
+      Angle = acos(Angle)
+
+      end function
 !======================================================================================      
       subroutine Detailed_ECalc_Inter(E_T, PairList)
       use ParallelVar
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Tersoff
       use Coords
       use SimParameters
       use EnergyTables
@@ -61,76 +80,67 @@
       implicit none
       real(dp), intent(inOut) :: E_T
       real(dp), intent(inOut) :: PairList(:,:)
-      integer :: iType,jType,iMol,jMol,iAtom,jAtom
-      integer(kind=atomIntType) :: atmType1,atmType2      
-      integer :: iIndx, jIndx, globIndx1, globIndx2, jMolMin
-      real(dp) :: r_sq, r
-      real(dp) :: ep,sig_sq,q
-      real(dp) :: LJ, Ele
-      real(dp) :: E_Ele,E_LJ    
+      integer :: iAtom, jAtom
+      integer(kind=atomIntType) :: atmType1, atmType2      
+      integer :: iIndx, jIndx, globIndx1, globIndx2, globIndx3, jMolMin
+      real(dp) :: r_sq, r, rMax, rMax_sq
+      real(dp) :: rxij, ryij, rzij, rij
+      real(dp) :: rxjk, ryjk, rzjk, rjk
+      real(dp) :: c, d, R_eq, D2 
+      real(dp) :: E_Short
+      real(dp) :: Zeta1, Zeta2
+      real(dp) :: angijk, angjik
 
+      E_LJ = 0E0_dp
+      PairList = 0E0_dp
+      ETable = 0E0_dp
+      iType = 1
+      jType = 1
+      kType = 1
+      atmType1 = atomIndicies(iType, 1) 
 
+      c = tersoffData(atmType1)%c
+      d = tersoffData(atmType1)%d
+      R_eq = tersoffData(atmType1)%R
+      D2 = tersoffData(atmType1)%D2
 
-      E_LJ = 0E0
-      E_Ele = 0E0
-      E_Inter_T = 0E0
-      PairList = 0E0      
-      ETable = 0E0
-      do iType = 1,nMolTypes
-        do jType = iType, nMolTypes
-          do iMol=1,NPART(iType)
-           if(iType .eq. jType) then
-             jMolMin = iMol+1
-           else
-             jMolMin = 1        
-           endif
-           do jMol = jMolMin,NPART(jType)
-             iIndx = MolArray(iType)%mol(iMol)%indx
-             jIndx = MolArray(jType)%mol(jMol)%indx  
-             do iAtom = 1,nAtoms(iType)
-               atmType1 = atomArray(iType,iAtom)
-               globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
-               do jAtom = 1,nAtoms(jType)        
-                 atmType2 = atomArray(jType,jAtom)
-                 ep = ep_tab(atmType1,atmType2)
-                 q = q_tab(atmType1,atmType2)
-                 sig_sq = sig_tab(atmType1,atmType2)          
-                 globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+      rMax = R_eq + D2
+      rMax_sq = rMax * rMax
 
-                 r_sq = rPair(globIndx1, globIndx2)%p%r_sq
-                 if(distCriteria) then
-                   if(iAtom .eq. 1) then
-                     if(jAtom .eq. 1) then
-                       PairList(iIndx, jIndx) = r_sq
-                       PairList(jIndx, iIndx) = PairList(iIndx,jIndx)                    
-                     endif
-                   endif
-                 endif
-                 LJ = LJ_Func(r_sq, ep, sig_sq)             
-                 E_LJ = E_LJ + LJ
-                   
-!                 r = rPair(globIndx1, globIndx2)%p%r
-                 r = sqrt(r_sq)
-                 Ele = q / r
-!                 Ele = Ele_Func(r, q)
-                 E_Ele = E_Ele + Ele
-
-                 rPair(globIndx1, globIndx2)%p%E_Pair = Ele + LJ
-                 if(.not. distCriteria) then
-                   PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ
-                   PairList(jIndx, iIndx) = PairList(iIndx, jIndx)
-                 endif
-                 ETable(iIndx) = ETable(iIndx) + Ele + LJ
-                 ETable(jIndx) = ETable(jIndx) + Ele + LJ              
-                enddo
-              enddo
-            enddo
+      do iMol = 1, nPart(iType)- 1
+        globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(1)
+        do jMol = iMol + 1, nPart(jType)
+          globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1)
+          r_sq = rPair(globIndx1, globIndx2)%p%r_sq
+          if(r_sq .gt. rMax_sq) then
+            cycle
+          endif
+          Zeta1 = 0E0_dp
+          Zeta2 = 0E0_dp
+          rij  = rPair(globIndx1, globIndx2)%p%r
+          rxij = rPair(globIndx1, globIndx2)%p%rx
+          ryij = rPair(globIndx1, globIndx2)%p%ry
+          rzij = rPair(globIndx1, globIndx2)%p%rz
+          do kMol = 1, nPart(kType)
+            if((kMol .eq. iMol) .or. (kMol .eq. jMol)) then
+              cycle
+            endif
+            globIndx3 = MolArray(jType)%mol(jMol)%globalIndx(1)
+            rik  = rPair(globIndx1, globIndx3)%p%r
+            rjk  = rPair(globIndx2, globIndx3)%p%r
+            if(rjk .lt. rMax) then
+!              angijk = angleCalc(rxij, ryij, rzij, rij, rxjk, ryjk, rzjk, rjk)
+              Zeta1 = Zeta1 + gik_Func(angijk, c, d, h) *  Fc_Func(rij, R_eq, D)
+            endif
+            if(rik .lt. rMax) then
+!              angjik = angleCalc(-rxij, -ryij, -rzij, rij, rxjk, ryjk, rzjk, rjk)
+              Zeta2 = Zeta2 + gik_Func(angjik, c, d, h) *  Fc_Func(rik, R_eq, D)
+            endif
           enddo
         enddo
       enddo
-      
-      write(nout,*) "Lennard-Jones Energy:", E_LJ
-      write(nout,*) "Eletrostatic Energy:", E_Ele
+
+      write(nout,*) "ShortRange Energy:", E_Ele
 
 !      write(35,*) "Pair List:"
 !      do iMol=1,maxMol
@@ -150,7 +160,7 @@
 !======================================================================================      
       pure subroutine Shift_ECalc_Inter(E_Trial,disp,newDist, PairList,dETable,rejMove)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Tersoff
       use Coords
       use SimParameters
       use PairStorage, only: distStorage, DistArrayNew, nNewDist, oldIndxArray
@@ -260,52 +270,11 @@
       E_Trial = E_LJ + E_Ele - E_Old
       
       
-      end subroutine
-!======================================================================================
-      pure subroutine Shift_PairList_Correct(disp, PairList)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
-      use PairStorage
-      implicit none
-      
-      type(Displacement), intent(in) :: disp(:)      
-      real(dp), intent(inout) :: PairList(:)
-      
-      integer :: iType,jType,iMol,jMol,iAtom,jAtom
-      integer(kind=atomIntType) :: jIndx, iIndx
-      integer :: sizeDisp 
-      integer :: gloIndx1, gloIndx2
-      real(dp) :: E_Pair
-
-      sizeDisp = size(disp)
-      iType = disp(1)%molType
-      iMol = disp(1)%molIndx
-      iIndx = molArray(iType)%mol(iMol)%indx
-
-      do iAtom=1,nAtoms(iType)
-        if(any(disp%atmIndx .eq. iAtom)) cycle
-        gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
-        do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
-            do jMol=1, NPART(jType)
-              jIndx = MolArray(jType)%mol(jMol)%indx
-              if(iIndx .ne. jIndx) then
-                gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-                E_Pair = rPair(gloIndx1, gloIndx2) % p % E_Pair    
-                PairList(jIndx) = PairList(jIndx) + E_Pair
-              endif
-            enddo
-          enddo
-        enddo
-      enddo
-
-      end subroutine      
+      end subroutine 
 !======================================================================================      
       pure subroutine Mol_ECalc_Inter(iType, iMol, dETable, E_Trial)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Tersoff
       use Coords
       use SimParameters
       use PairStorage
@@ -346,7 +315,7 @@
 !======================================================================================      
       subroutine NewMol_ECalc_Inter(E_Trial, PairList, dETable, rejMove)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Tersoff
       use Coords
       use SimParameters
       use PairStorage
@@ -429,7 +398,7 @@
 !======================================================================================      
       pure subroutine Exchange_ECalc_Inter(E_Trial, nType, nMol, PairList, dETable, rejMove)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Tersoff
       use Coords
       use SimParameters
       implicit none
@@ -447,139 +416,12 @@
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij
 
-      E_LJ = 0E0
-      E_Ele = 0E0      
-      E_Trial = 0E0
-      dETable = 0E0
-      PairList = 0E0
-      rejMove = .false.
-      
-      newIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
-      iIndx2 = molArray(nType)%mol(nMol)%indx
-
-       !Calculate the energy of the molecule that is entering the cluster
-
-      do iAtom = 1,nAtoms(newMol%molType)
-        atmType1 = atomArray(newMol%molType,iAtom)
-        do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
-            atmType2 = atomArray(jType,jAtom)
-            ep = ep_tab(atmType2,atmType1)
-            q = q_tab(atmType2,atmType1)
-            if(q .eq. 0.0E0) then
-              if(ep .eq. 0.0E0) then
-                cycle
-              endif
-            endif
-            sig_sq = sig_tab(atmType2,atmType1)
-            rmin_ij = r_min_tab(atmType2,atmType1)
-            do jMol = 1,NPART(jType)
-              if(jMol .eq. nMol) then
-                if(nType .eq. jType) then
-                  cycle
-                endif
-              endif
-              jIndx = molArray(jType)%mol(jMol)%indx              
-              
-              rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
-              r = rx*rx + ry*ry + rz*rz
-              if(r .lt. rmin_ij) then
-                rejMove = .true.
-                return
-              endif
-              if(distCriteria) then              
-                if(iAtom .eq. 1) then
-                  if(jAtom .eq. 1) then
-                    PairList(jIndx) = r
-                  endif
-                endif
-              endif              
-              LJ = 0E0
-              Ele = 0E0
-              if(ep .ne. 0E0) then
-                LJ = (sig_sq/r)
-                LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1E0)                
-                E_LJ = E_LJ + LJ
-                if(.not. distCriteria) then                
-                  PairList(jIndx) = PairList(jIndx) + LJ
-                endif
-                dETable(jIndx) = dETable(jIndx) + LJ
-                dETable(newIndx) = dETable(newIndx) + LJ
-              endif
-              if(q .ne. 0E0) then
-                r = sqrt(r)
-                Ele = q / r
-                E_Ele = E_Ele + Ele
-                if(.not. distCriteria) then                
-                  PairList(jIndx) = PairList(jIndx) + Ele
-                endif
-                dETable(jIndx) = dETable(jIndx) + Ele
-                dETable(newIndx) = dETable(newIndx) + Ele
-              endif
-            enddo
-          enddo
-        enddo
-      enddo
-
-       !Calculate the energy of the molecule that is exiting the cluster
-   
-      do iAtom = 1,nAtoms(nType)
-        atmType1 = atomArray(nType, iAtom)
-        do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
-            atmType2 = atomArray(jType,jAtom)
-            ep = ep_tab(atmType2,atmType1)
-            q = q_tab(atmType2,atmType1)
-            if(q .eq. 0E0) then
-              if(ep .eq. 0E0) then
-                cycle
-              endif
-            endif
-            sig_sq = sig_tab(atmType2,atmType1)
-            do jMol=1,NPART(jType)
-              if(nMol .eq. jMol) then
-                if(nType .eq. jType) then
-                  cycle
-                endif
-              endif
-              jIndx = MolArray(jType)%mol(jMol)%indx               
-              rx = MolArray(nType)%mol(nMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = MolArray(nType)%mol(nMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = MolArray(nType)%mol(nMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
-              r = rx*rx + ry*ry + rz*rz
-              if(ep .ne. 0E0) then
-                LJ = (sig_sq/r)
-                LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1E0)                
-                E_LJ = E_LJ - LJ
-                dETable(iIndx2) = dETable(iIndx2) - LJ
-                dETable(jIndx) = dETable(jIndx) - LJ
-              endif
-              if(q .ne. 0E0) then            
-                r = sqrt(r)
-                Ele = q / r
-                E_Ele = E_Ele - Ele
-                dETable(iIndx2) = dETable(iIndx2) - Ele
-                dETable(jIndx) = dETable(jIndx) - Ele                
-              endif
-            enddo
-          enddo
-        enddo
-      enddo
-     
-
-     
-      E_Trial = E_LJ + E_Ele
-      
       
       end subroutine    
 !======================================================================================      
       subroutine QuickNei_ECalc_Inter_LJ_Q(jType, jMol, rejMove)
       use ForceField
-      use ForceFieldPara_LJ_Q
+      use ForceFieldPara_Tersoff
       use Coords
       use SimParameters
       implicit none

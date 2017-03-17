@@ -16,7 +16,7 @@
       end type
 
       type GlobalAtomIndex
-        integer(kind=atomIntType) :: nType, nMol, nAtom
+        integer(kind=atomIntType) :: nType, nMol, nAtom, atmType
       end type
 
       type Molecule

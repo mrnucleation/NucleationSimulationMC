@@ -40,13 +40,14 @@
             atomIndicies(cnt)%nType = i
             atomIndicies(cnt)%nMol = j
             atomIndicies(cnt)%nAtom = k
+            atomIndicies(cnt)%atmType = atomArray(i, k)
           enddo
         enddo
       enddo
 
-!      do i = 1, size(atomIndicies)
-!        write(35,*) i, atomIndicies(i)%nType, atomIndicies(i)%nMol, atomIndicies(i)%nAtom
-!      enddo
+      do i = 1, size(atomIndicies)
+        write(35,*) i, atomIndicies(i)%nType, atomIndicies(i)%nMol, atomIndicies(i)%nAtom, atomIndicies(i)%atmType
+      enddo
 
       allocate( gasConfig(1:nMolTypes), stat=AllocationStatus)                
       do i=1,nMolTypes

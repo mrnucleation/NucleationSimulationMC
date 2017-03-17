@@ -47,8 +47,6 @@
 !        integer :: bondMembr(1:2)        
       end type
 
-
-
       type BendAngleIndex
         integer(kind=atomIntType) :: bendType   
         integer(kind=atomIntType) :: bendMembr(1:3)
@@ -68,8 +66,8 @@
         integer(kind=atomIntType) :: ImpropType         
         integer(kind=atomIntType) :: impropMembr(1:4)
       end type
-      end module    
 
+      end module    
 !==============================================================
       module ForceField
       use ForceFieldVariableType
