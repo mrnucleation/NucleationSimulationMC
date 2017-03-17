@@ -284,3 +284,16 @@
       
       end module
 !==============================================================
+      module ForceFieldPara_Tersoff
+      use VarPrecision
+
+      type AtomDefTersoff
+        character(len=20) :: atmName
+        character(len=5) :: Symb
+        real(dp) :: c, d, lam1, lam2, h, R, D2
+      end type
+
+      type(AtomDefTersoff), allocatable :: tersoffData(:)
+      
+      end module
+!==============================================================
