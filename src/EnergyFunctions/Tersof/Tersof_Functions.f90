@@ -89,6 +89,7 @@
       real(dp) :: c, d, R_eq, D2 
       real(dp) :: E_Short
       real(dp) :: Zeta1, Zeta2
+      real(dp) :: 
       real(dp) :: angijk, angjik
 
       E_LJ = 0E0_dp
@@ -121,6 +122,11 @@
           rxij = rPair(globIndx1, globIndx2)%p%rx
           ryij = rPair(globIndx1, globIndx2)%p%ry
           rzij = rPair(globIndx1, globIndx2)%p%rz
+          if(globIndx1 .gt. globIndx2) then
+            rxij = -rxij
+            ryij = -ryij
+            rzij = -rzij
+          endif
           do kMol = 1, nPart(kType)
             if((kMol .eq. iMol) .or. (kMol .eq. jMol)) then
               cycle
@@ -128,33 +134,45 @@
             globIndx3 = MolArray(jType)%mol(jMol)%globalIndx(1)
             rik  = rPair(globIndx1, globIndx3)%p%r
             rjk  = rPair(globIndx2, globIndx3)%p%r
+            if(rik .gt. rMax) then
+              if(rjk .gt. rMax) then
+                cycle
+              endif
+            endif
+
             if(rjk .lt. rMax) then
-!              angijk = angleCalc(rxij, ryij, rzij, rij, rxjk, ryjk, rzjk, rjk)
+              rxjk  = rPair(globIndx2, globIndx3)%p%rx
+              ryjk  = rPair(globIndx2, globIndx3)%p%ry
+              rzjk  = rPair(globIndx2, globIndx3)%p%rz
+              if(globIndx2 .gt. globIndx3) then
+                rxjk = -rxjk
+                ryjk = -ryjk
+                rzjk = -rzjk
+              endif
+              angijk = angleCalc(rxij, ryij, rzij, rij, -rxjk, -ryjk, -rzjk, rjk)
               Zeta1 = Zeta1 + gik_Func(angijk, c, d, h) *  Fc_Func(rij, R_eq, D)
             endif
             if(rik .lt. rMax) then
-!              angjik = angleCalc(-rxij, -ryij, -rzij, rij, rxjk, ryjk, rzjk, rjk)
+              rxik  = rPair(globIndx1, globIndx3)%p%rx
+              ryik  = rPair(globIndx1, globIndx3)%p%ry
+              rzik  = rPair(globIndx1, globIndx3)%p%rz
+              if(globIndx1 .gt. globIndx3) then
+                rxik = -rxik
+                ryik = -ryik
+                rzik = -rzik
+              endif
+              angjik = angleCalc(-rxij, -ryij, -rzij, rij, -rxik, -ryik, -rzik, rik)
               Zeta2 = Zeta2 + gik_Func(angjik, c, d, h) *  Fc_Func(rik, R_eq, D)
             endif
           enddo
+          
         enddo
       enddo
 
       write(nout,*) "ShortRange Energy:", E_Ele
 
-!      write(35,*) "Pair List:"
-!      do iMol=1,maxMol
-!        write(35,*) iMol, PairList(iMol)
-!      enddo
-
-
-!      do iAtom = 1, size(distStorage) - 1
-!        write(35,*) distStorage(iAtom)%indx1, distStorage(iAtom)%indx2, distStorage(iAtom)%r_sq, distStorage(iAtom)%E_Pair
-!      enddo
-!      flush(35)
-      
-      E_T = E_T + E_Ele + E_LJ    
-      E_Inter_T = E_Ele + E_LJ   
+      E_T = E_T + E_Ele
+      E_Inter_T = E_Ele
       
       end subroutine
 !======================================================================================      
