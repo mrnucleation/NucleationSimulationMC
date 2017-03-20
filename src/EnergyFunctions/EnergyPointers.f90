@@ -6,10 +6,12 @@
      module EnergyPointers
      use E_Interface_LJ_Q
      use E_Interface_Pedone
+     use E_Interface_Tersoff
      use Rosenbluth_Functions_LJ_Q
      use Rosenbluth_Functions_Pedone
      use InterEnergy_LJ_Electro, only: QuickNei_ECalc_Inter_LJ_Q
      use InterEnergy_Pedone, only: QuickNei_ECalc_Inter_Pedone
+     use InterEnergy_Tersoff, only: QuickNei_ECalc_Inter_Tersoff
 
      interface 
        subroutine DetailedInterface(E_T,rejMove)

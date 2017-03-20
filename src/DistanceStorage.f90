@@ -34,13 +34,18 @@
       type(DistArray), pointer :: p 
     end type
 
+    type DistPointerNew
+      type(DistArrayNew), pointer :: p 
+    end type
+
     logical :: coordShift = .false.
     integer :: nMaxPairs, nTotalAtoms, nNewDist
     integer, allocatable, target :: oldIndxArray(:)
     type(DistArray), allocatable, target :: distStorage(:)
     type(DistPointer), allocatable :: rPair(:,:)
-    type(DistArrayNew), allocatable :: newDist(:)
 
+    type(DistArrayNew), allocatable, target :: newDist(:)
+    type(DistPointerNew), allocatable :: rPairNew(:)
     contains
 !=====================================================================
       subroutine CreateDistArrays
@@ -52,6 +57,7 @@
       allocate(distStorage(0:nMaxPairs), stat = AllocationStat)
       allocate(rPair(1:nTotalAtoms, 1:nTotalAtoms), stat = AllocationStat)
       allocate(newDist(1:nMaxPairs), stat = AllocationStat) 
+      allocate(rPairNew(1:nTotalAtoms), stat = AllocationStat)
       allocate(oldIndxArray(1:nMaxPairs), stat = AllocationStat) 
 
 
@@ -125,6 +131,22 @@
           enddo
         enddo
       enddo
+
+     end subroutine
+!=====================================================================
+     subroutine TurnOnAllStorageFlags
+     use Coords
+     use ForceField
+     use SimParameters, only: NMAX, nMolTypes
+     implicit none
+     integer :: i
+
+     do i = 1, nMaxPairs
+       distStorage(i) % storeRValue = .true.
+       distStorage(i) % storeRParts = .true.
+     enddo 
+
+
 
      end subroutine
 !=====================================================================
@@ -236,6 +258,7 @@
                 endif
               endif    
               nNewDist = nNewDist + 1
+              rPairNew(gloIndx2)%p => newDist(nNewDist)
               oldIndxArray(nNewDist) = rPair(gloIndx1, gloIndx2)%p%arrayIndx
               newDist(nNewDist)%indx1 = gloIndx1
               newDist(nNewDist)%indx2 = gloIndx2

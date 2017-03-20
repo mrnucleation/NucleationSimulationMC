@@ -235,7 +235,7 @@
           screenEcho = logicValue
         case("rng_seed")
           read(line,*) dummy, command, intValue
-          if(seed .gt. 0) then
+          if(seed .ge. 0) then
             seed = intValue
           else
             call system_clock(intValue)

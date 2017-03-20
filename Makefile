@@ -36,6 +36,7 @@ TRIAL := $(CUR_DIR)/Trials
 ESUB := $(CUR_DIR)/src/EnergyFunctions
 LJ_Q := $(CUR_DIR)/src/EnergyFunctions/LJ_Q
 PEDONE := $(CUR_DIR)/src/EnergyFunctions/Pedone
+TERSOFF := $(CUR_DIR)/src/EnergyFunctions/Tersoff
 CBMC := $(CUR_DIR)/src/CBMC_Functions
 SWAP := $(CUR_DIR)/src/SwapFunctions
 ANALYSIS_SUB := $(CUR_DIR)/src/AnalysisFunctions
@@ -74,6 +75,8 @@ SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
             $(PEDONE)/Pedone_Functions_Experimental.f90\
             $(PEDONE)/Rosen_Pedone_Functions.f90\
             $(PEDONE)/EnergyInterfaceFunctions_Pedone_Experimental.f90\
+            $(TERSOFF)/Tersoff_Functions.f90\
+            $(TERSOFF)/EnergyInterface_Tersoff.f90\
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
             $(SRC)/ClusterCriteria_Distance.f90
@@ -123,6 +126,7 @@ OBJ_MAIN:=$(patsubst $(SRC)/%.f90, $(OBJ)/%.o, $(SRC_MAIN))
 OBJ_MAIN2:=$(patsubst $(SRC)/%.f90, $(OBJ)/%.o, $(SRC_MAIN2))
 
 OBJ_TEMP:=$(patsubst $(PEDONE)/%.f90,$(OBJ)/%.o,$(SRC_ENERGY))
+OBJ_TEMP:=$(patsubst $(TERSOFF)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 OBJ_TEMP:=$(patsubst $(LJ_Q)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 OBJ_ENERGY:=$(patsubst $(ESUB)/%.f90,$(OBJ)/%.o,$(OBJ_TEMP))
 
@@ -157,6 +161,10 @@ OBJ_COMPLETE:= $(OBJ_CRIT) $(OBJ_BOUNDARY) $(OBJ_ENERGY) $(OBJ_BIAS) $(OBJ_INPUT
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 
 $(OBJ)/%.o: $(ESUB)/%.f90
+		@echo Creating $<
+		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
+
+$(OBJ)/%.o: $(TERSOFF)/%.f90
 		@echo Creating $<
 		@$(FC) $(COMPFLAGS) $(MODFLAGS) -c -o $@ $<
 

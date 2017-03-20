@@ -6,7 +6,7 @@
 !=============================================================================
       contains
 !=============================================================================      
-      subroutine Detailed_EnergyCalc_Tersoff(E_T,rejMove)
+      subroutine Detailed_EnergyCalc_Tersoff(E_T, rejMove)
       use InterEnergy_Tersoff
       use EnergyCriteria
       use DistanceCriteria      
@@ -17,18 +17,20 @@
       logical , intent(inout) :: rejMove
       real(dp), intent(inout) :: E_T
       integer :: i,j
-      real(dp) :: PairList(1:maxMol,1:maxMol)
+      real(dp) :: PairList(1:maxMol, 1:maxMol)
       
       E_T = 0d0
       call CalcAllDistPairs
-      call Detailed_ECalc_Inter(E_T,PairList)
+      call Detailed_ECalc_Inter(E_T, PairList)
 
       if(distCriteria) then
-        call Detailed_DistanceCriteria(PairList,rejMove)
+        call Detailed_DistanceCriteria(PairList, rejMove)
       else
-        call Detailed_EnergyCriteria(PairList,rejMove)      
+        call Detailed_EnergyCriteria(PairList, rejMove)      
       endif
+
       
+      write(35,*) "Cluster Criteria Satisifed?: ", rejMove
       write(35,*) "Pairlist:"
       do i = 1, maxMol
         if(isActive(i)) then
@@ -50,7 +52,7 @@
 !     Inter-molecular components.  This function can be used for for moves that any number of
 !     atoms in a given molecule, but it can not be used if more than one molecule changes
 !     in a given move.  
-      subroutine Shift_EnergyCalc_Pedone(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove, useInter)
+      subroutine Shift_EnergyCalc_Tersoff(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove, useInter)
       use SimParameters, only: distCriteria, beta, softcutoff, NTotal
       use CBMC_Variables   
       use Coords      

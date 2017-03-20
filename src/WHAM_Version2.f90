@@ -295,10 +295,16 @@
       real(dp) :: norm, ratio, maxBias, refBias, probNorm
       character(len = 100) :: outputString, outputString2
 
+      if(.not. useWham) then
+        return
+      endif
+
       write(outputString, *) "(", (trim(outputFormat(j)), j =1,nBiasVariables), "2x, F18.10)"
       write(outputString2, *) "(", (trim(outputFormat(j)), j =1,nBiasVariables), "2x, F18.1)"
 
 !      call WHAM_AdjustHist
+
+
 
       if(myid .eq. 0) then
 !        This block exports the calculated free energy to a file

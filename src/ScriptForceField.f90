@@ -88,6 +88,21 @@
         FFSpecificFlags => Pedone_SetFlags
         interFunction => Read_Pedone
         fieldTypeSet = .true.
+      case("tersoff")
+        write(nout,*) "Forcefield Type: Tersoff"
+        ForceFieldName = "Tersoff"
+        Detailed_ECalc => Detailed_EnergyCalc_Tersoff
+        Shift_ECalc => Shift_EnergyCalc_Tersoff
+        SwapIn_ECalc => SwapIn_EnergyCalc_Tersoff
+        SwapOut_ECalc => SwapOut_EnergyCalc_Tersoff
+        Rosen_Mol_New => Rosen_BoltzWeight_Pedone_New
+        Rosen_Mol_Old => Rosen_BoltzWeight_Pedone_Old
+        Quick_Nei_ECalc => QuickNei_ECalc_Inter_Tersoff
+        boundaryFunction => Bound_MaxMin
+        commonFunction => Allocate_Tersoff
+        FFSpecificFlags => Tersoff_SetFlags
+        interFunction => Read_Tersoff
+        fieldTypeSet = .true.
       case("custompairwise")
       case default
         stop "Unknown potential type given in forcefield input"
@@ -693,6 +708,62 @@
   
       end subroutine
 
+!================================================================ 
+      subroutine Allocate_Tersoff
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_Tersoff
+      use AcceptRates
+      implicit none
+      integer :: AllocateStatus
+      
+      ALLOCATE (tersoffData(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (atomData(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (nAtoms(1:nMolTypes), STAT = AllocateStatus)
+
+      nAtoms = 1
+
+      ALLOCATE (r_min(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_sq(1:nAtomTypes), STAT = AllocateStatus)
+      ALLOCATE (r_min_tab(1:nAtomTypes, 1:nAtomTypes), STAT = AllocateStatus) 
+      ALLOCATE (totalMass(1:nAtomTypes), STAT = AllocateStatus)
+
+      ALLOCATE (acptTrans(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpTrans(1:nMolTypes), STAT = AllocateStatus)
+      acptTrans = 0E0_dp
+      atmpTrans = 1E-40_dp
+
+
+      ALLOCATE (acptRot(1:nMolTypes),   STAT = AllocateStatus)
+      ALLOCATE (atmpRot(1:nMolTypes),  STAT = AllocateStatus)
+      acptRot = 0E0_dp
+      atmpRot = 1E-40_dp
+
+      ALLOCATE (acptSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpSwapIn(1:nMolTypes), STAT = AllocateStatus)
+      acptSwapIn = 0E0_dp
+      atmpSwapIn = 1E-40_dp
+
+      ALLOCATE (acptSwapOut(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (atmpSwapOut(1:nMolTypes), STAT = AllocateStatus)
+      acptSwapOut = 0E0_dp
+      atmpSwapOut = 1E-40_dp
+
+
+      ALLOCATE (acptInSize(1:maxMol), STAT = AllocateStatus)
+      ALLOCATE (atmpInSize(1:maxMol), STAT = AllocateStatus)
+
+      acptInSize = 0E0_dp
+      atmpInSize = 1E-100_dp
+
+      ALLOCATE (max_dist(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (max_dist_single(1:nMolTypes), STAT = AllocateStatus)
+      ALLOCATE (max_rot(1:nMolTypes), STAT = AllocateStatus) 
+
+      
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+  
+      end subroutine
 !===================================================================================
       subroutine Read_LJ_Q(lineStore)
       use SimParameters
@@ -820,6 +891,51 @@
       endif
 
       end subroutine
+
+!===================================================================================
+      subroutine Read_Tersoff(lineStore)
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_Tersoff
+      implicit none
+      character(len=maxLineLen), intent(in) :: lineStore(:)
+      integer :: i, j, iLine, nLines
+
+      nLines = size(lineStore)
+
+      i = 0
+      do iLine = 2, nLines-1
+        i = i + 1
+!        write(*,*)  lineStore(iLine)
+        read(lineStore(iLine),*) tersoffData(i)%atmName, tersoffData(i)%Symb, tersoffData(i)%A, & 
+                                 tersoffData(i)%B, tersoffData(i)%c, tersoffData(i)%d, tersoffData(i)%n, &
+                                 tersoffData(i)%lam1, tersoffData(i)%lam2, tersoffData(i)%h, tersoffData(i)%R, &
+                                 tersoffData(i)%D2, tersoffData(i)%beta, tersoffData(i)%mass
+      enddo
+
+
+      do i = 1, nAtomTypes
+        if(echoInput) then
+          write(35,*) tersoffData(i)%atmName, tersoffData(i)%Symb, tersoffData(i)%A, & 
+                                 tersoffData(i)%B, tersoffData(i)%c, tersoffData(i)%d, tersoffData(i)%n, &
+                                 tersoffData(i)%lam1, tersoffData(i)%lam2, tersoffData(i)%h, tersoffData(i)%R, &
+                                 tersoffData(i)%D2, tersoffData(i)%beta, tersoffData(i)%mass
+        endif
+        tersoffData(i)%A = tersoffData(i)%A * convEng
+        tersoffData(i)%B = tersoffData(i)%B * convEng
+
+        tersoffData(i)%lam1 = tersoffData(i)%lam1 / convDist
+        tersoffData(i)%lam2 = tersoffData(i)%lam2 / convDist
+
+        tersoffData(i)%R = tersoffData(i)%R * convDist   
+        tersoffData(i)%D2 = tersoffData(i)%D2 * convDist
+
+        atomData(i)%atmName = tersoffData(i)%atmName
+        atomData(i)%Symb = tersoffData(i)%Symb
+      enddo
+
+
+      end subroutine
 !===================================================================================
       subroutine LJ_SetFlags
       use SimParameters
@@ -841,6 +957,18 @@
       implicit none
 
       call SetStorageFlags(q_tab) 
+
+      end subroutine
+
+!===================================================================================
+      subroutine Tersoff_SetFlags
+      use SimParameters
+      use ForceField
+      use ForceFieldPara_Pedone
+      use PairStorage, only: TurnOnAllStorageFlags
+      implicit none
+
+      call TurnOnAllStorageFlags
 
       end subroutine
 !===================================================================================

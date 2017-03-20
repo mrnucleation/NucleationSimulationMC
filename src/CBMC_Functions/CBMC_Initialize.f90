@@ -26,6 +26,10 @@
         allocate(regrowType(1:nMolTypes), STAT = AllocateStatus)
         regrowType = 0
         return
+      case("Tersoff") 
+        allocate(regrowType(1:nMolTypes), STAT = AllocateStatus)
+        regrowType = 0
+        return
       case default
         continue
       end select

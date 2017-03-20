@@ -172,7 +172,7 @@
 !      Perform the Intial Energy Calculations and perform the intial Cluster Criteria Check to ensure
 !      the starting configuration is valid. 
 !      call Detailed_EnergyCalc(E_T,errRtn)
-      call Detailed_ECalc(E_T,errRtn)
+      call Detailed_ECalc(E_T, errRtn)
 
       if(errRtn) then
         stop      
