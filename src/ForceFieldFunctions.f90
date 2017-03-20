@@ -288,7 +288,7 @@
       type AtomDefTersoff
         character(len=20) :: atmName
         character(len=5) :: Symb
-        real(dp) :: c, d, lam1, lam2, h, R, D2
+        real(dp) :: A,B, c, d, n, lam1, lam2, h, R, D2, beta
       end type
 
       type(AtomDefTersoff), allocatable :: tersoffData(:)

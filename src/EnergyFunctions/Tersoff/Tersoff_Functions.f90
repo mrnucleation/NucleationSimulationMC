@@ -86,13 +86,15 @@
       real(dp) :: r_sq, r, rMax, rMax_sq
       real(dp) :: rxij, ryij, rzij, rij
       real(dp) :: rxjk, ryjk, rzjk, rjk
-      real(dp) :: c, d, R_eq, D2 
+      real(dp) :: A, B, c, d, R_eq, D2 
       real(dp) :: E_Short
       real(dp) :: Zeta1, Zeta2
-      real(dp) :: 
+      real(dp) :: Beta, n
+      real(dp) :: b1, b2, V1, V2
       real(dp) :: angijk, angjik
 
-      E_LJ = 0E0_dp
+      E_T = 0E0_dp
+      E_Short = 0E0_dp
       PairList = 0E0_dp
       ETable = 0E0_dp
       iType = 1
@@ -100,22 +102,28 @@
       kType = 1
       atmType1 = atomIndicies(iType, 1) 
 
+      A = tersoffData(atmType1)%A
+      B = tersoffData(atmType1)%B
       c = tersoffData(atmType1)%c
       d = tersoffData(atmType1)%d
       R_eq = tersoffData(atmType1)%R
       D2 = tersoffData(atmType1)%D2
+      beta = tersoffData(atmType1)%beta
+      n = tersoffData(atmType1)%n
 
       rMax = R_eq + D2
       rMax_sq = rMax * rMax
 
       do iMol = 1, nPart(iType)- 1
         globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(1)
+        iIndx = MolArray(iType)%mol(iMol)%indx
         do jMol = iMol + 1, nPart(jType)
           globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1)
           r_sq = rPair(globIndx1, globIndx2)%p%r_sq
           if(r_sq .gt. rMax_sq) then
             cycle
           endif
+          jIndx = MolArray(iType)%mol(iMol)%indx
           Zeta1 = 0E0_dp
           Zeta2 = 0E0_dp
           rij  = rPair(globIndx1, globIndx2)%p%r
@@ -152,6 +160,7 @@
               angijk = angleCalc(rxij, ryij, rzij, rij, -rxjk, -ryjk, -rzjk, rjk)
               Zeta1 = Zeta1 + gik_Func(angijk, c, d, h) *  Fc_Func(rij, R_eq, D)
             endif
+
             if(rik .lt. rMax) then
               rxik  = rPair(globIndx1, globIndx3)%p%rx
               ryik  = rPair(globIndx1, globIndx3)%p%ry
@@ -162,17 +171,30 @@
                 rzik = -rzik
               endif
               angjik = angleCalc(-rxij, -ryij, -rzij, rij, -rxik, -ryik, -rzik, rik)
-              Zeta2 = Zeta2 + gik_Func(angjik, c, d, h) *  Fc_Func(rik, R_eq, D)
+              Zeta1 = Zeta1 + gik_Func(angjik, c, d, h) *  Fc_Func(rik, R_eq, D)
             endif
           enddo
+          if(Zeta1 .ne. 0E0_dp) then
+            b1 = (1E0_dp + (beta*Zeta1)**n)**(-1d0/(2d0*n))
+          endif
+!          if(Zeta2 .ne. 0E0_dp) then
+!            b2 = (1E0_dp + (beta*Zeta2)**n)**(-1d0/(2d0*n))
+!          endif
           
+
+          V1 = Fc_Func(rij, R_eq, D) * (A*exp(-lam1*rij) - b1*B*exp(-lam2*rij))
+          PairList(iIndx, jIndx) = V1
+          PairList(jIndx, iIndx) = V1
+          ETable(iIndx) = ETable(iIndx) + V1
+          ETable(jIndx) = ETable(jIndx) + V1
+          E_Short = E_Short + V1
         enddo
       enddo
 
-      write(nout,*) "ShortRange Energy:", E_Ele
+      write(nout,*) "ShortRange Energy:", E_Short
 
-      E_T = E_T + E_Ele
-      E_Inter_T = E_Ele
+      E_T = E_T + E_Short
+      E_Inter_T = E_Short
       
       end subroutine
 !======================================================================================      
