@@ -87,11 +87,6 @@
       E_Bend_Diff = 0d0
       E_Tors_Diff = 0d0
 
-      if(present(useInter)) then
-        interSwitch = useInter
-      else
-        interSwitch = .true.
-      endif
 
 
 !     Begin by calculating the intermolecular potential. If any atoms overlap the move will be rejected
@@ -103,7 +98,7 @@
           endif
           dETable = 0d0
           PairList = 0d0
-          call Shift_ECalc_Inter(E_Inter,disp,newDist, PairList, dETable, rejMove)
+          call Shift_ECalc_Inter(E_Inter, disp,newDist, PairList, dETable, rejMove)
 
           if(rejMove) then
             return

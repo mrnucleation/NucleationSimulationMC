@@ -45,7 +45,9 @@
     type(DistPointer), allocatable :: rPair(:,:)
 
     type(DistArrayNew), allocatable, target :: newDist(:)
+    type(DistArrayNew), target :: nullPair
     type(DistPointerNew), allocatable :: rPairNew(:)
+
     contains
 !=====================================================================
       subroutine CreateDistArrays
@@ -91,6 +93,16 @@
       do i = 1, nTotalAtoms
         rPair(i,i)%p => distStorage(0)
       enddo 
+
+      nullPair%indx1 = 0 
+      nullPair%indx2 = 0
+      nullPair%rx = 0E0_dp
+      nullPair%ry = 0E0_dp
+      nullPair%rz = 0E0_dp
+      nullPair%r_sq = 0E0_dp
+      nullPair%r = 0E0_dp
+      nullPair%E_Pair = 0E0_dp
+
 
      end subroutine
 !=====================================================================
@@ -232,6 +244,7 @@
         iAtom = disp(iDisp)%atmIndx
         atmType1 = atomArray(iType, iAtom)
         gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
+        rPairNew(gloIndx1)%p => nullPair
         do jType = 1, nMolTypes
           do jAtom = 1, nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
@@ -264,10 +277,10 @@
               newDist(nNewDist)%indx2 = gloIndx2
               newDist(nNewDist)%r_sq = r_sq
 !              newDist(nNewDist)%E_Pair = 0d0
-              if( rPair(gloIndx1, gloIndx2)%p%storeRValue .eqv. .true.) then
+              if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif
-              if( rPair(gloIndx1, gloIndx2)%p%storeRParts .eqv. .true.) then
+              if( rPair(gloIndx1, gloIndx2)%p%storeRParts ) then
                 newDist(nNewDist)%rx = rx
                 newDist(nNewDist)%ry = ry
                 newDist(nNewDist)%rz = rz

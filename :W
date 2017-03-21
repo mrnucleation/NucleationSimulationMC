@@ -14,7 +14,7 @@ OPTIMIZE_FLAGS := -O3
 #OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
-DETAILEDDEBUG:= -fbacktrace -fcheck=all -g -ffree-line-length-0 -Og
+DETAILEDDEBUG:= -fbacktrace -fcheck=all -O0 -g -ffree-line-length-0 
 #DETAILEDDEBUG:= -check all -traceback -g
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += $(DETAILEDDEBUG)
@@ -320,7 +320,6 @@ $(OBJ)/SimplePairDistance.o: $(OBJ)/DistanceStorage.o $(OBJ)/MiscelaniousVariabl
 $(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o: $(OBJ)/LJ_Electro_Functions_Experimental.o $(OBJ)/Rosen_Boltz_Functions.o $(OBJ)/Bending_Functions.o $(OBJ)/BondStretch_Functions.o $(OBJ)/Torsional_Functions.o $(OBJ)/Intra_LJ_Electro_Functions.o $(OBJ)/Improper_Functions.o
 $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o: $(OBJ)/Pedone_Functions_Experimental.o $(OBJ)/Rosen_Pedone_Functions.o
 $(OBJ)/Pedone_Functions_Experimental.o: $(OBJ)/DistanceStorage.o
-$(OBJ)/Tersoff_Functions.o: $(OBJ)/DistanceStorage.o
 
 $(OBJ)/MiscelaniousVariables.o: $(OBJ)/Common.o
 
