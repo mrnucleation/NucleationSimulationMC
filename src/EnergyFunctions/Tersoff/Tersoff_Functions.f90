@@ -117,7 +117,7 @@
 
       rMax = R_eq + D2
       rMax_sq = rMax * rMax
-      write(*,*) rMax
+!      write(*,*) rMax
 
       do iMol = 1, NPART(iType)
         globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(1)
@@ -160,11 +160,7 @@
                 ryjk = -ryjk
                 rzjk = -rzjk
               endif
-              write(*,*) iMol, jMol, kMol
               angijk = angleCalc(rxij, ryij, rzij, rij, rxjk, ryjk, rzjk, rjk)
-              write(*,*) rxij, ryij, rzij, rij
-              write(*,*) rxjk, ryjk, rzjk, rjk
-              write(*,*) angijk * 180d0/pi
               Zeta = Zeta + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2)
             endif
           enddo
@@ -197,6 +193,7 @@
       use ForceFieldPara_Tersoff
       use Coords
       use SimParameters
+      use Constants, only: pi
       use PairStorage, only: distStorage, rPair, DistArrayNew, nNewDist, oldIndxArray, rPairNew, nullPair 
       implicit none
       
@@ -264,6 +261,7 @@
 
 
 
+
 !      With the Tersoff model, 
       do iPair = 1, nNewDist
         r_new = newDist(iPair)%r
@@ -306,7 +304,7 @@
 !        V2 = 0E0_dp
         jMol = neiList(jNei)
         globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1)
-        nPair = pairIndxNew(jNei)
+!        nPair = pairIndxNew(jNei)
         jIndx = MolArray(jType)%mol(jMol)%indx
         Short = 0E0_dp
 !        Compute new position
@@ -330,22 +328,24 @@
               rxjk  = rPair(globIndx2, globIndx3)%p%rx
               ryjk  = rPair(globIndx2, globIndx3)%p%ry
               rzjk  = rPair(globIndx2, globIndx3)%p%rz
-              if(globIndx2 .gt. globIndx3) then
+              if(globIndx2 .lt. globIndx3) then
                 rxjk = -rxjk
                 ryjk = -ryjk
                 rzjk = -rzjk
               endif
-              angijk = angleCalc(rxij, ryij, rzij, rij, -rxjk, -ryjk, -rzjk, rjk)
+              angijk = angleCalc(rxij, ryij, rzij, rij, rxjk, ryjk, rzjk, rjk)
+!              write(*,*) nMol, jMol, kMol, angijk*(180d0/pi)
               Zeta = Zeta + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2)
             endif     
 
 
             if(rjk .lt. rMax) then
-              rxik  = rPairNew(globIndx3)%p%rx
-              ryik  = rPairNew(globIndx3)%p%ry
-              rzik  = rPairNew(globIndx3)%p%rz
-              angijk = angleCalc(-rxij, -ryij, -rzij, rij, -rxik, -ryik, -rzik, rik)
-              Zeta2 = Zeta2 + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2)
+              rxik  = -rPairNew(globIndx3)%p%rx
+              ryik  = -rPairNew(globIndx3)%p%ry
+              rzik  = -rPairNew(globIndx3)%p%rz
+              angijk = angleCalc(rxij, ryij, rzij, rij, rxik, ryik, rzik, rik)
+!              write(*,*) jMol, nMol, kMol, angijk*(180d0/pi)
+              Zeta2 = Zeta2 + gik_Func(angijk, c, d, h) *  Fc_Func(rjk, R_eq, D2)
             endif  
           enddo
           if(Zeta .ne. 0E0_dp) then
@@ -385,18 +385,20 @@
             endif
             globIndx3 = MolArray(kType)%mol(kMol)%globalIndx(1)
 
-            rik  = rPair(globIndx1, globIndx3)%p%r
+            rik = rPair(globIndx1, globIndx3)%p%r
             rjk = rPair(globIndx2, globIndx3)%p%r
+
             if(rik .lt. rMax) then
               rxjk  = rPair(globIndx2, globIndx3)%p%rx
               ryjk  = rPair(globIndx2, globIndx3)%p%ry
               rzjk  = rPair(globIndx2, globIndx3)%p%rz
-              if(globIndx2 .gt. globIndx3) then
+              if(globIndx2 .lt. globIndx3) then
                 rxjk = -rxjk
                 ryjk = -ryjk
                 rzjk = -rzjk
               endif
-              angijk = angleCalc(rxij, ryij, rzij, rij, -rxjk, -ryjk, -rzjk, rjk)
+              angijk = angleCalc(rxij, ryij, rzij, rij, rxjk, ryjk, rzjk, rjk)
+!              write(*,*) nMol, jMol, kMol, angijk*(180d0/pi)
               Zeta = Zeta + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2)
             endif
 
@@ -405,8 +407,14 @@
               rxik  = rPair(globIndx1, globIndx3)%p%rx
               ryik  = rPair(globIndx1, globIndx3)%p%ry
               rzik  = rPair(globIndx1, globIndx3)%p%rz
-              angijk = angleCalc(-rxij, -ryij, -rzij, rij, -rxik, -ryik, -rzik, rik)
-              Zeta2 = Zeta2 + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2)
+              if(globIndx1 .lt. globIndx3) then
+                rxjk = -rxjk
+                ryjk = -ryjk
+                rzjk = -rzjk
+              endif
+              angijk = angleCalc(-rxij, -ryij, -rzij, rij, rxik, ryik, rzik, rik)
+!              write(*,*) nMol, jMol, kMol, angijk*(180d0/pi)
+              Zeta2 = Zeta2 + gik_Func(angijk, c, d, h) *  Fc_Func(rjk, R_eq, D2)
             endif  
           enddo
           if(Zeta .ne. 0E0_dp) then
@@ -432,12 +440,17 @@
         E_Short = E_Short + Short
       enddo
 
-      write(*,*) Short
+!      write(*,*) Short
       if(NTotal .eq. 2) then
         E_Trial = 0.5E0_dp * E_Short
         return
       endif
+      write(*,*)  
 
+
+
+!      This portion of the code computes the energy of the atoms which neighbored
+!      the particle that moved. 
       do iNei = 1, nNei
         iMol = neiList(iNei)
         globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(1)
@@ -482,8 +495,11 @@
                 rxjk  = rPairNew(globIndx2)%p%rx
                 ryjk  = rPairNew(globIndx2)%p%ry
                 rzjk  = rPairNew(globIndx2)%p%rz
-                rjk  = rPairNew(globIndx2)%p%r
+                rjk   = rPairNew(globIndx2)%p%r
+
                 angijk = angleCalc(rxij, ryij, rzij, rij, rxjk, ryjk, rzjk, rjk)
+                write(*,*) "Blah"
+                write(*,*) iMol, jMol, kMol, angijk*(180d0/pi)
                 Zeta = Zeta + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2) 
               endif
               rik  = rPair(globIndx1, globIndx3)%p%r
@@ -491,13 +507,14 @@
                 rxjk  = rPair(globIndx2, globIndx3)%p%rx
                 ryjk  = rPair(globIndx2, globIndx3)%p%ry
                 rzjk  = rPair(globIndx2, globIndx3)%p%rz
-                rjk  = rPair(globIndx2, globIndx3)%p%r
+                rjk   = rPair(globIndx2, globIndx3)%p%r
                 if(globIndx2 .gt. globIndx3) then
                   rxjk = -rxjk
                   ryjk = -ryjk
                   rzjk = -rzjk
                 endif
-                angijk = angleCalc(rxij, ryij, rzij, rij, -rxjk, -ryjk, -rzjk, rjk)
+                angijk = angleCalc(rxij, ryij, rzij, rij, rxjk, ryjk, rzjk, rjk)
+                write(*,*) iMol, jMol, kMol, angijk*(180d0/pi)
                 Zeta2 = Zeta2 + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2) 
               endif
               
@@ -508,12 +525,14 @@
                 ryjk  = rPair(globIndx2, globIndx3)%p%ry
                 rzjk  = rPair(globIndx2, globIndx3)%p%rz
                 rjk  = rPair(globIndx2, globIndx3)%p%r
-                if(globIndx2 .gt. globIndx3) then
+                if(globIndx2 .lt. globIndx3) then
                   rxjk = -rxjk
                   ryjk = -ryjk
                   rzjk = -rzjk
                 endif
-                angijk = angleCalc(rxij, ryij, rzij, rij, -rxjk, -ryjk, -rzjk, rjk)
+                angijk = angleCalc(rxij, ryij, rzij, rij, rxjk, ryjk, rzjk, rjk)
+                write(*,*) iMol, jMol, kMol, angijk*(180d0/pi)
+                write(*,*) jMol, iMol, kMol, angijk*(180d0/pi)
                 V1 = gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2) 
                 Zeta = Zeta + V1
                 Zeta2 = Zeta2 + V1 
@@ -532,9 +551,9 @@
           endif
 
 
-          V1 = Fc_Func(rij, R_eq, D2) * (B*exp(-lam2*rij))*(b2 - b1)
-          dETable(iIndx) = dETable(iIndx) + 0.5E0_dp*V1
-          dETable(jIndx) = dETable(jIndx) + 0.5E0_dp*V1
+          V1 = 0.5E0_dp*Fc_Func(rij, R_eq, D2) * (B*exp(-lam2*rij))*(b2 - b1)
+          dETable(iIndx) = dETable(iIndx) + V1
+          dETable(jIndx) = dETable(jIndx) + V1
 !          write(*,*) "V1", V1
           E_Short = E_Short + V1
         enddo

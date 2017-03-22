@@ -234,11 +234,20 @@
 
    
       iType = disp(1)%molType
+      do iMol = 1, NPART(iType)
+        write(*,*) "O", MolArray(iType)%mol(iMol)%x(1), MolArray(iType)%mol(iMol)%y(1), &
+                      MolArray(iType)%mol(iMol)%z(1)
+      enddo
       iMol = disp(1)%molIndx
       iIndx = molArray(iType)%mol(iMol)%indx
       sizeDisp = size(disp)
       rejMove = .false.
       nNewDist = 0
+
+
+      write(*,*) molArray(iType)%mol(iMol)%globalIndx(1), disp(1)%x_new, disp(1)%y_new, disp(1)%z_new
+      write(*,*)
+
 
       do iDisp = 1, sizeDisp
         iAtom = disp(iDisp)%atmIndx
@@ -406,6 +415,15 @@
           endif
         enddo
       enddo
+
+
+     end subroutine
+!=====================================================================
+     subroutine CalculateAngle(gloIndx1, gloIndx2, gloIndx3)
+      implicit none
+      integer, intent(in) :: gloIndx1, gloIndx2, gloIndx3
+      real(dp) :: r12, rx12, ry12, rz12
+      real(dp) :: r23, rx23, ry23, rz23
 
 
      end subroutine
