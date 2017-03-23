@@ -250,6 +250,7 @@
       write(nout,*) "Temperature:", temperature
       write(nout,*) "Gas Phase Density:", gas_dens
       write(nout,*) "Initial Energy:", E_T/outputEConv, outputEngUnits
+      write(nout,*) "Initial Energy (Per Molecule):", E_T/outputEConv/real(NTotal,dp), outputEngUnits
 
       write(nout,*) "------------------------------------------------"
       write(nout,*) "         Simulation Start!"      
@@ -404,6 +405,7 @@
 
       write(nout,*) "Simulation Time:", TimeFinish - TimeStart
       write(nout,*) "Final Energy:", E_Final/outputEConv, outputEngUnits
+      write(nout,*) "Final Energy (Per Molecule):", E_Final/outputEConv/real(NTotal,dp), outputEngUnits
       write(nout,*) "Final Cluster Size:", NPART
 !     Check for errors in the energy calculation. 
       if(E_Final .eq. 0E0) then
@@ -495,15 +497,15 @@
         if(isActive(i)) then
           if(FinalETable(i) .ne. 0E0_dp) then
             if(abs((FinalETable(i) - ETable(i))/FinalETable(i)) .gt. 1E-6_dp) then
-              write(35,*) i, ETable(i),FinalETable(i),"<---ETable Error"
+              write(35,*) i, ETable(i)/outputEConv, FinalETable(i)/outputEConv,"<---ETable Error"
             else 
-              write(35,*) i, ETable(i)
+              write(35,*) i, ETable(i)/outputEConv
             endif            
           else
             if(ETable(i) .ne. 0) then
-              write(35,*) i, ETable(i),FinalETable(i),"<---ETable Error"            
+              write(35,*) i, ETable(i)/outputEConv, FinalETable(i)/outputEConv,"<---ETable Error"            
             else
-              write(35,*) i, ETable(i)                     
+              write(35,*) i, ETable(i)/outputEConv
             endif
           endif
         endif

@@ -39,6 +39,11 @@
         enddo
       enddo
 
+      if( all(NeighborList .eqv. .false.) )then
+        rejMove = .true.
+        write(nout,*) "------- Cluster Criteria Not Met! --------"
+      endif
+
       cnt = 0
       do i=1,maxMol
         if(isActive(i) .eqv. .false.) then

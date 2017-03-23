@@ -23,14 +23,15 @@
       call CalcAllDistPairs
       call Detailed_ECalc_Inter(E_T, PairList)
 
+      
+
       if(distCriteria) then
         call Detailed_DistanceCriteria(PairList, rejMove)
       else
         call Detailed_EnergyCriteria(PairList, rejMove)      
       endif
-
       
-      write(35,*) "Cluster Criteria Satisifed?: ", rejMove
+      write(35,*) "Cluster Criteria Satisifed?: ", .not. rejMove
       write(35,*) "Pairlist:"
       do i = 1, maxMol
         if(isActive(i)) then

@@ -185,15 +185,26 @@
                 globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
                 do jAtom = 1,nAtoms(jType)       
                   globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+                  if(globIndx1 .eq. globIndx2) then
+                    cycle
+                  endif
                   atmType2 = atomArray(jType, jAtom) 
                   rmin_ij = r_min_tab(atmType2, atmType1)
                   rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
                   ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
                   rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom) 
+!                  write(*,*) rPair(globIndx1, globIndx2)% p % indx1, rPair(globIndx1, globIndx2)% p % indx2
+!                  write(*,*) globIndx1, globIndx2, rx, ry, rz
                   if( rPair(globIndx1, globIndx2) % p % storeRParts ) then
-                    rPair(globIndx1, globIndx2)% p % rx = rx
-                    rPair(globIndx1, globIndx2)% p % ry = ry
-                    rPair(globIndx1, globIndx2)% p % rz = rz
+                    if(globIndx1 .gt. globIndx2) then
+                      rPair(globIndx1, globIndx2)% p % rx = -rx
+                      rPair(globIndx1, globIndx2)% p % ry = -ry
+                      rPair(globIndx1, globIndx2)% p % rz = -rz
+                    else
+                      rPair(globIndx1, globIndx2)% p % rx = rx
+                      rPair(globIndx1, globIndx2)% p % ry = ry
+                      rPair(globIndx1, globIndx2)% p % rz = rz
+                    endif
                   endif
                   r_sq = rx*rx + ry*ry + rz*rz
                   if(r_sq .lt. rmin_ij) then
@@ -234,10 +245,10 @@
 
    
       iType = disp(1)%molType
-      do iMol = 1, NPART(iType)
-        write(*,*) "O", MolArray(iType)%mol(iMol)%x(1), MolArray(iType)%mol(iMol)%y(1), &
-                      MolArray(iType)%mol(iMol)%z(1)
-      enddo
+!      do iMol = 1, NPART(iType)
+!        write(*,*) "O", MolArray(iType)%mol(iMol)%x(1), MolArray(iType)%mol(iMol)%y(1), &
+!                      MolArray(iType)%mol(iMol)%z(1)
+!      enddo
       iMol = disp(1)%molIndx
       iIndx = molArray(iType)%mol(iMol)%indx
       sizeDisp = size(disp)
@@ -245,8 +256,8 @@
       nNewDist = 0
 
 
-      write(*,*) molArray(iType)%mol(iMol)%globalIndx(1), disp(1)%x_new, disp(1)%y_new, disp(1)%z_new
-      write(*,*)
+!      write(*,*) molArray(iType)%mol(iMol)%globalIndx(1), disp(1)%x_new, disp(1)%y_new, disp(1)%z_new
+!      write(*,*)
 
 
       do iDisp = 1, sizeDisp
@@ -373,9 +384,15 @@
           distStorage(oldIndxArray(iPair))%r = newDist(iPair)%r
         endif
         if( distStorage(oldIndxArray(iPair))%storeRParts ) then
-          distStorage(oldIndxArray(iPair))%rx = newDist(iPair)%rx
-          distStorage(oldIndxArray(iPair))%ry = newDist(iPair)%ry
-          distStorage(oldIndxArray(iPair))%rz = newDist(iPair)%rz
+          if(newDist(iPair)%indx1 .eq. distStorage(oldIndxArray(iPair))%indx1) then
+            distStorage(oldIndxArray(iPair))%rx = newDist(iPair)%rx
+            distStorage(oldIndxArray(iPair))%ry = newDist(iPair)%ry
+            distStorage(oldIndxArray(iPair))%rz = newDist(iPair)%rz
+          else
+            distStorage(oldIndxArray(iPair))%rx = -newDist(iPair)%rx
+            distStorage(oldIndxArray(iPair))%ry = -newDist(iPair)%ry
+            distStorage(oldIndxArray(iPair))%rz = -newDist(iPair)%rz
+          endif
         endif
       enddo
 
