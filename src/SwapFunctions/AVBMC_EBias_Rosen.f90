@@ -16,16 +16,19 @@
 
 
       prevMoveAccepted = .false.
+!      call AVBMC_EBias_Rosen_In(E_T, acc_x, atmp_x)
+!      call AVBMC_EBias_Rosen_Out(E_T, acc_x, atmp_x) 
+!      return
               
       if(grnd() .lt. 0.5d0) then
-        call AVBMC_EBias_Rosen_In(E_T, acc_x, atmp_x)     
+        call AVBMC_EBias_Rosen_In(E_T, maxMol, acc_x, atmp_x)     
       else
-        call AVBMC_EBias_Rosen_Out(E_T, acc_x, atmp_x)    
+        call AVBMC_EBias_Rosen_Out(E_T, maxMol, acc_x, atmp_x)    
       endif
 
       end subroutine
 !===================================================================================
-      subroutine AVBMC_EBias_Rosen_In(E_T, acc_x, atmp_x)
+      subroutine AVBMC_EBias_Rosen_In(E_T, arrayMax, acc_x, atmp_x)
       use AcceptRates
       use AVBMC_RejectionVar
       use AVBMC_CBMC
@@ -49,19 +52,20 @@
       use UmbrellaSamplingNew, only: GetUmbrellaBias_SwapIn
       implicit none
       
+      integer, intent(in) :: arrayMax
       real(dp), intent(inout) :: E_T      
       real(dp), intent(inout) :: acc_x, atmp_x
       logical :: rejMove
-      logical :: isIncluded(1:maxMol)
+      logical :: isIncluded(1:arrayMax)
       integer :: NDiff(1:nMolTypes)
       integer :: i, nTargType, nTargMol, nTargIndx, nTarget
       integer :: nType, nIndx
       real(dp) :: grnd
       real(dp) :: genProbRatio, rosenRatio
       real(dp) :: E_Inter, E_Intra, biasDiff
-      real(dp) :: PairList(1:maxMol)
-      real(dp) :: dETable(1:maxMol)
-      real(dp) :: newNeiETable(1:maxMol)      
+      real(dp) :: PairList(1:arrayMax)
+      real(dp) :: dETable(1:arrayMax)
+      real(dp) :: newNeiETable(1:arrayMax)      
       real(dp) :: ProbTarg_In, ProbTarg_Out, ProbSel_Out
       real(dp) :: Boltzterm
       real(dp) :: sumInt, ranNum
@@ -211,7 +215,7 @@
        endif
        end subroutine
 !===================================================================================            
-      subroutine AVBMC_EBias_Rosen_Out(E_T, acc_x, atmp_x)
+      subroutine AVBMC_EBias_Rosen_Out(E_T, arrayMax, acc_x, atmp_x)
       use AVBMC_CBMC
       use AVBMC_RejectionVar
       use SimParameters
@@ -234,6 +238,7 @@
       use UmbrellaSamplingNew, only: GetUmbrellaBias_SwapOut
       implicit none
       
+      integer, intent(in) :: arrayMax
       real(dp), intent(inout) :: E_T      
       real(dp), intent(inout) :: acc_x, atmp_x
       
@@ -245,7 +250,7 @@
       real(dp) :: genProbRatio
       real(dp) :: biasDiff           
       real(dp) :: E_Inter, E_Intra
-      real(dp) :: dETable(1:maxMol)
+      real(dp) :: dETable(1:arrayMax)
       real(dp) :: ProbTargOut, ProbSel, ProbTargIn
       real(dp) :: rx, ry, rz, dist, rosenRatio
       real(dp) :: ranNum, sumInt
@@ -449,7 +454,7 @@
       real(dp) :: norm, EMax
   
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
-      ProbTable = 0d0
+      ProbTable = 0E0_dp
       EMax = -huge(dp)
       do i = 1, maxMol
         if(neiCount(i) .gt. 0) then

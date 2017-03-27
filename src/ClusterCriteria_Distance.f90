@@ -1,22 +1,31 @@
 !=================================================================================
       module DistanceCriteria
+
+      logical, allocatable :: ClusterMember(:), flipped(:) 
       contains
 !=================================================================================     
 !     Extensive Cluster Criteria Check.  Used at the start and end of the simulation. 
 !     This ensures that all particles in the cluster are properly connected to each other.
 !     This function also calculates the initial Neighborlist that is used throughout the simulation. 
-      subroutine Detailed_DistanceCriteria(PairList,rejMove)
+      subroutine Detailed_DistanceCriteria(PairList, rejMove)
       use SimParameters
       use Coords
       use IndexingFunctions
       use ParallelVar
       implicit none     
-      logical,intent(out) :: rejMove
-      real(dp),intent(inout) :: PairList(1:maxMol,1:maxMol)
+      logical, intent(out) :: rejMove
+      real(dp), intent(inout) :: PairList(:, :)
       
-      logical :: ClusterMember(1:maxMol)
+!      logical :: ClusterMember(1:maxMol)
       integer :: i,j,h,cnt
       integer :: iType,jType, iMol, jMol, iIndx, jIndx
+
+      if(.not. allocated(ClusterMember) ) then
+        allocate(ClusterMember(1:maxMol))
+      endif
+      if(.not. allocated(flipped) ) then
+        allocate(flipped(1:maxMol))
+      endif
 
 
       rejMove = .false.
@@ -75,18 +84,18 @@
       end subroutine
 !=================================================================================     
 !     This function determines if a given translational move will destroy a cluster. 
-      pure subroutine Shift_DistanceCriteria(PairList, nIndx, rejMove)
+      subroutine Shift_DistanceCriteria(PairList, nIndx, rejMove)
       use SimParameters     
       use Coords
       use IndexingFunctions
       implicit none     
       
       logical, intent(out) :: rejMove      
-      real(dp), intent(in) :: PairList(1:maxMol)
+      real(dp), intent(in) :: PairList(:)
       integer,intent(in) :: nIndx
       
-      logical :: ClusterMember(1:maxMol)      
-      logical :: flipped(1:maxMol)
+!      logical :: ClusterMember(1:maxMol)      
+!      logical :: flipped(1:maxMol)
       integer :: i,j,h,cnt
       integer :: nType, jType
       
@@ -191,8 +200,8 @@
       logical, intent(out) :: rejMove
       integer, intent(inout) :: nSwap
       
-      logical :: ClusterMember(1:maxMol)      
-      logical :: flipped(1:maxMol)
+!      logical :: ClusterMember(1:maxMol)      
+!      logical :: flipped(1:maxMol)
       integer i,j,h,cnt
 
 
@@ -251,9 +260,9 @@
       use IndexingFunctions      
       use Coords      
       implicit none     
-      integer iType,j,jType,nIndx
-      real(dp) :: PairList(1:maxMol)
-
+      integer, intent(in) :: nIndx
+      real(dp), intent(in) :: PairList(:)
+      integer iType,j,jType
 
 !      NeighborList(nIndx,:)=.false.
 !      NeighborList(:,nIndx)=.false.

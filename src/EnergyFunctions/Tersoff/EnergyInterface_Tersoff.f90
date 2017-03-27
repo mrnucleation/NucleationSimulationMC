@@ -11,16 +11,20 @@
       use EnergyCriteria
       use DistanceCriteria      
       use SimParameters
-      use PairStorage, only: CalcAllDistPairs, SetStorageFlags
+      use PairStorage, only: CalcAllDistPairs, SetStorageFlags, PrintDistArray
       implicit none
       
       logical , intent(inout) :: rejMove
       real(dp), intent(inout) :: E_T
       integer :: i,j
-      real(dp) :: PairList(1:maxMol, 1:maxMol)
+      real(dp), allocatable :: PairList(:,:)
       
+      allocate(PairList(1:maxMol, 1:maxMol) ) 
+
       E_T = 0d0
+      call PrintDistArray
       call CalcAllDistPairs
+      call PrintDistArray
       call Detailed_ECalc_Inter(E_T, PairList)
 
       
@@ -44,7 +48,7 @@
       enddo
       write(35,*)
       
-      
+      deallocate(PairList)
       end subroutine
 !=============================================================================      
 !     This function contains the energy and cluster criteria functions for any move

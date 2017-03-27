@@ -95,8 +95,8 @@
         Shift_ECalc => Shift_EnergyCalc_Tersoff
         SwapIn_ECalc => SwapIn_EnergyCalc_Tersoff
         SwapOut_ECalc => SwapOut_EnergyCalc_Tersoff
-        Rosen_Mol_New => Rosen_BoltzWeight_Pedone_New
-        Rosen_Mol_Old => Rosen_BoltzWeight_Pedone_Old
+        Rosen_Mol_New => Rosen_Tersoff_Molecule_New
+        Rosen_Mol_Old => Rosen_Tersoff_Molecule_Old
         Quick_Nei_ECalc => QuickNei_ECalc_Inter_Tersoff
         boundaryFunction => Bound_MaxMin
         commonFunction => Allocate_Tersoff

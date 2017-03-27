@@ -15,7 +15,7 @@
       use MoveTypeModule, only: ScriptInput_MCMove
       use ParallelVar
       use SimParameters
-      use UmbrellaSamplingNew, only: ScriptInput_Umbrella
+      use UmbrellaSamplingNew, only: useUmbrella, ScriptInput_Umbrella
       use Units
       use WHAM_Functions
       implicit none
@@ -55,6 +55,7 @@
           cycle
         endif
         lineStat = 0        
+!        write(*,*) trim(adjustl(lineStore(iLine)))
         call getCommand(lineStore(iLine), command, lineStat)
         call LowerCaseLine(command)
 !         If line is empty or commented, move to the next line.         
@@ -114,6 +115,11 @@
           endif
           call FindCommandBlock(iLine, lineStore, "end_biasalpha", lineBuffer)
           allocate(biasAlpha(1:nMolTypes,1:nMolTypes), stat = AllocateStat)      
+          if(lineBuffer-1 .gt. nMolTypes) then
+            write(*,*) "ERROR! User has given the biasalpha command far too many lines.  BiasAlpha takes a number of lines"
+            write(*,*) "equal to the number of molecule types."
+            stop 
+          endif
           ii = 0
           do i = iLine+1, iLine+lineBuffer-1
             ii = ii + 1
@@ -129,18 +135,24 @@
         end select
         
       enddo
-      
-      deallocate(lineStore)
+      write(*,*) "Finished Reading Input Script."      
+!      deallocate(lineStore)
 
-
-
+ 
       call ReadInitialConfiguration
+      write(*,*) "Finished Reading Initial Configuration."
       call RecenterCoordinates
-      call ReadInitialGasPhase      
+      call ReadInitialGasPhase     
+      write(*,*) "Finished Setting up Gas Phase Configuration." 
       if(useWHAM) then
+        if(.not. useUmbrella) then
+          write(*,*) "ERROR! The WHAM method can not be used if no Umbrella sampling variables are given!"
+          stop
+        endif
         nWhamItter = ceiling(dble(ncycle)/dble(intervalWHAM))
         call WHAM_Initialize
       endif
+
 
 
       end subroutine

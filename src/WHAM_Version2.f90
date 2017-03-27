@@ -55,9 +55,9 @@
       include 'mpif.h' 
 
       integer :: arraySize, i, j, cnt, maxbin, maxbin2
-      real(dp) :: norm, ratio, maxBias, denomSum
+      real(dp) :: norm, maxBias, denomSum
       real(dp) :: F_Estimate(1:nWhamItter),F_Old(1:nWhamItter), fSum     
-      real(dp) :: tol, refBias, perError, probNorm
+      real(dp) :: tol, refBias
 
       if(.not. useUmbrella) then
         return
@@ -238,11 +238,8 @@
       use SwapBoundary
       use WHAM_Module
       implicit none
-      logical :: goToNext
-      integer :: arraySize
       integer :: i,j
       integer :: UArray(1:nBiasVariables)
-      real(dp) :: refBias
       character(len = 100) :: outputString
 
       write(outputString, *) "(", (trim(outputFormat(j)), j =1,nBiasVariables), "2x, F18.10)"
@@ -288,11 +285,9 @@
       use WHAM_Module
       implicit none
       include 'mpif.h' 
-      logical :: goToNext
-      integer :: arraySize
       integer :: i,j
       integer :: UArray(1:nBiasVariables)
-      real(dp) :: norm, ratio, maxBias, refBias, probNorm
+      real(dp) :: probNorm, refBias
       character(len = 100) :: outputString, outputString2
 
       if(.not. useWham) then

@@ -147,9 +147,6 @@
      end subroutine
 !=====================================================================
      subroutine TurnOnAllStorageFlags
-     use Coords
-     use ForceField
-     use SimParameters, only: NMAX, nMolTypes
      implicit none
      integer :: i
 
@@ -245,10 +242,7 @@
 
    
       iType = disp(1)%molType
-!      do iMol = 1, NPART(iType)
-!        write(*,*) "O", MolArray(iType)%mol(iMol)%x(1), MolArray(iType)%mol(iMol)%y(1), &
-!                      MolArray(iType)%mol(iMol)%z(1)
-!      enddo
+
       iMol = disp(1)%molIndx
       iIndx = molArray(iType)%mol(iMol)%indx
       sizeDisp = size(disp)
@@ -256,8 +250,6 @@
       nNewDist = 0
 
 
-!      write(*,*) molArray(iType)%mol(iMol)%globalIndx(1), disp(1)%x_new, disp(1)%y_new, disp(1)%z_new
-!      write(*,*)
 
 
       do iDisp = 1, sizeDisp
@@ -319,13 +311,21 @@
       use SimParameters, only: NPART, nMolTypes
       implicit none
       logical, intent(out) :: rejMove
-      integer :: iType,jType,iMol,jMol,iAtom,jAtom
-      integer(kind=atomIntType) :: atmType1,atmType2      
+      integer :: iType, jType, iMol, jMol, iAtom, jAtom
+      integer(kind=atomIntType) :: atmType1, atmType2      
       integer :: gloIndx1, gloIndx2
-      real(dp) :: rx,ry,rz,r_sq
+      real(dp) :: rx, ry, rz, r_sq
       real(dp) :: rmin_ij   
 
-   
+!      iType  = 1
+!      do iMol = 1, NPART(iType)
+!        write(*,*) "O", MolArray(iType)%mol(iMol)%x(1), MolArray(iType)%mol(iMol)%y(1), &
+!                      MolArray(iType)%mol(iMol)%z(1)
+!      enddo
+!      write(*,*) "O", newMol%x(1), newMol%y(1), newMol%z(1)
+!      write(*,*)   
+
+
       iType = newMol%molType
       iMol = NPART(iType)+1
       rejMove = .false.
@@ -333,6 +333,7 @@
       do iAtom = 1, nAtoms(iType)
         atmType1 = atomArray(iType, iAtom)
         gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
+        rPairNew(gloIndx1)%p => nullPair
         do jType = 1, nMolTypes
           do jAtom = 1, nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
@@ -348,6 +349,7 @@
                 return
               endif
               nNewDist = nNewDist + 1
+              rPairNew(gloIndx2)%p => newDist(nNewDist)
               oldIndxArray(nNewDist) = rPair(gloIndx1, gloIndx2) % p % arrayIndx
               newDist(nNewDist)%indx1 = gloIndx1
               newDist(nNewDist)%indx2 = gloIndx2
@@ -362,6 +364,7 @@
                 newDist(nNewDist)%ry = ry
                 newDist(nNewDist)%rz = rz
               endif
+
             enddo
           enddo
         enddo
@@ -380,9 +383,11 @@
       do iPair = 1, nNewDist
         distStorage(oldIndxArray(iPair))%r_sq = newDist(iPair)%r_sq
         distStorage(oldIndxArray(iPair))%E_Pair = newDist(iPair)%E_Pair
+
         if( distStorage(oldIndxArray(iPair))%storeRValue ) then
           distStorage(oldIndxArray(iPair))%r = newDist(iPair)%r
         endif
+
         if( distStorage(oldIndxArray(iPair))%storeRParts ) then
           if(newDist(iPair)%indx1 .eq. distStorage(oldIndxArray(iPair))%indx1) then
             distStorage(oldIndxArray(iPair))%rx = newDist(iPair)%rx
@@ -436,14 +441,27 @@
 
      end subroutine
 !=====================================================================
-     subroutine CalculateAngle(gloIndx1, gloIndx2, gloIndx3)
-      implicit none
-      integer, intent(in) :: gloIndx1, gloIndx2, gloIndx3
-      real(dp) :: r12, rx12, ry12, rz12
-      real(dp) :: r23, rx23, ry23, rz23
+     subroutine PrintDistArray
+      integer :: iAtom, jAtom
+
+      write(35,*) "Distance List"
+      do iAtom = 1, nTotalAtoms-1
+        do jAtom = iAtom+1, nTotalAtoms
+          write(35,*) iAtom, jAtom, rPair(iAtom, jAtom)%p%r_sq, rPair(iAtom, jAtom)%p%r
+        enddo
+      enddo
 
 
      end subroutine
+!=====================================================================
+!     subroutine CalculateAngle(gloIndx1, gloIndx2, gloIndx3)
+!      implicit none
+!      integer, intent(in) :: gloIndx1, gloIndx2, gloIndx3
+!      real(dp) :: r12, rx12, ry12, rz12
+!      real(dp) :: r23, rx23, ry23, rz23
+!
+!
+!    end subroutine
 !=====================================================================
     end module
 !=====================================================================

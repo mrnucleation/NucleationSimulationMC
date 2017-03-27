@@ -13,6 +13,12 @@
       integer :: i,j,k,cnt,AllocationStatus
       integer :: iType
 
+      if(nMolTypes .eq. 0) then
+        write(*,*) "ERROR! The program attempted to allocate the coordinate arrays without &
+                    prior to number of molecule types being defined!"
+        stop
+      endif
+
       allocate( MolArray(1:nMolTypes), stat=AllocationStatus)
       do i = 1, nMolTypes
         allocate( MolArray(i)%mol(1:NMAX(i)), stat=AllocationStatus)   
@@ -146,7 +152,7 @@
         open( unit=10, file="configuration.dat", status = "Old")
       endif
 
-      read(10,*) (NPART(iType),iType=1,nMolTypes)
+      read(10,*) (NPART(iType), iType=1,nMolTypes)
       read(10,*)            
 !     This block ensures the initial configuration is within the min/max bounds set in the input parameter file      
       do iType = 1, nMolTypes

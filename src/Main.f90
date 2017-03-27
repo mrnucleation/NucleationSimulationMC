@@ -44,7 +44,7 @@
 !      real(dp) :: max_dist, max_dist_single, max_rot
 !      real(dp) :: atmp_1,atmp_2,atmp_3,atmp_4
 !      real(dp) :: acc_1, acc_2, acc_3, acc_4
-      real(dp) :: E_T, E_Final
+      real(dp) :: E_T, E_Final, E_Debug
       real(dp) :: grnd,ran_num
       real(dp) :: dist_limit,rot_limit
       real(dp) :: TimeStart,TimeFinish
@@ -67,6 +67,8 @@
       call MPI_COMM_SIZE(MPI_COMM_WORLD, p_size, ierror)
       call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierror)  
 
+
+      maxMol = 1
 !      This section of code generates the file number for each MPI thread's files
       if (myid .lt. 10) then
         format_string = "(A,I1,A)"
@@ -81,6 +83,9 @@
       endif      
 !     Assign screen output for each thread to fort.(100+myid)      
       nout = 100 + myid
+      if(p_size .eq. 1) then
+        nout = 6
+      endif
 
       write(fl_name,format_string) "Final_Report_", myid,".txt"      
       open( unit=35, file=trim(adjustl(fl_name)) ) 
@@ -90,6 +95,13 @@
 !      call ReadParameters(seed, screenEcho)
       
       call Script_ReadParameters(seed, screenEcho)
+      if(p_size .eq. 1) then
+        write(*,*) "Input Script Complete!"
+      else
+        write(nout,*) "Input Script Complete!"    
+      endif
+
+      
 !       This block assigns the root thread (myid=0) to output to the screen if the screen
 !       echo input parameter is true.  Otherwise the screen data is exported to 100+myid      
       if(screenEcho) then      
@@ -287,6 +299,8 @@
            enddo
            call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
 
+!           call Detailed_ECalc(E_Debug, errRtn)
+!           write(*,*) E_T
            if(useAnalysis) then
              call PostMoveAnalysis
            endif  
@@ -417,6 +431,7 @@
         write(nout,*) "=========================================="
         write(nout,*) "Energy Disagreement"
         write(nout,*) "Culmative Energy:",E_T/outputEConv, outputEngUnits
+        write(nout,*) "Culmative Energy (Per Molecule)::",E_T/outputEConv/real(NTotal,dp), outputEngUnits
         write(nout,*) "=========================================="
         write(35,*) "=========================================="
         write(35,*) "Energy Disagreement Error:"

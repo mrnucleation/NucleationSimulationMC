@@ -225,7 +225,7 @@
           biasvarnew(iUmbrella) % varType = 1
           biasvarnew(iUmbrella) % intVar => NTotal_New
           binMax(iUmbrella) = maxMol
-          binMin(iUmbrella) = 1
+          binMin(iUmbrella) = sum(NMin)
           UBinSize(iUmbrella) = 1E0_dp
           outputFormat(iUmbrella) = "2x,F5.1,"
         case("pairdist")
@@ -306,17 +306,29 @@
 
 !      Use the input to specify the reference bin
       allocate(refSizeNumbers(1:nBiasVariables),STAT = AllocateStatus)
-!      write(*, *) inputLines(2)
+      write(*, *) trim(adjustl(inputLines(2)))
       read(inputLines(2), *) labelField, (refVals(iUmbrella), iUmbrella=1,nBiasVariables)
       call getUIndexArray(refVals, refBin, stat)
+      if(stat .ne. 0) then
+        if(stat .eq. 1) then
+          write(*,*) "ERROR! Reference bin is above the largest allowed value for one or more of the umbrella sampling variables!"
+          write(*,*) trim(adjustl(inputLines(2)))
+          stop
+        elseif(stat .eq. -1) then
+          write(*,*) "ERROR! Reference bin is below the smallest allowed value for one or more of the umbrella sampling variables!"
+          write(*,*) trim(adjustl(inputLines(2)))
+          stop
+        else
+          write(*,*) "ERROR! An invalid value for the umbrella sampling reference bin was given!"
+          write(*,*) trim(adjustl(inputLines(2)))
+          stop
+        endif
+      endif
       do iUmbrella = 1, nBiasVariables
         refSizeNumbers(iUmbrella) = refVals(iUmbrella)
       enddo
-      if(stat .eq. 1) then
-        write(*,*) "ERROR! An invalid ref bin was specified!"
-        write(*,*) inputLines(2)
-        stop
-      endif
+      write(*,*) refVals
+
 
       deallocate(refVals)
 
@@ -342,22 +354,22 @@
 
      umbrellaLimit = 1
      do i = 1, nBiasVariables 
-       umbrellaLimit = umbrellaLimit + indexCoeff(i) * (binMax(i) - binMin(i))
+       umbrellaLimit = umbrellaLimit + indexCoeff(i) * (int(binMax(i),4) - int(binMin(i),4))
      enddo
 
      write(nout,*) "Number of Umbrella Bins:", umbrellaLimit
        
-     allocate(UBias(1:umbrellaLimit), STAT = AllocateStatus)
-     allocate(UHist(1:umbrellaLimit), STAT = AllocateStatus)
+     allocate(UBias(1:umbrellaLimit+1), STAT = AllocateStatus)
+     allocate(UHist(1:umbrellaLimit+1), STAT = AllocateStatus)
 
      UBias = 0E0_dp
      UHist = 0E0_dp
 
 
      if(energyAnalytics) then
-       allocate(U_EAvg(1:umbrellaLimit), STAT = AllocateStatus)
-       allocate(U_EHist(1:umbrellaLimit, 0:E_Bins), STAT = AllocateStatus)
-       allocate(UHistTotal(1:umbrellaLimit), STAT = AllocateStatus)
+       allocate(U_EAvg(1:umbrellaLimit+1), STAT = AllocateStatus)
+       allocate(U_EHist(1:umbrellaLimit+1, 0:E_Bins), STAT = AllocateStatus)
+       allocate(UHistTotal(1:umbrellaLimit+1), STAT = AllocateStatus)
        U_EAvg = 0E0_dp
        U_EHist = 0E0_dp
        UHistTotal = 0E0_dp
@@ -735,7 +747,7 @@
          return
        endif
        if(binIndx(iBias) .lt. binMin(iBias)) then
-         stat = 1
+         stat = -1
          return
        endif
      enddo

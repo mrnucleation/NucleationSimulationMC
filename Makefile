@@ -21,7 +21,8 @@ DETAILEDDEBUG:= -fbacktrace -fcheck=all -g -ffree-line-length-0 -Og
 #DEBUGFLAGS += -check all -traceback -g
 #DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
-#DEBUGFLAGS := -fimplicit-none -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -Wunused-parameter -fwhole-file -fcheck=all -fbacktrace
+#DEBUGFLAGS += -Wunused-parameter 
+#DEBUGFLAGS := -fimplicit-none  -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
 
 
@@ -76,6 +77,7 @@ SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
             $(PEDONE)/Rosen_Pedone_Functions.f90\
             $(PEDONE)/EnergyInterfaceFunctions_Pedone_Experimental.f90\
             $(TERSOFF)/Tersoff_Functions.f90\
+            $(TERSOFF)/Rosen_Tersoff_Functions.f90\
             $(TERSOFF)/EnergyInterface_Tersoff.f90\
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
@@ -317,17 +319,18 @@ $(OBJ)/EnergyPointers.o: $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o $
 $(OBJ)/SimplePairDistance.o: $(OBJ)/DistanceStorage.o $(OBJ)/MiscelaniousVariables.o 
 
 
-$(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o: $(OBJ)/LJ_Electro_Functions_Experimental.o $(OBJ)/Rosen_Boltz_Functions.o $(OBJ)/Bending_Functions.o $(OBJ)/BondStretch_Functions.o $(OBJ)/Torsional_Functions.o $(OBJ)/Intra_LJ_Electro_Functions.o $(OBJ)/Improper_Functions.o
+$(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o: $(OBJ)/LJ_Electro_Functions_Experimental.o $(OBJ)/Rosen_Boltz_Functions.o $(OBJ)/Bending_Functions.o $(OBJ)/BondStretch_Functions.o $(OBJ)/Torsional_Functions.o $(OBJ)/Intra_LJ_Electro_Functions.o $(OBJ)/Improper_Functions.o $(OBJ)/Rosen_Tersoff_Functions.o
 $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o: $(OBJ)/Pedone_Functions_Experimental.o $(OBJ)/Rosen_Pedone_Functions.o
 $(OBJ)/Pedone_Functions_Experimental.o: $(OBJ)/DistanceStorage.o
 $(OBJ)/Tersoff_Functions.o: $(OBJ)/DistanceStorage.o
+$(OBJ)/Rosen_Tersoff_Functions.o: $(OBJ)/Tersoff_Functions.o
 
 $(OBJ)/MiscelaniousVariables.o: $(OBJ)/Common.o
 
 $(OBJ)/Main.o: $(OBJ)/Common.o $(OBJ)/SelfAdaptiveDistribution.o
 
 $(OBJ)/ScriptInput.o: $(OBJ)/Common.o $(OBJ)/UmbrellaSampling_Version2.o $(OBJ)/AnalysisMain.o $(OBJ)/MCMove_Module.o $(OBJ)/ScriptForceField.o
-$(OBJ)/ScriptForceField.o: $(OBJ)/Common.o 
+$(OBJ)/ScriptForceField.o: $(OBJ)/Common.o $(OBJ)/EnergyPointers.o 
 
 $(OBJ)/Umbrella_Types.o: $(OBJ)/VariablePrecision.o 
 $(OBJ)/UmbrellaSampling_Version2.o: $(OBJ)/Common.o $(OBJ)/SimplePairDistance.o $(OBJ)/Umbrella_Types.o $(OBJ_ANALYSIS)
