@@ -286,6 +286,7 @@
       endif
       flush(nout)
       flush(35)
+      call Detailed_ECalc(E_Debug, errRtn)
       call CPU_TIME(TimeStart)      
 !--------------------------------------------------------------------------------------------------      
 !      !**Begin simulation**!      
