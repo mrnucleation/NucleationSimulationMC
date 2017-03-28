@@ -44,7 +44,8 @@
       call Detailed_ECalc_Inter(E_T, PairList)
 
       if(distCriteria) then
-        call Detailed_DistanceCriteria(PairList, rejMove)
+!        call Detailed_DistanceCriteria(PairList, rejMove)
+        call Detailed_DistanceCriteria(rejMove)
       else
         call Detailed_EnergyCriteria(PairList, rejMove)      
       endif
@@ -156,7 +157,8 @@
         nIndx = MolArray( disp(1)%molType )%mol( disp(1)%molIndx )%indx
         if(distCriteria) then
           if(any(disp(1:nDisp)%atmIndx .eq. 1)) then
-            call Shift_DistanceCriteria(PairList, nIndx, rejMove)      
+!            call Shift_DistanceCriteria(PairList, nIndx, rejMove)      
+            call Shift_DistanceCriteria(nIndx, rejMove)   
           endif
         else      
           call Shift_EnergyCriteria(PairList, nIndx, rejMove)

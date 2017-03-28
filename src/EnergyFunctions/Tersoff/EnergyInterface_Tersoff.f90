@@ -17,22 +17,19 @@
       logical , intent(inout) :: rejMove
       real(dp), intent(inout) :: E_T
       integer :: i,j
-      real(dp), allocatable :: PairList(:,:)
-      
-      allocate(PairList(1:maxMol, 1:maxMol) ) 
+      real(dp) :: PairList(1:maxMol, 1:maxMol)
 
       E_T = 0d0
       call CalcAllDistPairs
       call Detailed_ECalc_Inter(E_T, PairList)
 
-      
-
       if(distCriteria) then
-        call Detailed_DistanceCriteria(PairList, rejMove)
+!        call Detailed_DistanceCriteria(PairList, rejMove)
+        call Detailed_DistanceCriteria(rejMove)
       else
         call Detailed_EnergyCriteria(PairList, rejMove)      
       endif
-      
+
       write(35,*) "Cluster Criteria Satisifed?: ", .not. rejMove
       write(35,*) "Pairlist:"
       do i = 1, maxMol
@@ -45,8 +42,7 @@
         endif
       enddo
       write(35,*)
-      
-      deallocate(PairList)
+
       end subroutine
 !=============================================================================      
 !     This function contains the energy and cluster criteria functions for any move
@@ -118,7 +114,8 @@
 !        satisfies the cluster criteria.      
       nIndx = MolArray( disp(1)%molType )%mol( disp(1)%molIndx )%indx
       if(distCriteria) then
-        call Shift_DistanceCriteria(PairList, nIndx, rejMove)      
+!        call Shift_DistanceCriteria(PairList, nIndx, rejMove)    
+        call Shift_DistanceCriteria(nIndx, rejMove)   
       else      
         call Shift_EnergyCriteria(PairList, nIndx, rejMove)
       endif        

@@ -27,7 +27,7 @@
         do i = ilowIndx+1, ilowIndx+NPART(iType)
           EMax = -huge(dp)
           do j = jlowIndx+1, jlowIndx+NPART(nType)
-            if(NeighborList(j,i)) then
+            if( NeighborList(j,i) ) then
               ETab = ETable(j)
               neiCount(i) = neiCount(i) + 1
               if(ETab .gt. EMax) then
@@ -134,37 +134,46 @@
 !      endif
       end subroutine      
 !=================================================================================
-      subroutine Insert_NewNeiETable_Distance(nType, PairList, dE, newNeiTable)
-      use EnergyTables
-      use SimParameters
+      subroutine Insert_NewNeiETable_Distance(nType, dE, newNeiTable)
       use Coords
+      use EnergyTables
+      use PairStorage
+      use SimParameters
       implicit none
       integer, intent(in) :: nType
-      real(dp), intent(in) :: PairList(:)
+!      real(dp), intent(in) :: PairList(:)
       real(dp), intent(inout) :: dE(:), newNeiTable(:)
 
       integer :: i,j, nIndx
+      integer :: iType, iMol
+      integer :: jType, jMol
+      integer :: globIndxN, globIndx1, globIndx2
       real(dp) :: EMax
        
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
-      
+      globIndxN = molArray(nType)%mol(NPART(nType)+1)%globalIndx(1)
 !      write(35,*) "PairList"
 !      do i = 1,maxMol
 !        write(35,*) i, ETable(i) + dE(i), PairList(i)
 !      enddo
       
       
-      do i=1,maxMol
+      do i = 1, maxMol
        newNeiTable(i) = 0E0
 
        EMax = -huge(dp)
-       if(isActive(i) .eqv. .false.) then
-         if(i .ne. nIndx) then
+       if( .not. isActive(i) ) then
+         if( i .ne. nIndx ) then
             cycle
          else
            do j = 1, maxMol
-             if(.not. isActive(j)) cycle
-             if(PairList(j) .le. Dist_Critr_sq) then
+             if(.not. isActive(j)) then
+               cycle
+             endif
+             jType = typeList(j)
+             jMol = subIndxList(j)
+             globIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
+             if(rPairNew(globIndx2)%p%r_sq .le. Dist_Critr_sq) then
                if(ETable(j) + dE(j) .gt. EMax) then
                  EMax = ETable(j) + dE(j)
                endif
@@ -172,21 +181,24 @@
            enddo            
          endif
        else
-         do j=1,maxMol
-           if(isActive(j) .eqv. .false.) then
+         iType = typeList(i)
+         iMol = subIndxList(i)
+         globIndx1 = molArray(iType)%mol(iMol)%globalIndx(1)
+         do j = 1, maxMol
+           if( .not. isActive(j) ) then
              if(j .ne. nIndx) then
                cycle
              else
-               if(PairList(i) .le. Dist_Critr_sq) then
+               if(rPairNew(globIndx1)%p%r_sq .le. Dist_Critr_sq) then
                  if(dE(j) .gt. EMax) then
                    EMax = dE(j)
                  endif
                endif
              endif
            else
-             if(NeighborList(i,j)) then
-               if(i .ne. j) then         
-                 if(ETable(j) + dE(j) .gt. EMax) then
+             if( NeighborList(i,j) ) then
+               if( i .ne. j ) then         
+                 if( ETable(j) + dE(j) .gt. EMax ) then
                    EMax = ETable(j) + dE(j)
                  endif
                endif

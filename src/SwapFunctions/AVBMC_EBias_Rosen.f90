@@ -171,7 +171,7 @@
 
 !     Determine the reverse probability of this move.
       if(distCriteria) then
-        call Insert_NewNeiETable_Distance(nType, PairList, dETable,  newNeiETable)  
+        call Insert_NewNeiETable_Distance(nType, dETable, newNeiETable)  
       else
         call Insert_NewNeiETable(nType, PairList, dETable, newNeiETable)      
       endif
@@ -199,8 +199,10 @@
          acc_x = acc_x + 1d0
          isActive(nIndx) = .true.
 !         nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
+         call UpdateDistArray
          if(distCriteria) then
-           call NeighborUpdate_Distance(PairList,nIndx)        
+!           call NeighborUpdate_Distance(PairList,nIndx)  
+           call NeighborUpdate_Distance(nIndx)              
          else
            call NeighborUpdate(PairList, nIndx)
          endif  
@@ -208,7 +210,6 @@
          ETable = ETable + dETable         
          NPART(nType) = NPART(nType) + 1 
          call Update_SubEnergies
-         call UpdateDistArray
          prevMoveAccepted = .true.
 !         call PrintDistArray
        else

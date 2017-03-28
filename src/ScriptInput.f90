@@ -135,15 +135,15 @@
         end select
         
       enddo
-      write(*,*) "Finished Reading Input Script."      
+!      write(*,*) "Finished Reading Input Script."      
 !      deallocate(lineStore)
 
  
       call ReadInitialConfiguration
-      write(*,*) "Finished Reading Initial Configuration."
+!      write(*,*) "Finished Reading Initial Configuration."
       call RecenterCoordinates
       call ReadInitialGasPhase     
-      write(*,*) "Finished Setting up Gas Phase Configuration." 
+!      write(*,*) "Finished Setting up Gas Phase Configuration." 
       if(useWHAM) then
         if(.not. useUmbrella) then
           write(*,*) "ERROR! The WHAM method can not be used if no Umbrella sampling variables are given!"

@@ -193,12 +193,13 @@
         E_T = E_T + E_Inter + E_Intra
         ETable = ETable + dETable
         acc_x = acc_x + 1d0
+        call UpdateDistArray
         if(distCriteria) then
-          call NeighborUpdate_Distance(PairList, nIndx)        
+!          call NeighborUpdate_Distance(PairList, nIndx)        
+          call NeighborUpdate_Distance(nIndx)  
         else
           call NeighborUpdate(PairList, nIndx)
         endif  
-        call UpdateDistArray
         call Update_SubEnergies        
       endif
       

@@ -12,7 +12,7 @@
       use ParallelVar
       implicit none     
       logical,intent(out) :: rejMove
-      real(dp),intent(inout) :: PairList(1:maxMol,1:maxMol)
+      real(dp),intent(inout) :: PairList(1:maxMol, 1:maxMol)
       
       logical :: ClusterMember(1:maxMol)
       integer :: i,j,h,cnt
@@ -61,16 +61,16 @@
       enddo
       
 !      ClusterMember(1)=.true.      
-      do h=1,maxMol  
-        do i=1,maxMol
-          do j=1,maxMol
-            if(NeighborList(i,j)) then
-              if(ClusterMember(i)) then
-                ClusterMember(j)=.true.
+      do h = 1, maxMol  
+        do i = 1, maxMol
+          do j = 1, maxMol
+            if( NeighborList(i,j) ) then
+              if( ClusterMember(i) ) then
+                ClusterMember(j) = .true.
 !                cnt = cnt + 1
               endif
-              if(ClusterMember(j)) then
-                ClusterMember(i)=.true.
+              if( ClusterMember(j) ) then
+                ClusterMember(i) = .true.
 !                cnt = cnt + 1                
               endif
             endif
@@ -248,8 +248,8 @@
       rejMove=.false.
       if(NTotal-1 .eq. 1) return  
 
-      ClusterMember=.false.
-      flipped=.false.
+      ClusterMember = .false.
+      flipped = .false.
       neiFlipped = .false.
       
       do i=1,maxMol

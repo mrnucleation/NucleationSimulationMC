@@ -21,12 +21,12 @@
 !=============================================================================
       contains
 !=============================================================================      
-      subroutine Detailed_EnergyCalc_Pedone(E_T,rejMove)
-      use InterEnergy_Pedone
+      subroutine Detailed_EnergyCalc_Pedone(E_T, rejMove)
+      use DistanceCriteria
       use EnergyCriteria
-      use DistanceCriteria      
-      use SimParameters
+      use InterEnergy_Pedone
       use PairStorage, only: CalcAllDistPairs, SetStorageFlags
+      use SimParameters
       implicit none
       
       logical , intent(inout) :: rejMove
@@ -39,7 +39,8 @@
       call Detailed_ECalc_Inter(E_T,PairList)
 
       if(distCriteria) then
-        call Detailed_DistanceCriteria(PairList,rejMove)
+        call Detailed_DistanceCriteria(rejMove)
+!        call Detailed_DistanceCriteria(PairList,rejMove)
       else
         call Detailed_EnergyCriteria(PairList,rejMove)      
       endif
@@ -133,7 +134,8 @@
 !        satisfies the cluster criteria.      
       nIndx = MolArray( disp(1)%molType )%mol( disp(1)%molIndx )%indx
       if(distCriteria) then
-        call Shift_DistanceCriteria(PairList, nIndx, rejMove)      
+!        call Shift_DistanceCriteria(PairList, nIndx, rejMove)      
+        call Shift_DistanceCriteria(nIndx, rejMove)      
       else      
         call Shift_EnergyCriteria(PairList, nIndx, rejMove)
       endif        

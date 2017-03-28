@@ -85,7 +85,8 @@
         acc_x = acc_x + 1E0
         if(distCriteria) then
           if(disp(1)%atmIndx .eq. 1) then
-            call NeighborUpdate_Distance(PairList,nIndx)        
+!            call NeighborUpdate_Distance(PairList,nIndx)    
+            call NeighborUpdate_Distance(nIndx)       
           endif
         else
           call NeighborUpdate(PairList, nIndx)
@@ -103,7 +104,8 @@
         call UpdateDistArray
         if(distCriteria) then
           if(disp(1)%atmIndx .eq. 1) then
-            call NeighborUpdate_Distance(PairList,nIndx)        
+!            call NeighborUpdate_Distance(PairList,nIndx)    
+            call NeighborUpdate_Distance(nIndx)         
           endif
         else
           call NeighborUpdate(PairList, nIndx)
@@ -589,12 +591,13 @@
       E_T = E_T + E_Inter
       ETable = ETable + dETable
       acc_x = acc_x + 1E0
+      call UpdateDistArray
       if(distCriteria) then
-        call NeighborUpdate_Distance(PairList,nIndx)        
+!        call NeighborUpdate_Distance(PairList,nIndx)    
+        call NeighborUpdate_Distance(nIndx)            
       else
         call NeighborUpdate(PairList, nIndx)
       endif  
-      call UpdateDistArray
       call Update_SubEnergies        
       prevMoveAccepted = .true.
 
