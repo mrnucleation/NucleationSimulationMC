@@ -16,6 +16,7 @@
       use Coords
       use CoordinateFunctions
       use Constants
+      use PairStorage, only: CalcAllDistPairs
       use EnergyPointers, only: Detailed_ECalc
       use EnergyTables
       use Forcefield
@@ -286,7 +287,7 @@
       endif
       flush(nout)
       flush(35)
-      call Detailed_ECalc(E_Debug, errRtn)
+!      call Detailed_ECalc(E_Debug, errRtn)
       call CPU_TIME(TimeStart)      
 !--------------------------------------------------------------------------------------------------      
 !      !**Begin simulation**!      
@@ -300,6 +301,7 @@
            enddo
            call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
 
+ !          call CalcAllDistPairs
 !           call Detailed_ECalc(E_Debug, errRtn)
 !           write(*,*) E_T
            if(useAnalysis) then

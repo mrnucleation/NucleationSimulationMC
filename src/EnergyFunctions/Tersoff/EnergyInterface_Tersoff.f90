@@ -22,9 +22,7 @@
       allocate(PairList(1:maxMol, 1:maxMol) ) 
 
       E_T = 0d0
-      call PrintDistArray
       call CalcAllDistPairs
-      call PrintDistArray
       call Detailed_ECalc_Inter(E_T, PairList)
 
       

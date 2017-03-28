@@ -431,9 +431,15 @@
             rPair(gloIndx1, gloIndx3)%p%r = rPair(gloIndx2, gloIndx3)%p%r
           endif
           if( rPair(gloIndx1, gloIndx3)%p%storeRParts ) then
-            rPair(gloIndx1, gloIndx3)%p%rx = rPair(gloIndx2, gloIndx3)%p%rx
-            rPair(gloIndx1, gloIndx3)%p%ry = rPair(gloIndx2, gloIndx3)%p%ry
-            rPair(gloIndx1, gloIndx3)%p%rz = rPair(gloIndx2, gloIndx3)%p%rz
+            if(gloIndx1 .gt. gloIndx3) then
+              rPair(gloIndx1, gloIndx3)%p%rx = rPair(gloIndx2, gloIndx3)%p%rx
+              rPair(gloIndx1, gloIndx3)%p%ry = rPair(gloIndx2, gloIndx3)%p%ry
+              rPair(gloIndx1, gloIndx3)%p%rz = rPair(gloIndx2, gloIndx3)%p%rz
+            else
+              rPair(gloIndx1, gloIndx3)%p%rx = -rPair(gloIndx2, gloIndx3)%p%rx
+              rPair(gloIndx1, gloIndx3)%p%ry = -rPair(gloIndx2, gloIndx3)%p%ry
+              rPair(gloIndx1, gloIndx3)%p%rz = -rPair(gloIndx2, gloIndx3)%p%rz
+            endif
           endif
         enddo
       enddo
@@ -443,11 +449,12 @@
 !=====================================================================
      subroutine PrintDistArray
       integer :: iAtom, jAtom
-
+      write(35,*) "----------------------------------------"
       write(35,*) "Distance List"
       do iAtom = 1, nTotalAtoms-1
         do jAtom = iAtom+1, nTotalAtoms
-          write(35,*) iAtom, jAtom, rPair(iAtom, jAtom)%p%r_sq, rPair(iAtom, jAtom)%p%r
+          write(35,*) iAtom, jAtom, rPair(iAtom, jAtom)%p%rx, rPair(iAtom, jAtom)%p%ry, &
+                      rPair(iAtom, jAtom)%p%rz, rPair(iAtom, jAtom)%p%r
         enddo
       enddo
 

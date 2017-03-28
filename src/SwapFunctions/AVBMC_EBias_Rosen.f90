@@ -16,8 +16,8 @@
 
 
       prevMoveAccepted = .false.
-!      call AVBMC_EBias_Rosen_In(E_T, acc_x, atmp_x)
-!      call AVBMC_EBias_Rosen_Out(E_T, acc_x, atmp_x) 
+!      call AVBMC_EBias_Rosen_In(E_T, maxMol, acc_x, atmp_x)     
+!      call AVBMC_EBias_Rosen_Out(E_T, maxMol, acc_x, atmp_x) 
 !      return
               
       if(grnd() .lt. 0.5d0) then
@@ -48,7 +48,7 @@
       use EnergyTables
       use NeighborTable
       use SwapBoundary
-      use PairStorage, only: UpdateDistArray
+      use PairStorage, only: UpdateDistArray, PrintDistArray
       use UmbrellaSamplingNew, only: GetUmbrellaBias_SwapIn
       implicit none
       
@@ -187,6 +187,7 @@
       Boltzterm = exp(-beta*E_Inter + biasDiff)
 !      write(*,*) Boltzterm
       if( genProbRatio * Boltzterm .gt. grnd() ) then
+!         call PrintDistArray
          acptSwapIn(nType) = acptSwapIn(nType) + 1d0        
          acptInSize(NTotal) = acptInSize(NTotal) + 1d0         
          do i=1,nAtoms(nType)      
@@ -209,6 +210,7 @@
          call Update_SubEnergies
          call UpdateDistArray
          prevMoveAccepted = .true.
+!         call PrintDistArray
        else
          totalRej = totalRej + 1d0
          dbalRej = dbalRej + 1d0
@@ -363,7 +365,7 @@
          call UpdateDistArray_SwapOut(nType, nMol)
          nIndx = molArray(nType)%mol(nMol)%indx
          call NeighborUpdate_Delete(nIndx)
-         isActive(molArray(nType)%mol(NPART(nType))%indx) = .false.
+         isActive( molArray(nType)%mol(NPART(nType))%indx ) = .false.
          ETable = ETable - dETable
          ETable(nIndx) = ETable( molArray(nType)%mol(NPART(nType))%indx )
          ETable( molArray(nType)%mol(NPART(nType))%indx ) = 0d0
