@@ -21,8 +21,10 @@
 !      return
               
       if(grnd() .lt. 0.5d0) then
+!        write(*,*) "in"
         call AVBMC_EBias_Rosen_In(E_T, maxMol, acc_x, atmp_x)     
       else
+!        write(*,*) "out"
         call AVBMC_EBias_Rosen_Out(E_T, maxMol, acc_x, atmp_x)    
       endif
 
@@ -197,8 +199,8 @@
          enddo
          E_T = E_T + E_Inter + E_Intra
          acc_x = acc_x + 1d0
-         isActive(nIndx) = .true.
 !         nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
+         isActive(nIndx) = .true.
          call UpdateDistArray
          if(distCriteria) then
 !           call NeighborUpdate_Distance(PairList,nIndx)  
@@ -324,7 +326,7 @@
       endif
         
 !     Check to see if the deletion of the particle will break the cluster
-      rejMove=.false.
+      rejMove = .false.
       call SwapOut_EnergyCriteria(nSel, rejMove)
       if(rejMove) then
         critriaRej_out = critriaRej_out + 1d0
@@ -363,9 +365,9 @@
          molArray(nType)%mol(nMol)%y(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%y(1:nAtoms(nType))
          molArray(nType)%mol(nMol)%z(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%z(1:nAtoms(nType))
          E_T = E_T + E_Inter + E_Intra
-         call UpdateDistArray_SwapOut(nType, nMol)
          nIndx = molArray(nType)%mol(nMol)%indx
          call NeighborUpdate_Delete(nIndx)
+         call UpdateDistArray_SwapOut(nType, nMol)
          isActive( molArray(nType)%mol(NPART(nType))%indx ) = .false.
          ETable = ETable - dETable
          ETable(nIndx) = ETable( molArray(nType)%mol(NPART(nType))%indx )

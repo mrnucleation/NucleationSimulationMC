@@ -230,7 +230,7 @@
       end subroutine
 !=================================================================================     
 !     This function determines if a given translational move will destroy a cluster. 
-      subroutine SwapOut_EnergyCriteria(nSwap,rejMove)
+      subroutine SwapOut_EnergyCriteria(nSwap, rejMove)
       use SimParameters     
       use Coords
       use IndexingFunctions
@@ -245,20 +245,34 @@
       integer :: i,j,h
       integer :: curNeigh(1:60), neiMax
       
-      rejMove=.false.
-      if(NTotal-1 .eq. 1) return  
+      rejMove = .false.
+!      if(NTotal-1 .eq. 1) return  
 
       ClusterMember = .false.
       flipped = .false.
       neiFlipped = .false.
       
-      do i=1,maxMol
+!      write(2,*) "----------------------------"
+!      write(2,*) NPART(1), nSwap
+      do i = 1,maxMol
         if(.not. isActive(i)) then
           cycle
         endif
-        if( NeighborList(i,nSwap) ) then
+        do j = 1,maxMol
+          if(.not. isActive(j)) then
+            cycle
+          endif
+!          write(2,*) i, j, NeighborList(i, nSwap), NeighborList(nSwap, i) 
+        enddo
+      enddo
+
+      do i = 1,maxMol
+        if(.not. isActive(i)) then
+          cycle
+        endif
+        if( NeighborList(i, nSwap) ) then
           if(i .ne. nSwap) then
-            clusterMember(i)=.true. 
+            clusterMember(i) = .true. 
             exit
           endif
         endif
@@ -296,6 +310,11 @@
             endif
           endif
         enddo
+!        do i = 1, maxMol
+!          if(isActive(i)) then
+!            write(2,*) i, clusterMember(i), flipped(i)
+!          endif
+!        enddo
         neiFlipped = .true.
         do i = 1, neiMax
           if(.not. clusterMember(curNeigh(i))) then
@@ -310,6 +329,7 @@
             exit
           endif            
         endif
+
       enddo
   
   
@@ -386,6 +406,11 @@
       endif
      
       do i = 1, maxMol
+!       if(.not. isActive(i)) then
+!          NeighborList(i,nIndx) = .false.
+!          NeighborList(nIndx,i) = .false.          
+!          cycle
+!        endif
         if(NeighborList(i,nSwapIndx)) then
           if(i .ne. nIndx) then
             NeighborList(i,nIndx) = .true.

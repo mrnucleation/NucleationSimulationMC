@@ -199,7 +199,7 @@
       
       end subroutine
 !======================================================================================      
-      subroutine Shift_ECalc_Inter(E_Trial, disp, newDist, PairList, dETable, rejMove)
+      subroutine Shift_ECalc_Inter(E_Trial, disp, newDist, PairList, dETable)
       use ForceField
       use ForceFieldPara_Tersoff
       use Coords
@@ -212,7 +212,7 @@
       type(DistArrayNew), intent(inout) :: newDist(:)
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
-      logical, intent(out) :: rejMove
+!      logical, intent(out) :: rejMove
 
       
       integer :: i, iType, jType, kType, nType, iPair
@@ -793,7 +793,7 @@
 
       end subroutine
 !======================================================================================      
-      subroutine NewMol_ECalc_Inter(E_Trial, PairList, dETable, rejMove)
+      subroutine NewMol_ECalc_Inter(E_Trial, PairList, dETable)
       use ForceField
       use ForceFieldPara_Tersoff
       use Coords
@@ -801,7 +801,7 @@
       use SimParameters
       use PairStorage
       implicit none
-      logical, intent(out) :: rejMove
+!      logical, intent(out) :: rejMove
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       

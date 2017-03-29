@@ -66,6 +66,7 @@
       call Detailed_ECalc_BondStretch(E_T)
       call Detailed_ECalc_Bending(E_T)
       call Detailed_ECalc_Torsional(E_T)      
+
 !      call Detailed_ECalc_Improper(E_T)
       
       end subroutine

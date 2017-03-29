@@ -83,16 +83,7 @@
       endif
 
 
-      cnt = 0
-      do iType = 1, nMolTypes
-        if(NPART(iType) .lt. NMAX(iType)) then
-          do iMol = NPART(iType)+1, NMAX(iType) 
-            iIndx = MolArray(iType)%mol(iMol)%indx
-            ClusterMember(iIndx) = .true.
-            cnt = cnt + 1
-          enddo
-        endif   
-      enddo
+
           
       do iType = 1, nMolTypes
         if(NPART(iType) .gt. 0) then
@@ -118,6 +109,17 @@
           enddo           
         enddo
       enddo     
+
+      cnt = 0
+      do iType = 1, nMolTypes
+        if(NPART(iType) .lt. NMAX(iType)) then
+          do iMol = NPART(iType)+1, NMAX(iType) 
+            iIndx = MolArray(iType)%mol(iMol)%indx
+            ClusterMember(iIndx) = .true.
+            cnt = cnt + 1
+          enddo
+        endif   
+      enddo
       
       if( any(ClusterMember .eqv. .false.) ) then
         rejMove = .true.
@@ -138,125 +140,112 @@
 !      real(dp), intent(in) :: PairList(:)
       integer,intent(in) :: nIndx
       
-!      logical :: ClusterMember(1:maxMol)      
-!      logical :: flipped(1:maxMol)
-      logical :: earlyExit
-      integer :: iType, iMol
-      integer :: iIndx, jIndx, h, cnt
-      integer :: nType, jType, jMol
-      integer :: globIndx2
+      logical :: neiFlipped, memberAdded
+      logical :: ClusterMember(1:maxMol)      
+      logical :: flipped(1:maxMol)
+      integer :: iIndx, jIndx, h
+      integer :: nType, i, jType, jMol, globIndx2
+      integer :: curNeigh(1:60), neiMax
       
-      rejMove = .false.
-      if(NTotal .eq. 1) then
-        return
-      endif
-      ClusterMember = .false.
-      flipped = .false.
+      rejMove=.false.
+      if(NTotal .eq. 1) return        
+      ClusterMember=.false.
+      flipped=.false.
       
       nType = Get_MolType(nIndx,NMAX)
-      
-!     This block performs a quick check to see if any neighbors were lost
-!     in the process of making this move.  If all neighbors were retained
-!     then the cluster remains in tact and the detailed calculations are no
-!     longer needed. 
-
-!      earlyExit = .true.
-!      do jType = 1, nMolTypes     
-!        do jMol = 1, NPART(jType)
-!          jIndx = molArray(jType)%mol(jMol)%indx
-!          if( jIndx .ne. nIndx ) then
-!            if( NeighborList(nIndx, jIndx) ) then
-!              globIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
-!              if( rPairNew(globIndx2) % p % r_sq .gt. Dist_Critr_sq ) then
-!                earlyExit = .false. 
-!                exit            
-!              endif
-!            endif
-!          endif 
-!        enddo
-!        if(.not. earlyExit) then
-!          exit
-!        endif
-!      enddo
-
-!      if(earlyExit) then
-!        write(*,*) sqrt(rPairNew(globIndx2) % p % r_sq)
-!        write(*,*) "Early Exit"
-!        return
-!      endif
-
-      
-!     This section dermines which molecules are neighbored with the new trial position. These molecules are then activated as cluster members.
-      cnt = 0
-      do jType = 1, nMolTypes     
+     
+!     This section dermines which molecules are neighbored with the new trial position.  In the event
+!     that the molecule's new location has no neghibors all further calcualtions are skipped and the move is
+!     rejected.
+   
+      memberAdded = .false.
+      do jType = 1, nMolTypes
         do jMol = 1, NPART(jType)
           jIndx = molArray(jType)%mol(jMol)%indx
-          if(jIndx .ne. nIndx) then  
-            globIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
-            if( rPairNew(globIndx2) % p % r_sq .le. Dist_Critr_sq ) then
-              ClusterMember(jIndx) = .true.        
-              cnt = cnt + 1
-            endif
+          if(nIndx .eq. jIndx) then
+            cycle
           endif
-        enddo   
+          globIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
+          if(rPairNew(globIndx2)%p%r_sq .le. Dist_Critr_sq) then
+            ClusterMember(jIndx) = .true.        
+            memberAdded = .true.
+          endif
+        enddo
       enddo
-      
-      
-!     This section checked to see if there were any neighbors for the molecule's new position.
-!     If cnt is equal to 0 the new position has no neighbors which implies the cluster is broken.
-      if(cnt .eq. 0) then
+
+      if(.not. memberAdded) then      
         rejMove = .true.
         return     
       endif    
 
-      do iType = 1, nMolTypes     
-        do iMol = NPART(iType)+1, NMAX(iType)
-          iIndx = molArray(iType)%mol(iMol)%indx
-          ClusterMember(iIndx) = .true.
-          flipped(iIndx) = .true.
-        enddo
-      enddo
-
-      ClusterMember(nIndx) = .true.        
-      flipped(nIndx) = .true.     
-      cnt = cnt + 1
-      
-      do h = 1, NTotal
-        do iIndx = 1, maxMol
-          if(iIndx .eq. nIndx) then
-            cycle
-          endif
-          if( isActive(iIndx) ) then
-            if( ClusterMember(iIndx) .neqv. flipped(iIndx) ) then
-              do jIndx = 1, maxMol
-                if(.not. isActive(jIndx)) then
-                  cycle
-                endif
-                if(jIndx .eq. iIndx) then
-                  cycle
-                endif
-                if(jIndx .eq. nIndx) then
-                  cycle
-                endif
-                if( NeighborList(iIndx, jIndx) ) then
-                  ClusterMember(jIndx) = .true.            
-                  cnt = cnt+1
-                endif
-              enddo        
-              flipped(iIndx)=.true.
+!      This part of the code tabulates all the neighbors located around the particle's old position. 
+      neiMax = 0
+      curNeigh = 0
+      do iIndx = 1, maxMol
+        if(NeighborList(iIndx, nIndx)) then
+          if(iIndx .ne. nIndx) then
+            if(isActive(iIndx)) then
+              neiMax = neiMax + 1
+              curNeigh(neiMax) = iIndx
             endif
-          endif
-        enddo
-        if(cnt .eq. maxMol) then
+          endif      
+        endif
+      enddo      
+      
+      
+!     This section performs a quick check to see if the molecules that were neighbored with the old position
+!     are part of the new cluster.  If all the old neighbors are indeed part of the cluster then no furth
+!     calculations are needed.      
+      neiFlipped = .true.
+      do iIndx = 1, neiMax
+        if(.not. clusterMember(curNeigh(iIndx))) then
+          neiFlipped = .false.
           exit
-        endif      
+        endif
       enddo
 
-     
-  
-      if( any(ClusterMember .eqv. .false.) ) then
-        rejMove = .true.
+      if(neiFlipped) then
+        rejMove = .false.
+        return
       endif
+      
+    
+      do h = 1, NTotal
+!        cnt = 0
+        memberAdded = .false.
+        do iIndx = 1, maxMol
+          if(ClusterMember(iIndx) .neqv. flipped(iIndx)) then
+            do jIndx = 1, maxMol
+              if(NeighborList(iIndx,jIndx)) then
+                if(jIndx .ne. nIndx) then
+                  ClusterMember(jIndx)=.true.   
+                  memberAdded = .true.
+                endif
+              endif
+            enddo        
+            flipped(iIndx)=.true.
+          endif
+        enddo
+ 
+        neiFlipped = .true.
+        do i = 1, neiMax
+          if(.not. clusterMember(curNeigh(i))) then
+            neiFlipped = .false.
+            exit
+          endif
+        enddo        
+        if( neiFlipped ) then
+          exit
+        else 
+          if(.not. memberAdded) then
+            exit
+          endif           
+        endif
+      enddo
+  
+       if( .not. neiFlipped ) then
+         rejMove=.true.
+       endif
      
       end subroutine
 
@@ -278,6 +267,13 @@
       ClusterMember = .false.
       flipped = .false.
 
+      do iIndx = 1, maxMol
+        if( .not. isActive(iIndx) ) then      
+          ClusterMember(iIndx) = .true.
+          flipped(iIndx) = .true.
+        endif
+      enddo
+
 !      In order to initialize the cluster criteria search, a single particle must be chosen as the starting point.
       do iIndx = 1, maxMol
         if( isActive(iIndx) ) then      
@@ -289,7 +285,7 @@
       enddo
 
       cnt = 0
-      do iIndx= 1, maxMol
+      do iIndx = 1, maxMol
         if( isActive(iIndx) .eqv. .false. ) then
           ClusterMember(iIndx) = .true.      
           flipped(iIndx) = .true.         
@@ -339,23 +335,47 @@
       nType = typeList(nIndx)
       nMol = subIndxList(nIndx)
       globIndx1 = MolArray(nType)%mol(nMol)%globalIndx(1) 
-      do jType = 1, nMolTypes
-        do jMol = 1, NPART(jType)
-          jIndx = MolArray(jType)%mol(jMol)%indx   
-          if(jIndx .ne. nIndx) then  
-            globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1) 
-            if( rPair(globIndx1,globIndx2) % p % r_sq  .le.  Dist_Critr_sq ) then
-!              write(2,*) globIndx1, globIndx2, rPair(globIndx1,globIndx2) % p % r_sq 
-              NeighborList(nIndx, jIndx) = .true.
-              NeighborList(jIndx, nIndx) = .true.  
-            else             
-              NeighborList(nIndx, jIndx) = .false.
-              NeighborList(jIndx, nIndx) = .false.            
-            endif   
-          endif
-        enddo
+!      write(35,*) nIndx
+      do jIndx=1,maxMol
+        if(.not. isActive(jIndx)) then
+          cycle
+        endif
+        if(jIndx .ne. nIndx) then  
+          jType = typeList(jIndx)
+          jMol = subIndxList(jIndx)
+          globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1) 
+!          write(35,*) globIndx1, globIndx2, rPairNew(globIndx2) % p % r_sq, Dist_Critr_sq
+!          if( rPair(globIndx1,globIndx2) % p % r_sq  .le.  Dist_Critr_sq ) then
+          if( rPairNew(globIndx2) % p % r_sq  .le.  Dist_Critr_sq ) then
+!            write(35,*) globIndx1, globIndx2, rPair(globIndx1,globIndx2) % p % r_sq 
+            NeighborList(nIndx, jIndx) = .true.
+            NeighborList(jIndx, nIndx) = .true.  
+          else             
+            NeighborList(nIndx, jIndx) = .false.
+            NeighborList(jIndx, nIndx) = .false.            
+          endif   
+        endif
       enddo
-      NeighborList(nIndx,nIndx) = .false.
+!      NeighborList(nIndx,nIndx) = .false.
+
+
+!      do jType = 1, nMolTypes
+!        do jMol = 1, NPART(jType)
+!          jIndx = MolArray(jType)%mol(jMol)%indx   
+!          if(jIndx .ne. nIndx) then  
+!            globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1) 
+!            if( rPair(globIndx1,globIndx2) % p % r_sq  .le.  Dist_Critr_sq ) then
+!              write(2,*) globIndx1, globIndx2, rPair(globIndx1,globIndx2) % p % r_sq 
+!              NeighborList(nIndx, jIndx) = .true.
+!              NeighborList(jIndx, nIndx) = .true.  
+!            else             
+!              NeighborList(nIndx, jIndx) = .false.
+!              NeighborList(jIndx, nIndx) = .false.            
+!            endif   
+!          endif
+!        enddo
+!      enddo
+!      NeighborList(nIndx,nIndx) = .false.
 !      write(2,*) 
 
       end subroutine

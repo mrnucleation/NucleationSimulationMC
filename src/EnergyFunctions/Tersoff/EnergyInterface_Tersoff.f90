@@ -97,7 +97,7 @@
           endif
           dETable = 0d0
           PairList = 0d0
-          call Shift_ECalc_Inter(E_Inter, disp,newDist, PairList, dETable, rejMove)
+          call Shift_ECalc_Inter(E_Inter, disp,newDist, PairList, dETable)
 
           if(rejMove) then
             return
@@ -158,7 +158,7 @@
       if(rejMove) then
         return
       endif
-      call NewMol_ECalc_Inter(E_Inter, PairList, dETable, rejMove)
+      call NewMol_ECalc_Inter(E_Inter, PairList, dETable)
       if(rejMove) then
         return
       endif

@@ -118,8 +118,8 @@
         enddo
       enddo
       
-      write(nout,*) "Lennard-Jones Energy:", E_LJ
-      write(nout,*) "Eletrostatic Energy:", E_Ele
+!      write(nout,*) "Lennard-Jones Energy:", E_LJ
+!      write(nout,*) "Eletrostatic Energy:", E_Ele
 
 !      write(35,*) "Pair List:"
 !      do iMol=1,maxMol

@@ -583,7 +583,7 @@
 
       integer :: i      
     
-      do i=1,nAtoms(nType)      
+      do i = 1, nAtoms(nType)      
         disp(i)%x_old = disp(i)%x_new
         disp(i)%y_old = disp(i)%y_new
         disp(i)%z_old = disp(i)%z_new
@@ -592,7 +592,7 @@
       ETable = ETable + dETable
       acc_x = acc_x + 1E0
       call UpdateDistArray
-      if(distCriteria) then
+      if( distCriteria ) then
 !        call NeighborUpdate_Distance(PairList,nIndx)    
         call NeighborUpdate_Distance(nIndx)            
       else

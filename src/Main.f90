@@ -16,6 +16,7 @@
       use Coords
       use CoordinateFunctions
       use Constants
+      use DistanceCriteria, only: Detailed_DistanceCriteria
       use PairStorage, only: CalcAllDistPairs
       use EnergyPointers, only: Detailed_ECalc
       use EnergyTables
@@ -301,9 +302,18 @@
            enddo
            call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
 
- !          call CalcAllDistPairs
-!           call Detailed_ECalc(E_Debug, errRtn)
-!           write(*,*) E_T
+
+!           call DEBUG_Output_NeighborList
+!           call CalcAllDistPairs
+!           call Detailed_DistanceCriteria(errRtn)
+!           if(errRtn) then
+!             write(*,*)  nSel
+!             call TrajOutput(iCycle)
+!             stop      
+!           endif
+
+
+
            if(useAnalysis) then
              call PostMoveAnalysis
            endif  
