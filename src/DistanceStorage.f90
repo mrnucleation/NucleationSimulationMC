@@ -46,7 +46,7 @@
 
     type(DistArrayNew), allocatable, target :: newDist(:)
     type(DistArrayNew), target :: nullPair
-    type(DistPointerNew), allocatable :: rPairNew(:)
+    type(DistPointerNew), allocatable :: rPairNew(:,:)
 
     contains
 !=====================================================================
@@ -59,7 +59,7 @@
       allocate(distStorage(0:nMaxPairs), stat = AllocationStat)
       allocate(rPair(1:nTotalAtoms, 1:nTotalAtoms), stat = AllocationStat)
       allocate(newDist(1:nMaxPairs), stat = AllocationStat) 
-      allocate(rPairNew(1:nTotalAtoms), stat = AllocationStat)
+      allocate(rPairNew(1:nTotalAtoms, 1:nTotalAtoms), stat = AllocationStat)
       allocate(oldIndxArray(1:nMaxPairs), stat = AllocationStat) 
 
 
@@ -256,7 +256,7 @@
         iAtom = disp(iDisp)%atmIndx
         atmType1 = atomArray(iType, iAtom)
         gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
-        rPairNew(gloIndx1)%p => nullPair
+        rPairNew(gloIndx1, gloIndx1)%p => nullPair
         do jType = 1, nMolTypes
           do jAtom = 1, nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
@@ -283,7 +283,8 @@
                 endif
               endif    
               nNewDist = nNewDist + 1
-              rPairNew(gloIndx2)%p => newDist(nNewDist)
+              rPairNew(gloIndx1, gloIndx2)%p => newDist(nNewDist)
+              rPairNew(gloIndx2, gloIndx1)%p => newDist(nNewDist)
               oldIndxArray(nNewDist) = rPair(gloIndx1, gloIndx2)%p%arrayIndx
               newDist(nNewDist)%indx1 = gloIndx1
               newDist(nNewDist)%indx2 = gloIndx2
@@ -333,7 +334,7 @@
       do iAtom = 1, nAtoms(iType)
         atmType1 = atomArray(iType, iAtom)
         gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
-        rPairNew(gloIndx1)%p => nullPair
+        rPairNew(gloIndx1, gloIndx1)%p => nullPair
         do jType = 1, nMolTypes
           do jAtom = 1, nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
@@ -349,7 +350,8 @@
                 return
               endif
               nNewDist = nNewDist + 1
-              rPairNew(gloIndx2)%p => newDist(nNewDist)
+              rPairNew(gloIndx1, gloIndx2)%p => newDist(nNewDist)
+              rPairNew(gloIndx2, gloIndx1)%p => newDist(nNewDist)
               oldIndxArray(nNewDist) = rPair(gloIndx1, gloIndx2) % p % arrayIndx
               newDist(nNewDist)%indx1 = gloIndx1
               newDist(nNewDist)%indx2 = gloIndx2

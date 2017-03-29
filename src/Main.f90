@@ -300,18 +300,20 @@
            do while(moveProbability(nSel) .lt. ran_num)
              nSel = nSel + 1
            enddo
+
            call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
 
-
-!           call DEBUG_Output_NeighborList
-!           call CalcAllDistPairs
-!           call Detailed_DistanceCriteria(errRtn)
-!           if(errRtn) then
-!             write(*,*)  nSel
-!             call TrajOutput(iCycle)
-!             stop      
-!           endif
-
+           if(prevMoveAccepted) then
+!             write(35,*) "========================================================"
+!             write(35,*) nSel
+!            call DEBUG_Output_NeighborList
+            call DEBUG_NeighborQualityCheck(errRtn)
+             if(errRtn) then
+               write(*,*)  nSel
+               call TrajOutput(iCycle)
+               stop      
+             endif
+           endif
 
 
            if(useAnalysis) then

@@ -35,7 +35,7 @@
       real(dp) :: x_rid_cm, y_rid_cm,z_rid_cm
       real(dp) :: E_Max, ProbRosen(1:maxRosenTrial), rosenNorm
       real(dp) :: ranNum, sumInt, rmin_ij
-
+      real(dp) :: rx, ry, rz
       
       newMol%molType = nType      
 !      call Rosen_CreateSubset(nTarget, isIncluded)
@@ -52,7 +52,14 @@
         rosenTrial(iRosen)%x(1:nAtoms(nType)) = gasConfig(nType)%x(1:nAtoms(nType))
         rosenTrial(iRosen)%y(1:nAtoms(nType)) = gasConfig(nType)%y(1:nAtoms(nType))
         rosenTrial(iRosen)%z(1:nAtoms(nType)) = gasConfig(nType)%z(1:nAtoms(nType))
-      
+        x1 = rosenTrial(iRosen)%x(1)
+        y1 = rosenTrial(iRosen)%y(1)
+        z1 = rosenTrial(iRosen)%z(1)
+        do i = 1, nAtoms(nType)
+          rosenTrial(iRosen)%x(i) = rosenTrial(iRosen)%x(i) - x1
+          rosenTrial(iRosen)%y(i) = rosenTrial(iRosen)%y(i) - y1
+          rosenTrial(iRosen)%z(i) = rosenTrial(iRosen)%z(i) - z1
+        enddo
         if(nAtoms(nType) .ne. 1) then
           x_rid_cm = gasConfig(nType)%x(1)
           y_rid_cm = gasConfig(nType)%y(1)
@@ -101,6 +108,8 @@
         dx = r * dx
         dy = r * dy
         dz = r * dz      
+
+        
         
         x1 = molArray(nTargType)%mol(nTargetMol)%x(1) + dx - rosenTrial(iRosen)%x(1)
         y1 = molArray(nTargType)%mol(nTargetMol)%y(1) + dy - rosenTrial(iRosen)%y(1)
@@ -144,10 +153,18 @@
       endif
 
 !      Update the coordinates      
-      newMol%x(1:nAtoms(nType)) = rosenTrial(nSel)%x(1:nAtoms(nType))
-      newMol%y(1:nAtoms(nType)) = rosenTrial(nSel)%y(1:nAtoms(nType))
-      newMol%z(1:nAtoms(nType)) = rosenTrial(nSel)%z(1:nAtoms(nType))
-      
+      do i = 1, nAtoms(nType)
+        newMol%x(i) = rosenTrial(nSel)%x(i)
+        newMol%y(i) = rosenTrial(nSel)%y(i)
+        newMol%z(i) = rosenTrial(nSel)%z(i)
+      enddo  
+      rx = newMol%x(1) - molArray(nTargType)%mol(nTargetMol)%x(1)
+      ry = newMol%y(1) - molArray(nTargType)%mol(nTargetMol)%y(1)
+      rz = newMol%z(1) - molArray(nTargType)%mol(nTargetMol)%z(1)
+      r = rx*rx + ry*ry + rz*rz
+      if(r  .gt. Dist_Critr_sq) then
+        write(*,*) "SCREWED UP!", rx, ry, rz, r, Dist_Critr, Dist_Critr_sq
+      endif
       rosenRatio = (ProbRosen(nSel)*dble(nRosenTrials(nType)))/rosenNorm
       
       end subroutine
@@ -701,7 +718,10 @@
           stop
         end select
         
-        r = Dist_Critr * grnd()**(1d0/3d0)
+        r = Dist_Critr + 1d0
+        do while(r*r .gt. Dist_Critr_sq )
+          r = Dist_Critr * grnd()**(1d0/3d0)
+        enddo
         call Generate_UnitSphere(dx, dy, dz)
         dx = r * dx
         dy = r * dy

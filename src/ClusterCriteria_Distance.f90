@@ -63,7 +63,7 @@
               if(jIndx .eq. iIndx) then
                 cycle
               endif        
-              if(rPair(globIndx1, globIndx2) % p % r_sq .le. Dist_Critr_sq ) then
+              if(rPair(globIndx1, globIndx2) % p % r_sq .lt. Dist_Critr_sq ) then
 !                write(*,*) globIndx1, globIndx2, rPair(globIndx1, globIndx2) % p % r_sq, rPair(globIndx1, globIndx2) % p % r
                 NeighborList(iIndx, jIndx) = .true.         
                 NeighborList(jIndx, iIndx) = .true.   
@@ -144,7 +144,7 @@
       logical :: ClusterMember(1:maxMol)      
       logical :: flipped(1:maxMol)
       integer :: iIndx, jIndx, h
-      integer :: nType, i, jType, jMol, globIndx2
+      integer :: nType, nMol, i, jType, jMol, globIndx1, globIndx2
       integer :: curNeigh(1:60), neiMax
       
       rejMove=.false.
@@ -152,25 +152,29 @@
       ClusterMember=.false.
       flipped=.false.
       
-      nType = Get_MolType(nIndx,NMAX)
+      nType = typeList(nIndx)
+      nMol = subIndxList(nIndx)
+      globIndx1 = molArray(nType)%mol(nMol)%globalIndx(1)
      
 !     This section dermines which molecules are neighbored with the new trial position.  In the event
 !     that the molecule's new location has no neghibors all further calcualtions are skipped and the move is
 !     rejected.
    
       memberAdded = .false.
-      do jType = 1, nMolTypes
-        do jMol = 1, NPART(jType)
-          jIndx = molArray(jType)%mol(jMol)%indx
-          if(nIndx .eq. jIndx) then
-            cycle
-          endif
-          globIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
-          if(rPairNew(globIndx2)%p%r_sq .le. Dist_Critr_sq) then
-            ClusterMember(jIndx) = .true.        
-            memberAdded = .true.
-          endif
-        enddo
+      do jIndx = 1, maxMol
+        if(.not. isActive(jIndx) ) then
+          cycle
+        endif    
+        if(nIndx .eq. jIndx) then
+          cycle
+        endif
+        jType = typeList(jIndx)
+        jMol = subIndxList(jIndx)
+        globIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
+        if(rPairNew(globIndx1, globIndx2)%p%r_sq .lt. Dist_Critr_sq) then
+          ClusterMember(jIndx) = .true.        
+          memberAdded = .true.
+        endif
       enddo
 
       if(.not. memberAdded) then      
@@ -344,9 +348,9 @@
           jType = typeList(jIndx)
           jMol = subIndxList(jIndx)
           globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1) 
-!          write(35,*) globIndx1, globIndx2, rPairNew(globIndx2) % p % r_sq, Dist_Critr_sq
+!          write(35,*) globIndx1, globIndx2, rPairNew(globIndx1,globIndx2) % p % r_sq, Dist_Critr_sq
 !          if( rPair(globIndx1,globIndx2) % p % r_sq  .le.  Dist_Critr_sq ) then
-          if( rPairNew(globIndx2) % p % r_sq  .le.  Dist_Critr_sq ) then
+          if( rPairNew(globIndx1, globIndx2) % p % r_sq  .lt.  Dist_Critr_sq ) then
 !            write(35,*) globIndx1, globIndx2, rPair(globIndx1,globIndx2) % p % r_sq 
             NeighborList(nIndx, jIndx) = .true.
             NeighborList(jIndx, nIndx) = .true.  
@@ -377,6 +381,42 @@
 !      enddo
 !      NeighborList(nIndx,nIndx) = .false.
 !      write(2,*) 
+
+      end subroutine
+!=================================================================================     
+!     This function updates the neighborlist if a move is accepted.
+      subroutine NeighborUpdate_SwapIn_Distance(nType)
+      use Coords      
+      use IndexingFunctions      
+      use PairStorage
+      use SimParameters
+      implicit none     
+      integer, intent(in) :: nType
+!      real(dp), intent(in) :: PairList(:)
+      integer ::  nIndx, nMol, jMol, jType, jIndx, globIndx1, globIndx2
+
+      
+      nMol = NPART(nType) + 1
+      nIndx = MolArray(nType)%mol(nMol)%indx 
+      globIndx1 = MolArray(nType)%mol(nMol)%globalIndx(1) 
+!      write(35,*) nType, nMol, nIndx , globIndx1
+      do jType = 1, nMolTypes
+        do jMol = 1, NPART(jType)
+          jIndx = MolArray(jType)%mol(jMol)%indx
+          if(jIndx .ne. nIndx) then  
+            globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1) 
+!            write(35,*) globIndx1, globIndx2, rPairNew(globIndx1,globIndx2) % p % r_sq 
+            if( rPairNew(globIndx1, globIndx2) % p % r_sq  .lt.  Dist_Critr_sq ) then
+
+              NeighborList(nIndx, jIndx) = .true.
+              NeighborList(jIndx, nIndx) = .true.  
+            else             
+              NeighborList(nIndx, jIndx) = .false.
+              NeighborList(jIndx, nIndx) = .false.            
+            endif   
+          endif
+        enddo
+      enddo
 
       end subroutine
 !=================================================================================           

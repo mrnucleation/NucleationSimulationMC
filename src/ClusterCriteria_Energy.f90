@@ -384,17 +384,19 @@
       end subroutine
 !=================================================================================     
 !     This function updates the neighborlist if a move is accepted.
-      subroutine NeighborUpdate_Delete(nIndx)
+      subroutine NeighborUpdate_Delete(nIndx, nSwapIndx)
       use SimParameters
       use IndexingFunctions
       use Coords
       implicit none
-      integer, intent(in) :: nIndx
-      integer :: nType, nSwapIndx
+      integer, intent(in) :: nIndx, nSwapIndx
+      integer :: nType
       integer :: i
 
+
+!      write(35,*) nIndx, nSwapIndx
       nType = typeList(nIndx)     
-      nSwapIndx = molArray(nType)%mol(NPART(nType))%indx
+!      nSwapIndx = molArray(nType)%mol(NPART(nType))%indx
 
 !      NeighborList(nIndx,:) = NeighborList(nSwapIndx,:)
 !      NeighborList(:,nIndx) = NeighborList(:,nSwapIndx)

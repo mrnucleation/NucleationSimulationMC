@@ -21,10 +21,10 @@
 !      return
               
       if(grnd() .lt. 0.5d0) then
-!        write(*,*) "in"
+!        write(35,*) "in"
         call AVBMC_EBias_Rosen_In(E_T, maxMol, acc_x, atmp_x)     
       else
-!        write(*,*) "out"
+!        write(35,*) "out"
         call AVBMC_EBias_Rosen_Out(E_T, maxMol, acc_x, atmp_x)    
       endif
 
@@ -107,6 +107,7 @@
       atmpInSize(NTotal) = atmpInSize(NTotal) + 1d0
 
       call EBias_Insert_ChooseTarget(nType, nTarget, nTargType, nTargMol, ProbTarg_In)
+!      write(35,*) "Target:", nTarget
       nTargIndx = MolArray(nTargType)%mol(nTargMol)%indx      
 
 !      Generate the configuration for the newly inserted molecule
@@ -187,9 +188,10 @@
 !      genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol  * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
 !      write(*,*) E_Inter
       Boltzterm = exp(-beta*E_Inter + biasDiff)
-!      write(*,*) Boltzterm
+
       if( genProbRatio * Boltzterm .gt. grnd() ) then
 !         call PrintDistArray
+!         write(35,*) genProbRatio, Boltzterm
          acptSwapIn(nType) = acptSwapIn(nType) + 1d0        
          acptInSize(NTotal) = acptInSize(NTotal) + 1d0         
          do i=1,nAtoms(nType)      
@@ -201,13 +203,15 @@
          acc_x = acc_x + 1d0
 !         nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
          isActive(nIndx) = .true.
-         call UpdateDistArray
+
          if(distCriteria) then
 !           call NeighborUpdate_Distance(PairList,nIndx)  
-           call NeighborUpdate_Distance(nIndx)              
+!           call NeighborUpdate_Distance(nIndx)      
+           call NeighborUpdate_SwapIn_Distance(nType)        
          else
            call NeighborUpdate(PairList, nIndx)
          endif  
+         call UpdateDistArray
          NTotal = NTotal + 1
          ETable = ETable + dETable         
          NPART(nType) = NPART(nType) + 1 
@@ -366,7 +370,7 @@
          molArray(nType)%mol(nMol)%z(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%z(1:nAtoms(nType))
          E_T = E_T + E_Inter + E_Intra
          nIndx = molArray(nType)%mol(nMol)%indx
-         call NeighborUpdate_Delete(nIndx)
+         call NeighborUpdate_Delete(nIndx, molArray(nType)%mol(NPART(nType))%indx )
          call UpdateDistArray_SwapOut(nType, nMol)
          isActive( molArray(nType)%mol(NPART(nType))%indx ) = .false.
          ETable = ETable - dETable

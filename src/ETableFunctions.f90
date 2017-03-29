@@ -152,12 +152,6 @@
        
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
       globIndxN = molArray(nType)%mol(NPART(nType)+1)%globalIndx(1)
-!      write(35,*) "PairList"
-!      do i = 1,maxMol
-!        write(35,*) i, ETable(i) + dE(i), PairList(i)
-!      enddo
-      
-      
       do i = 1, maxMol
        newNeiTable(i) = 0E0
 
@@ -173,7 +167,7 @@
              jType = typeList(j)
              jMol = subIndxList(j)
              globIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
-             if(rPairNew(globIndx2)%p%r_sq .le. Dist_Critr_sq) then
+             if(rPairNew(globIndxN,globIndx2)%p%r_sq .le. Dist_Critr_sq) then
                if(ETable(j) + dE(j) .gt. EMax) then
                  EMax = ETable(j) + dE(j)
                endif
@@ -189,7 +183,7 @@
              if(j .ne. nIndx) then
                cycle
              else
-               if(rPairNew(globIndx1)%p%r_sq .le. Dist_Critr_sq) then
+               if(rPairNew(globIndxN,globIndx1)%p%r_sq .le. Dist_Critr_sq) then
                  if(dE(j) .gt. EMax) then
                    EMax = dE(j)
                  endif

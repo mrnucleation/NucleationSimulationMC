@@ -220,7 +220,7 @@
       integer :: iNei, jNei, kNei
       integer(kind=atomIntType) :: atmType1, atmType2      
       integer :: iIndx, jIndx, nIndx 
-      integer :: globIndx1, globIndx2, globIndx3
+      integer :: globIndx1, globIndx2, globIndx3, globIndxN
       integer :: neiList(1:60), nNei
 !      integer :: pairIndxNew(1:6), nPair
       real(dp) :: r_sq, r, r_new,rMax, rMax_sq
@@ -266,6 +266,7 @@
       nMol = disp(1)%molIndx
       nIndx = MolArray(nType)%mol(nMol)%indx
       globIndx1 = MolArray(nType)%mol(nMol)%globalIndx(1)
+      globIndxN = globIndx1
       nNei = 0
       neiList = 0
 !      pairIndxNew = 0
@@ -297,7 +298,7 @@
 
         globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1)
         if(distCriteria) then
-          PairList(jIndx) = rPairNew(globIndx2)%p%r_sq
+          PairList(jIndx) = rPairNew(globIndxN,globIndx2)%p%r_sq
         endif
         if(globIndx2 .eq. globIndx1) then
           cycle
@@ -317,24 +318,24 @@
         jIndx = MolArray(jType)%mol(jMol)%indx
         Short = 0E0_dp
 !        Compute the bonds at the new position
-        rij  = rPairNew(globIndx2)%p%r
+        rij  = rPairNew(globIndxN,globIndx2)%p%r
         if(rij .lt. rMax) then
           Zeta = 0E0_dp
           Zeta2 = 0E0_dp
-          rxij = -rPairNew(globIndx2)%p%rx
-          ryij = -rPairNew(globIndx2)%p%ry
-          rzij = -rPairNew(globIndx2)%p%rz 
+          rxij = -rPairNew(globIndxN,globIndx2)%p%rx
+          ryij = -rPairNew(globIndxN,globIndx2)%p%ry
+          rzij = -rPairNew(globIndxN,globIndx2)%p%rz 
           do kMol = 1, NPART(kType)
             if((kMol .eq. nMol) .or. (kMol .eq. jMol)) then
               cycle
             endif
             globIndx3 = MolArray(kType)%mol(kMol)%globalIndx(1)
-            rik  = rPairNew(globIndx3)%p%r
+            rik  = rPairNew(globIndxN,globIndx3)%p%r
 
             if(rik .lt. rMax) then
-              rxik  = -rPairNew(globIndx3)%p%rx
-              ryik  = -rPairNew(globIndx3)%p%ry
-              rzik  = -rPairNew(globIndx3)%p%rz
+              rxik  = -rPairNew(globIndxN,globIndx3)%p%rx
+              ryik  = -rPairNew(globIndxN,globIndx3)%p%ry
+              rzik  = -rPairNew(globIndxN,globIndx3)%p%rz
               angijk = angleCalc(rxij, ryij, rzij, rij, rxik, ryik, rzik, rik)
               Zeta = Zeta + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2)
             endif     
@@ -484,11 +485,11 @@
             endif
             globIndx3 = MolArray(kType)%mol(kMol)%globalIndx(1)
             if(kMol .eq. nMol) then
-              rik  = rPairNew(globIndx1)%p%r
+              rik  = rPairNew(globIndxN,globIndx1)%p%r
               if(rik .lt. rMax) then
-                rxik  = rPairNew(globIndx1)%p%rx
-                ryik  = rPairNew(globIndx1)%p%ry
-                rzik  = rPairNew(globIndx1)%p%rz
+                rxik  = rPairNew(globIndxN,globIndx1)%p%rx
+                ryik  = rPairNew(globIndxN,globIndx1)%p%ry
+                rzik  = rPairNew(globIndxN,globIndx1)%p%rz
                 angijk = angleCalc(rxij, ryij, rzij, rij, rxik, ryik, rzik, rik)
                 Zeta = Zeta + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2) 
               endif
@@ -810,7 +811,7 @@
       integer :: iNei, jNei, kNei
       integer(kind=atomIntType) :: atmType1, atmType2      
       integer :: iIndx, jIndx, nIndx 
-      integer :: globIndx1, globIndx2, globIndx3
+      integer :: globIndx1, globIndx2, globIndx3, globIndxN
       integer :: neiList(1:60), nNei
 !      integer :: pairIndxNew(1:6), nPair
       real(dp) :: r_sq, r, rMax, rMax_sq
@@ -860,6 +861,7 @@
 
 !      This block creates a list of neighbors that are located near the particle's new position.
       globIndx1 = MolArray(nType)%mol(nMol)%globalIndx(1)
+      globIndxN  = globIndx1
       nNei = 0
       neiList = 0
       do iPair = 1, nNewDist
@@ -885,23 +887,23 @@
         jIndx = MolArray(jType)%mol(jMol)%indx
         V1 = 0E0_dp
 !        Compute the bonds at the new position
-        rij  = rPairNew(globIndx2)%p%r
+        rij  = rPairNew(globIndxN,globIndx2)%p%r
         if(rij .lt. rMax) then
           Zeta = 0E0_dp
           Zeta2 = 0E0_dp
-          rxij = -rPairNew(globIndx2)%p%rx
-          ryij = -rPairNew(globIndx2)%p%ry
-          rzij = -rPairNew(globIndx2)%p%rz 
+          rxij = -rPairNew(globIndxN,globIndx2)%p%rx
+          ryij = -rPairNew(globIndxN,globIndx2)%p%ry
+          rzij = -rPairNew(globIndxN,globIndx2)%p%rz 
           do kMol = 1, NPART(kType)
             if((kMol .eq. nMol) .or. (kMol .eq. jMol)) then
               cycle
             endif
             globIndx3 = MolArray(kType)%mol(kMol)%globalIndx(1)
-            rik  = rPairNew(globIndx3)%p%r
+            rik  = rPairNew(globIndxN,globIndx3)%p%r
             if(rik .lt. rMax) then
-              rxik  = -rPairNew(globIndx3)%p%rx
-              ryik  = -rPairNew(globIndx3)%p%ry
-              rzik  = -rPairNew(globIndx3)%p%rz
+              rxik  = -rPairNew(globIndxN,globIndx3)%p%rx
+              ryik  = -rPairNew(globIndxN,globIndx3)%p%ry
+              rzik  = -rPairNew(globIndxN,globIndx3)%p%rz
               angijk = angleCalc(rxij, ryij, rzij, rij, rxik, ryik, rzik, rik)
 !              write(*,*) 1,angijk * 180d0/pi
               Zeta = Zeta + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2)
@@ -1001,11 +1003,11 @@
             endif
           enddo
 
-          rik  = rPairNew(globIndx1)%p%r
+          rik  = rPairNew(globIndxN,globIndx1)%p%r
           if(rik .lt. rMax) then
-            rxik  = rPairNew(globIndx1)%p%rx
-            ryik  = rPairNew(globIndx1)%p%ry
-            rzik  = rPairNew(globIndx1)%p%rz
+            rxik  = rPairNew(globIndxN,globIndx1)%p%rx
+            ryik  = rPairNew(globIndxN,globIndx1)%p%ry
+            rzik  = rPairNew(globIndxN,globIndx1)%p%rz
             angijk = angleCalc(rxij, ryij, rzij, rij, rxik, ryik, rzik, rik)
 !            write(*,*) 4, angijk * 180d0/pi
             Zeta = Zeta + gik_Func(angijk, c, d, h) *  Fc_Func(rik, R_eq, D2) 

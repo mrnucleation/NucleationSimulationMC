@@ -183,7 +183,7 @@
          molArray(nType1)%mol(nMol1)%x(1:nAtoms(nType1)) = molArray(nType1)%mol(NPART(nType1))%x(1:nAtoms(nType1))
          molArray(nType1)%mol(nMol1)%y(1:nAtoms(nType1)) = molArray(nType1)%mol(NPART(nType1))%y(1:nAtoms(nType1))
          molArray(nType1)%mol(nMol1)%z(1:nAtoms(nType1)) = molArray(nType1)%mol(NPART(nType1))%z(1:nAtoms(nType1))
-         call NeighborUpdate_Delete(nIndx)
+!         call NeighborUpdate_Delete(nIndx)
          maxIndx = molArray(nType1)%mol(NPART(nType1))%indx
          isActive(maxIndx) = .false.         
          ETable(nIndx) = ETable(maxIndx)
