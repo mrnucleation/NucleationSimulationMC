@@ -78,7 +78,7 @@
         format_string = "(A,I2,A)"
       elseif(myid .lt. 1000) then
         format_string = "(A,I3,A)"
-      elseif(myid .lt. 1000) then
+      elseif(myid .lt. 10000) then
         format_string = "(A,I4,A)"          
       else
         format_string = "(A,I5,A)"      
@@ -210,7 +210,7 @@
 !      Print Dummy frame to VMD so VMD will correctly display varying cluster sizes.       
       call InitialTrajOutput
 !      This function outputs current config to the trajectory visualization file.       
-      call TrajOutput(iCycle)
+      call TrajOutput(iCycle, E_T)
 
 !      Initialize the variables which keep track of the different energy types during the simulation.  
       E_Inter_T = 0E0_dp
@@ -310,7 +310,7 @@
             call DEBUG_NeighborQualityCheck(errRtn)
              if(errRtn) then
                write(*,*)  nSel
-               call TrajOutput(iCycle)
+               call TrajOutput(iCycle, E_T)
                stop      
              endif
            endif
@@ -352,7 +352,7 @@
 !          endif
 !        endif
 
-!         call TrajOutput(iCycle)
+!         call TrajOutput(iCycle, E_T)
 
 !        Mid Simulation Output Block
 !        if(mod(iCycle, outFreq_GCD) .eq. 0) then
@@ -368,7 +368,7 @@
             flush(nout)
           endif
           if(mod(iCycle,outFreq_Traj) .eq. 0) then
-            call TrajOutput(iCycle)
+            call TrajOutput(iCycle, E_T)
           endif
 !        endif
 
@@ -417,7 +417,7 @@
       call Detailed_ECalc(E_Final,errRtn)
       
 !      Output final trajectory      
-      call TrajOutput(iCycle)
+      call TrajOutput(iCycle, E_T)
       close(30)    
   
 !      Begin epilogue
@@ -624,13 +624,14 @@
  
       end subroutine
 !===========================================================
-      subroutine TrajOutput(iCycle)
+      subroutine TrajOutput(iCycle, E_T)
       use VarPrecision
       use SimParameters
       use Coords
       use Forcefield
       implicit none
       integer(kind=8), intent(in) :: iCycle
+      real(dp), intent(in) :: E_T
       integer :: iType, iMol, iAtom
       integer ::  atmType
       integer :: cnt      
@@ -655,7 +656,7 @@
       zcm = zcm/real(cnt, dp)
 
       write(30,*) vmdAtoms
-      write(30,*) "Cluster Size:",NPART
+      write(30,*) NPART, E_T
       do iType = 1,nMolTypes
         do iMol = 1, NPART(iType)
           do iAtom = 1, nAtoms(iType)

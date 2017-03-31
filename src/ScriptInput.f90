@@ -38,12 +38,15 @@
       nArgs = command_argument_count()
       if(nArgs > 1) then
         stop "This program only takes one argument"
+      elseif(nArgs == 1) then
+        call get_command_argument(1, fileName)
+        call LoadFile(lineStore, nLines, lineNumber, fileName)
       endif
 !      Read in the script file
-      call get_command_argument(1, fileName)
+
 
 !      fileName = "ScriptTest.dat"
-      call LoadFile(lineStore, nLines, lineNumber, fileName)
+
 !      This block counts the number of lines in the input file to determine how large the lineStorage array needs to be.
 
       call setDefaults(seed, screenEcho)
