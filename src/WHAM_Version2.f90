@@ -51,6 +51,7 @@
       use ParallelVar     
       use UmbrellaSamplingNew
       use WHAM_Module
+!      use MPI
       implicit none
       include 'mpif.h' 
 
@@ -217,7 +218,7 @@
 !      Distribute the new free energy estimate to all threads so that they can continue the simulation
 !      with the new free energy. 
       arraySize = size(NewBias)      
-      call MPI_BCast(NewBias, arraySize, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierror) 
+      call MPI_BCast(NewBias, arraySize, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierror) 
 
       do i = 1, umbrellaLimit
 !        write(*,*) i, UBias(i), Newbias(i)
@@ -283,8 +284,9 @@
       use ParallelVar
       use SwapBoundary
       use WHAM_Module
+      use MPI
       implicit none
-      include 'mpif.h' 
+!      include 'mpif.h' 
       integer :: i,j
       integer :: UArray(1:nBiasVariables)
       real(dp) :: probNorm, refBias
