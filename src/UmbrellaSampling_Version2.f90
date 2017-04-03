@@ -306,7 +306,7 @@
 
 !      Use the input to specify the reference bin
       allocate(refSizeNumbers(1:nBiasVariables),STAT = AllocateStatus)
-      write(*, *) trim(adjustl(inputLines(2)))
+!      write(*, *) trim(adjustl(inputLines(2)))
       read(inputLines(2), *) labelField, (refVals(iUmbrella), iUmbrella=1,nBiasVariables)
       call getUIndexArray(refVals, refBin, stat)
       if(stat .ne. 0) then
@@ -327,7 +327,7 @@
       do iUmbrella = 1, nBiasVariables
         refSizeNumbers(iUmbrella) = refVals(iUmbrella)
       enddo
-      write(*,*) refVals
+!      write(*,*) refVals
 
 
       deallocate(refVals)
@@ -394,11 +394,13 @@
     UBias = 0E0_dp
     do iInput = 1, nint(1d7)
       read(80, *, IOSTAT=inStat) (varValue(j), j=1,nBiasVariables), curBias
+
       if(inStat .lt. 0) then
         exit
       endif
 
       call getUIndexArray(varValue, biasIndx, inStat) 
+!      write(*, *) (varValue(j), j=1,nBiasVariables), curBias
 !      write(*,*) varValue, biasIndx
       if(inStat .eq. 1) then
         cycle
@@ -421,16 +423,19 @@
 
      curUIndx = getBiasIndex()
      UHist(curUIndx) = UHist(curUIndx) + 1E0_dp
- 
+!     write(*,*) curUIndx, UHist(curUIndx)
+
      if(energyAnalytics) then
        U_EAvg(curUIndx) = U_EAvg(curUIndx) + E_T
        UHistTotal(curUIndx) = UHistTotal(curUIndx) + 1E0_dp
        bin = floor(E_T / dE)
+
        if( (bin .ge. 0) .and. (bin .lt. E_Bins) ) then
          U_EHist(curUIndx, bin) = U_EHist(curUIndx, bin) + 1d0
        else
          U_EHist(curUIndx, E_Bins) = U_EHist(curUIndx, E_Bins) + 1d0
        endif
+
      endif
 
      end subroutine

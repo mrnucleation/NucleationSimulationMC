@@ -496,6 +496,12 @@
       if(custom) then           
         do iLine = 2, nLines-1
           read(lineStore(iLine), *) indx1, indx2, curVal 
+          if(indx1 .gt. nAtomTypes) then
+            cycle
+          endif
+          if(indx2 .gt. nAtomTypes) then
+            cycle
+          endif
           if(echoInput) then
             write(35,*) indx1, indx2, curVal
             flush(35)

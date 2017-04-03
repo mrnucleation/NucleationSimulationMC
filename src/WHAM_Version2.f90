@@ -160,30 +160,31 @@
 !        and modify the umbrella sampling bias to
         NewBias = 0E0
         maxbin = maxloc(HistStorage,1)
-        if(mod(nCurWhamItter,whamEstInterval) .eq. 0) then
+!        if(mod(nCurWhamItter,whamEstInterval) .eq. 0) then
+!          write(*,*) "Blah2"
 !          maxbin = maxloc(HistStorage,1)
-          do i = 1, umbrellaLimit
-            if(ProbArray(i) .gt. 0E0) then
-              FreeEnergyEst(i) = -log(ProbArray(i)/ProbArray(maxbin))
-              NewBias(i) = FreeEnergyEst(i)
-            endif
-          enddo
-          maxBias = -huge(dp)
-          do i = 1, umbrellaLimit
-            if(ProbArray(i) .gt. 0E0) then
-              if(maxBias .lt. FreeEnergyEst(i)) then
-                maxBias = FreeEnergyEst(i)
-              endif
-            endif
-          enddo
-          do i = 1, umbrellaLimit
-            if(ProbArray(i) .le. 0E0) then
-              NewBias(i) = maxBias + 1E0
-              FreeEnergyEst(i) = maxBias + 1E0
-            endif
-          enddo
+!          do i = 1, umbrellaLimit
+!            if(ProbArray(i) .gt. 0E0) then
+!              FreeEnergyEst(i) = -log(ProbArray(i)/ProbArray(maxbin))
+!              NewBias(i) = FreeEnergyEst(i)
+!            endif
+!          enddo
+!          maxBias = -huge(dp)
+!          do i = 1, umbrellaLimit
+!            if(ProbArray(i) .gt. 0E0) then
+!              if(maxBias .lt. FreeEnergyEst(i)) then
+!                maxBias = FreeEnergyEst(i)
+!              endif
+!            endif
+!          enddo
+!          do i = 1, umbrellaLimit
+!            if(ProbArray(i) .le. 0E0) then
+!              NewBias(i) = maxBias + 1E0
+!              FreeEnergyEst(i) = maxBias + 1E0
+!            endif
+!          enddo
 !          call WHAM_CurveSmoothing(NewBias, HistStorage)
-        else
+!        else
           maxbin2 = maxloc(TempHist,1)
           do i = 1, umbrellaLimit
             if(ProbArray(i) .gt. 0E0) then
@@ -199,20 +200,21 @@
               NewBias(i) = UBias(i) - UBias(maxbin2) + log(TempHist(maxbin2))
             endif
           enddo
-        endif
+!        endif
 !        Rescale the pontential such that the reference free energy is set to 0
         refBias = NewBias(refBin)
         do i = 1, umbrellaLimit
           NewBias(i) = NewBias(i) - refBias
+!          write(*,*) i, NewBias(i)
         enddo
         refBias = FreeEnergyEst(refBin)
         do i = 1, umbrellaLimit
           FreeEnergyEst(i) = FreeEnergyEst(i) - refBias
         enddo
-        
+!      endif
 
-      endif
-!     End of processor 0 only block
+      endif      !End of processor 0 only block
+
 
       call MPI_BARRIER(MPI_COMM_WORLD, ierror) 
 !      Distribute the new free energy estimate to all threads so that they can continue the simulation
@@ -243,7 +245,7 @@
       integer :: UArray(1:nBiasVariables)
       character(len = 100) :: outputString
 
-      write(outputString, *) "(", (trim(outputFormat(j)), j =1,nBiasVariables), "2x, F18.10)"
+      write(outputString, *) "(", (trim(outputFormat(j)), j =1,nBiasVariables), "2x, F18.1)"
 
 !        This block exports the calculated free energy to a file
       rewind(96)
@@ -254,6 +256,8 @@
         endif
       enddo
       flush(96)
+
+      write(outputString, *) "(", (trim(outputFormat(j)), j =1,nBiasVariables), "2x, F18.10)"
 
 !        This block exports the current umbrella bias
       rewind(97)

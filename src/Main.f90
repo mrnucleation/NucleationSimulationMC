@@ -303,17 +303,17 @@
 
            call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
 
-           if(prevMoveAccepted) then
+!           if(prevMoveAccepted) then
 !             write(35,*) "========================================================"
 !             write(35,*) nSel
 !            call DEBUG_Output_NeighborList
-            call DEBUG_NeighborQualityCheck(errRtn)
-             if(errRtn) then
-               write(*,*)  nSel
-               call TrajOutput(iCycle, E_T)
-               stop      
-             endif
-           endif
+!            call DEBUG_NeighborQualityCheck(errRtn)
+!             if(errRtn) then
+!               write(*,*)  nSel
+!               call TrajOutput(iCycle, E_T)
+!               stop      
+!             endif
+!           endif
 
 
            if(useAnalysis) then
@@ -332,6 +332,7 @@
                call UmbrellaHistAdd(E_T) 
              endif
            endif
+
          enddo!  End Move Loop
 
          
@@ -591,11 +592,12 @@
         call OutputUmbrellaAnalytics
       endif
 
-      
+
+      call MPI_BARRIER(MPI_COMM_WORLD, ierror)       
       write(nout,*) "Finished!"
       close(nout)
       
-      call MPI_BARRIER(MPI_COMM_WORLD, ierror) 
+      call MPI_BARRIER(MPI_COMM_WORLD, ierror)       
       call MPI_FINALIZE(ierror)      
       end program
 !========================================================    
