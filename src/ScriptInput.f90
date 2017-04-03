@@ -41,6 +41,9 @@
       elseif(nArgs == 1) then
         call get_command_argument(1, fileName)
         call LoadFile(lineStore, nLines, lineNumber, fileName)
+      elseif(nArgs == 0) then
+        write(*,*) "ERROR! No Input File has been given!"
+        stop
       endif
 !      Read in the script file
 
