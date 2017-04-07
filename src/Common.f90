@@ -77,7 +77,7 @@
       end module
 !======================================================
       module ParallelVar
-        integer myid, p_size, ierror, tag, nout
+        integer :: myid, p_size, ierror, tag, nout
       end module         
 !==============================================================
       module Coords

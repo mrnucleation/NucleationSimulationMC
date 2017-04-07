@@ -30,9 +30,10 @@
             iIndx = MolArray(iType)%mol(iMol)%indx
             do jMol = 1, NPART(jType) 
               jIndx = MolArray(jType)%mol(jMol)%indx        
-              if(PairList(iIndx,jIndx) .le. Eng_Critr(iType,jType) ) then
-                NeighborList(iIndx,jIndx)=.true.         
-                NeighborList(jIndx,iIndx)=.true.          
+!              if(PairList(iIndx,jIndx) .le. Eng_Critr(iType,jType) ) then
+              if(rPair(globIndx1, globIndx2) % p % E_Pair .lt. Eng_Critr(iType, jType) ) then
+                NeighborList(iIndx,jIndx) = .true.         
+                NeighborList(jIndx,iIndx) = .true.          
               endif
             enddo
           enddo
@@ -121,7 +122,8 @@
       memberAdded = .false.
       do j=1,maxMol
         jType = typeList(j)          
-        if(PairList(j) .le. Eng_Critr(jType,nType)) then
+!        if(PairList(j) .le. Eng_Critr(jType,nType)) then
+        if(rPair(globIndx1, globIndx2) % p % r_sq .lt. Dist_Critr_sq ) then
           ClusterMember(j) = .true.        
           memberAdded = .true.
         endif

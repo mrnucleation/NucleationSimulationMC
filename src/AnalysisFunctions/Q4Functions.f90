@@ -22,6 +22,7 @@
 
        public :: Initialize_q4, Calcq4, useq4, q4Dist, q4DistSq, q4ArrayIndx
        public :: Calcq4_Disp, Calcq4_SwapIn, Calcq4_SwapOut, q4Neigh
+
        contains
      !--------------------------------------------------------------------------------
        subroutine Initialize_q4

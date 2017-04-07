@@ -13,6 +13,7 @@
     type DistArray
       logical :: storeRValue
       logical :: storeRParts
+!      logical :: usePair
       integer :: arrayIndx
       integer :: indx1, indx2
       real(dp) :: rx, ry, rz
@@ -74,6 +75,7 @@
           distStorage(cnt)%r_sq = 0d0
           distStorage(cnt)%r = 0d0
           distStorage(cnt)%E_Pair = 0d0
+!          distStorage(cnt)%usePair = .true.
           distStorage(cnt)%storeRValue = .false.
           distStorage(cnt)%storeRParts = .false. 
           rPair(i,j)%p => distStorage(cnt)
@@ -88,6 +90,7 @@
       distStorage(0)%indx2 = 0
       distStorage(0)%r_sq = 0d0
       distStorage(0)%E_Pair = 0d0
+!      distStorage(0)%usePair = .false.
       distStorage(0)%storeRValue = .false.
       distStorage(0)%storeRParts = .false. 
       do i = 1, nTotalAtoms
@@ -185,6 +188,9 @@
                   if(globIndx1 .eq. globIndx2) then
                     cycle
                   endif
+!                  if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
+!                    cycle
+!                  endif
                   atmType2 = atomArray(jType, jAtom) 
                   rmin_ij = r_min_tab(atmType2, atmType1)
                   rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
@@ -266,6 +272,9 @@
               if(gloIndx1 .eq. gloIndx2 ) then
                 cycle
               endif
+!              if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
+!                cycle
+!              endif   
               jIndx = molArray(jType)%mol(jMol)%indx
               if(iIndx .eq. jIndx) then
                 cycle
@@ -341,6 +350,9 @@
             rmin_ij = r_min_tab(atmType1, atmType2)
             do jMol = 1, NPART(jType)
               gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+!              if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
+!                cycle
+!              endif   
               rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
@@ -378,9 +390,6 @@
      subroutine UpdateDistArray
       implicit none
       integer :: iPair
-!      integer :: oldIndx
-!      integer :: oldIndx
-
 
       do iPair = 1, nNewDist
         distStorage(oldIndxArray(iPair))%r_sq = newDist(iPair)%r_sq

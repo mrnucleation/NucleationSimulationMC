@@ -25,7 +25,7 @@
  
       LJ = (sig/r_sq)
       LJ = LJ * LJ * LJ
-      LJ = ep * LJ * (LJ-1E0)  
+      LJ = ep * LJ * (LJ-1E0_dp)  
 
       end function
 !======================================================================================      
@@ -60,11 +60,11 @@
 
 
 
-      E_LJ = 0E0
-      E_Ele = 0E0
-      E_Inter_T = 0E0
-      PairList = 0E0      
-      ETable = 0E0
+      E_LJ = 0E0_dp
+      E_Ele = 0E0_dp
+      E_Inter_T = 0E0_dp
+      PairList = 0E0_dp
+      ETable = 0E0_dp
       do iType = 1,nMolTypes
         do jType = iType, nMolTypes
           do iMol=1,NPART(iType)
@@ -163,11 +163,11 @@
       real(dp) :: E_Ele,E_LJ
 
 
-      E_LJ = 0E0
-      E_Ele = 0E0      
-      E_Trial = 0E0
-      E_Old = 0E0
-      PairList = 0E0      
+      E_LJ = 0E0_dp
+      E_Ele = 0E0_dp
+      E_Trial = 0E0_dp
+      E_Old = 0E0_dp
+      PairList = 0E0_dp
       rejMove = .false.
 !      dETable = 0E0
 !      if(NTotal .eq. 1) return
@@ -202,9 +202,9 @@
 !            endif
 !          endif
 
-          LJ = 0E0
-          Ele = 0E0
-          if(ep .ne. 0E0) then
+!          LJ = 0E0
+!          Ele = 0E0
+          if(ep .ne. 0E0_dp) then
             sig_sq = sig_tab(atmType2,atmType1)
             r_new_sq = newDist(iPair)%r_sq
             LJ = LJ_Func(r_new_sq, ep, sig_sq)             
@@ -215,8 +215,10 @@
 !            dETable(iIndx) = dETable(iIndx) + LJ
 !            dETable(jIndx) = dETable(jIndx) + LJ
 !            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
+          else
+            LJ = 0E0_dp
           endif
-          if(q .ne. 0E0) then
+          if(q .ne. 0E0_dp) then
             r_new = newDist(iPair)%r
             Ele = q/r_new
 !            Ele = Ele_Func(r_new, q)                
@@ -227,6 +229,8 @@
 !            dETable(iIndx) = dETable(iIndx) + Ele
 !            dETable(jIndx) = dETable(jIndx) + Ele
 !            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + Ele
+          else
+            Ele = 0E0_dp
           endif
           newDist(iPair)%E_Pair = Ele + LJ
           E_PairOld = distStorage(oldIndxArray(iPair))%E_Pair
@@ -307,8 +311,8 @@
       integer  :: gloIndx1, gloIndx2
       real(dp) :: E_Pair
 
-      E_Trial = 0E0
-      dETable = 0E0
+      E_Trial = 0E0_dp
+      dETable = 0E0_dp
       iIndx = MolArray(iType)%mol(iMol)%indx
 
       do iAtom = 1,nAtoms(iType)
@@ -354,11 +358,11 @@
 
       real(dp) :: E_Ele,E_LJ
 
-      E_LJ = 0E0
-      E_Ele = 0E0      
-      E_Trial = 0E0
-      dETable = 0E0
-      PairList = 0E0
+      E_LJ = 0E0_dp
+      E_Ele = 0E0_dp
+      E_Trial = 0E0_dp
+      dETable = 0E0_dp
+      PairList = 0E0_dp
       rejMove = .false.
       
       iType = newMol%molType
@@ -381,9 +385,9 @@
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)
 
-          LJ = 0d0
-          Ele = 0d0
-          if(ep .ne. 0E0) then
+!          LJ = 0d0
+!          Ele = 0d0
+          if(ep .ne. 0E0_dp) then
             r_sq = newDist(iPair)%r_sq
             sig_sq = sig_tab(atmType2,atmType1)
             LJ = LJ_Func(r_sq, ep, sig_sq)             
@@ -391,10 +395,11 @@
             if(.not. distCriteria) then
               PairList(jIndx) = PairList(jIndx) + LJ
             endif
-!            dETable(iIndx) = dETable(iIndx) + LJ
-!            dETable(jIndx) = dETable(jIndx) + LJ
+          else
+            LJ = 0E0_dp
           endif
-          if(q .ne. 0E0) then
+
+          if(q .ne. 0E0_dp) then
             r = newDist(iPair)%r
             Ele = q/r
 !            Ele = Ele_Func(r_sq, q)                
@@ -402,8 +407,8 @@
             if(.not. distCriteria) then                
               PairList(jIndx) = PairList(jIndx) + Ele
             endif
-!            dETable(iIndx) = dETable(iIndx) + Ele
-!            dETable(jIndx) = dETable(jIndx) + Ele
+          else
+            Ele = 0E0_dp
           endif
           dETable(iIndx) = dETable(iIndx) + LJ + Ele
           dETable(jIndx) = dETable(jIndx) + LJ + Ele
@@ -436,11 +441,11 @@
       real(dp) :: E_Ele,E_LJ
       real(dp) :: rmin_ij
 
-      E_LJ = 0E0
-      E_Ele = 0E0      
-      E_Trial = 0E0
-      dETable = 0E0
-      PairList = 0E0
+      E_LJ = 0E0_dp
+      E_Ele = 0E0_dp 
+      E_Trial = 0E0_dp
+      dETable = 0E0_dp
+      PairList = 0E0_dp
       rejMove = .false.
       
       newIndx = molArray(newMol%molType)%mol(NPART(newMol%molType)+1)%indx
@@ -455,8 +460,8 @@
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
-            if(q .eq. 0.0E0) then
-              if(ep .eq. 0.0E0) then
+            if(q .eq. 0.0E0_dp) then
+              if(ep .eq. 0.0E0_dp) then
                 cycle
               endif
             endif
@@ -487,10 +492,10 @@
               endif              
               LJ = 0E0
               Ele = 0E0
-              if(ep .ne. 0E0) then
+              if(ep .ne. 0E0_dp) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1E0)                
+                LJ = ep * LJ * (LJ-1E0_dp)                
                 E_LJ = E_LJ + LJ
                 if(.not. distCriteria) then                
                   PairList(jIndx) = PairList(jIndx) + LJ
@@ -498,7 +503,7 @@
                 dETable(jIndx) = dETable(jIndx) + LJ
                 dETable(newIndx) = dETable(newIndx) + LJ
               endif
-              if(q .ne. 0E0) then
+              if(q .ne. 0E0_dp) then
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele + Ele
@@ -522,8 +527,8 @@
             atmType2 = atomArray(jType,jAtom)
             ep = ep_tab(atmType2,atmType1)
             q = q_tab(atmType2,atmType1)
-            if(q .eq. 0E0) then
-              if(ep .eq. 0E0) then
+            if(q .eq. 0E0_dp) then
+              if(ep .eq. 0E0_dp) then
                 cycle
               endif
             endif
@@ -539,15 +544,15 @@
               ry = MolArray(nType)%mol(nMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = MolArray(nType)%mol(nMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
               r = rx*rx + ry*ry + rz*rz
-              if(ep .ne. 0E0) then
+              if(ep .ne. 0E0_dp) then
                 LJ = (sig_sq/r)
                 LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ-1E0)                
+                LJ = ep * LJ * (LJ-1E0_dp)                
                 E_LJ = E_LJ - LJ
                 dETable(iIndx2) = dETable(iIndx2) - LJ
                 dETable(jIndx) = dETable(jIndx) - LJ
               endif
-              if(q .ne. 0E0) then            
+              if(q .ne. 0E0_dp) then            
                 r = sqrt(r)
                 Ele = q / r
                 E_Ele = E_Ele - Ele

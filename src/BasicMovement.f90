@@ -2,18 +2,18 @@
       module SimpleMCMoves_Module
       contains
 !===========================================================================================
-      subroutine SingleAtom_Translation(E_T,acc_x,atmp_x)
-      use SimParameters
-      use IndexingFunctions
+      subroutine SingleAtom_Translation(E_T, acc_x, atmp_x)
+      use CBMC_Variables      
       use Coords
-      use Forcefield
 !      use E_Interface
+      use DistanceCriteria      
       use EnergyPointers, only: Shift_ECalc, Update_SubEnergies 
       use EnergyCriteria
-      use DistanceCriteria      
       use EnergyTables
-      use CBMC_Variables      
+      use Forcefield
+      use IndexingFunctions
       use PairStorage, only: UpdateDistArray
+      use SimParameters
       implicit none
       
       real(dp),intent(inout) :: E_T,acc_x,atmp_x      
@@ -212,7 +212,7 @@
       	  
       end subroutine
 !===========================================================================================
-      subroutine Rotation(E_T,acc_x,atmp_x)
+      subroutine Rotation(E_T, acc_x, atmp_x)
       use SimParameters    
       implicit none
       real(dp), intent(inout) :: atmp_x,acc_x,E_T
@@ -238,7 +238,7 @@
       end subroutine   
 
 !=======================================================      
-      subroutine Rot_xy(E_T,acc_x,atmp_x)
+      subroutine Rot_xy(E_T, acc_x, atmp_x)
       use AcceptRates
       use SimParameters
       use IndexingFunctions
@@ -343,7 +343,7 @@
       endif
       end subroutine
 !=======================================================      
-      subroutine Rot_xz(E_T,acc_x,atmp_x)
+      subroutine Rot_xz(E_T, acc_x, atmp_x)
       use AcceptRates
       use SimParameters
       use IndexingFunctions
@@ -453,7 +453,7 @@
 
       end subroutine
 !=======================================================      
-      subroutine Rot_yz(E_T,acc_x,atmp_x)
+      subroutine Rot_yz(E_T, acc_x, atmp_x)
       use AcceptRates
       use SimParameters
       use IndexingFunctions

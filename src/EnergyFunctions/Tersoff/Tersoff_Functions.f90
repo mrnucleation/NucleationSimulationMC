@@ -27,7 +27,7 @@
       if( r .lt. (R_eq-D) ) then
         val = 1E0_dp
       elseif( r .lt. (R_eq+D) ) then
-        val = 0.5E0_dp * (1E0_dp - sin(pi*(r-R_eq)/(2d0*D)) )
+        val = 0.5E0_dp * (1E0_dp - sin(pi*(r-R_eq)/(2E0_dp*D)) )
       else
         val = 0E0_dp
       endif
@@ -174,14 +174,14 @@
             endif
           enddo
           if(Zeta .ne. 0E0_dp) then
-            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1d0/(2d0*n))
+            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b1 = 1E0_dp
           endif      
     
           V1 = 0E0_dp
 !          write(*,*) "rij:", rij
-          V1 = 0.5d0*Fc_Func(rij, R_eq, D2) * (A*exp(-lam1*rij) - b1*B*exp(-lam2*rij))
+          V1 = 0.5E0_dp * Fc_Func(rij, R_eq, D2) * (A*exp(-lam1*rij) - b1*B*exp(-lam2*rij))
 !          write(*,*) "V1:", b1, V1
           PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + V1
           PairList(jIndx, iIndx) = PairList(jIndx, iIndx) + V1
@@ -355,12 +355,12 @@
             endif  
           enddo
           if(Zeta .ne. 0E0_dp) then
-            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1d0/(2d0*n))
+            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b1 = 1E0_dp
           endif
           if(Zeta2 .ne. 0E0_dp) then
-            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1d0/(2d0*n))
+            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b2 = 1E0_dp
           endif
@@ -368,7 +368,7 @@
 !          write(2,*) b2
           V1 = Fc_Func(rij, R_eq, D2) * (2d0*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij))
           if(.not. distCriteria) then                
-            PairList(jIndx) = PairList(jIndx) + 0.5d0*V1
+            PairList(jIndx) = PairList(jIndx) + 0.5E0_dp * V1
           endif
           Short = Short + V1
         endif
@@ -420,16 +420,16 @@
             endif  
           enddo
           if(Zeta .ne. 0E0_dp) then
-            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1d0/(2d0*n))
+            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b1 = 1E0_dp
           endif
           if(Zeta2 .ne. 0E0_dp) then
-            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1d0/(2d0*n))
+            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b2 = 1E0_dp
           endif
-          V1 = Fc_Func(rij, R_eq, D2) * (2d0*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij))
+          V1 = Fc_Func(rij, R_eq, D2) * (2E0_dp*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij))
           Short = Short - V1
         endif
 
@@ -528,19 +528,19 @@
             endif
           enddo
           if(Zeta .ne. 0E0_dp) then
-            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1d0/(2d0*n))
+            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b1 = 1E0_dp
           endif
           if(Zeta2 .ne. 0E0_dp) then
-            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1d0/(2d0*n))
+            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b2 = 1E0_dp
           endif
 
           V1 = Fc_Func(rij, R_eq, D2) * (B*exp(-lam2*rij))*(b2 - b1)
-          dETable(iIndx) = dETable(iIndx) + 0.5d0*V1
-          dETable(jIndx) = dETable(jIndx) + 0.5d0*V1
+          dETable(iIndx) = dETable(iIndx) + 0.5E0_dp*V1
+          dETable(jIndx) = dETable(jIndx) + 0.5E0_dp*V1
           E_Short = E_Short + V1
         enddo
       enddo
@@ -682,12 +682,12 @@
           endif  
         enddo
         if(Zeta .ne. 0E0_dp) then
-          b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1d0/(2d0*n))
+          b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
         else
           b1 = 1E0_dp
         endif
         if(Zeta2 .ne. 0E0_dp) then
-          b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1d0/(2d0*n))
+          b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
         else
           b2 = 1E0_dp
         endif
@@ -773,12 +773,12 @@
             endif
           enddo
           if(Zeta .ne. 0E0_dp) then
-            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1d0/(2d0*n))
+            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b1 = 1E0_dp
           endif
           if(Zeta2 .ne. 0E0_dp) then
-            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1d0/(2d0*n))
+            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b2 = 1E0_dp
           endif
@@ -925,17 +925,17 @@
             endif
           enddo
           if(Zeta .ne. 0E0_dp) then
-            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1d0/(2d0*n))
+            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b1 = 1E0_dp
           endif
           if(Zeta2 .ne. 0E0_dp) then
-            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1d0/(2d0*n))
+            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b2 = 1E0_dp
           endif
 !          write(*,*) b1, b2
-          V1 = 0.5E0_dp * Fc_Func(rij, R_eq, D2) * (2d0*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij))
+          V1 = 0.5E0_dp * Fc_Func(rij, R_eq, D2) * (2E0_dp*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij))
 !          write(*,*) 1, V1
           if(.not. distCriteria) then                
             PairList(jIndx) = PairList(jIndx) + V1
@@ -1014,12 +1014,12 @@
           endif
 
           if(Zeta .ne. 0E0_dp) then
-            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1d0/(2d0*n))
+            b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b1 = 1E0_dp
           endif
           if(Zeta2 .ne. 0E0_dp) then
-            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1d0/(2d0*n))
+            b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
             b2 = 1E0_dp
           endif

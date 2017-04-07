@@ -38,7 +38,7 @@
       real(dp), intent(inout) :: E_T
       real(dp) :: PairList(1:maxMol,1:maxMol)
       
-      E_T = 0E0
+      E_T = 0E0_dp
 !      call SetStorageFlags(q_tab)
       call CalcAllDistPairs
       call Detailed_ECalc_Inter(E_T, PairList)
@@ -109,20 +109,20 @@
 
       nDisp = size(disp)
       rejMove = .false.
-      E_Inter = 0E0
-      E_Intra = 0E0
-      E_NonBond = 0E0
-      E_Stretch = 0E0
-      E_Bend = 0E0
-      E_Torsion = 0E0
-      E_Improper = 0E0
-      dETable = 0E0
+      E_Inter = 0E0_dp
+      E_Intra = 0E0_dp
+      E_NonBond = 0E0_dp
+      E_Stretch = 0E0_dp
+      E_Bend = 0E0_dp
+      E_Torsion = 0E0_dp
+      E_Improper = 0E0_dp
+      dETable = 0E0_dp
 
-      E_Inter_Diff = 0E0
-      E_NBond_Diff = 0E0
-      E_Strch_Diff = 0E0
-      E_Bend_Diff = 0E0
-      E_Tors_Diff = 0E0
+      E_Inter_Diff = 0E0_dp
+      E_NBond_Diff = 0E0_dp
+      E_Strch_Diff = 0E0_dp
+      E_Bend_Diff = 0E0_dp
+      E_Tors_Diff = 0E0_dp
 
       if(present(useInter)) then
         interSwitch = useInter
@@ -140,8 +140,21 @@
           if(rejMove) then
             return
           endif
-          dETable = 0E0 
-          PairList = 0E0
+
+!           Using the data collected from the intermolecular function, check to see that the new position
+!           satisfies the cluster criteria.      
+          nIndx = MolArray( disp(1)%molType )%mol( disp(1)%molIndx )%indx
+          if(distCriteria) then
+            if(any(disp(1:nDisp)%atmIndx .eq. 1)) then
+              call Shift_DistanceCriteria(nIndx, rejMove)   
+              if(rejMove) then
+                return
+              endif
+            endif
+          endif
+
+          dETable = 0E0_dp
+          PairList = 0E0_dp
           call Shift_ECalc_Inter(E_Inter, disp, newDist, PairList, dETable, rejMove)
           if(rejMove) then
             return
@@ -152,22 +165,17 @@
             rejMove = .true.
             return
           endif
-        endif
-!        Using the data collected from the intermolecular function, check to see that the new position
-!        satisfies the cluster criteria.      
-        nIndx = MolArray( disp(1)%molType )%mol( disp(1)%molIndx )%indx
-        if(distCriteria) then
-          if(any(disp(1:nDisp)%atmIndx .eq. 1)) then
-!            call Shift_DistanceCriteria(PairList, nIndx, rejMove)      
-            call Shift_DistanceCriteria(nIndx, rejMove)   
+
+          if(.not. distCriteria) then
+            call Shift_EnergyCriteria(PairList, nIndx, rejMove)
+!            call Shift_EnergyCriteria2(nIndx, rejMove)
+          endif        
+          if(rejMove) then
+            return
           endif
-        else      
-          call Shift_EnergyCriteria(PairList, nIndx, rejMove)
-!          call Shift_EnergyCriteria2(nIndx, rejMove)
-        endif        
-        if(rejMove) then
-          return
         endif
+
+
       endif
       
 !      This block contains the calculations for all Intramolecular interactions.  For moves
@@ -229,21 +237,21 @@
         interSwitch = .true.
       endif
       
-      E_Inter = 0E0
-      E_Intra = 0E0
-      E_NonBond = 0E0
-      E_Stretch = 0E0
-      E_Bend = 0E0      
-      E_Torsion = 0E0      
-      E_Improper = 0E0            
+      E_Inter = 0E0_dp
+      E_Intra = 0E0_dp
+      E_NonBond = 0E0_dp
+      E_Stretch = 0E0_dp
+      E_Bend = 0E0_dp
+      E_Torsion = 0E0_dp
+      E_Improper = 0E0_dp
 !      PairList = 0E0
 !      dETable = 0E0
 
-      E_Inter_Diff = 0E0
-      E_NBond_Diff = 0E0
-      E_Strch_Diff = 0E0
-      E_Bend_Diff = 0E0
-      E_Tors_Diff = 0E0
+      E_Inter_Diff = 0E0_dp
+      E_NBond_Diff = 0E0_dp
+      E_Strch_Diff = 0E0_dp
+      E_Bend_Diff = 0E0_dp
+      E_Tors_Diff = 0E0_dp
 
       if(interSwitch) then
         call CalcSwapInDistPairs(rejMove)
@@ -300,20 +308,20 @@
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
       
-      E_Inter = 0E0
-      E_Intra = 0E0
-      E_NonBond = 0E0
-      E_Stretch = 0E0
-      E_Bend = 0E0      
-      E_Torsion = 0E0      
-      E_Improper = 0E0            
+      E_Inter = 0E0_dp
+      E_Intra = 0E0_dp
+      E_NonBond = 0E0_dp
+      E_Stretch = 0E0_dp
+      E_Bend = 0E0_dp
+      E_Torsion = 0E0_dp
+      E_Improper = 0E0_dp
 
-      E_Inter_Diff = 0E0
-      E_NBond_Diff = 0E0
-      E_Strch_Diff = 0E0
-      E_Bend_Diff = 0E0
-      E_Tors_Diff = 0E0
-      dETable = 0E0
+      E_Inter_Diff = 0E0_dp
+      E_NBond_Diff = 0E0_dp
+      E_Strch_Diff = 0E0_dp
+      E_Bend_Diff = 0E0_dp
+      E_Tors_Diff = 0E0_dp
+      dETable = 0E0_dp
 
       if(present(useInter)) then
         interSwitch = useInter
@@ -360,11 +368,11 @@
       E_Bend_T = E_Bend_T + E_Bend_Diff
       E_Torsion_T = E_Torsion_T + E_Tors_Diff      
       
-      E_Inter_Diff = 0E0
-      E_NBond_Diff = 0E0
-      E_Strch_Diff = 0E0
-      E_Bend_Diff = 0E0
-      E_Tors_Diff = 0E0
+      E_Inter_Diff = 0E0_dp
+      E_NBond_Diff = 0E0_dp
+      E_Strch_Diff = 0E0_dp
+      E_Bend_Diff = 0E0_dp
+      E_Tors_Diff = 0E0_dp
 
       end subroutine
 !=============================================================================      
