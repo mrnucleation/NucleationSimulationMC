@@ -1,4 +1,6 @@
       module Rosenbluth_Functions_LJ_Q
+      use VarPrecision
+      real(dp), parameter :: rCut_sq = 7.5d0**2
       contains
 !======================================================================================================
 !      This subrotuine is intended to calculate the Rosenbluth weight for a single trial
@@ -49,15 +51,18 @@
                 E_Trial = huge(dp)
                 overlap = .true.
                 return
-              endif       
+              endif
+              if(r .gt. rCut_sq) then
+                cycle
+              endif
               ep = ep_tab(atmType2, atmType1)
               q = q_tab(atmType2, atmType1)
               sig_sq = sig_tab(atmType2, atmType1)
               if(ep .ne. 0E0) then
 !                LJ = 0E0
-!                LJ = (sig_sq / r)
-!                LJ = LJ * LJ * LJ              
-                LJ = (sig_sq / r)**3
+                LJ = (sig_sq / r)
+                LJ = LJ * LJ * LJ              
+!                LJ = (sig_sq / r)**3
                 LJ = ep * LJ * (LJ - 1E0)                
                 E_LJ = E_LJ + LJ
               endif
@@ -131,7 +136,9 @@
                 E_Trial = huge(dp)
                 return
               endif
-
+              if(r .gt. rCut_sq) then
+                cycle
+              endif
               if(ep .ne. 0E0) then
 !                LJ = 0E0
                 LJ = (sig_sq / r)
@@ -202,7 +209,10 @@
               E_Trial = huge(dp)
               overlap = .true.
               return
-            endif          
+            endif
+            if(r .gt. rCut_sq) then
+              cycle
+            endif
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
             sig_sq = sig_tab(atmType2, atmType1)   
@@ -268,6 +278,9 @@
             if(r .lt. rmin_ij) then
               E_Trial = huge(dp)
               return
+            endif
+            if(r .gt. rCut_sq) then
+              cycle
             endif
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
@@ -348,6 +361,9 @@
         ry = trialPos%y - newMol%y(jAtom)
         rz = trialPos%z - newMol%z(jAtom) 
         r = rx*rx + ry*ry + rz*rz
+        if(r .gt. rCut_sq) then
+          cycle
+        endif
         if(ep .ne. 0E0) then
           LJ = (sig_sq/r)
           LJ = LJ * LJ * LJ
@@ -415,6 +431,9 @@
         ry = MolArray(nType)%mol(nMol)%y(iAtom) - MolArray(nType)%mol(nMol)%y(jAtom)
         rz = MolArray(nType)%mol(nMol)%z(iAtom) - MolArray(nType)%mol(nMol)%z(jAtom)
         r = rx*rx + ry*ry + rz*rz
+        if(r .gt. rCut_sq) then
+          cycle
+        endif
         if(ep .ne. 0E0) then
           LJ = (sig_sq/r)
           LJ = LJ * LJ * LJ

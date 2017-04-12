@@ -152,8 +152,9 @@
         open( unit=10, file="configuration.dat", status = "Old")
       endif
 
+      read(10,*) 
       read(10,*) (NPART(iType), iType=1,nMolTypes)
-      read(10,*)            
+           
 !     This block ensures the initial configuration is within the min/max bounds set in the input parameter file      
       do iType = 1, nMolTypes
         if(NPART(iType) .gt. NMAX(iType)) then

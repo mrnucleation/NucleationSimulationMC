@@ -13,7 +13,7 @@
     type DistArray
       logical :: storeRValue
       logical :: storeRParts
-!      logical :: usePair
+      logical :: usePair
       integer :: arrayIndx
       integer :: indx1, indx2
       real(dp) :: rx, ry, rz
@@ -72,10 +72,10 @@
           distStorage(cnt)%arrayIndx = cnt
           distStorage(cnt)%indx1 = i
           distStorage(cnt)%indx2 = j
-          distStorage(cnt)%r_sq = 0d0
-          distStorage(cnt)%r = 0d0
-          distStorage(cnt)%E_Pair = 0d0
-!          distStorage(cnt)%usePair = .true.
+          distStorage(cnt)%r_sq = 0E0_dp
+          distStorage(cnt)%r = 0E0_dp
+          distStorage(cnt)%E_Pair = 0E0_dp
+          distStorage(cnt)%usePair = .true.
           distStorage(cnt)%storeRValue = .false.
           distStorage(cnt)%storeRParts = .false. 
           rPair(i,j)%p => distStorage(cnt)
@@ -90,7 +90,7 @@
       distStorage(0)%indx2 = 0
       distStorage(0)%r_sq = 0d0
       distStorage(0)%E_Pair = 0d0
-!      distStorage(0)%usePair = .false.
+      distStorage(0)%usePair = .false.
       distStorage(0)%storeRValue = .false.
       distStorage(0)%storeRParts = .false. 
       do i = 1, nTotalAtoms
@@ -242,7 +242,7 @@
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer :: iIndx, jIndx
       integer(kind=atomIntType) :: atmType1,atmType2      
-      integer :: iDisp, sizeDisp, gloIndx1, gloIndx2
+      integer :: iDisp, sizeDisp, globIndx1, globIndx2
       real(dp) :: rx,ry,rz,r_sq
       real(dp) :: rmin_ij   
 
@@ -261,24 +261,25 @@
       do iDisp = 1, sizeDisp
         iAtom = disp(iDisp)%atmIndx
         atmType1 = atomArray(iType, iAtom)
-        gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
-        rPairNew(gloIndx1, gloIndx1)%p => nullPair
+        globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
+        rPairNew(globIndx1, globIndx1)%p => nullPair
         do jType = 1, nMolTypes
           do jAtom = 1, nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
             rmin_ij = r_min_tab(atmType1, atmType2)     
             do jMol = 1, NPART(jType)
-              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-              if(gloIndx1 .eq. gloIndx2 ) then
-                cycle
-              endif
-!              if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
-!                cycle
-!              endif   
               jIndx = molArray(jType)%mol(jMol)%indx
               if(iIndx .eq. jIndx) then
                 cycle
               endif
+              globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+              if(globIndx1 .eq. globIndx2 ) then
+                cycle
+              endif
+              if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
+                cycle
+              endif   
+
 !               Distance for the New position
               rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
@@ -286,23 +287,21 @@
               r_sq = rx*rx + ry*ry + rz*rz
 !             If r_new is less than r_min reject the move.              
               if(r_sq .lt. rmin_ij) then
-                if(iIndx .ne. jIndx) then
-                  rejMove = .true.
-                  return
-                endif
+                rejMove = .true.
+                return
               endif    
               nNewDist = nNewDist + 1
-              rPairNew(gloIndx1, gloIndx2)%p => newDist(nNewDist)
-              rPairNew(gloIndx2, gloIndx1)%p => newDist(nNewDist)
-              oldIndxArray(nNewDist) = rPair(gloIndx1, gloIndx2)%p%arrayIndx
-              newDist(nNewDist)%indx1 = gloIndx1
-              newDist(nNewDist)%indx2 = gloIndx2
+              rPairNew(globIndx1, globIndx2)%p => newDist(nNewDist)
+              rPairNew(globIndx2, globIndx1)%p => newDist(nNewDist)
+              oldIndxArray(nNewDist) = rPair(globIndx1, globIndx2)%p%arrayIndx
+              newDist(nNewDist)%indx1 = globIndx1
+              newDist(nNewDist)%indx2 = globIndx2
               newDist(nNewDist)%r_sq = r_sq
 !              newDist(nNewDist)%E_Pair = 0d0
-              if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
+              if( rPair(globIndx1, globIndx2)%p%storeRValue ) then
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif
-              if( rPair(gloIndx1, gloIndx2)%p%storeRParts ) then
+              if( rPair(globIndx1, globIndx2)%p%storeRParts ) then
                 newDist(nNewDist)%rx = rx
                 newDist(nNewDist)%ry = ry
                 newDist(nNewDist)%rz = rz
@@ -323,7 +322,7 @@
       logical, intent(out) :: rejMove
       integer :: iType, jType, iMol, jMol, iAtom, jAtom
       integer(kind=atomIntType) :: atmType1, atmType2      
-      integer :: gloIndx1, gloIndx2
+      integer :: globIndx1, globIndx2
       real(dp) :: rx, ry, rz, r_sq
       real(dp) :: rmin_ij   
 
@@ -342,17 +341,17 @@
       nNewDist = 0
       do iAtom = 1, nAtoms(iType)
         atmType1 = atomArray(iType, iAtom)
-        gloIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
-        rPairNew(gloIndx1, gloIndx1)%p => nullPair
+        globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
+        rPairNew(globIndx1, globIndx1)%p => nullPair
         do jType = 1, nMolTypes
           do jAtom = 1, nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
             rmin_ij = r_min_tab(atmType1, atmType2)
             do jMol = 1, NPART(jType)
-              gloIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-!              if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
-!                cycle
-!              endif   
+              globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+              if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
+                cycle
+              endif   
               rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
@@ -362,18 +361,18 @@
                 return
               endif
               nNewDist = nNewDist + 1
-              rPairNew(gloIndx1, gloIndx2)%p => newDist(nNewDist)
-              rPairNew(gloIndx2, gloIndx1)%p => newDist(nNewDist)
-              oldIndxArray(nNewDist) = rPair(gloIndx1, gloIndx2) % p % arrayIndx
-              newDist(nNewDist)%indx1 = gloIndx1
-              newDist(nNewDist)%indx2 = gloIndx2
+              rPairNew(globIndx1, globIndx2)%p => newDist(nNewDist)
+              rPairNew(globIndx2, globIndx1)%p => newDist(nNewDist)
+              oldIndxArray(nNewDist) = rPair(globIndx1, globIndx2) % p % arrayIndx
+              newDist(nNewDist)%indx1 = globIndx1
+              newDist(nNewDist)%indx2 = globIndx2
               newDist(nNewDist)%r_sq = r_sq
 !              newDist(nNewDist)%E_Pair = 0d0
 
-              if( rPair(gloIndx1, gloIndx2)%p%storeRValue ) then
+              if( rPair(globIndx1, globIndx2)%p%storeRValue ) then
                 newDist(nNewDist)%r = sqrt(r_sq)
               endif
-              if( rPair(gloIndx1, gloIndx2)%p%storeRParts ) then
+              if( rPair(globIndx1, globIndx2)%p%storeRParts ) then
                 newDist(nNewDist)%rx = rx
                 newDist(nNewDist)%ry = ry
                 newDist(nNewDist)%rz = rz
@@ -390,24 +389,25 @@
      subroutine UpdateDistArray
       implicit none
       integer :: iPair
-
+      integer :: oldIndx
       do iPair = 1, nNewDist
-        distStorage(oldIndxArray(iPair))%r_sq = newDist(iPair)%r_sq
-        distStorage(oldIndxArray(iPair))%E_Pair = newDist(iPair)%E_Pair
+        oldIndx = oldIndxArray(iPair)
+        distStorage(oldIndx)%r_sq = newDist(iPair)%r_sq
+        distStorage(oldIndx)%E_Pair = newDist(iPair)%E_Pair
 
-        if( distStorage(oldIndxArray(iPair))%storeRValue ) then
-          distStorage(oldIndxArray(iPair))%r = newDist(iPair)%r
+        if( distStorage(oldIndx)%storeRValue ) then
+          distStorage(oldIndx)%r = newDist(iPair)%r
         endif
 
-        if( distStorage(oldIndxArray(iPair))%storeRParts ) then
+        if( distStorage(oldIndx)%storeRParts ) then
           if(newDist(iPair)%indx1 .eq. distStorage(oldIndxArray(iPair))%indx1) then
-            distStorage(oldIndxArray(iPair))%rx = newDist(iPair)%rx
-            distStorage(oldIndxArray(iPair))%ry = newDist(iPair)%ry
-            distStorage(oldIndxArray(iPair))%rz = newDist(iPair)%rz
+            distStorage(oldIndx)%rx = newDist(iPair)%rx
+            distStorage(oldIndx)%ry = newDist(iPair)%ry
+            distStorage(oldIndx)%rz = newDist(iPair)%rz
           else
-            distStorage(oldIndxArray(iPair))%rx = -newDist(iPair)%rx
-            distStorage(oldIndxArray(iPair))%ry = -newDist(iPair)%ry
-            distStorage(oldIndxArray(iPair))%rz = -newDist(iPair)%rz
+            distStorage(oldIndx)%rx = -newDist(iPair)%rx
+            distStorage(oldIndx)%ry = -newDist(iPair)%ry
+            distStorage(oldIndx)%rz = -newDist(iPair)%rz
           endif
         endif
       enddo
@@ -422,7 +422,7 @@
       implicit none
       integer, intent(in) :: nType, nMol
       integer :: iAtom, nMol2
-      integer :: gloIndx1, gloIndx2, gloIndx3
+      integer :: globIndx1, globIndx2, globIndx3
 
 
       nMol2 = NPART(nType)
@@ -432,24 +432,24 @@
 
 
       do iAtom = 1, nAtoms(nType)
-        gloIndx1 = molArray(nType)%mol(nMol)%globalIndx(iAtom)
-        gloIndx2 = molArray(nType)%mol(nMol2)%globalIndx(iAtom)
-        do gloIndx3 = 1, nTotalAtoms
-          rPair(gloIndx1, gloIndx3)%p%r_sq = rPair(gloIndx2, gloIndx3)%p%r_sq
-          rPair(gloIndx1, gloIndx3)%p%E_Pair = rPair(gloIndx2, gloIndx3)%p%E_Pair
-          rPair(gloIndx1, gloIndx3)%p%storeRValue = rPair(gloIndx2, gloIndx3)%p%storeRValue
-          if( rPair(gloIndx2, gloIndx3)%p%storeRValue ) then
-            rPair(gloIndx1, gloIndx3)%p%r = rPair(gloIndx2, gloIndx3)%p%r
+        globIndx1 = molArray(nType)%mol(nMol)%globalIndx(iAtom)
+        globIndx2 = molArray(nType)%mol(nMol2)%globalIndx(iAtom)
+        do globIndx3 = 1, nTotalAtoms
+          rPair(globIndx1, globIndx3)%p%r_sq = rPair(globIndx2, globIndx3)%p%r_sq
+          rPair(globIndx1, globIndx3)%p%E_Pair = rPair(globIndx2, globIndx3)%p%E_Pair
+          rPair(globIndx1, globIndx3)%p%storeRValue = rPair(globIndx2, globIndx3)%p%storeRValue
+          if( rPair(globIndx2, globIndx3)%p%storeRValue ) then
+            rPair(globIndx1, globIndx3)%p%r = rPair(globIndx2, globIndx3)%p%r
           endif
-          if( rPair(gloIndx1, gloIndx3)%p%storeRParts ) then
-            if(gloIndx1 .gt. gloIndx3) then
-              rPair(gloIndx1, gloIndx3)%p%rx = rPair(gloIndx2, gloIndx3)%p%rx
-              rPair(gloIndx1, gloIndx3)%p%ry = rPair(gloIndx2, gloIndx3)%p%ry
-              rPair(gloIndx1, gloIndx3)%p%rz = rPair(gloIndx2, gloIndx3)%p%rz
+          if( rPair(globIndx1, globIndx3)%p%storeRParts ) then
+            if(globIndx1 .gt. globIndx3) then
+              rPair(globIndx1, globIndx3)%p%rx = rPair(globIndx2, globIndx3)%p%rx
+              rPair(globIndx1, globIndx3)%p%ry = rPair(globIndx2, globIndx3)%p%ry
+              rPair(globIndx1, globIndx3)%p%rz = rPair(globIndx2, globIndx3)%p%rz
             else
-              rPair(gloIndx1, gloIndx3)%p%rx = -rPair(gloIndx2, gloIndx3)%p%rx
-              rPair(gloIndx1, gloIndx3)%p%ry = -rPair(gloIndx2, gloIndx3)%p%ry
-              rPair(gloIndx1, gloIndx3)%p%rz = -rPair(gloIndx2, gloIndx3)%p%rz
+              rPair(globIndx1, globIndx3)%p%rx = -rPair(globIndx2, globIndx3)%p%rx
+              rPair(globIndx1, globIndx3)%p%ry = -rPair(globIndx2, globIndx3)%p%ry
+              rPair(globIndx1, globIndx3)%p%rz = -rPair(globIndx2, globIndx3)%p%rz
             endif
           endif
         enddo
@@ -472,9 +472,9 @@
 
      end subroutine
 !=====================================================================
-!     subroutine CalculateAngle(gloIndx1, gloIndx2, gloIndx3)
+!     subroutine CalculateAngle(globIndx1, globIndx2, globIndx3)
 !      implicit none
-!      integer, intent(in) :: gloIndx1, gloIndx2, gloIndx3
+!      integer, intent(in) :: globIndx1, globIndx2, globIndx3
 !      real(dp) :: r12, rx12, ry12, rz12
 !      real(dp) :: r23, rx23, ry23, rz23
 !

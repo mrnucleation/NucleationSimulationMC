@@ -10,7 +10,7 @@
 
     logical :: useUmbrella = .false.
     logical :: UScreenOut
-    logical :: energyAnalytics = .false.
+    logical :: energyAnalytics = .true.
     integer :: nBiasVariables = 0
     integer :: curUIndx, umbrellaLimit
     integer, allocatable :: curVarIndx
@@ -607,8 +607,8 @@
 
 
 !    if(myid .eq. 0) then
-      allocate( TempHist(1:umbrellaLimit) ) 
-      allocate( Temp2D(1:umbrellaLimit, 0:E_Bins) )
+      allocate( TempHist(1:umbrellaLimit+1) ) 
+      allocate( Temp2D(1:umbrellaLimit+1, 0:E_Bins) )
       TempHist = 0E0_dp
       Temp2D = 0E0_dp
 !    endif
@@ -643,8 +643,7 @@
       enddo
     endif
 
-    deallocate(TempHist) 
-    deallocate(Temp2D)
+
 
 
     if(myid .eq. 0) then
@@ -669,7 +668,7 @@
           enddo
           write(60,*) (varValues(iBias), iBias =1,nBiasVariables)
           do iBin = 0, E_Bins
-            if(U_EHist(iUmbrella, iBin) .ge. 1d0) then
+            if(U_EHist(iUmbrella, iBin) .ne. 0d0) then
               write(60, *) iBin*dE, U_EHist(iUmbrella, iBin)
             endif
           enddo
@@ -677,6 +676,10 @@
       enddo
       close(60)
     endif
+
+
+    deallocate(TempHist) 
+    deallocate(Temp2D)
 
     end subroutine
 !==========================================================================

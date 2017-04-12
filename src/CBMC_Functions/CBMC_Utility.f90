@@ -1,4 +1,7 @@
       module CBMC_Utility
+      use VarPrecision
+
+      real(dp), parameter :: rosenCut_sq = 4d0**2
       contains
 !=======================================================================
 !     The purpose of this subroutine is to create a list of molecules
@@ -6,16 +9,19 @@
 !     weight.  
       subroutine Rosen_CreateSubset(nTarget, included)
       use Coords
-      use ForceField
       use Constants
+      use PairStorage, only: rPair, distStorage
+      use ForceField
       use SimParameters
       implicit none
       integer, intent(in) :: nTarget
       logical, intent(out) :: included(1:maxMol)
       
       logical:: inc_firstPass(1:maxMol)
+      integer :: nType, nMol, jType, jMol
       integer :: jIndx, kIndx
-      
+      integer :: globIndx1, globIndx2
+      real(dp) :: r_sq
       included = .false.
       inc_firstPass = .false.
       
@@ -29,6 +35,21 @@
             included(jIndx) = .true.         
          endif
       enddo
+
+!      nType = typeList(nTarget)
+!      nMol = subIndxList(nTarget)
+!      globIndx1 = molArray(nType)%mol(nMol)%globalIndx(1)
+!      do jIndx = 1, maxMol
+!         if(.not. isActive(jIndx)) then
+!           cycle
+!         endif
+!         jType = typeList(jIndx)
+!         jMol = subIndxList(jIndx)
+!         globIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
+!         if(rPair(globIndx1, globIndx2)%p%r_sq .lt. rosenCut_sq) then
+!           included(jIndx) = .true.         
+!         endif
+!      enddo
 
 
 !      Loop 2: Adds the neighbors of the molecules added in the previous step to the list      
@@ -61,12 +82,15 @@
       use ForceField
       use Constants
       use SimParameters
+      use PairStorage, only: rPair, distStorage
       implicit none
       integer, intent(in) :: nTarget, nIndx
       logical, intent(out) :: included(1:maxMol)
 
       logical:: inc_firstPass(1:maxMol)
+      integer :: nType, nMol, jType, jMol
       integer :: jIndx, kIndx
+      integer :: globIndx1, globIndx2
       
       included = .false.
       inc_firstPass = .false.
@@ -80,10 +104,30 @@
             if(jIndx .eq. nIndx) then
               cycle
             endif                   
-!            inc_firstPass(jIndx) = .true.
             included(jIndx) = .true.         
          endif
       enddo
+
+
+!      nType = typeList(nTarget)
+!      nMol = subIndxList(nTarget)
+!      globIndx1 = molArray(nType)%mol(nMol)%globalIndx(1)
+!      do jIndx = 1, maxMol
+!         if(.not. isActive(jIndx)) then
+!           cycle
+!         endif
+!         if(jIndx .eq. nIndx) then
+!           cycle
+!         endif 
+!         jType = typeList(jIndx)
+!         jMol = subIndxList(jIndx)
+!         globIndx2 = molArray(jType)%mol(jMol)%globalIndx(1)
+!         if(rPair(globIndx1, globIndx2)%p%r_sq .lt. rosenCut_sq) then
+!           included(jIndx) = .true.         
+!         endif
+!      enddo
+
+
 
 
 !      Loop 2: Adds the neighbors of the molecules added in the previous step to the list      
