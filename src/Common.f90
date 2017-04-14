@@ -289,7 +289,8 @@
       real(dp),allocatable :: max_dist(:), max_dist_single(:)
       real(dp),allocatable :: max_rot(:)
         
-      real(dp) :: temperature, beta
+      real(dp) :: beta
+      real(dp), target :: temperature, tempNew
       real(dp) :: global_r_min
       real(dp) :: softCutoff
 

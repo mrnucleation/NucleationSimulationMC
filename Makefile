@@ -20,8 +20,8 @@ DETAILEDDEBUG:= -fbacktrace -fcheck=all -g -ffree-line-length-0 -Og
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += $(DETAILEDDEBUG)
 #DEBUGFLAGS += -check all -traceback -g
-DEBUGFLAGS += -pg 
-#DEBUGFLAGS += -ffpe-trap=invalid
+#DEBUGFLAGS += -pg 
+DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS += -Wunused-parameter 
 #DEBUGFLAGS := -fimplicit-none  -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)

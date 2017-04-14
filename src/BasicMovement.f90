@@ -602,5 +602,55 @@
       prevMoveAccepted = .true.
 
       end subroutine
+
+!=======================================================      
+!     Experimental Temperature Change Move.  Not guarenteed to give accurate results.
+      subroutine TemperatureMove(E_T, acc_x, atmp_x)
+      use AcceptRates
+      use SimParameters
+      use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Temperature
+      implicit none
+
+      real(dp), intent(inout) :: E_T,acc_x,atmp_x   
+      real(dp), parameter :: power = (6d0/2d0)      
+
+
+      logical :: rejMove      
+      integer :: i,nMove 
+      integer :: atmType,nMol,nType,nIndx
+      real(dp) :: grnd, betaNew
+      real(dp) :: biasNew, biasOld, biasDiff, biasEnergy
+
+      if(NTotal .ne. 1) then
+        return
+      endif
+      
+!     Randomly Select a Particle from the cluster and obtain its molecule type and index
+      atmp_x = atmp_x + 1E0_dp
+      TempNew = temperature + 15E0_dp * (2E0_dp*grnd()-1E0_dp)
+      betaNew = 1E0_dp/TempNew
+      biasOld = 0E0_dp 
+      biasNew = 0E0_dp
+      if(useUmbrella) then
+        call GetUmbrellaBias_Temperature(biasDiff, rejMove)
+        if(rejMove) then
+          return
+        endif
+      endif
+      biasEnergy = (betaNew-beta)*E_T - biasDiff
+       
+!      Calculate Acceptance and determine if the move is accepted or not       
+!      if(biasEnergy .le. 0E0_dp) then
+!        acc_x = acc_x + 1E0_dp     
+!        temperature = TempNew 
+!        beta = betaNew
+      if((TempNew/temperature)**power * exp(-biasEnergy) .gt. grnd()) then
+        acc_x = acc_x + 1E0_dp
+        temperature = TempNew
+        beta = betaNew
+      endif
+!      write(*,*) temperature
+
+      end subroutine
 !===========================================================================================
       end module

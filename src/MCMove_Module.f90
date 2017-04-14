@@ -8,7 +8,7 @@
       use AVBMC_Module, only: AVBMC
       use CBMC_Module, only: CBMC
       use Exchange_Module, only: Exchange
-      use SimpleMCMoves_Module, only: Translation, Rotation, SingleAtom_Translation
+      use SimpleMCMoves_Module, only: Translation, Rotation, SingleAtom_Translation, TemperatureMove
 
       integer, parameter :: maxLineLen = 500  
 
@@ -104,6 +104,9 @@
         case("exchange")
           mcMoveArray(iMoves) % moveFunction => Exchange
           moveName(iMoves) = "Exchange"
+        case("temperature")
+          mcMoveArray(iMoves) % moveFunction => TemperatureMove
+          moveName(iMoves) = "Temperature"
         case("singleatom_translation")
           mcMoveArray(iMoves) % moveFunction => SingleAtom_Translation
           moveName(iMoves) = "Single Atom Translation"

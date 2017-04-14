@@ -47,7 +47,7 @@
     public :: DispUmbrella, SwapInUmbrella, SwapOutUmbrella, biasVar, biasVarnew
     public :: GetUmbrellaBias_SwapIn, GetUmbrellaBias_SwapOut, ScreenOutputUmbrella, screenFormat
     public :: CheckInitialValues, energyAnalytics, OutputUmbrellaAnalytics
-    public :: ScriptInput_Umbrella
+    public :: ScriptInput_Umbrella, GetUmbrellaBias_Temperature
     public :: inputFile
 !==========================================================================================
     contains
@@ -104,7 +104,7 @@
       use AnalysisMain, only: internalIndx, loadUmbArray, nAnalysisVar
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx, CalcDistPairs_New, UmbrellaVar_DistPair
-      use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, maxMol, echoInput, NTotal, NTotal_New
+      use SimParameters, only: NMAX, NMIN, NPART, NPart_New, nMolTypes, maxMol, echoInput, NTotal, NTotal_New, temperature, TempNew
       use Q6Functions, only: q6ArrayIndx, CalcQ6_Disp, CalcQ6_SwapIn, CalcQ6_SwapOut
       use ParallelVar, only: nout
       use WHAM_Module, only: refBin, refSizeNumbers
@@ -158,6 +158,8 @@
         case("clustersize")
           continue
         case("totalclustersize")
+          continue
+        case("temperature")
           continue
         case("pairdist")
           nDispFunc = nDispFunc + 1
@@ -228,6 +230,16 @@
           binMin(iUmbrella) = sum(NMin)
           UBinSize(iUmbrella) = 1E0_dp
           outputFormat(iUmbrella) = "2x,F5.1,"
+        case("temperature")
+          read(inputLines(iUmbrella+2), *) labelField, valMin, valMax, binSize
+          biasvar(iUmbrella) % varType = 2
+          biasvar(iUmbrella) % realVar => temperature
+          biasvarnew(iUmbrella) % varType = 2
+          biasvarnew(iUmbrella) % realVar => TempNew
+          UBinSize(iUmbrella) = binSize
+          binMin(iUmbrella) = nint(valMin / binSize)
+          binMax(iUmbrella) = nint(valMax / binSize)
+          outputFormat(iUmbrella) = "2x,F12.6,"
         case("pairdist")
           indxVar = 0
           read(inputLines(iUmbrella+2), *) labelField, indxVar, valMin, valMax , binSize
@@ -442,7 +454,7 @@
 !==========================================================================================
      subroutine GetUmbrellaBias_Disp(disp, biasDiff, rejMove)
      use CoordinateTypes
-     use SimParameters, only: NPART, NPART_new, NTotal, NTotal_New
+     use SimParameters, only: NPART, NPART_new, NTotal, NTotal_New, temperature, TempNew
      implicit none
      logical, intent(out) :: rejMove
      type(Displacement), intent(in) :: disp(:)
@@ -457,6 +469,7 @@
 
      NPART_New = NPART
      NTotal_New = NTotal
+     TempNew = temperature
      rejMove = .false.
      curUIndx = getBiasIndex()
      biasOld = UBias(curUIndx)
@@ -479,7 +492,7 @@
      end subroutine
 !==========================================================================================
      subroutine GetUmbrellaBias_SwapIn(biasDiff, rejMove)
-     use SimParameters, only: NPART, NPART_new, NTotal, NTotal_New
+     use SimParameters, only: NPART, NPART_new, NTotal, NTotal_New, temperature, TempNew
      implicit none
      logical, intent(out) :: rejMove
      real(dp), intent(out) :: biasDiff
@@ -491,6 +504,7 @@
        return
      endif
  
+     TempNew = temperature
      rejMove = .false.
      curUIndx = getBiasIndex()
      biasOld = UBias(curUIndx)
@@ -533,6 +547,44 @@
          call SwapOutUmbrella(iSwapFunc) % func(nType, nMol)
        enddo
      endif
+
+     call getNewBiasIndex(newUIndx, rejMove)
+     if(rejMove) then
+       return
+     endif
+     biasNew = UBias(newUIndx)
+     biasDiff = biasNew - biasOld
+
+ 
+     end subroutine
+!==========================================================================================
+     subroutine GetUmbrellaBias_Temperature(biasDiff, rejMove)
+     use SimParameters, only: NPART, NPART_new, NTotal, NTotal_New, temperature, TempNew
+     implicit none
+     logical, intent(out) :: rejMove
+     real(dp), intent(out) :: biasDiff
+     integer :: iUmbrella, newUIndx
+     real(dp) :: biasNew, biasOld
+
+     if(.not. useUmbrella) then
+       biasDiff = 0E0_dp
+       return
+     endif
+
+     rejMove = .false.
+     curUIndx = getBiasIndex()
+     biasOld = UBias(curUIndx)
+
+     NPART_New = NPART
+     NTotal_New = NTotal
+
+!     do iUmbrella = 1, nBiasVariables
+!       if(biasvarnew(iUmbrella) % varType .eq. 1) then
+!         biasvarnew(iUmbrella) % intVar = biasvar(iUmbrella) % intVar 
+!       elseif(biasvarnew(iUmbrella) % varType .eq. 2) then
+!         biasvarnew(iUmbrella) % realVar = biasvar(iUmbrella) % realVar
+!       endif
+!     enddo
 
      call getNewBiasIndex(newUIndx, rejMove)
      if(rejMove) then
