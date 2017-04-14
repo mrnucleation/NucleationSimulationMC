@@ -18,10 +18,11 @@
        real(dp) :: q4real(0:8) , q4Img(0:8)
        real(dp) :: dq4real(0:8) , dq4Img(0:8)
        real(dp) :: q4Dist, q4DistSq
-
+       real(dp), parameter :: q4Constant = 4d0*pi/(2d0*4d0+1d0)
 
        public :: Initialize_q4, Calcq4, useq4, q4Dist, q4DistSq, q4ArrayIndx
        public :: Calcq4_Disp, Calcq4_SwapIn, Calcq4_SwapOut, q4Neigh
+       public :: UmbrellaVar_Q4
 
        contains
      !--------------------------------------------------------------------------------
@@ -30,17 +31,15 @@
          use Coords
          use SimParameters, only: nMolTypes, NMAX
          implicit none 
-         integer :: AllocationStatus
          integer :: startIndx, endIndx
          integer :: gloIndx1, gloIndx2
          integer :: iType, iMol, jType, jMol
 
-         if(.not. useq4) then
+         if(.not. useQ4) then
            return
          endif
-
          call ReserveSpace_Coord(1, startIndx, endIndx)
-         q4ArrayIndx = startIndx
+         Q4ArrayIndx = startIndx
 
          do iType = 1, nMolTypes
            do iMol = 1, NMAX(iType)
@@ -56,8 +55,38 @@
              enddo
            enddo
          enddo 
-!         q4DistSq = q4Dist*q4Dist
+!         Q4DistSq = Q4Dist*Q4Dist
+       end subroutine
+     !--------------------------------------------------------------------------------
+       subroutine UmbrellaVar_Q4(iUmbrella,varIndx, biasVar, biasVarNew, outputFormat, &
+                                 iDisp, DispUmbrella, iSwapIn, SwapInUmbrella, iSwapOut, SwapOutUmbrella)
+         use MiscelaniousVars
+         use UmbrellaTypes
+         implicit none 
+         integer, intent(in) :: iUmbrella, varIndx
+         integer, intent(inout) :: iDisp, iSwapIn, iSwapOut
+         
+         type(BiasVariablePointer), intent(inout) :: biasvar(:)
+         type(BiasVariablePointer), intent(inout) :: biasvarnew(:)
+         type(DispUmbrellaArray), intent(inout)  :: DispUmbrella(:)
+         type(SwapInUmbrellaArray), intent(inout)  :: SwapInUmbrella(:)
+         type(SwapOutUmbrellaArray), intent(inout)  :: SwapOutUmbrella(:)
+         character(len=10), intent(inout) :: outputFormat(:)
 
+
+         biasvar(iUmbrella) % varType = 2
+         biasvar(iUmbrella) % realVar => miscCoord(q4ArrayIndx)
+         biasvarnew(iUmbrella) % varType = 2
+         biasvarnew(iUmbrella) % realVar => miscCoord_New(q4ArrayIndx)
+         outputFormat(iUmbrella) = "2x,F12.6,"
+!         write(*,*) outputFormat
+
+         iDisp = iDisp + 1
+         DispUmbrella(iDisp) % func => CalcQ4_Disp
+         iSwapIn = iSwapIn + 1
+         SwapInUmbrella(iSwapIn) % func => CalcQ4_SwapIn
+         iSwapOut = iSwapOut + 1
+         SwapOutUmbrella(iSwapOut) % func => CalcQ4_SwapOut
        end subroutine
      !--------------------------------------------------------------------------------
        subroutine Calcq4
@@ -73,7 +102,7 @@
          real(dp) :: theta,phi,junk,sTerm,cTerm
          real(dp) :: q4Par
          real(dp) :: rPart,iPart
-         real(dp), parameter :: q4Constant = 4d0*pi/13d0
+
 
   
          if(NTotal .eq. 1) then
@@ -130,7 +159,7 @@
                    phi = atan2(ry,rx)
                    theta = acos(rz/r)   
                    do m = 0, 8
-                     call Harmonics(theta, phi, m-6, rPart, iPart)	
+                     call Harmonics(theta, phi, m-4, rPart, iPart)	
                      q4real(m) = q4real(m) + rPart
                      q4img(m) = q4img(m) + iPart	
                    enddo
@@ -169,7 +198,6 @@
          use SimParameters, only: nMolTypes, NPART, NTotal
          implicit none 
          type(Displacement), intent(in) :: disp(:)
-         real(dp), parameter :: q4Constant = 4d0*pi/13d0
 
          logical :: changed
          integer :: m
@@ -228,7 +256,7 @@
                phi = atan2( ry, rx )
                theta = acos( rz / r )  
                do m = 0, 8
-                 call Harmonics(theta, phi, m-6, rPart, iPart)	
+                 call Harmonics(theta, phi, m-4, rPart, iPart)	
                  dq4real(m) = dq4real(m) + rPart
                  dq4img(m) = dq4img(m) + iPart	
                enddo               
@@ -243,7 +271,7 @@
                 phi = atan2(rPair(gloIndx2, gloIndx1)%p%ry, rPair(gloIndx2, gloIndx1)%p%rx)
                 theta = acos(rPair(gloIndx2, gloIndx1)%p%rz / rPair(gloIndx2, gloIndx1)%p%r )   
                 do m = 0, 8
-                  call Harmonics(theta, phi, m-6, rPart, iPart)	
+                  call Harmonics(theta, phi, m-4, rPart, iPart)	
                   dq4real(m) = dq4real(m) - rPart
                   dq4img(m) = dq4img(m) - iPart	
                 enddo
@@ -274,7 +302,6 @@
          integer :: gloIndx1, gloIndx2
          integer :: jIndx, iIndx, sizeDisp
          integer :: dispAtom1
-         real(dp), parameter :: q4Constant = 4d0*pi/13d0
          real(dp) :: q4r_new, q4i_new
          real(dp) :: rx,ry,rz,r
          real(dp) :: theta,phi,junk,sTerm,cTerm
@@ -300,7 +327,7 @@
                phi = atan2(ry,rx)
                theta = acos(rz/r)  
                do m = 0, 8
-                 call Harmonics(theta, phi, m-6, rPart, iPart)	
+                 call Harmonics(theta, phi, m-4, rPart, iPart)	
                  dq4real(m) = dq4real(m) + rPart
                  dq4img(m) = dq4img(m) + iPart	
                enddo               
@@ -331,7 +358,6 @@
          integer :: gloIndx1, gloIndx2
          integer :: jIndx, iIndx, sizeDisp
          integer :: dispAtom1
-         real(dp), parameter :: q4Constant = 4d0*pi/13d0
          real(dp) :: q4r_new, q4i_new
          real(dp) :: rx,ry,rz,r
          real(dp) :: theta,phi,junk,sTerm,cTerm
@@ -368,7 +394,7 @@
                phi = atan2(ry,rx)
                theta = acos(rz/r)  
                do m = 0, 8
-                 call Harmonics(theta, phi, m-6, rPart, iPart)	
+                 call Harmonics(theta, phi, m-4, rPart, iPart)	
                  dq4real(m) = dq4real(m) - rPart
                  dq4img(m) = dq4img(m) - iPart	
                enddo               

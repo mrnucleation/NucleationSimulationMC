@@ -20,6 +20,8 @@
        real(dp) :: dQ6real(0:12) , dQ6Img(0:12)
 !       real(dp) :: Q6r_t(0:12) , Q6i_t(0:12)
        real(dp) :: q6Dist, q6DistSq
+       real(dp), parameter :: q6Constant = 4d0*pi/13d0
+
 
 
        public :: Initialize_q6, CalcQ6, useQ6, q6Dist, q6DistSq, q6ArrayIndx
@@ -103,7 +105,6 @@
          real(dp) :: theta,phi, cTerm
          real(dp) :: q6Par
          real(dp) :: rPart,iPart
-         real(dp), parameter :: q6Constant = 4d0*pi/13d0
 
   
          if(NTotal .eq. 1) then
@@ -199,7 +200,6 @@
          use SimParameters, only: nMolTypes, NPART, NTotal
          implicit none 
          type(Displacement), intent(in) :: disp(:)
-         real(dp), parameter :: q6Constant = 4d0*pi/13d0
 
          logical :: changed
          integer :: m
@@ -304,7 +304,6 @@
          integer :: gloIndx1, gloIndx2
          integer :: jIndx, iIndx, sizeDisp
          integer :: dispAtom1
-         real(dp), parameter :: q6Constant = 4d0*pi/13d0
          real(dp) :: q6r_new, q6i_new
          real(dp) :: rx,ry,rz,r
          real(dp) :: theta,phi,junk,sTerm,cTerm
@@ -360,7 +359,6 @@
          integer :: jType, jMol
          integer :: gloIndx1, gloIndx2
          integer :: jIndx, sizeDisp
-         real(dp), parameter :: q6Constant = 4d0*pi/13d0
          real(dp) :: q6r_new, q6i_new
          real(dp) :: rx,ry,rz,r
          real(dp) :: theta,phi,junk

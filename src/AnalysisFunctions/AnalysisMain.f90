@@ -71,7 +71,10 @@
       use MiscelaniousVars
       use SimpleDistPair, only: nDistPair, pairArrayIndx, UmbrellaVar_DistPair
       use SimParameters, only: NPART
-      use Q6Functions, only: CalcQ6, Initialize_q6, useQ6, q6Dist, q6DistSq, UmbrellaVar_Q6
+      use Q6Functions, only: CalcQ6, Initialize_q6, useQ6, q6Dist, q6DistSq, &
+                             UmbrellaVar_Q6
+      use Q4Functions, only: CalcQ4, Initialize_q4, useQ4, q4Dist, q4DistSq, &
+                             UmbrellaVar_Q4
       implicit none
       character(len=maxLineLen), intent(in) :: inputLines(:)
       integer :: nLines
@@ -126,6 +129,15 @@
           if(nDistPair .eq. 1) then
             nPostMove = nPostMove + 1
           endif
+        case("q4")
+          if(useQ4 .eqv. .false.) then
+            useQ4 = .true.
+            nPostMove = nPostMove + 1
+            internalIndx(iAnalysis) = 1
+          else
+            stop "ERROR! The Q4 analysis function has been defined more than once in the input script."
+          endif
+
         case("q6")
           if(useQ6 .eqv. .false.) then
             useQ6 = .true.
@@ -168,6 +180,7 @@
       call Initialize_RadialDist
       call Initialize_DistPair
       call Initialize_RadialDens
+      call Initialize_Q4
       call Initialize_Q6
       call AllocateMiscArrays
 
@@ -213,6 +226,13 @@
             postMoveArray(iPostMove)%func => Calc_RadialDensity
             outputArray(iOutPut)%func => Output_RadialDensity
           endif
+        case("q4")
+          read(inputLines(iAnalysis+1), *)  analysisName, realVar
+          iPostMove = iPostMove + 1
+          q4Dist = realVar
+          q4DistSq = q4Dist*q4Dist
+          postMoveArray(iPostMove)%func => CalcQ4
+          loadUmbArray(iAnalysis)%func => UmbrellaVar_Q4
         case("q6")
           read(inputLines(iAnalysis+1), *)  analysisName, realVar
           iPostMove = iPostMove + 1
@@ -220,6 +240,7 @@
           q6DistSq = q6Dist*q6Dist
           postMoveArray(iPostMove)%func => CalcQ6
           loadUmbArray(iAnalysis)%func => UmbrellaVar_Q6
+
         case default
           write(*,*) "ERROR! Invalid variable type specified in input file"
           write(*,*) analysisName
