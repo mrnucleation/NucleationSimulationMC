@@ -16,8 +16,24 @@
       use VarPrecision
 
 
+
+!      real(dp), parameter :: ep = 4d0*634.62810518d0
+      real(dp), parameter :: ep = 4d0*78d0
+      real(dp), parameter :: sig = 3.174116d0**2
+!====================================================================================== 
       contains
 !======================================================================================      
+      pure function LJ_Func(r_sq, epx, sigx) result(LJ)
+      implicit none
+      real(dp), intent(in) :: r_sq, epx, sigx
+      real(dp) :: LJ  
+ 
+      LJ = (sigx/r_sq)
+      LJ = LJ * LJ * LJ
+      LJ = epx * LJ * (LJ-1E0_dp)  
+
+      end function
+!====================================================================================== 
       pure function Fc_Func(r, R_eq, D) result(val)
       use Constants, only: pi
       implicit none
@@ -93,9 +109,11 @@
       real(dp) :: rxjk, ryjk, rzjk, rjk
       real(dp) :: rxik, ryik, rzik, rik
 
+      real(dp) :: E_LJ, LJ
 
       E_T = 0E0_dp
       E_Short = 0E0_dp
+      E_LJ = 0E0_dp
       PairList = 0E0_dp
       ETable = 0E0_dp
       iType = 1
@@ -136,12 +154,20 @@
             PairList(iIndx, jIndx) = rPair(globIndx1, globIndx2)%p%r_sq
             PairList(jIndx, iIndx) = PairList(iIndx,jIndx)
           endif
+
+
+          LJ = 0.5d0*LJ_Func(rPair(globIndx1, globIndx2)%p%r_sq, ep, sig) 
+          E_LJ = E_LJ + LJ
+!          write(*,*) "LJ:", rPair(globIndx1, globIndx2)%p%r_sq, LJ, ep, sig
+          PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + LJ
+          PairList(jIndx, iIndx) = PairList(jIndx, iIndx) + LJ
+          ETable(iIndx) = ETable(iIndx) + LJ
+          ETable(jIndx) = ETable(jIndx) + LJ
+
+
           if(rij .gt. rMax) then
             cycle
           endif
-
-
-
 
           Zeta = 0E0_dp
 
@@ -182,20 +208,22 @@
           V1 = 0E0_dp
 !          write(*,*) "rij:", rij
           V1 = 0.5E0_dp * Fc_Func(rij, R_eq, D2) * (A*exp(-lam1*rij) - b1*B*exp(-lam2*rij))
+          E_Short = E_Short + V1
 !          write(*,*) "V1:", b1, V1
           PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + V1
           PairList(jIndx, iIndx) = PairList(jIndx, iIndx) + V1
           ETable(iIndx) = ETable(iIndx) + V1
           ETable(jIndx) = ETable(jIndx) + V1
-          E_Short = E_Short + V1
+
 !          write(*,*) 
         enddo
       enddo
 !      E_Short = 0.5E0_dp*E_Short 
+      write(nout,*) "Lennard-Jones Energy:", E_LJ/outputEConv
       write(nout,*) "ShortRange Energy:", E_Short/outputEConv
 
-      E_T = E_T + E_Short
-      E_Inter_T = E_Short
+      E_T = E_T + E_Short + E_LJ
+      E_Inter_T = E_Short + E_LJ
       
       end subroutine
 !======================================================================================      
@@ -226,7 +254,7 @@
       real(dp) :: r_sq, r, r_new,rMax, rMax_sq
 
       real(dp) :: A, B, c, d, R_eq, D2 
-      real(dp) :: E_Short, Short
+      real(dp) :: E_Short, Short, LJ, E_LJ
       real(dp) :: lam1, lam2
       real(dp) :: Zeta, Zeta2
       real(dp) :: BetaPar, n, h
@@ -271,17 +299,30 @@
       neiList = 0
 !      pairIndxNew = 0
 
-
-
+      E_LJ = 0E0_dp
+      do jMol = 1, NPART(jType)
+        if(jMol .eq. nMol) then
+          cycle
+        endif
+        jIndx = MolArray(jType)%mol(jMol)%indx
+        globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1)
+        LJ = LJ_Func(rPairNew(globIndxN,globIndx2)%p%r_sq, ep, sig)
+        LJ = LJ - LJ_Func(rPair(globIndxN, globIndx2)%p%r_sq, ep, sig)
+        dETable(nIndx) = dETable(nIndx) + LJ
+        dETable(jIndx) = dETable(jIndx) + LJ
+        E_LJ = E_LJ + LJ
+      enddo
 
 !       In the Tersoff model, the strength of a given molecular bond is dependent on both the distance and the local environment around the bond.  As a result
 !       when one shifts a particle's location one must not only calculate the bonds that changed during this time frame, but also calculate how that
-!       shift impacts the bonds of it's neighbors.  Thus it is nessisary to compute a list of particles who may have been implacted. 
+!       shift impacts the bonds of it's neighbors.  Thus it is nessisary to compute a list of particles who may have been impacted. 
 
 
 !      This block creates a list of neighbors that are located near the particle's new position.
       do iPair = 1, nNewDist
         r_new = newDist(iPair)%r
+        globIndx2 = newDist(iPair)%indx2
+        jIndx = globIndx2
         if(r_new .lt. rMax) then
           nNei = nNei + 1
           neiList(nNei) = newDist(iPair)%indx2
@@ -289,7 +330,8 @@
         endif
       enddo
 
-!      This block creates a list of neighbors that are located near the particle's old position.
+!      This block adds to the list of neighbors particles that are located near the mobile particle's old position.
+
       do jMol = 1, NPART(jType)
         if(jMol .eq. nMol) then
           cycle
@@ -300,10 +342,10 @@
         if(distCriteria) then
           PairList(jIndx) = rPairNew(globIndxN,globIndx2)%p%r_sq
         endif
-        if(globIndx2 .eq. globIndx1) then
+        if(globIndx2 .eq. globIndxN) then
           cycle
         endif
-        if(rPair(globIndx1, globIndx2)%p%r .lt. rMax ) then
+        if(rPair(globIndxN, globIndx2)%p%r .lt. rMax ) then
           if( all(neiList(1:nNei) .ne. globIndx2) ) then
             nNei = nNei + 1
             neiList(nNei) = globIndx2
@@ -366,12 +408,16 @@
           endif
 !          write(2,*) b1
 !          write(2,*) b2
-          V1 = Fc_Func(rij, R_eq, D2) * (2d0*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij))
+
+          V1 = Fc_Func(rij, R_eq, D2) * (2d0*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij)) 
           if(.not. distCriteria) then                
             PairList(jIndx) = PairList(jIndx) + 0.5E0_dp * V1
           endif
+
           Short = Short + V1
         endif
+
+   
 
 !        Compute the bonds at the old position
         rij  = rPair(globIndx1, globIndx2)%p%r
@@ -439,7 +485,7 @@
       enddo
 
       if(NTotal .eq. 2) then
-        E_Trial = 0.5E0_dp * E_Short
+        E_Trial = 0.5E0_dp * E_Short + E_LJ
         return
       endif
 
@@ -547,8 +593,8 @@
 
 
 
-      E_Trial = 0.5E0_dp*E_Short
-!      write(*,*) E_Trial
+      E_Trial = 0.5E0_dp*E_Short + E_LJ
+!      write(*,*) E_Trial, E_Short, E_LJ
 
       end subroutine 
 !======================================================================================      
@@ -575,7 +621,7 @@
       real(dp) :: r_sq, r, r_new,rMax, rMax_sq
 
       real(dp) :: A, B, c, d, R_eq, D2 
-      real(dp) :: E_Short, Short
+      real(dp) :: E_Short, Short, LJ, E_LJ
       real(dp) :: lam1, lam2
       real(dp) :: Zeta, Zeta2
       real(dp) :: BetaPar, n, h
@@ -615,10 +661,13 @@
       globIndx1 = molArray(nType)%mol(nMol)%globalIndx(1)
       nNei = 0
       neiList = 0
+      E_LJ = 0E0_dp
       do jMol = 1, NPART(jType)
         if(jMol .eq. nMol) then
           cycle
         endif
+        jIndx = MolArray(jType)%mol(jMol)%indx
+
         globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(1)
         if(rPair(globIndx1, globIndx2)%p%r .lt. rMax ) then
           if( all(neiList(1:nNei) .ne. globIndx2) ) then
@@ -626,6 +675,10 @@
             neiList(nNei) = globIndx2
           endif
         endif
+        LJ = LJ_Func(rPair(globIndx1, globIndx2)%p%r_sq, ep, sig) 
+        dETable(nIndx) = dETable(nIndx) + LJ
+        dETable(jIndx) = dETable(jIndx) + LJ
+        E_LJ = E_LJ + LJ
       enddo
 
 !      write(*,*) 1
@@ -790,7 +843,7 @@
         enddo
       enddo
 
-      E_Trial = E_Trial
+      E_Trial = E_Trial + E_LJ
 
       end subroutine
 !======================================================================================      
@@ -817,7 +870,7 @@
       real(dp) :: r_sq, r, rMax, rMax_sq
 
       real(dp) :: A, B, c, d, R_eq, D2 
-      real(dp) :: Short
+      real(dp) :: Short, E_LJ, LJ
       real(dp) :: lam1, lam2
       real(dp) :: Zeta, Zeta2
       real(dp) :: BetaPar, n, h
@@ -864,6 +917,7 @@
       globIndxN  = globIndx1
       nNei = 0
       neiList = 0
+      E_LJ = 0E0_dp
       do iPair = 1, nNewDist
         globIndx2 = newDist(iPair)%indx2
         jMol = globIndx2
@@ -877,6 +931,10 @@
           neiList(nNei) = newDist(iPair)%indx2
 !          write(*,*) nNei, neiList(nNei)
         endif
+        LJ = LJ_Func(newDist(iPair)%r_sq, ep, sig) 
+        dETable(nIndx) = dETable(nIndx) + LJ
+        dETable(jIndx) = dETable(jIndx) + LJ
+        E_LJ = E_LJ + LJ
       enddo
 
 
@@ -1033,7 +1091,7 @@
       enddo
 
 
-
+      E_Trial = E_Trial + E_LJ
 !      E_Trial = 0.5E0_dp*E_Short
 !      write(*,*) "E_Trial", E_Trial
       

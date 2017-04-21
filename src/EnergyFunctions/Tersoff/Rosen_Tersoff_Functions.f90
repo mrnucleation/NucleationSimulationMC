@@ -1,5 +1,7 @@
       module Rosenbluth_Functions_Tersoff
+      use InterEnergy_Tersoff, only: ep, sig, LJ_Func
       contains
+
 !======================================================================================================
 !      This subrotuine is intended to calculate the Rosenbluth weight for a single trial
 !      in any method which regrows an entire molecule for the given trial.
@@ -28,7 +30,7 @@
       real(dp) :: lam1, lam2
       real(dp) :: Zeta
       real(dp) :: BetaPar, n, h
-      real(dp) :: V1
+      real(dp) :: V1, LJ
       real(dp) :: rx, ry, rz, r, rmin_ij
 
       E_Trial = 0E0
@@ -60,13 +62,16 @@
         ry = rosenTrial(nRosen)%y(1) - MolArray(jType)%mol(jMol)%y(1)
         rz = rosenTrial(nRosen)%z(1) - MolArray(jType)%mol(jMol)%z(1)
         r = rx*rx + ry*ry + rz*rz
+        LJ = LJ_Func(r, ep, sig)
         if(r .lt. rmin_ij) then
           E_Trial = huge(dp)
           overlap = .true.
           return
         endif   
         r = sqrt(r)    
+        
         E_Trial = E_Trial + Fc_Func(r, R_eq, D2) * (A*exp(-lam1*r) - 0.95E0_dp*B*exp(-lam2*r))
+        E_Trial = E_Trial + LJ
       enddo
 
       E_Trial = E_Trial * 0.5E0_dp
@@ -99,7 +104,7 @@
       real(dp) :: lam1, lam2
       real(dp) :: Zeta
       real(dp) :: BetaPar, n, h
-      real(dp) :: V1
+      real(dp) :: V1, LJ
       real(dp) :: rx, ry, rz, r, rmin_ij
 
 
@@ -129,12 +134,14 @@
         ry = mol_y(1) - MolArray(jType)%mol(jMol)%y(1)
         rz = mol_z(1) - MolArray(jType)%mol(jMol)%z(1)
         r = rx*rx + ry*ry + rz*rz
+        LJ = LJ_Func(r, ep, sig)
         if(r .lt. rmin_ij) then
           E_Trial = huge(dp)
           return
         endif
         r = sqrt(r)
         E_Trial = E_Trial + Fc_Func(r, R_eq, D2) * (A*exp(-lam1*r) - 0.95E0_dp*B*exp(-lam2*r))
+        E_Trial = E_Trial + LJ
       enddo
 
       E_Trial = E_Trial * 0.5E0_dp

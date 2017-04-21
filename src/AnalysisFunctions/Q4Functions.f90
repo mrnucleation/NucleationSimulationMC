@@ -1,8 +1,5 @@
 !======================================================================================    
-!      This module contains the functions nessisary to initalize and 
-!      perform single pair calculations.  This can be used
-!      in the Umbrella Sampling algorithms or be used to study
-!      di
+
      module q4Functions
        use PairStorage
        use Constants
