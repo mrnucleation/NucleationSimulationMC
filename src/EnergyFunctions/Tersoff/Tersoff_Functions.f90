@@ -28,6 +28,9 @@
       real(dp), intent(in) :: r_sq, epx, sigx
       real(dp) :: LJ  
  
+      LJ = 0E0_dp
+      return
+
       LJ = (sigx/r_sq)
       LJ = LJ * LJ * LJ
       LJ = epx * LJ * (LJ-1E0_dp)  

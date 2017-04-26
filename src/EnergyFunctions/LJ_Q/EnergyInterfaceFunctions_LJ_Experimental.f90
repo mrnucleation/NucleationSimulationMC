@@ -22,15 +22,15 @@
       contains
 !=============================================================================      
       subroutine Detailed_EnergyCalc_LJ_Q(E_T,rejMove)
-      use InterEnergy_LJ_Electro
-      use IntraEnergy_LJ_Electro
-      use BondStretchFunctions
-      use BendingFunctions
-      use TorsionalFunctions
+      use InterEnergy_LJ_Electro, only: Detailed_ECalc_Inter
+      use IntraEnergy_LJ_Electro, only: Detailed_ECalc_IntraNonBonded
+      use BondStretchFunctions, only: Detailed_ECalc_BondStretch
+      use BendingFunctions, only: Detailed_ECalc_Bending
+      use TorsionalFunctions, only: Detailed_ECalc_Torsional
       use ImproperAngleFunctions
-      use EnergyCriteria
-      use DistanceCriteria      
-      use SimParameters
+      use EnergyCriteria, only: Detailed_EnergyCriteria
+      use DistanceCriteria, only: Detailed_DistanceCriteria    
+      use SimParameters, only: maxMol, distCriteria
       use PairStorage, only: CalcAllDistPairs
       implicit none
       
@@ -79,19 +79,19 @@
 !     in a given move.  
       subroutine Shift_EnergyCalc_LJ_Q(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove, useInter)
       use SimParameters, only: distCriteria, beta, softcutoff, NTotal
-      use BendingFunctions      
-      use BondStretchFunctions
-      use CBMC_Variables   
-      use Coords      
-      use DistanceCriteria            
-      use EnergyCriteria
+      use BendingFunctions, only: Shift_ECalc_Bending
+      use BondStretchFunctions, only: Shift_ECalc_BondStretch
+      use CBMC_Variables, only: regrowType
+      use Coords, only: Displacement, MolArray
+      use DistanceCriteria, only: Shift_DistanceCriteria   
+      use EnergyCriteria, only: Shift_EnergyCriteria
 !      use EnergyCriteria_new
-      use EnergyTables      
+      use EnergyTables, only: E_NBond_Diff, E_Strch_Diff, E_Bend_Diff, E_Tors_Diff, E_Inter_Diff    
       use ImproperAngleFunctions      
-      use InterEnergy_LJ_Electro
-      use IntraEnergy_LJ_Electro
-      use TorsionalFunctions
-      use PairStorage
+      use InterEnergy_LJ_Electro, only: Shift_ECalc_Inter
+      use IntraEnergy_LJ_Electro, only: Shift_ECalc_IntraNonBonded
+      use TorsionalFunctions, only: Shift_ECalc_Torsional
+      use PairStorage, only: CalcNewDistPairs, newDist
       implicit none
       
       logical, intent(in), optional :: useInter
@@ -174,8 +174,6 @@
             return
           endif
         endif
-
-
       endif
       
 !      This block contains the calculations for all Intramolecular interactions.  For moves
@@ -198,7 +196,7 @@
            call Shift_ECalc_Torsional(E_Torsion, disp)
            E_Tors_Diff = E_Torsion
          endif
-!           call Shift_ECalc_Improper(E_Improper, disp)      
+!           call Shift_ECalc_Improper(E_Improper, disp) 
          E_Intra = E_NonBond + E_Stretch + E_Bend + E_Torsion + E_Improper
       endif
 
@@ -206,17 +204,15 @@
       end subroutine
 !=============================================================================      
       subroutine SwapIn_EnergyCalc_LJ_Q(E_Inter, E_Intra, PairList, dETable, rejMove, useInter)
-      use InterEnergy_LJ_Electro
-      use IntraEnergy_LJ_Electro
-      use BondStretchFunctions
-      use BendingFunctions
-      use TorsionalFunctions
-      use ImproperAngleFunctions
-      use EnergyCriteria
-      use EnergyTables         
-      use Coords
-      use CBMC_Variables     
-      use PairStorage 
+      use InterEnergy_LJ_Electro, only: NewMol_ECalc_Inter
+      use IntraEnergy_LJ_Electro, only: NewMol_ECalc_IntraNonBonded
+      use BondStretchFunctions, only: NewMol_ECalc_BondStretch
+      use BendingFunctions, only: NewMol_ECalc_Bending
+      use TorsionalFunctions, only: NewMol_ECalc_Torsional
+      use EnergyTables, only: E_NBond_Diff, E_Strch_Diff, E_Bend_Diff, E_Tors_Diff, E_Inter_Diff
+      use Coords, only: newMol
+      use CBMC_Variables, only: regrowType
+      use PairStorage, only: CalcSwapInDistPairs
       implicit none
       
       logical, intent(out) :: rejMove
@@ -287,16 +283,18 @@
 !     This function contains the energy calculations that are used when a molecule
 !     has been selected for removal.  
       subroutine SwapOut_EnergyCalc_LJ_Q(E_Inter, E_Intra, nType, nMol, dETable, useInter)
-      use InterEnergy_LJ_Electro
-      use IntraEnergy_LJ_Electro
-      use BondStretchFunctions
-      use BendingFunctions
-      use TorsionalFunctions
-      use ImproperAngleFunctions
-      use EnergyCriteria
-      use EnergyTables         
       use Coords
-      use CBMC_Variables
+      use CBMC_Variables, only: regrowType
+!      use EnergyCriteria
+      use EnergyTables, only: ETable, E_Strch_Diff, E_NBond_Diff, E_Tors_Diff, E_Bend_Diff, E_Inter_Diff
+
+      use InterEnergy_LJ_Electro, only: Mol_ECalc_Inter
+      use IntraEnergy_LJ_Electro, only: Mol_ECalc_IntraNonBonded
+      use BondStretchFunctions, only: Mol_ECalc_BondStretch
+      use BendingFunctions, only: Mol_ECalc_Bending
+      use TorsionalFunctions, only: Mol_ECalc_Torsional
+      use ImproperAngleFunctions
+
       implicit none
       
       logical, intent(in), optional :: useInter

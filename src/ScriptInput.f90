@@ -359,6 +359,7 @@
 
 !========================================================            
       subroutine LoadFile(lineArray, nLines, lineNumber, fileName)
+      use ParallelVar, only: myid
       use SimParameters, only: echoInput
       implicit none
       character(len=maxLineLen),allocatable,intent(inout) :: lineArray(:)
@@ -368,9 +369,18 @@
       character(len=maxLineLen),allocatable :: rawLines(:)
       character(len=25) :: command
       integer, intent(out) :: nLines
-      integer :: i,iLine, nRawLines, lineStat, AllocateStat
+      integer :: i,iLine, nRawLines, lineStat, AllocateStat, InOutStat
 
-      open(unit=54,file=trim(adjustl(fileName)),status='OLD')    
+      open(unit=54, file=trim(adjustl(fileName)), status='OLD', iostat=InOutStat)    
+
+      if(InOutStat .gt. 0) then
+        if(myid .eq. 0) then
+          write(*,*) "The file specified in either the input script or on the command line could not be opened."
+          write(*,*) "Please double check to ensure the file exists and the name in the input is accurate."
+          write(*,*) "  Attempted to open file:", trim(adjustl(fileName))
+        endif
+        stop
+      endif
 
 !      This block counts the number of lines in the input file to determine how large the lineStorage array needs to be.
       nRawLines = 0

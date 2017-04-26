@@ -6,10 +6,10 @@
 !      This subrotuine is intended to calculate the Rosenbluth weight for a single trial
 !      in any method which regrows an entire molecule for the given trial.
       pure subroutine Rosen_BoltzWeight_Molecule_New(nRosen, nType, included,  E_Trial, overlap)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
+      use ForceField, only: nAtoms, r_min_tab, atomArray
+      use ForceFieldPara_LJ_Q, only: q_tab, ep_tab, sig_tab
+      use Coords, only: rosenTrial, MolArray
+      use SimParameters, only: nMolTypes, NPART
       implicit none
       
       logical, intent(in) :: included(:)
@@ -82,10 +82,10 @@
       end subroutine 
 !======================================================================================================
       pure subroutine Rosen_BoltzWeight_Molecule_Old(mol_x, mol_y, mol_z, nType, included,  E_Trial)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
+      use ForceField, only: nAtoms, r_min_tab, atomArray
+      use ForceFieldPara_LJ_Q, only: ep_tab, sig_tab, q_tab
+      use Coords, only: MolArray
+      use SimParameters, only: NPART, nMolTypes
       implicit none
       
       logical, intent(in) :: included(:)
@@ -164,10 +164,10 @@
 !      This subrotuine is intended to calculate the Rosenbluth weight for a single trial
 !      in any method which each atom is regrown sequentially for the given trial.
       subroutine Rosen_BoltzWeight_Atom_New(nType, nAtom, trialPos, included,  E_Trial, overlap)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
+      use Coords, only: MolArray, SimpleAtomCoords
+      use ForceField, only: nAtoms, r_min_tab, atomArray
+      use ForceFieldPara_LJ_Q, only: q_tab, sig_tab, ep_tab
+      use SimParameters, only: nMolTypes, NPART
       implicit none
       
       logical, intent(in) :: included(:)
@@ -238,10 +238,10 @@
       end subroutine 
 !======================================================================================================
       pure subroutine Rosen_BoltzWeight_Atom_Old(nType, nMol, nAtom, included,  E_Trial)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
+      use Coords, only: MolArray
+      use ForceField, only: nAtoms, r_min_tab, atomArray
+      use ForceFieldPara_LJ_Q, only: q_tab, ep_tab, sig_tab
+      use SimParameters, only: nMolTypes, NPART
       implicit none
       
       logical, intent(in) :: included(:)
@@ -309,10 +309,9 @@
 !      This subrotuine is intended to calculate the Rosenbluth weight for a single trial
 !      in any method which each atom is regrown sequentially for the given trial.
       subroutine Rosen_BoltzWeight_Atom_Intra_New(nType, nAtom, trialPos, regrown,  E_Trial, overlap)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
+      use Coords, only: newMol, SimpleAtomCoords
+      use ForceField, only: atomArray, nonBondArray, nIntraNonBond
+      use ForceFieldPara_LJ_Q, only: ep_tab, sig_tab, q_tab
       implicit none
       
       logical, intent(in) :: regrown(:)
@@ -383,10 +382,10 @@
       end subroutine 
 !======================================================================================================
       pure subroutine Rosen_BoltzWeight_Atom_Intra_Old(nType, nMol, nAtom, regrown,  E_Trial)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
+      use Coords, only: MolArray
+      use ForceField, only: atomArray, nIntraNonBond, nonBondArray
+      use ForceFieldPara_LJ_Q, only: ep_tab, sig_tab, q_tab
+!      use SimParameters
       implicit none
       
       logical, intent(in) :: regrown(:)

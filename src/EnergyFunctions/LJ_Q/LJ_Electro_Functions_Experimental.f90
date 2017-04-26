@@ -40,12 +40,12 @@
       end function
 !======================================================================================      
       subroutine Detailed_ECalc_Inter(E_T, PairList)
-      use ParallelVar
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
-      use EnergyTables
+!      use ParallelVar
+      use ForceField, only: nAtoms, atomArray
+      use ForceFieldPara_LJ_Q, only: ep_tab, q_tab, sig_tab
+      use Coords, only: MolArray
+      use SimParameters, only: nMolTypes, NPART, distCriteria
+      use EnergyTables, only: ETable, E_Inter_T
       use PairStorage, only: rPair
       implicit none
       real(dp), intent(inOut) :: E_T
@@ -138,11 +138,13 @@
       end subroutine
 !======================================================================================      
       pure subroutine Shift_ECalc_Inter(E_Trial,disp,newDist, PairList,dETable,rejMove)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
+
+      use ForceField, only: nAtoms, atomArray
+      use ForceFieldPara_LJ_Q, only: ep_tab, q_tab, sig_tab
+      use Coords, only: Displacement,  atomIndicies, molArray
+      use SimParameters, only: distCriteria
       use PairStorage, only: distStorage, rPair, DistArrayNew, nNewDist, oldIndxArray
+
       implicit none
       
       type(Displacement), intent(in) :: disp(:)  
@@ -150,7 +152,6 @@
       real(dp), intent(out) :: E_Trial
       real(dp), intent(inout) :: PairList(:), dETable(:)
       logical, intent(out) :: rejMove
-
       
       integer :: iType,jType,iMol,jMol,iAtom,jAtom, iPair
       integer(kind=atomIntType) :: atmType1,atmType2,iIndx,jIndx
@@ -256,11 +257,11 @@
       end subroutine
 !======================================================================================
       pure subroutine Shift_PairList_Correct(disp, PairList)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
-      use PairStorage
+      use ForceField, only: nAtoms, atomArray
+      use ForceFieldPara_LJ_Q, only: ep_tab, q_tab, sig_tab
+      use Coords, only: Displacement,  atomIndicies, molArray
+      use SimParameters, only: distCriteria, nMolTypes, NPART
+      use PairStorage, only: distStorage, rPair, DistArrayNew, nNewDist, oldIndxArray
       implicit none
       
       type(Displacement), intent(in) :: disp(:)      
@@ -297,11 +298,10 @@
       end subroutine      
 !======================================================================================      
       pure subroutine Mol_ECalc_Inter(iType, iMol, dETable, E_Trial)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
-      use PairStorage
+      use ForceField, only: nAtoms, atomArray
+      use Coords, only: Displacement,  atomIndicies, molArray
+      use SimParameters, only: distCriteria, nMolTypes, NPART
+      use PairStorage, only: distStorage, rPair
       implicit none
       integer, intent(in) :: iType, iMol     
       real(dp), intent(out) :: E_Trial
@@ -342,11 +342,11 @@
       end subroutine
 !======================================================================================      
       subroutine NewMol_ECalc_Inter(E_Trial, PairList, dETable, rejMove)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
-      use PairStorage
+      use ForceField, only: nAtoms, atomArray
+      use ForceFieldPara_LJ_Q, only: ep_tab, q_tab, sig_tab
+      use Coords, only: Displacement,  atomIndicies, molArray, newmol
+      use SimParameters, only: distCriteria, nMolTypes, NPART
+      use PairStorage, only: distStorage, rPair, newDist, nNewDist
       implicit none
       logical, intent(out) :: rejMove
       real(dp), intent(out) :: E_Trial
@@ -576,10 +576,10 @@
       end subroutine    
 !======================================================================================      
       subroutine QuickNei_ECalc_Inter_LJ_Q(jType, jMol, rejMove)
-      use ForceField
-      use ForceFieldPara_LJ_Q
-      use Coords
-      use SimParameters
+      use ForceField, only: r_min_tab, atomArray, nAtoms
+      use ForceFieldPara_LJ_Q, only: ep_tab, q_tab, sig_tab
+      use Coords, only: newMol, molArray
+      use SimParameters, only: Eng_Critr
       implicit none
       integer, intent(in) :: jType, jMol     
       logical, intent(out) :: rejMove

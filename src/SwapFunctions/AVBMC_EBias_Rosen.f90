@@ -46,7 +46,7 @@
       use IndexingFunctions      
       use EnergyCriteria
       use DistanceCriteria
-      use InterEnergy_LJ_Electro
+!      use InterEnergy_LJ_Electro
       use EnergyTables
       use NeighborTable
       use SwapBoundary
@@ -186,9 +186,9 @@
 !     Calculate acceptance probability and determine if the move is accepted or not          
       genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol  * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
 !      genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol  * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
-!      write(*,*) E_Inter
+!      write(2,*) beta*E_Inter, biasDiff
       Boltzterm = exp(-beta*E_Inter + biasDiff)
-
+!      write(2,*) Boltzterm, ProbTarg_Out, ProbSel_Out, gas_dens(nType), ProbTarg_In, rosenRatio
       if( genProbRatio * Boltzterm .gt. grnd() ) then
 !         call PrintDistArray
 !         write(35,*) genProbRatio, Boltzterm
@@ -462,6 +462,9 @@
       real(dp) :: ProbTable(1:maxMol)
       real(dp) :: norm, EMax
   
+      
+
+
       nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
       ProbTable = 0E0_dp
       EMax = -huge(dp)
@@ -472,12 +475,11 @@
           endif
         endif
       enddo
-!      write(*,*) newNeiETable
       do i = 1, maxMol
         if(neiCount(i) .gt. 0) then
-!          write(*,*) beta*(newNeiETable(i)-Emax)
+!          write(2,*) beta*(newNeiETable(i)-Emax)
           if(beta*(newNeiETable(i)-Emax) .gt. -30d0) then
-!            write(*,*) beta*(newNeiETable(i)-Emax)
+!            write(2,*) beta*(newNeiETable(i)-Emax)
             ProbTable(i) = exp(beta*(newNeiETable(i)-Emax))
           endif
         endif
@@ -618,7 +620,7 @@
       real(dp) :: norm       
         
       if(NTotal .eq. 2) then
-         ProbSel=1d0
+         ProbSel = 1d0
          return      
       endif
       

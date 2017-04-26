@@ -266,15 +266,12 @@
       module SimParameters
       use VarPrecision
       logical, parameter :: echoInput = .false.      
-
       logical, parameter :: useScriptInput = .true.
-
       logical :: prevMoveAccepted
 
-
       logical :: distCriteria = .false.
-      integer(kind=8) :: ncycle, ncycle2       
       logical :: multipleInput = .false.
+      integer(kind=8) :: ncycle, ncycle2       
       integer(kind=atomIntType) :: nMolTypes = 1
       integer,allocatable :: NMin(:), NMax(:)
       integer,allocatable, target :: NPart(:)

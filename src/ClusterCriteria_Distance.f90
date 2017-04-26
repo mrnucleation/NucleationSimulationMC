@@ -132,7 +132,7 @@
       subroutine Shift_DistanceCriteria(nIndx, rejMove)
       use Coords
       use IndexingFunctions
-      use PairStorage
+      use PairStorage, only: rPairNew, newDist
       use SimParameters     
       implicit none     
       
