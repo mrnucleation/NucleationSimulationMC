@@ -25,6 +25,7 @@
       use MiscelaniousVars, only: CollectHistograms
       use MoveTypeModule
       use ParallelVar
+      use Pressure_LJ_Electro, only: Detailed_PressCalc_Inter
       use ScriptInput, only: Script_ReadParameters
       use SelfAdaptive
       use SimParameters
@@ -53,7 +54,8 @@
       real(dp) :: check, norm
 
       real(dp) :: E_Inter_Final, E_Bend_Final, E_Torsion_Final
-      real(dp) :: E_Stretch_Final, E_NBond_Final
+      real(dp) :: E_Stretch_Final, E_NBond_Final, P_Final
+      real(dp), allocatable :: P_avg_Sum(:), NHist_Sum(:)
       
       character(len=100) :: format_string,fl_name, out1
       character(len=1500) :: outFormat1, outFormat2
@@ -187,6 +189,16 @@
 !      the starting configuration is valid. 
 !      call Detailed_EnergyCalc(E_T,errRtn)
       call Detailed_ECalc(E_T, errRtn)
+      if(calcPressure) then
+        call Detailed_PressCalc_Inter(pressure)
+        allocate( NHist(1:maxMol) ) 
+        allocate( NHist_Sum(1:maxMol) ) 
+        allocate( P_Avg(1:maxMol) ) 
+        allocate( P_avg_Sum(1:maxMol) ) 
+
+        NHist = 0E0_dp
+        P_Avg = 0E0_dp
+      endif
 
       if(errRtn) then
         stop      
@@ -316,6 +328,11 @@
 !           endif
 
 
+           if(calcPressure) then 
+             NHist(NTotal) = NHist(NTotal) + 1E0_dp
+             P_Avg(NTotal) = P_Avg(NTotal) + pressure 
+           endif
+
            if(useAnalysis) then
              call PostMoveAnalysis
            endif  
@@ -416,7 +433,14 @@
 !      If these two values do not match there is an error in the energy calculation routines. 
 !      call Detailed_EnergyCalc(E_Final,errRtn)      
       call Detailed_ECalc(E_Final,errRtn)
-      
+      if(calcPressure) then
+        call Detailed_PressCalc_Inter(P_Final)
+      endif 
+
+
+
+
+
 !      Output final trajectory      
       call TrajOutput(iCycle, E_T)
       close(30)    
@@ -454,7 +478,33 @@
         write(35,*) "Culmative Energy:",E_T/outputEConv,outputEngUnits
         write(35,*) "Final Energy:",E_Final/outputEConv,outputEngUnits          
         write(35,*) "=========================================="
-      endif        
+      endif
+
+!     Check for errors in the energy calculation. 
+      if(calcPressure) then 
+        write(nout,*) "Final Pressure:", P_Final
+        write(nout,*) "Final Pressure (Per Molecule):", P_Final/real(NTotal,dp)
+        if(P_Final .eq. 0E0) then
+          check = abs(P_Final - pressure)
+        else
+          check = abs((P_Final - pressure)/P_Final)      
+        endif
+        if(check .gt. 1E-6) then
+          write(nout,*) "=========================================="
+          write(nout,*) "Pressure Disagreement"
+          write(nout,*) "Culmative Pressure:", pressure
+          write(nout,*) "Culmative Pressure (Per Molecule)::", pressure/real(NTotal,dp)
+          write(nout,*) "=========================================="
+          write(35,*) "=========================================="
+          write(35,*) "Pressure Disagreement Error:"
+          write(35,*) "Culmative Pressure:",pressure/outputEConv,outputEngUnits
+          write(35,*) "Final Pressure:",P_Final/outputEConv,outputEngUnits          
+          write(35,*) "=========================================="
+        endif
+      endif  
+
+
+
       write(nout,*) "Final Max Displacement", (max_dist(j), j=1,nMolTypes)
       write(nout,*) "Final Max Rotation", (max_rot(j), j=1,nMolTypes)
       do i = 1, nMoveTypes
@@ -501,11 +551,25 @@
       write(nout,*) "Waiting for all processes to finish..."
       call MPI_BARRIER(MPI_COMM_WORLD, ierror) 
       write(nout,*) "Writting output..."      
-!      call CollapseN  
-!      if(myid .eq. 0) then
-!        call N_HistOutput    
-!      endif
-!      write(nout,*) "Histogram Outputted...."
+
+
+      if(calcPressure) then 
+        call MPI_REDUCE(NHist, NHist_Sum, maxMol, &
+                       MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
+        call MPI_REDUCE(P_Avg, P_Avg_Sum, maxMol, &
+                       MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
+        if(myid .eq. 0) then
+          open(unit = 50, file = "ClusterPressure.dat")
+          do i = 1, maxMol
+            if(NHist(i) .ne. 0E0_dp) then
+              write(50,*) i, P_Avg_Sum(i)/(3d0*NHist_Sum(i))
+            endif
+          enddo 
+          close(50)
+        endif
+      endif
+
+
 !     Output Final Configuration to a visualization file that can be opened by a program like VMD or Avagadro.    
 
       call CollectHistograms

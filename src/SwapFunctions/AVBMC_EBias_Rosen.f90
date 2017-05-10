@@ -50,6 +50,7 @@
       use EnergyTables
       use NeighborTable
       use SwapBoundary
+      use Pressure_LJ_Electro, only: NewMol_PressCalc_Inter
       use PairStorage, only: UpdateDistArray, PrintDistArray
       use UmbrellaSamplingNew, only: GetUmbrellaBias_SwapIn
       implicit none
@@ -77,7 +78,7 @@
         totalRej = totalRej + 1d0
         return
       endif
-!a
+
 !      Choose the type of molecule to be inserted      
       if(nMolTypes .eq. 1) then
         nType = 1
@@ -91,7 +92,7 @@
           sumInt = sumInt + swapProb(nType)
         enddo
       endif
-!!!
+
       NDiff = 0
       NDiff(nType) = 1
       rejMove = boundaryFunction(NPART, NDiff)
@@ -185,16 +186,16 @@
 
 !     Calculate acceptance probability and determine if the move is accepted or not          
       genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol  * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
-!      genProbRatio = (ProbTarg_Out * ProbSel_Out * avbmc_vol  * gas_dens(nType)) / (ProbTarg_In * rosenRatio)
-!      write(2,*) beta*E_Inter, biasDiff
       Boltzterm = exp(-beta*E_Inter + biasDiff)
-!      write(2,*) Boltzterm, ProbTarg_Out, ProbSel_Out, gas_dens(nType), ProbTarg_In, rosenRatio
       if( genProbRatio * Boltzterm .gt. grnd() ) then
+         if(calcPressure) then
+           call NewMol_PressCalc_Inter(P_Diff)
+           pressure = pressure + P_Diff
+         endif
 !         call PrintDistArray
-!         write(35,*) genProbRatio, Boltzterm
          acptSwapIn(nType) = acptSwapIn(nType) + 1d0        
          acptInSize(NTotal) = acptInSize(NTotal) + 1d0         
-         do i=1,nAtoms(nType)      
+         do i = 1, nAtoms(nType)      
            molArray(nType)%mol(NPART(nType)+1)%x(i) = newMol%x(i)
            molArray(nType)%mol(NPART(nType)+1)%y(i) = newMol%y(i)
            molArray(nType)%mol(NPART(nType)+1)%z(i) = newMol%z(i)
@@ -203,7 +204,6 @@
          acc_x = acc_x + 1d0
 !         nIndx = molArray(nType)%mol(NPART(nType)+1)%indx
          isActive(nIndx) = .true.
-
          if(distCriteria) then
 !           call NeighborUpdate_Distance(PairList,nIndx)  
 !           call NeighborUpdate_Distance(nIndx)      
@@ -218,6 +218,7 @@
          call Update_SubEnergies
          prevMoveAccepted = .true.
 !         call PrintDistArray
+        
        else
          totalRej = totalRej + 1d0
          dbalRej = dbalRej + 1d0
@@ -245,6 +246,7 @@
       use SwapBoundary
       use PairStorage, only: UpdateDistArray_SwapOut
       use UmbrellaSamplingNew, only: GetUmbrellaBias_SwapOut
+      use Pressure_LJ_Electro, only: Mol_PressCalc_Inter
       implicit none
       
       integer, intent(in) :: arrayMax
@@ -364,6 +366,10 @@
 
 !      Calculate Acceptance and determine if the move is accepted or not         
       if( genProbRatio * exp(-beta*E_Inter + biasDiff) .gt. grnd() ) then
+         if(calcPressure) then
+           call Mol_PressCalc_Inter(nType, nMol, P_Diff)
+           pressure = pressure - P_Diff
+         endif
          acptSwapOut(nType) = acptSwapOut(nType) + 1d0
          molArray(nType)%mol(nMol)%x(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%x(1:nAtoms(nType))
          molArray(nType)%mol(nMol)%y(1:nAtoms(nType)) = molArray(nType)%mol(NPART(nType))%y(1:nAtoms(nType))

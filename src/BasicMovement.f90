@@ -17,12 +17,12 @@
       implicit none
       
       real(dp),intent(inout) :: E_T,acc_x,atmp_x      
-      real(dp) max_distx
+      real(dp) :: max_distx
 
       logical, parameter :: useIntra(1:4) = [.true., .true., .true., .true.]
       
-      logical rejMove      
-      integer nType,nMol,nIndx,nMove, nAtom
+      logical :: rejMove      
+      integer :: nType,nMol,nIndx,nMove, nAtom
       real(dp) :: grnd 
       real(dp) :: dx,dy,dz      
       real(dp) :: E_Diff,E_Inter, E_Intra
@@ -94,7 +94,8 @@
 !        call Create_NeiETable
         call UpdateDistArray
         call Update_SubEnergies
-      elseif(exp(-beta*E_Diff) .gt. grnd()) then
+!      elseif(exp(-beta*E_Diff) .gt. grnd()) then
+      elseif(-beta*E_Diff .gt. log(grnd())) then
         disp(1)%x_old = disp(1)%x_new
         disp(1)%y_old = disp(1)%y_new
         disp(1)%z_old = disp(1)%z_new
@@ -204,7 +205,8 @@
       if(biasEnergy .le. 0E0) then
         acptTrans(nType) = acptTrans(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
-      elseif(exp(-biasEnergy) .gt. grnd()) then
+!      elseif(exp(-biasEnergy) .gt. grnd()) then
+      elseif(-biasEnergy .gt. log(grnd())) then
         acptTrans(nType) = acptTrans(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
       endif
@@ -257,7 +259,7 @@
       logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
       
       logical :: rejMove      
-      integer :: i,nMove 
+      integer :: iAtom, nMove 
       integer :: atmType,nMol,nType,nIndx
       real(dp) :: E_Inter, E_Intra
       real(dp) :: grnd   
@@ -280,14 +282,14 @@
       nIndx = MolArray(nType)%mol(nMol)%indx
 
 !     Set the Displacement Array 
-      do i=1,nAtoms(nType)
-        disp(i)%molType = int(nType,2)
-        disp(i)%molIndx = int(nMol,2)
-        disp(i)%atmIndx = int(i,2)
+      do iAtom = 1, nAtoms(nType)
+        disp(iAtom)%molType = int(nType, atomIntType)
+        disp(iAtom)%molIndx = int(nMol, atomIntType)
+        disp(iAtom)%atmIndx = int(iAtom, atomIntType)
         
-        disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
-        disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
-        disp(i)%z_old => MolArray(nType)%mol(nMol)%z(i)
+        disp(iAtom)%x_old => MolArray(nType)%mol(nMol)%x(iAtom)
+        disp(iAtom)%y_old => MolArray(nType)%mol(nMol)%y(iAtom)
+        disp(iAtom)%z_old => MolArray(nType)%mol(nMol)%z(iAtom)
       enddo
       
 !     Uniformly choose a random rotational displacement ranging from -max_rot to +max_rot
@@ -298,22 +300,22 @@
 !     Determine the center of mass which will act as the pivot point for the rotational motion. 
       xcm=0E0
       ycm=0E0
-      do i=1,nAtoms(nType)
-        atmType = atomArray(nType,i)
-        xcm = xcm + atomData(atmType)%mass*disp(i)%x_old
-        ycm = ycm + atomData(atmType)%mass*disp(i)%y_old
+      do iAtom = 1, nAtoms(nType)
+        atmType = atomArray(nType, iAtom)
+        xcm = xcm + atomData(atmType)%mass*disp(iAtom)%x_old
+        ycm = ycm + atomData(atmType)%mass*disp(iAtom)%y_old
       enddo
 
       xcm = xcm/totalMass(nType)   
       ycm = ycm/totalMass(nType)
 
 !     Generate a random translational displacement      
-      do i=1,nAtoms(nType)
-        disp(i)%z_new = disp(i)%z_old
-        x_scale = disp(i)%x_old - xcm
-        y_scale = disp(i)%y_old - ycm
-        disp(i)%x_new = c_term*x_scale - s_term*y_scale + xcm
-        disp(i)%y_new = s_term*x_scale + c_term*y_scale + ycm
+      do iAtom = 1, nAtoms(nType)
+        disp(iAtom)%z_new = disp(iAtom)%z_old
+        x_scale = disp(iAtom)%x_old - xcm
+        y_scale = disp(iAtom)%y_old - ycm
+        disp(iAtom)%x_new = c_term*x_scale - s_term*y_scale + xcm
+        disp(iAtom)%y_new = s_term*x_scale + c_term*y_scale + ycm
       enddo
 
 !     Calculate the Energy Difference Associated with the move   
@@ -337,7 +339,8 @@
       if(biasEnergy .le. 0E0) then
         acptRot(nType) = acptRot(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
-      elseif(exp(-biasEnergy) .gt. grnd()) then
+!      elseif(exp(-biasEnergy) .gt. grnd()) then
+      elseif(-biasEnergy .gt. log(grnd())) then
         acptRot(nType) = acptRot(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
       endif
@@ -363,7 +366,7 @@
       logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
       
       logical :: rejMove      
-      integer :: i,nMove 
+      integer :: iAtom, nMove 
       integer :: atmType,nMol,nType,nIndx
       real(dp) :: angle
       real(dp) :: E_Inter, E_Intra
@@ -389,40 +392,40 @@
       nIndx = MolArray(nType)%mol(nMol)%indx
 
 !     Set the Displacement Array 
-      do i=1,nAtoms(nType)
-        disp(i)%molType = int(nType,atomIntType)
-        disp(i)%molIndx = int(nMol,atomIntType)
-        disp(i)%atmIndx = int(i,atomIntType)
+      do iAtom = 1, nAtoms(nType)
+        disp(iAtom)%molType = int(nType, atomIntType)
+        disp(iAtom)%molIndx = int(nMol, atomIntType)
+        disp(iAtom)%atmIndx = int(iAtom, atomIntType)
         
-        disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
-        disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
-        disp(i)%z_old => MolArray(nType)%mol(nMol)%z(i)
+        disp(iAtom)%x_old => MolArray(nType)%mol(nMol)%x(iAtom)
+        disp(iAtom)%y_old => MolArray(nType)%mol(nMol)%y(iAtom)
+        disp(iAtom)%z_old => MolArray(nType)%mol(nMol)%z(iAtom)
       enddo
       
 !     Uniformly choose a random rotational displacement ranging from -max_rot to +max_rot
       angle = max_rot(nType) * (2E0 * grnd() - 1E0)
-      c_term=cos(angle)
-      s_term=sin(angle)
+      c_term = cos(angle)
+      s_term = sin(angle)
 
 !     Determine the center of mass which will act as the pivot point for the rotational motion. 
-      xcm=0E0
-      zcm=0E0
-      do i=1,nAtoms(nType)
-        atmType = atomArray(nType,i)
-        xcm = xcm + atomData(atmType)%mass*disp(i)%x_old
-        zcm = zcm + atomData(atmType)%mass*disp(i)%z_old
+      xcm = 0E0
+      zcm = 0E0
+      do iAtom = 1, nAtoms(nType)
+        atmType = atomArray(nType, iAtom)
+        xcm = xcm + atomData(atmType)%mass*disp(iAtom)%x_old
+        zcm = zcm + atomData(atmType)%mass*disp(iAtom)%z_old
       enddo
 
       xcm = xcm/totalMass(nType)    
       zcm = zcm/totalMass(nType)
 
 !     Generate a random translational displacement      
-      do i=1,nAtoms(nType)
-        disp(i)%y_new = disp(i)%y_old
-        x_scale = disp(i)%x_old - xcm
-        z_scale = disp(i)%z_old - zcm
-        disp(i)%x_new = c_term*x_scale - s_term*z_scale + xcm
-        disp(i)%z_new = s_term*x_scale + c_term*z_scale + zcm
+      do iAtom = 1, nAtoms(nType)
+        disp(iAtom)%y_new = disp(iAtom)%y_old
+        x_scale = disp(iAtom)%x_old - xcm
+        z_scale = disp(iAtom)%z_old - zcm
+        disp(iAtom)%x_new = c_term*x_scale - s_term*z_scale + xcm
+        disp(iAtom)%z_new = s_term*x_scale + c_term*z_scale + zcm
       enddo
 
 !     Calculate the Energy Difference Associated with the move   
@@ -446,7 +449,8 @@
       if(biasEnergy .le. 0E0) then
         acptRot(nType) = acptRot(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
-      elseif(exp(-biasEnergy) .gt. grnd()) then
+!      elseif(exp(-biasEnergy) .gt. grnd()) then
+      elseif(-biasEnergy .gt. log(grnd())) then
         acptRot(nType) = acptRot(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
       endif
@@ -472,7 +476,7 @@
       logical, parameter :: useIntra(1:4) = [.false., .false., .false., .false.]      
       
       logical :: rejMove      
-      integer :: i,nMove 
+      integer :: iAtom, nMove 
       integer :: atmType,nMol,nType,nIndx
       real(dp) :: angle
       real(dp) :: E_Inter, E_Intra
@@ -496,14 +500,14 @@
       nIndx = MolArray(nType)%mol(nMol)%indx
 
 !     Set the Displacement Array 
-      do i=1,nAtoms(nType)
-        disp(i)%molType = int(nType,atomIntType)
-        disp(i)%molIndx = int(nMol,atomIntType)
-        disp(i)%atmIndx = int(i,atomIntType)
+      do iAtom = 1, nAtoms(nType)
+        disp(iAtom)%molType = int(nType, atomIntType)
+        disp(iAtom)%molIndx = int(nMol, atomIntType)
+        disp(iAtom)%atmIndx = int(iAtom, atomIntType)
         
-        disp(i)%x_old => MolArray(nType)%mol(nMol)%x(i)
-        disp(i)%y_old => MolArray(nType)%mol(nMol)%y(i)
-        disp(i)%z_old => MolArray(nType)%mol(nMol)%z(i)
+        disp(iAtom)%x_old => MolArray(nType)%mol(nMol)%x(iAtom)
+        disp(iAtom)%y_old => MolArray(nType)%mol(nMol)%y(iAtom)
+        disp(iAtom)%z_old => MolArray(nType)%mol(nMol)%z(iAtom)
       enddo
       
 !     Uniformly choose a random rotational displacement ranging from -max_rot to +max_rot
@@ -514,22 +518,22 @@
 !     Determine the center of mass which will act as the pivot point for the rotational motion. 
       ycm=0E0
       zcm=0E0
-      do i=1,nAtoms(nType)
-        atmType = atomArray(nType,i)
-        ycm = ycm + atomData(atmType)%mass*disp(i)%y_old
-        zcm = zcm + atomData(atmType)%mass*disp(i)%z_old
+      do iAtom = 1, nAtoms(nType)
+        atmType = atomArray(nType,iAtom)
+        ycm = ycm + atomData(atmType)%mass*disp(iAtom)%y_old
+        zcm = zcm + atomData(atmType)%mass*disp(iAtom)%z_old
       enddo
 
       ycm = ycm/totalMass(nType)
       zcm = zcm/totalMass(nType)
 
 !     Generate a random translational displacement      
-      do i=1,nAtoms(nType)
-        disp(i)%x_new = disp(i)%x_old
-        y_scale = disp(i)%y_old - ycm
-        z_scale = disp(i)%z_old - zcm
-        disp(i)%y_new = c_term*y_scale - s_term*z_scale + ycm
-        disp(i)%z_new = s_term*y_scale + c_term*z_scale + zcm
+      do iAtom = 1, nAtoms(nType)
+        disp(iAtom)%x_new = disp(iAtom)%x_old
+        y_scale = disp(iAtom)%y_old - ycm
+        z_scale = disp(iAtom)%z_old - zcm
+        disp(iAtom)%y_new = c_term*y_scale - s_term*z_scale + ycm
+        disp(iAtom)%z_new = s_term*y_scale + c_term*z_scale + zcm
       enddo
 
 !     Calculate the Energy Difference Associated with the move   
@@ -553,7 +557,8 @@
       if(biasEnergy .le. 0E0) then
         acptRot(nType) = acptRot(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
-      elseif(exp(-biasEnergy) .gt. grnd()) then
+!      elseif(exp(-biasEnergy) .gt. grnd()) then
+      elseif(-biasEnergy .gt. log(grnd())) then
         acptRot(nType) = acptRot(nType) + 1E0
         call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
       endif
@@ -572,6 +577,7 @@
       use EnergyTables
       use PairStorage, only: UpdateDistArray
       use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
+      use Pressure_LJ_Electro, only: Shift_ECalc_Inter
       implicit none
       
       real(dp), intent(inout) :: E_T,acc_x,atmp_x
@@ -581,12 +587,18 @@
       real(dp), intent(in) :: dETable(1:maxMol)
       real(dp), intent(in) :: E_Inter
 
-      integer :: i      
+      integer :: iAtom     
     
-      do i = 1, nAtoms(nType)      
-        disp(i)%x_old = disp(i)%x_new
-        disp(i)%y_old = disp(i)%y_new
-        disp(i)%z_old = disp(i)%z_new
+
+      if(calcPressure) then
+        call Shift_ECalc_Inter(P_Diff, disp)
+        pressure = pressure + P_Diff
+      endif
+
+      do iAtom = 1, nAtoms(nType)      
+        disp(iAtom)%x_old = disp(iAtom)%x_new
+        disp(iAtom)%y_old = disp(iAtom)%y_new
+        disp(iAtom)%z_old = disp(iAtom)%z_new
       enddo
       E_T = E_T + E_Inter
       ETable = ETable + dETable
@@ -616,7 +628,7 @@
 
 
       logical :: rejMove      
-      integer :: i,nMove 
+      integer :: iAtom, nMove 
       integer :: atmType,nMol,nType,nIndx
       real(dp) :: grnd, betaNew
       real(dp) :: biasNew, biasOld, biasDiff, biasEnergy

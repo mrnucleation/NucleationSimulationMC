@@ -265,13 +265,14 @@
 !==============================================================
       module SimParameters
       use VarPrecision
-      logical, parameter :: echoInput = .false.      
+      logical, parameter :: echoInput = .false.
       logical, parameter :: useScriptInput = .true.
       logical :: prevMoveAccepted
 
       logical :: distCriteria = .false.
       logical :: multipleInput = .false.
-      integer(kind=8) :: ncycle, ncycle2       
+      logical :: calcPressure = .true.
+      integer(kind=8) :: ncycle, ncycle2 
       integer(kind=atomIntType) :: nMolTypes = 1
       integer,allocatable :: NMin(:), NMax(:)
       integer,allocatable, target :: NPart(:)
@@ -287,17 +288,19 @@
       real(dp),allocatable :: gas_dens(:)
       real(dp),allocatable :: max_dist(:), max_dist_single(:)
       real(dp),allocatable :: max_rot(:)
-        
+ 
       real(dp) :: beta
       real(dp), target :: temperature, tempNew
       real(dp) :: global_r_min
       real(dp) :: softCutoff
+      real(dp) :: Pressure, P_Diff
+      real(dp), allocatable :: P_Avg(:)
 
-!     Cluster Criteria block      
+!     Cluster Criteria block
       real(dp) :: Dist_Critr
       real(dp) :: Dist_Critr_sq
-!      real(dp), allocatable :: Dist_Critr
-!      real(dp), allocatable :: Dist_Critr_sq      
+!      real(dp), allocatable :: Dist_Critr(:,:)
+!      real(dp), allocatable :: Dist_Critr_sq(:,:)
       real(dp) :: NeighRej
       real(dp),allocatable :: Eng_Critr(:,:)
       real(dp) :: ECritMax
@@ -308,7 +311,7 @@
       integer :: outFreq_GCD = 1000
       integer :: outFreq_Screen = 1000
       integer :: outFreq_Traj = 1000
-        
+
       end module
 !================================================================ 
       module UmbrellaFunctions

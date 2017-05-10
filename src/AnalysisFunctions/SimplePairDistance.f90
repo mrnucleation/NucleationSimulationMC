@@ -101,6 +101,10 @@
            integer, intent(in) :: nType2, nMol2, nAtom2
            integer :: gloIndx1, gloIndx2, indx1, indx2
 
+           write(*,*) nType1, nMol1, nAtom1
+           write(*,*) nType2, nMol2, nAtom2
+           write(*,*) molArray(nType1)%mol(nMol1)%globalIndx(:)
+
            gloIndx1 = molArray(nType1)%mol(nMol1)%globalIndx(nAtom1)
            gloIndx2 = molArray(nType2)%mol(nMol2)%globalIndx(nAtom2)
            indx1 = molArray(nType1)%mol(nMol1)%indx

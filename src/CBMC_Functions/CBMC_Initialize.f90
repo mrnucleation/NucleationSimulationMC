@@ -21,13 +21,13 @@
       integer :: cnt,curAtom
       integer :: nTerminal, nLinker, nHub      
       
+
+      allocate(regrowType(1:nMolTypes), STAT = AllocateStatus)
       select case(trim(adjustl(ForceFieldName)))
       case("Pedone") 
-        allocate(regrowType(1:nMolTypes), STAT = AllocateStatus)
         regrowType = 0
         return
       case("Tersoff") 
-        allocate(regrowType(1:nMolTypes), STAT = AllocateStatus)
         regrowType = 0
         return
       case default
@@ -35,13 +35,22 @@
       end select
 
 
+      do iType = 1, nMolTypes
+        if(nAtoms(iType) .eq. 1) then
+          regrowType(iType) = 0
+        endif
+      enddo
+      if(all(regrowType .eq. 0) )then
+        return
+      endif
+
 
 !      Allocate the Topology arrays      
       allocate(topolArray(1:nMolTypes),STAT = AllocateStatus)
       do iType = 1,nMolTypes
         allocate(topolArray(iType)%atom(1:nAtoms(iType)),STAT = AllocateStatus)                  
       enddo
-      allocate(regrowType(1:nMolTypes), STAT = AllocateStatus)
+!      allocate(regrowType(1:nMolTypes), STAT = AllocateStatus)
       allocate(regrowOrder(1:nMolTypes, 1:maxAtoms), STAT = AllocateStatus)
       allocate(pathArray(1:nMolTypes), STAT = AllocateStatus)
       allocate(usedByPath(1:nMolTypes,1:maxAtoms), STAT = AllocateStatus)
@@ -49,6 +58,8 @@
       allocate(probTypeCBMC(1:nMolTypes), STAT = AllocateStatus)
       allocate(SwapGrowOrder(1:nMolTypes), STAT = AllocateStatus)
 	  
+
+
 	  
 !     Allocate Arrays for Growing Branched Molecules
       do iType = 1, nMolTypes

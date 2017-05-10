@@ -69,6 +69,7 @@ MOD_SRC := $(SRC)/VariablePrecision.f90\
 SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
             $(LJ_Q)/BondStretch_Functions.f90 \
             $(LJ_Q)/LJ_Electro_Functions_Experimental.f90 \
+            $(LJ_Q)/Pressure_LJ_Electro_Functions.f90 \
             $(LJ_Q)/Intra_LJ_Electro_Functions.f90\
             $(LJ_Q)/Torsional_Functions.f90 \
             $(LJ_Q)/Improper_Functions.f90 \
