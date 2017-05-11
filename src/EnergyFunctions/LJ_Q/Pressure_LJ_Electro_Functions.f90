@@ -16,7 +16,8 @@
       module Pressure_LJ_Electro
       use VarPrecision
 
-
+      real(dp), parameter :: lj_Cut = 2.5
+      real(dp), parameter :: lj_Cut_sq = lj_Cut**2
       contains
 !======================================================================================      
       pure function LJ_Func(r_sq, ep, sig) result(LJ)
@@ -79,13 +80,17 @@
                atmType1 = atomArray(iType,iAtom)
                globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
                do jAtom = 1,nAtoms(jType)        
+
+!                 if(r_sq .gt. lj_Cut_sq) then
+!                   cycle
+!                 endif 
                  atmType2 = atomArray(jType,jAtom)
                  ep = ep_tab(atmType1,atmType2)
                  q = q_tab(atmType1,atmType2)
                  sig_sq = sig_tab(atmType1,atmType2)          
                  globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-
                  r_sq = rPair(globIndx1, globIndx2)%p%r_sq
+
                  LJ = LJ_Func(r_sq, ep, sig_sq)             
                  P_LJ = P_LJ + LJ
                    
@@ -140,6 +145,7 @@
 !      !have been modified in this trial move with the atoms that have remained stationary
 
       do iPair = 1, nNewDist
+
         globIndx2 = newDist(iPair)%indx2
         jType = atomIndicies(globIndx2)%nType
         jMol  = atomIndicies(globIndx2)%nMol
