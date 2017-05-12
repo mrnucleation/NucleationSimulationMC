@@ -15,9 +15,8 @@
 !*********************************************************************************************************************
       module Pressure_LJ_Electro
       use VarPrecision
+      use InterEnergy_LJ_Electro, only: lj_cut, lj_Cut_sq
 
-      real(dp), parameter :: lj_Cut = 2.5
-      real(dp), parameter :: lj_Cut_sq = lj_Cut**2
       contains
 !======================================================================================      
       pure function LJ_Func(r_sq, ep, sig) result(LJ)
@@ -81,16 +80,16 @@
                globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
                do jAtom = 1,nAtoms(jType)        
 
-!                 if(r_sq .gt. lj_Cut_sq) then
-!                   cycle
-!                 endif 
+
                  atmType2 = atomArray(jType,jAtom)
                  ep = ep_tab(atmType1,atmType2)
                  q = q_tab(atmType1,atmType2)
                  sig_sq = sig_tab(atmType1,atmType2)          
                  globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
                  r_sq = rPair(globIndx1, globIndx2)%p%r_sq
-
+                 if(r_sq .gt. lj_Cut_sq) then
+                   cycle
+                 endif 
                  LJ = LJ_Func(r_sq, ep, sig_sq)             
                  P_LJ = P_LJ + LJ
                    
@@ -159,24 +158,25 @@
 
         ep = ep_tab(atmType2, atmType1)
         q  = q_tab(atmType2, atmType1)
+        LJ = 0E0_dp
         if(ep .ne. 0E0_dp) then
           sig_sq = sig_tab(atmType2,atmType1)
           r_new_sq = rPairNew(globIndx1, globIndx2)%p%r_sq
-          LJ = LJ_Func(r_new_sq, ep, sig_sq)   
-
+          if(r_new_sq .lt. lj_cut_sq) then
+            LJ = LJ + LJ_Func(r_new_sq, ep, sig_sq)   
+          endif
           r_sq = rPair(globIndx1, globIndx2)%p%r_sq  
-          LJ = LJ - LJ_Func(r_sq, ep, sig_sq)           
-        else
-          LJ = 0E0_dp
+          if(r_sq .lt. lj_cut_sq) then
+            LJ = LJ - LJ_Func(r_sq, ep, sig_sq)     
+          endif         
         endif
+        Ele = 0E0_dp
         if(q .ne. 0E0_dp) then
           r_new = rPairNew(globIndx1, globIndx2)%p%r
           Ele = q/r_new              
 
           r = rPair(globIndx1, globIndx2)%p%r
           Ele = Ele - q/r             
-        else
-          Ele = 0E0_dp
         endif
         P_Trial = P_Trial + Ele + LJ
       enddo    
@@ -220,12 +220,13 @@
               atmType2 = atomArray(jType,jAtom)
               ep = ep_tab(atmType2, atmType1)
               q  = q_tab(atmType2, atmType1)
+              LJ = 0E0_dp
               if(ep .ne. 0E0_dp) then
-                sig_sq = sig_tab(atmType2, atmType1)
                 r_sq = rPair(globIndx1, globIndx2)%p%r_sq
-                LJ = LJ_Func(r_sq, ep, sig_sq)             
-              else
-                LJ = 0E0_dp
+                if(r_sq .lt. lj_Cut_sq) then
+                  sig_sq = sig_tab(atmType2, atmType1)
+                  LJ = LJ_Func(r_sq, ep, sig_sq)             
+                endif
               endif
               if(q .ne. 0E0_dp) then
                 r = rPair(globIndx1, globIndx2)%p%r
@@ -285,13 +286,14 @@
 
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)
+!          LJ = 0E0_dp
           if(ep .ne. 0E0_dp) then
             r_sq = newDist(iPair)%r_sq
-            sig_sq = sig_tab(atmType2,atmType1)
-            LJ = LJ_Func(r_sq, ep, sig_sq)
-            P_LJ = P_LJ + LJ
-          else
-            LJ = 0E0_dp
+            if(r_sq .lt. lj_Cut_sq) then
+              sig_sq = sig_tab(atmType2,atmType1)
+              LJ = LJ_Func(r_sq, ep, sig_sq)
+              P_LJ = P_LJ + LJ
+            endif
           endif
 
           if(q .ne. 0E0_dp) then

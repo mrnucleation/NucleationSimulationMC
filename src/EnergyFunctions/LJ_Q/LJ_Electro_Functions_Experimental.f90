@@ -16,6 +16,9 @@
 !*********************************************************************************************************************
       module InterEnergy_LJ_Electro
       use VarPrecision
+
+      real(dp), parameter :: lj_Cut = 2.5
+      real(dp), parameter :: lj_Cut_sq = lj_Cut**2
       contains
 !======================================================================================      
       pure function LJ_Func(r_sq, ep, sig) result(LJ)
@@ -95,9 +98,10 @@
                      endif
                    endif
                  endif
-                 LJ = LJ_Func(r_sq, ep, sig_sq)             
-                 E_LJ = E_LJ + LJ
-                   
+                 if(r_sq .lt. lj_cut_sq) then
+                   LJ = LJ_Func(r_sq, ep, sig_sq)             
+                   E_LJ = E_LJ + LJ
+                 endif                   
 !                 r = rPair(globIndx1, globIndx2)%p%r
                  r = sqrt(r_sq)
                  Ele = q / r
@@ -205,16 +209,14 @@
 
 !          LJ = 0E0
 !          Ele = 0E0
+          LJ = 0E0_dp
           if(ep .ne. 0E0_dp) then
-            sig_sq = sig_tab(atmType2,atmType1)
             r_new_sq = newDist(iPair)%r_sq
-            LJ = LJ_Func(r_new_sq, ep, sig_sq)             
-            E_LJ = E_LJ + LJ
-!            dETable(iIndx) = dETable(iIndx) + LJ
-!            dETable(jIndx) = dETable(jIndx) + LJ
-!            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + LJ
-          else
-            LJ = 0E0_dp
+            if(r_new_sq .lt. lj_cut_sq) then
+              sig_sq = sig_tab(atmType2,atmType1)
+              LJ = LJ_Func(r_new_sq, ep, sig_sq)             
+              E_LJ = E_LJ + LJ
+            endif
           endif
           if(q .ne. 0E0_dp) then
             r_new = newDist(iPair)%r
@@ -391,16 +393,17 @@
 
 !          LJ = 0d0
 !          Ele = 0d0
+          LJ = 0E0_dp
           if(ep .ne. 0E0_dp) then
             r_sq = newDist(iPair)%r_sq
-            sig_sq = sig_tab(atmType2,atmType1)
-            LJ = LJ_Func(r_sq, ep, sig_sq)             
-            E_LJ = E_LJ + LJ
-            if(.not. distCriteria) then
-              PairList(jIndx) = PairList(jIndx) + LJ
+            if(r_sq .lt. lj_cut_sq) then
+              sig_sq = sig_tab(atmType2,atmType1)
+              LJ = LJ_Func(r_sq, ep, sig_sq)             
+              E_LJ = E_LJ + LJ
+              if(.not. distCriteria) then
+                PairList(jIndx) = PairList(jIndx) + LJ
+              endif
             endif
-          else
-            LJ = 0E0_dp
           endif
 
           if(q .ne. 0E0_dp) then
