@@ -10,7 +10,7 @@
 
     logical :: useUmbrella = .false.
     logical :: UScreenOut
-    logical :: energyAnalytics = .false.
+    logical :: energyAnalytics = .true.
     integer :: nBiasVariables = 0
     integer :: curUIndx, umbrellaLimit
     integer, allocatable :: curVarIndx
@@ -650,7 +650,7 @@
     include 'mpif.h' 
     integer :: iUmbrella, iBias, iBin
     integer :: arraySize
-    real(dp), allocatable :: TempHist(:), Temp2D(:,:)
+    real(dp), allocatable :: TempHist(:), TempAvg(:), Temp2D(:,:)
     character(len = 100) :: outputString
 
     if(.not. useUmbrella) then
@@ -660,16 +660,20 @@
 
 !    if(myid .eq. 0) then
       allocate( TempHist(1:umbrellaLimit+1) ) 
+      allocate( TempAvg(1:umbrellaLimit+1) ) 
       allocate( Temp2D(1:umbrellaLimit+1, 0:E_Bins) )
       TempHist = 0E0_dp
+      TempAvg = 0E0_dp
       Temp2D = 0E0_dp
 !    endif
     call MPI_BARRIER(MPI_COMM_WORLD, ierror) 
     arraySize = size(U_EAvg)   
 !    write(*,*) arraySize, size(TempHist)
-    call MPI_REDUCE(U_EAvg, TempHist, arraySize, &
+    call MPI_REDUCE(U_EAvg, TempAvg, arraySize, &
               MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
 
+    call MPI_REDUCE(UHistTotal, TempHist, arraySize, &
+              MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
 !    write(*,*) myid, ierror
     do iUmbrella = 1, umbrellaLimit
       write(*,*) iUmbrella, U_EAvg(iUmbrella), TempHist(iUmbrella)
@@ -677,7 +681,8 @@
 
     if(myid .eq. 0) then
       do iUmbrella = 1, umbrellaLimit
-        U_EAvg(iUmbrella) = TempHist(iUmbrella)
+        U_EAvg(iUmbrella) = TempAvg(iUmbrella)
+        UHistTotal(iUmbrella) = TempHist(iUmbrella)
       enddo
     endif
 
@@ -731,6 +736,7 @@
 
 
     deallocate(TempHist) 
+    deallocate(TempAvg)
     deallocate(Temp2D)
 
     end subroutine

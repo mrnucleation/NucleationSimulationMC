@@ -15,7 +15,7 @@
 !*********************************************************************************************************************
       module Pressure_LJ_Electro
       use VarPrecision
-      use InterEnergy_LJ_Electro, only: lj_cut, lj_Cut_sq, q_cut, q_cut_sq
+      use InterEnergy_LJ_Electro, only: lj_cut, lj_Cut_sq
 
       contains
 !======================================================================================      
@@ -95,6 +95,7 @@
                  r = sqrt(r_sq)
                  Ele = q / r
                  P_Ele = P_Ele + Ele
+             
                 enddo
               enddo
             enddo
@@ -105,7 +106,7 @@
       write(nout,*) "Lennard-Jones Pressure:", P_LJ
       write(nout,*) "Eletrostatic Pressure:", P_Ele
       P_T = P_Ele + P_LJ    
-      write(nout,*) "Total Pressure:", P_T
+      
       end subroutine
 !======================================================================================      
       pure subroutine Shift_PressCalc_Inter(P_Trial, disp)
@@ -143,14 +144,11 @@
 
       do iPair = 1, nNewDist
 
-        globIndx1 = newDist(iPair)%indx1
         globIndx2 = newDist(iPair)%indx2
-        if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
-          cycle
-        endif
         jType = atomIndicies(globIndx2)%nType
         jMol  = atomIndicies(globIndx2)%nMol
         jIndx = MolArray(jType)%mol(jMol)%indx
+        globIndx1 = newDist(iPair)%indx1
         jAtom = atomIndicies(globIndx2)%nAtom
         iAtom = atomIndicies(globIndx1)%nAtom
        
@@ -175,6 +173,7 @@
         if(q .ne. 0E0_dp) then
           r_new = rPairNew(globIndx1, globIndx2)%p%r
           Ele = q/r_new              
+
           r = rPair(globIndx1, globIndx2)%p%r
           Ele = Ele - q/r             
         endif
@@ -221,7 +220,6 @@
               ep = ep_tab(atmType2, atmType1)
               q  = q_tab(atmType2, atmType1)
               LJ = 0E0_dp
-!              r_sq = rPair(globIndx1, globIndx2)%p%r_sq
               if(ep .ne. 0E0_dp) then
                 r_sq = rPair(globIndx1, globIndx2)%p%r_sq
                 if(r_sq .lt. lj_Cut_sq) then
@@ -229,11 +227,11 @@
                   LJ = LJ_Func(r_sq, ep, sig_sq)             
                 endif
               endif
-
-              Ele = 0E0_dp
               if(q .ne. 0E0_dp) then
                 r = rPair(globIndx1, globIndx2)%p%r
                 Ele = q/r            
+              else
+                Ele = 0E0_dp
               endif
               P_Trial = P_Trial + Ele + LJ
             enddo
@@ -274,9 +272,7 @@
       do iPair = 1, nNewDist
         globIndx1 = newDist(iPair)%indx1
         globIndx2 = newDist(iPair)%indx2
-        if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
-          cycle
-        endif
+
         jType = atomIndicies(globIndx2)%nType
         jMol = atomIndicies(globIndx2)%nMol
         jIndx = MolArray(jType)%mol(jMol)%indx
@@ -289,6 +285,7 @@
 
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)
+!          LJ = 0E0_dp
           if(ep .ne. 0E0_dp) then
             r_sq = newDist(iPair)%r_sq
             if(r_sq .lt. lj_Cut_sq) then
@@ -302,6 +299,8 @@
             r = newDist(iPair)%r
             Ele = q/r
             P_Ele = P_Ele + Ele
+!          else
+!            Ele = 0E0_dp
           endif
         endif
       enddo

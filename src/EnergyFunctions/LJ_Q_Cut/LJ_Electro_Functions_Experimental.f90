@@ -17,10 +17,10 @@
       module InterEnergy_LJ_Electro
       use VarPrecision
 
-      real(dp), parameter :: lj_Cut = 7.5
+      real(dp), parameter :: lj_Cut = 12.0
       real(dp), parameter :: lj_Cut_sq = lj_Cut**2
 
-      real(dp), parameter :: q_Cut = 7000.0
+      real(dp), parameter :: q_Cut = 24.0
       real(dp), parameter :: q_Cut_sq = q_Cut**2
       contains
 !======================================================================================      
@@ -93,16 +93,25 @@
                  globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
 
                  r_sq = rPair(globIndx1, globIndx2)%p%r_sq
-                 LJ = 0E0_dp
+                 if(distCriteria) then
+                   if(iAtom .eq. 1) then
+                     if(jAtom .eq. 1) then
+                       PairList(iIndx, jIndx) = r_sq
+                       PairList(jIndx, iIndx) = PairList(iIndx,jIndx)                    
+                     endif
+                   endif
+                 endif
                  if(r_sq .lt. lj_cut_sq) then
                    LJ = LJ_Func(r_sq, ep, sig_sq)             
                    E_LJ = E_LJ + LJ
                  endif                   
-                 Ele = 0E0_dp
-                 r = sqrt(r_sq)
-                 Ele = q / r
-!                  Ele = Ele_Func(r, q)
-                 E_Ele = E_Ele + Ele
+!                 r = rPair(globIndx1, globIndx2)%p%r
+                 if(r_sq .lt. q_cut_sq) then
+                   r = sqrt(r_sq)
+                   Ele = q / r
+!                   Ele = Ele_Func(r, q)
+                   E_Ele = E_Ele + Ele
+                 endif
                  rPair(globIndx1, globIndx2)%p%E_Pair = Ele + LJ
                  if(.not. distCriteria) then
                    PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ
@@ -180,15 +189,11 @@
 
       do iPair = 1, nNewDist
         gloIndx2 = newDist(iPair)%indx2
-        gloIndx1 = newDist(iPair)%indx1
-        if(.not. rPair(gloIndx1, gloIndx2)%p%usePair) then
-          cycle
-        endif
         jType = atomIndicies(gloIndx2)%nType
         jMol  = atomIndicies(gloIndx2)%nMol
         jIndx = MolArray(jType)%mol(jMol)%indx
 !        if(jIndx .ne. iIndx) then
-!          gloIndx1 = newDist(iPair)%indx1
+          gloIndx1 = newDist(iPair)%indx1
           jAtom = atomIndicies(gloIndx2)%nAtom
           iAtom = atomIndicies(gloIndx1)%nAtom
        
@@ -198,6 +203,16 @@
           ep = ep_tab(atmType2, atmType1)
           q  = q_tab(atmType2, atmType1)
          
+!          if(distCriteria) then
+!            if(iAtom .eq. 1) then
+!              if(jAtom .eq. 1) then
+!                PairList(jIndx) = newDist(iPair)%r_sq
+!              endif
+!            endif
+!          endif
+
+!          LJ = 0E0
+!          Ele = 0E0
           LJ = 0E0_dp
           if(ep .ne. 0E0_dp) then
             r_new_sq = newDist(iPair)%r_sq
@@ -207,11 +222,17 @@
               E_LJ = E_LJ + LJ
             endif
           endif
-          Ele = 0E0_dp
           if(q .ne. 0E0_dp) then
             r_new = newDist(iPair)%r
             Ele = q/r_new
+!            Ele = Ele_Func(r_new, q)                
             E_Ele = E_Ele + Ele
+
+!            dETable(iIndx) = dETable(iIndx) + Ele
+!            dETable(jIndx) = dETable(jIndx) + Ele
+!            newDist(iPair)%E_Pair = newDist(iPair)%E_Pair + Ele
+          else
+            Ele = 0E0_dp
           endif
           E_New = Ele + LJ
           if(.not. distCriteria) then                
@@ -360,9 +381,7 @@
       do iPair = 1, nNewDist
         gloIndx1 = newDist(iPair)%indx1
         gloIndx2 = newDist(iPair)%indx2
-        if(.not. rPair(gloIndx1, gloIndx2)%p%usePair) then
-          cycle
-        endif
+
         jType = atomIndicies(gloIndx2)%nType
         jMol = atomIndicies(gloIndx2)%nMol
         jIndx = MolArray(jType)%mol(jMol)%indx
@@ -376,6 +395,8 @@
           ep = ep_tab(atmType2, atmType1)
           q = q_tab(atmType2, atmType1)
 
+!          LJ = 0d0
+!          Ele = 0d0
           LJ = 0E0_dp
           if(ep .ne. 0E0_dp) then
             r_sq = newDist(iPair)%r_sq
@@ -389,14 +410,16 @@
             endif
           endif
 
-          Ele = 0E0_dp
           if(q .ne. 0E0_dp) then
             r = newDist(iPair)%r
             Ele = q/r
+!            Ele = Ele_Func(r_sq, q)                
             E_Ele = E_Ele + Ele
-            if(.not. distCriteria) then 
+            if(.not. distCriteria) then                
               PairList(jIndx) = PairList(jIndx) + Ele
             endif
+          else
+            Ele = 0E0_dp
           endif
           dETable(iIndx) = dETable(iIndx) + LJ + Ele
           dETable(jIndx) = dETable(jIndx) + LJ + Ele

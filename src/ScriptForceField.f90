@@ -263,7 +263,8 @@
             if(echoInput) then
               write(35,*) bondData(i)%bondName, bondData(i)%k_eq, bondData(i)%r_eq    
             endif        
-          enddo          
+          enddo   
+
         case("angletypes")
           read(lineStore(1),*) dummy, defType, intValue
           nAngleTypes = intValue

@@ -577,7 +577,7 @@
       use EnergyTables
       use PairStorage, only: UpdateDistArray
       use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
-      use Pressure_LJ_Electro, only: Shift_ECalc_Inter
+      use Pressure_LJ_Electro, only: Shift_PressCalc_Inter
       implicit none
       
       real(dp), intent(inout) :: E_T,acc_x,atmp_x
@@ -591,7 +591,7 @@
     
 
       if(calcPressure) then
-        call Shift_ECalc_Inter(P_Diff, disp)
+        call Shift_PressCalc_Inter(P_Diff, disp)
         pressure = pressure + P_Diff
       endif
 

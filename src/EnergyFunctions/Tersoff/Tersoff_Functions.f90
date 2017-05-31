@@ -18,7 +18,9 @@
 
 
 !      real(dp), parameter :: ep = 4d0*634.62810518d0
-      real(dp), parameter :: ep = 4d0*78d0
+!      real(dp), parameter :: ep = 4d0*78d0
+      real(dp), parameter :: ep = 0d0
+      
       real(dp), parameter :: sig = 3.174116d0**2
 !====================================================================================== 
       contains
