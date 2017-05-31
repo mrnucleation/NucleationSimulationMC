@@ -17,7 +17,7 @@
       module InterEnergy_LJ_Electro
       use VarPrecision
 
-      real(dp), parameter :: lj_Cut = 7.5
+      real(dp), parameter :: lj_Cut = 12.5
       real(dp), parameter :: lj_Cut_sq = lj_Cut**2
 
       real(dp), parameter :: q_Cut = 7000.0

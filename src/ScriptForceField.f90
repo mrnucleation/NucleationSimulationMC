@@ -31,6 +31,7 @@
       real(dp) :: convDist = 1d0
       real(dp) :: convAng = 1d0
 
+      real(dp), parameter :: coulombConst = 1.671009770E5_dp
 
       public :: SetForcefieldType, ScriptForcefield, fieldTypeSet
 
@@ -801,7 +802,7 @@
         do j = i,nAtomTypes
           ep_tab(i,j)  = 4d0*ep_func(atomData(i)%ep, atomData(j)%ep)          
           sig_tab(i,j) = sig_func(atomData(i)%sig, atomData(j)%sig)**2
-          q_tab(i,j) = atomData(i)%q * atomData(j)%q * 1.671d5
+          q_tab(i,j) = atomData(i)%q * atomData(j)%q * coulombConst
 
           ep_tab(j,i) = ep_tab(i,j)
           sig_tab(j,i) = sig_tab(i,j)
@@ -856,7 +857,7 @@
       q_tab = 0d0
       do i = 1,nAtomTypes
         do j = i,nAtomTypes
-          q_tab(i,j) = pedoneData(i)%q * pedoneData(j)%q * 1.671d5
+          q_tab(i,j) = pedoneData(i)%q * pedoneData(j)%q * coulombConst
           q_tab(j,i) = q_tab(i,j)
           if(echoInput) then
              write(35,*) i, j, q_tab(i,j) 
