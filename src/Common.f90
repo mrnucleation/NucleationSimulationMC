@@ -271,7 +271,7 @@
 
       logical :: distCriteria = .false.
       logical :: multipleInput = .false.
-      logical :: calcPressure = .true.
+      logical :: calcPressure = .false.
       integer(kind=8) :: ncycle, ncycle2 
       integer(kind=atomIntType) :: nMolTypes = 1
       integer,allocatable :: NMin(:), NMax(:)

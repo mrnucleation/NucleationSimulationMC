@@ -17,7 +17,7 @@
       module InterEnergy_LJ_Electro
       use VarPrecision
 
-      real(dp), parameter :: lj_Cut = 12.5
+      real(dp), parameter :: lj_Cut = 7.5
       real(dp), parameter :: lj_Cut_sq = lj_Cut**2
 
       real(dp), parameter :: q_Cut = 7000.0
@@ -46,7 +46,7 @@
       end function
 !======================================================================================      
       subroutine Detailed_ECalc_Inter(E_T, PairList)
-!      use ParallelVar
+      use ParallelVar, only: nout
       use ForceField, only: nAtoms, atomArray
       use ForceFieldPara_LJ_Q, only: ep_tab, q_tab, sig_tab
       use Coords, only: MolArray
@@ -117,8 +117,8 @@
         enddo
       enddo
       
-!      write(nout,*) "Lennard-Jones Energy:", E_LJ
-!      write(nout,*) "Eletrostatic Energy:", E_Ele
+      write(nout,*) "Lennard-Jones Energy:", E_LJ
+      write(nout,*) "Eletrostatic Energy:", E_Ele
 
 !      write(35,*) "Pair List:"
 !      do iMol=1,maxMol
