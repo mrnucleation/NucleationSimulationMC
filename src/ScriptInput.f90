@@ -194,6 +194,9 @@
           read(line,*) dummy, command, realValue
           Dist_Critr = realValue   
           Dist_Critr_sq = realValue**2
+        case("calcpressure")     
+          read(line,*) dummy, command, logicValue
+          calcPressure = logicValue 
         case("cycles")
           read(line,*) dummy, command, realValue  
           nCycle = nint(realValue)
