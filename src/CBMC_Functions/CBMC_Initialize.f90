@@ -31,7 +31,7 @@
         regrowType = 0
         return
       case default
-        continue
+        regrowType = -1
       end select
 
 

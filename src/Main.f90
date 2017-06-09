@@ -312,9 +312,8 @@
            do while(moveProbability(nSel) .lt. ran_num)
              nSel = nSel + 1
            enddo
-
            call mcMoveArray(nSel) % moveFunction(E_T, movesAccepted(nSel), movesAttempt(nSel))
-
+!           write(*,*) nSel
 !           if(prevMoveAccepted) then
 !             write(35,*) "========================================================"
 !             write(35,*) nSel

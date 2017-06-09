@@ -17,10 +17,10 @@
       module InterEnergy_LJ_Electro
       use VarPrecision
 
-      real(dp), parameter :: lj_Cut = 7.5
+      real(dp), parameter :: lj_Cut = 8.0
       real(dp), parameter :: lj_Cut_sq = lj_Cut**2
 
-      real(dp), parameter :: q_Cut = 7000.0
+      real(dp), parameter :: q_Cut = 8.5
       real(dp), parameter :: q_Cut_sq = q_Cut**2
       contains
 !======================================================================================      
@@ -101,7 +101,7 @@
                  Ele = 0E0_dp
                  r = sqrt(r_sq)
                  Ele = q / r
-!                  Ele = Ele_Func(r, q)
+!                 Ele = Ele_Func(r, q)
                  E_Ele = E_Ele + Ele
                  rPair(globIndx1, globIndx2)%p%E_Pair = Ele + LJ
                  if(.not. distCriteria) then
@@ -199,8 +199,9 @@
           q  = q_tab(atmType2, atmType1)
          
           LJ = 0E0_dp
+          r_new_sq = newDist(iPair)%r_sq
           if(ep .ne. 0E0_dp) then
-            r_new_sq = newDist(iPair)%r_sq
+!            r_new_sq = newDist(iPair)%r_sq
             if(r_new_sq .lt. lj_cut_sq) then
               sig_sq = sig_tab(atmType2,atmType1)
               LJ = LJ_Func(r_new_sq, ep, sig_sq)             
@@ -377,8 +378,9 @@
           q = q_tab(atmType2, atmType1)
 
           LJ = 0E0_dp
+          r_sq = newDist(iPair)%r_sq
           if(ep .ne. 0E0_dp) then
-            r_sq = newDist(iPair)%r_sq
+!            r_sq = newDist(iPair)%r_sq
             if(r_sq .lt. lj_cut_sq) then
               sig_sq = sig_tab(atmType2,atmType1)
               LJ = LJ_Func(r_sq, ep, sig_sq)             

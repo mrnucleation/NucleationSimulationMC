@@ -99,6 +99,8 @@
      procedure(RosenMolNewInterface), pointer :: Rosen_Mol_New => NULL()
      procedure(RosenMolOldInterface), pointer :: Rosen_Mol_Old => NULL()
 
+!     procedure(RosenAtomNewInterface), pointer :: Rosen_Atom_New => NULL()
+!     procedure(RosenAtomOldInterface), pointer :: Rosen_Atom_Old => NULL()
      procedure(QuickInterface), pointer :: Quick_Nei_ECalc => NULL()
 
      end module

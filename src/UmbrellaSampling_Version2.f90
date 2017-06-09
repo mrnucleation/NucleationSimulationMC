@@ -675,9 +675,9 @@
     call MPI_REDUCE(UHistTotal, TempHist, arraySize, &
               MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
 !    write(*,*) myid, ierror
-    do iUmbrella = 1, umbrellaLimit
-      write(*,*) iUmbrella, U_EAvg(iUmbrella), TempHist(iUmbrella)
-    enddo
+!    do iUmbrella = 1, umbrellaLimit
+!      write(*,*) iUmbrella, U_EAvg(iUmbrella), TempHist(iUmbrella)
+!    enddo
 
     if(myid .eq. 0) then
       do iUmbrella = 1, umbrellaLimit

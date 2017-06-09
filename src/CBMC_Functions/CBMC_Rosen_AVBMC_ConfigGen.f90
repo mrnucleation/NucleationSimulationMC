@@ -166,7 +166,6 @@
         write(*,*) "SCREWED UP!", rx, ry, rz, r, Dist_Critr, Dist_Critr_sq
       endif
       rosenRatio = (ProbRosen(nSel)*dble(nRosenTrials(nType)))/rosenNorm
-      
       end subroutine
 !=======================================================================
 !     This subroutine is used for
