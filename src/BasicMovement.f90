@@ -520,8 +520,8 @@
       zcm=0E0
       do iAtom = 1, nAtoms(nType)
         atmType = atomArray(nType,iAtom)
-        ycm = ycm + atomData(atmType)%mass*disp(iAtom)%y_old
-        zcm = zcm + atomData(atmType)%mass*disp(iAtom)%z_old
+        ycm = ycm + atomData(atmType)%mass * disp(iAtom)%y_old
+        zcm = zcm + atomData(atmType)%mass * disp(iAtom)%z_old
       enddo
 
       ycm = ycm/totalMass(nType)

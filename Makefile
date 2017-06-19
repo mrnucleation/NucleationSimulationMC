@@ -9,9 +9,9 @@ FC := mpif90
 #FC := gfortran
 CC := mpicc
 OPTIMIZE_FLAGS := -O3
-#OPTIMIZE_FLAGS += -xHost
+OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
-#OPTIMIZE_FLAGS += -no-prec-div
+OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 DETAILEDDEBUG:= -fbacktrace -fcheck=all -g -ffree-line-length-0 -Og
@@ -20,7 +20,7 @@ DETAILEDDEBUG:= -fbacktrace -fcheck=all -g -ffree-line-length-0 -Og
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += $(DETAILEDDEBUG)
 #DEBUGFLAGS += -check all -traceback -g
-#DEBUGFLAGS += -pg 
+DEBUGFLAGS += -pg 
 #DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS += -Wunused-parameter 
 #DEBUGFLAGS := -fimplicit-none  -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -fwhole-file -fcheck=all -fbacktrace
@@ -117,8 +117,9 @@ SRC_SWAP := $(SWAP)/Exchange.f90\
 SRC_ANALYSIS := $(ANALYSIS_SUB)/MiscelaniousVariables.f90\
             $(ANALYSIS_SUB)/SimplePairDistance.f90\
             $(ANALYSIS_SUB)/RadialDistributionFunction.f90\
-            $(ANALYSIS_SUB)/Q6Functions.f90\
+            $(ANALYSIS_SUB)/Q3Functions.f90\
             $(ANALYSIS_SUB)/Q4Functions.f90\
+            $(ANALYSIS_SUB)/Q6Functions.f90\
             $(ANALYSIS_SUB)/RadialDensity.f90\
             $(ANALYSIS_SUB)/AnalysisMain.f90
 #SRC_SWAP := $(SWAP)/AVBMC_EBias.f90
