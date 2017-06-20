@@ -16,7 +16,7 @@
        real(dp) :: q3real(0:2*mOrder) , q3Img(0:2*mOrder)
        real(dp) :: dq3real(0:2*mOrder) , dq3Img(0:2*mOrder)
        real(dp) :: q3Dist, q3DistSq
-       real(dp), parameter :: q3Constant = 4d0*pi/(2d0*3d0+1d0)
+       real(dp), parameter :: q3Constant = 4d0*pi/(2d0*mOrder+1d0)
 
        public :: Initialize_q3, Calcq3, useq3, q3Dist, q3DistSq, q3ArrayIndx
        public :: Calcq3_Disp, Calcq3_SwapIn, Calcq3_SwapOut, q3Neigh
@@ -366,8 +366,8 @@
 !           dNeigh = -q3Neigh
 !           dq3real = -q3real
 !           dq3real = -q3img
- 	       miscCoord_New(q3ArrayIndx) = 1E0
-           return	   
+           miscCoord_New(q3ArrayIndx) = 1E0
+           return
          endif
 
  
@@ -383,7 +383,7 @@
              if(gloIndx1 .eq. gloIndx2) then
                cycle
              endif
-             if(rPair(gloIndx2, gloIndx1)%p%r_sq .le. q3DistSq) then	
+             if(rPair(gloIndx2, gloIndx1)%p%r_sq .le. q3DistSq) then
                r = rPair(gloIndx2, gloIndx1)%p%r
                dNeigh = dNeigh - 1
                rx = rPair(gloIndx2, gloIndx1)%p%rx
@@ -392,9 +392,9 @@
                phi = atan2(ry,rx)
                theta = acos(rz/r)  
                do m = 0, 2*mOrder
-                 call Harmonics(theta, phi, m-mOrder, rPart, iPart)	
+                 call Harmonics(theta, phi, m-mOrder, rPart, iPart)
                  dq3real(m) = dq3real(m) - rPart
-                 dq3img(m) = dq3img(m) - iPart	
+                 dq3img(m) = dq3img(m) - iPart
                enddo               
              endif
            enddo
@@ -404,11 +404,11 @@
          do m = 0, 2*mOrder
            q3r_new = q3real(m) + dq3real(m)
            q3i_new = q3img(m) + dq3img(m)
-           q3Par = q3par + q3r_new*q3r_new + q3i_new*q3i_new   	   
+           q3Par = q3par + q3r_new*q3r_new + q3i_new*q3i_new   
          enddo
          q3par = q3par * q3Constant
          q3par = sqrt(q3par)/real((q3Neigh + dNeigh), dp)
- 	     miscCoord_New(q3ArrayIndx) = q3par
+         miscCoord_New(q3ArrayIndx) = q3par
          newData = .true.
       end subroutine
      !--------------------------------------------------------------------------------
@@ -430,7 +430,7 @@
       ImgVal = 0E0_dp
       cterm = cos(Theta)
       sterm = sin(Theta)
-	  
+  
       select case (abs(m))
       case(0)
         ctermsq = cterm * cterm
@@ -440,24 +440,24 @@
         ctermsq = cterm * cterm
         RealVal = sterm * (5d0*ctermsq - 1d0)
         if(m .gt. 0) then
-	       RealVal = -RealVal
+          RealVal = -RealVal
         endif
         RealVal = RealVal * const1
       case(2)
         RealVal = sterm * sterm * cterm
         RealVal = RealVal * const2
-      case(3)	   
+      case(3)
         RealVal = sTerm * sTerm * sTerm
         if(m .gt. 0) then
-	      RealVal = -RealVal
+          RealVal = -RealVal
         endif
         RealVal = RealVal * const3
       end select
 
       ImgVal = RealVal * sin(m * Phi)
       RealVal = RealVal * cos(m * Phi)
-	
-	
+
+
       If(Abs(ImgVal) .lt. 1d-13) then
         ImgVal = 0E0_dp
       endif
