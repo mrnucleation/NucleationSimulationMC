@@ -104,11 +104,12 @@
 
   
          if(NTotal .eq. 1) then
- 	       miscCoord(q3ArrayIndx) = 1E0_dp
+           miscCoord(q3ArrayIndx) = 1E0_dp
            q3real = 0E0_dp
            q3img = 0E0_dp
            q3neigh = 0
            newData = .false.
+
            return  
          endif
 
@@ -154,6 +155,10 @@
                    rx = rPair(gloIndx2, gloIndx1)%p%rx
                    ry = rPair(gloIndx2, gloIndx1)%p%ry
                    rz = rPair(gloIndx2, gloIndx1)%p%rz
+!                   if(gloIndx2 .lt. gloIndx1) then
+!                     rPart = -rPart
+!                     iPart = -iPart
+!                   endif
                    phi = atan2(ry,rx)
                    theta = acos(rz/r)   
                    do m = 0, 2*mOrder
@@ -169,11 +174,13 @@
 
          q3par = 0E0_dp
          do m = 0, 2*mOrder
+!           write(2,*) m-mOrder, q3real(m), q3img(m)
            q3Par = q3par + q3real(m)*q3real(m) + q3img(m)*q3img(m)
          enddo
+!         flush(2)
          q3par = q3par * q3Constant
          q3par = sqrt(q3par)/q3Neigh
- 	     miscCoord(q3ArrayIndx) = q3par
+ 	       miscCoord(q3ArrayIndx) = q3par
 !         if(prevMoveAccepted) then
 !           if(abs(miscCoord(q3ArrayIndx) - miscCoord_New(q3ArrayIndx)) .gt. 1d-7) then
 !             write(2,*) "DISCRPANCY:", miscCoord(q3ArrayIndx), miscCoord_New(q3ArrayIndx)
@@ -213,7 +220,7 @@
          dq3real = 0E0_dp
          dq3img = 0E0_dp
          if(NTotal .eq. 1) then
- 	       miscCoord_New(q3ArrayIndx) = 1E0_dp
+ 	         miscCoord_New(q3ArrayIndx) = 1E0_dp
            newData = .false.
            return	   
          endif
@@ -244,17 +251,33 @@
              if(gloIndx2 .eq. gloIndx1) then
                cycle
              endif
-             rx = molArray(jType)%mol(jMol)%x(1) - disp(dispAtom1)%x_new 
-             ry = molArray(jType)%mol(jMol)%y(1) - disp(dispAtom1)%y_new 
-             rz = molArray(jType)%mol(jMol)%z(1) - disp(dispAtom1)%z_new
+!             do m = 0, 2*mOrder
+!               write(2,*) "total",m-mOrder, q3real(m), q3img(m)
+!             enddo    
+             rx = disp(dispAtom1)%x_new  - molArray(jType)%mol(jMol)%x(1) 
+             ry = disp(dispAtom1)%y_new  - molArray(jType)%mol(jMol)%y(1) 
+             rz = disp(dispAtom1)%z_new  - molArray(jType)%mol(jMol)%z(1)
              r = rx*rx + ry*ry + rz*rz
+             
              if(r .le. q3DistSq) then	
+               if(gloIndx2 .lt. gloIndx1) then
+                 rx = -rx
+                 ry = -ry
+                 rz = -rz
+               endif
                r = sqrt(r)
                dNeigh = dNeigh + 1
                phi = atan2( ry, rx )
                theta = acos( rz / r )  
+!               write(2,*) rx, ry, rz, r
+!               write(2,*) phi, theta
                do m = 0, 2*mOrder
                  call Harmonics(theta, phi, m-mOrder, rPart, iPart)	
+!                 if(gloIndx2 .lt. gloIndx1) then
+!                   rPart = -rPart
+!                   iPart = -iPart
+!                 endif
+!                 write(2,*) "new",m-mOrder, rPart, iPart
                  dq3real(m) = dq3real(m) + rPart
                  dq3img(m) = dq3img(m) + iPart	
                enddo               
@@ -266,10 +289,17 @@
 !                rx = rPair(gloIndx2, gloIndx1)%p%rx
 !                ry = rPair(gloIndx2, gloIndx1)%p%ry
 !                rz = rPair(gloIndx2, gloIndx1)%p%rz
+   
                 phi = atan2(rPair(gloIndx2, gloIndx1)%p%ry, rPair(gloIndx2, gloIndx1)%p%rx)
                 theta = acos(rPair(gloIndx2, gloIndx1)%p%rz / rPair(gloIndx2, gloIndx1)%p%r )   
+!                write(2,*) phi, theta
                 do m = 0, 2*mOrder
                   call Harmonics(theta, phi, m-mOrder, rPart, iPart)	
+!                  if(gloIndx2 .lt. gloIndx1) then
+!                    rPart = -rPart
+!                    iPart = -iPart
+!                  endif
+!                  write(2,*) "old",m-mOrder, rPart, iPart
                   dq3real(m) = dq3real(m) - rPart
                   dq3img(m) = dq3img(m) - iPart	
                 enddo
@@ -277,16 +307,21 @@
            enddo
          enddo
           
+!         write(2,*) q3Neigh, dNeigh
          q3par = 0E0_dp
          do m = 0, 2*mOrder
+!           write(2,*) m-mOrder, q3real(m) + dq3real(m), q3img(m) + dq3img(m)
            q3r_new = q3real(m) + dq3real(m)
            q3i_new = q3img(m) + dq3img(m)
            q3Par = q3par + q3r_new*q3r_new + q3i_new*q3i_new   	   
          enddo
+!         write(2,*)
+!         flush(2)
          q3par = q3par * q3Constant
          newNeigh = q3Neigh + dNeigh
          q3par = sqrt(q3par)/newNeigh
- 	     miscCoord_New(q3ArrayIndx) = q3par
+!         write(2,*) "q3", q3par
+ 	       miscCoord_New(q3ArrayIndx) = q3par
          newData = .true.
       end subroutine
      !--------------------------------------------------------------------------------
@@ -309,23 +344,31 @@
  
          iType = newMol%molType
          iMol = NPART(iType) + 1
+         gloIndx1 = molArray(iType)%mol(iMol)%globalIndx(1)
          dNeigh = 0
 !         gloIndx1 =  molArray(iType)%mol(iMol)%globalIndx(1)
          dq3real = 0E0_dp
          dq3img = 0E0_dp
          do jType = 1, nMolTypes
            do jMol = 1, NPART(jType)
+             gloIndx2 = molArray(iType)%mol(iMol)%globalIndx(1)
              rx = newMol%x(1) -  molArray(jType)%mol(jMol)%x(1)
              ry = newMol%y(1) -  molArray(jType)%mol(jMol)%y(1)
              rz = newMol%z(1) -  molArray(jType)%mol(jMol)%z(1)
              r = rx*rx + ry*ry + rz*rz
              if(r .le. q3DistSq) then	
+               if(gloIndx2 .lt. gloIndx1) then
+                 rx = -rx
+                 ry = -ry
+                 rz = -rz
+               endif
                r = sqrt(r)
                dNeigh = dNeigh + 1
                phi = atan2(ry,rx)
                theta = acos(rz/r)  
                do m = 0, 2*mOrder
                  call Harmonics(theta, phi, m-mOrder, rPart, iPart)	
+
                  dq3real(m) = dq3real(m) + rPart
                  dq3img(m) = dq3img(m) + iPart	
                enddo               
@@ -341,7 +384,7 @@
          enddo
          q3par = q3par * q3Constant
          q3par = sqrt(q3par)/real((q3Neigh + dNeigh), dp)
- 	     miscCoord_New(q3ArrayIndx) = q3par
+ 	       miscCoord_New(q3ArrayIndx) = q3par
          newData = .true.
       end subroutine
      !--------------------------------------------------------------------------------
@@ -393,6 +436,10 @@
                theta = acos(rz/r)  
                do m = 0, 2*mOrder
                  call Harmonics(theta, phi, m-mOrder, rPart, iPart)
+                 if(gloIndx2 .lt. gloIndx1) then
+                   rPart = -rPart
+                   iPart = -iPart
+                 endif
                  dq3real(m) = dq3real(m) - rPart
                  dq3img(m) = dq3img(m) - iPart
                enddo               
