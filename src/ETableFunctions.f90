@@ -206,11 +206,6 @@
         newNeiTable(i) = EMax
       enddo
       
-      write(2,*) "NeighborTable"
-      do i = 1, maxMol
-        write(2,*) i, newNeiTable(i), neiCount(i)
-      enddo
-      flush(2)
        
       end subroutine    
 
@@ -224,7 +219,6 @@
       integer, intent(in) :: nType
 !      real(dp), intent(in) :: PairList(:)
       real(dp), intent(inout) :: dE(:), newNeiTable(:)
-!      real(dp), intent(in) :: biasArray(:)
 
       integer :: i,j, nIndx
       integer :: iType, jType, iMol, jMol, iLowIndx, jLowIndx
@@ -331,11 +325,11 @@
         do iType = 1, nMolTypes
           do iMol = 1, NPART(iType)
             iIndx = molArray(iType)%mol(iMol)%indx
-		    ETabi = ETable(iIndx) + dE(iIndx)
+	          ETabi = ETable(iIndx) + dE(iIndx)
             ENei = newNeiTable(iIndx)
             do jIndx = iIndx+1, maxMol
-		      if(.not. isActive(jIndx) ) then
-	   	        cycle
+              if(.not. isActive(jIndx) ) then
+	   	          cycle
               endif
               if(NeighborList(jIndx, iIndx)) then
                 ETabj = ETable(jIndx) + dE(jIndx)

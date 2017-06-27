@@ -24,7 +24,6 @@
       use Coords
       use SimParameters
       use EnergyTables
-      use PairStorage, only: rPair, distStorage, nTotalAtoms
       implicit none
       real(dp), intent(inOut) :: E_T
       real(dp), intent(inOut) :: PairList(:,:)
@@ -79,7 +78,6 @@
                  if(r .lt. rmin_ij) then
                    stop "ERROR! Overlaping atoms found in the current configuration!"
                  endif 
-                 rPair(globIndx1, globIndx2)%p%r_sq = r
                  LJ = (sig_sq/r)**3
                  LJ = ep * LJ * (LJ-1E0)              
                  E_LJ = E_LJ + LJ
@@ -87,7 +85,6 @@
                  r = sqrt(r)
                  Ele = q/r
                  E_Ele = E_Ele + Ele
-                 rPair(globIndx1, globIndx2)%p%E_Pair = Ele + LJ
                  if(.not. distCriteria) then
                    PairList(iIndx, jIndx) = PairList(iIndx, jIndx) + Ele + LJ
                    PairList(jIndx, iIndx) = PairList(iIndx, jIndx)
@@ -108,10 +105,6 @@
 !      do iMol=1,maxMol
 !        write(35,*) iMol, PairList(iMol)
 !      enddo
-
-      do iAtom = 1, size(distStorage) - 1
-        write(35,*) distStorage(iAtom)%indx1, distStorage(iAtom)%indx2, distStorage(iAtom)%r_sq, distStorage(iAtom)%E_Pair
-      enddo
       
       E_T = E_T + E_Ele + E_LJ    
       E_Inter_T = E_Ele + E_LJ   

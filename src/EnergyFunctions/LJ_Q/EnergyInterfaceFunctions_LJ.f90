@@ -3,21 +3,6 @@
 !****************************************************************************************
       module E_Interface_LJ_Q
       use CoordinateTypes
-!=============================================================================      
-      ! interface
-         ! subroutine TotalE(E_T)
-           ! real(dp), intent(inout) :: E_T
-         ! end subroutine
-
-         ! subroutine ShiftE(E_Trial,disp)
-           ! real(dp), intent(inout) :: E_Trial
-           ! type(Displacement), intent(in) :: disp(:)
-         ! end subroutine          
-      ! end interface  
-        
-       
-      ! procedure(TotalE), pointer :: TotalECalc => NULL()
-      ! procedure(TotalE), pointer :: TotalECalc => NULL()      
 !=============================================================================
       contains
 !=============================================================================      

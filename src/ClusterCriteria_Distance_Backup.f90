@@ -36,18 +36,18 @@
 
       
       do iType=1,nMolTypes
-      do jType=iType,nMolTypes
-        do iMol = 1 ,NPART(iType)      
-        iIndx = MolArray(iType)%mol(iMol)%indx
-        do jMol = 1 ,NPART(jType) 
-          jIndx = MolArray(jType)%mol(jMol)%indx        
-          if(PairList(iIndx,jIndx) .le. Dist_Critr_sq ) then
-            NeighborList(iIndx,jIndx)=.true.         
-            NeighborList(jIndx,iIndx)=.true.          
-          endif
+        do jType=iType,nMolTypes
+          do iMol = 1 ,NPART(iType)      
+            iIndx = MolArray(iType)%mol(iMol)%indx
+            do jMol = 1 ,NPART(jType) 
+              jIndx = MolArray(jType)%mol(jMol)%indx        
+              if(PairList(iIndx,jIndx) .le. Dist_Critr_sq ) then
+                NeighborList(iIndx,jIndx)=.true.         
+                NeighborList(jIndx,iIndx)=.true.          
+              endif
+            enddo
+          enddo
         enddo
-        enddo
-      enddo
       enddo
 
       cnt = 0

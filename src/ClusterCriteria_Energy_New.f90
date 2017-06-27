@@ -123,7 +123,7 @@
       do j=1,maxMol
         jType = typeList(j)          
 !        if(PairList(j) .le. Eng_Critr(jType,nType)) then
-        if(rPair(globIndx1, globIndx2) % p % r_sq .lt. Dist_Critr_sq ) then
+        if(rPair(globIndx1, globIndx2) % p % E_Pair .lt. Eng_Critr(jType,nType)) then
           ClusterMember(j) = .true.        
           memberAdded = .true.
         endif

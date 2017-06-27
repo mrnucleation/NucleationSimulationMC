@@ -12,7 +12,7 @@
       use EnergyTables
       use Forcefield
       use IndexingFunctions
-      use PairStorage, only: UpdateDistArray
+      use PairStorage, only: UpdateDistArray, useDistStore
       use SimParameters
       implicit none
       
@@ -92,7 +92,9 @@
           call NeighborUpdate(PairList, nIndx)
         endif  
 !        call Create_NeiETable
-        call UpdateDistArray
+        if(useDistStore) then
+          call UpdateDistArray
+        endif
         call Update_SubEnergies
 !      elseif(exp(-beta*E_Diff) .gt. grnd()) then
       elseif(-beta*E_Diff .gt. log(grnd())) then
@@ -102,7 +104,9 @@
         E_T = E_T + E_Diff
         ETable = ETable + dETable
         acc_x = acc_x + 1E0
-        call UpdateDistArray
+        if(useDistStore) then
+          call UpdateDistArray
+        endif
         if(distCriteria) then
           if(disp(1)%atmIndx .eq. 1) then
 !            call NeighborUpdate_Distance(PairList,nIndx)    
@@ -251,7 +255,7 @@
       use EnergyCriteria
       use DistanceCriteria      
       use EnergyTables
-      use PairStorage, only: UpdateDistArray
+!      use PairStorage, only: UpdateDistArray
       use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       implicit none
 
@@ -357,7 +361,7 @@
       use EnergyCriteria
       use DistanceCriteria      
       use EnergyTables      
-      use PairStorage, only: UpdateDistArray
+!      use PairStorage, only: UpdateDistArray
       use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       implicit none
 
@@ -468,7 +472,7 @@
       use EnergyCriteria
       use DistanceCriteria
       use EnergyTables
-      use PairStorage, only: UpdateDistArray
+!      use PairStorage, only: UpdateDistArray
       use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       implicit none
       
@@ -575,7 +579,7 @@
       use EnergyCriteria
       use DistanceCriteria
       use EnergyTables
-      use PairStorage, only: UpdateDistArray
+      use PairStorage, only: UpdateDistArray, useDistStore
       use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       use Pressure_LJ_Electro, only: Shift_PressCalc_Inter
       implicit none
@@ -603,7 +607,9 @@
       E_T = E_T + E_Inter
       ETable = ETable + dETable
       acc_x = acc_x + 1E0
-      call UpdateDistArray
+      if(useDistStore) then
+        call UpdateDistArray
+      endif
       if( distCriteria ) then
 !        call NeighborUpdate_Distance(PairList,nIndx)    
         call NeighborUpdate_Distance(nIndx)            

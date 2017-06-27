@@ -68,13 +68,13 @@ MOD_SRC := $(SRC)/VariablePrecision.f90\
  		$(SRC)/DistanceStorage.f90
 SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
             $(LJ_Q)/BondStretch_Functions.f90 \
-            $(LJ_Q)/LJ_Electro_Functions_Experimental.f90 \
+            $(LJ_Q)/LJ_Electro_Functions_DistStore.f90 \
             $(LJ_Q)/Pressure_LJ_Electro_Functions.f90 \
             $(LJ_Q)/Intra_LJ_Electro_Functions.f90\
             $(LJ_Q)/Torsional_Functions.f90 \
             $(LJ_Q)/Improper_Functions.f90 \
             $(LJ_Q)/Rosen_Boltz_Functions.f90\
-            $(LJ_Q)/EnergyInterfaceFunctions_LJ_Experimental.f90\
+            $(LJ_Q)/EnergyInterfaceFunctions_LJ_DistStore.f90\
             $(PEDONE)/Pedone_Functions_Experimental.f90\
             $(PEDONE)/Rosen_Pedone_Functions.f90\
             $(PEDONE)/EnergyInterfaceFunctions_Pedone_Experimental.f90\
@@ -318,12 +318,12 @@ $(OBJ)/AnalysisMain.o: $(OBJ)/Q6Functions.o $(OBJ)/RadialDistributionFunction.o 
 
 $(OBJ)/SimplePairDistance.o: $(OBJ)/Umbrella_Types.o
 
-$(OBJ)/EnergyPointers.o: $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o $(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o
+$(OBJ)/EnergyPointers.o: $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o $(OBJ)/EnergyInterfaceFunctions_LJ_DistStore.o
 
 $(OBJ)/SimplePairDistance.o: $(OBJ)/DistanceStorage.o $(OBJ)/MiscelaniousVariables.o 
 
 
-$(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o: $(OBJ)/LJ_Electro_Functions_Experimental.o $(OBJ)/Rosen_Boltz_Functions.o $(OBJ)/Bending_Functions.o $(OBJ)/BondStretch_Functions.o $(OBJ)/Torsional_Functions.o $(OBJ)/Intra_LJ_Electro_Functions.o $(OBJ)/Improper_Functions.o $(OBJ)/Rosen_Tersoff_Functions.o
+$(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o: $(OBJ)/LJ_Electro_Functions_DistStore.o $(OBJ)/Rosen_Boltz_Functions.o $(OBJ)/Bending_Functions.o $(OBJ)/BondStretch_Functions.o $(OBJ)/Torsional_Functions.o $(OBJ)/Intra_LJ_Electro_Functions.o $(OBJ)/Improper_Functions.o $(OBJ)/Rosen_Tersoff_Functions.o
 $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o: $(OBJ)/Pedone_Functions_Experimental.o $(OBJ)/Rosen_Pedone_Functions.o
 $(OBJ)/Pedone_Functions_Experimental.o: $(OBJ)/DistanceStorage.o
 $(OBJ)/Tersoff_Functions.o: $(OBJ)/DistanceStorage.o
