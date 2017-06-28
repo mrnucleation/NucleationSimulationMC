@@ -350,9 +350,9 @@
             rmin_ij = r_min_tab(atmType1, atmType2)
             do jMol = 1, NPART(jType)
               globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-              if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
-                cycle
-              endif   
+!              if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
+!                cycle
+!              endif   
               rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)

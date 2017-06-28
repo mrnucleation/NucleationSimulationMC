@@ -108,7 +108,7 @@
       write(nout,*) "Total Pressure:", P_T
       end subroutine
 !======================================================================================      
-      pure subroutine Shift_PressCalc_Inter(P_Trial, disp)
+      subroutine Shift_PressCalc_Inter(P_Trial, disp)
       use Coords, only: Displacement,  atomIndicies, molArray
       use ForceField, only: nAtoms, atomArray
       use ForceFieldPara_LJ_Q, only: ep_tab, q_tab, sig_tab
@@ -179,6 +179,9 @@
           Ele = Ele - q/r             
         endif
         P_Trial = P_Trial + Ele + LJ
+        if(abs(P_Trial) > 1E6) then
+          write(*,*) r_new, r, r_sq, LJ, Ele, q, ep, sig_sq, rPair(globIndx1, globIndx2)%p%storeRValue
+        endif
       enddo    
       
       end subroutine

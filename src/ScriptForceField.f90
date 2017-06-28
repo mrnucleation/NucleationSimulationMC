@@ -973,9 +973,14 @@
                     globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
                     ep = ep_tab(atmType1,atmType2) 
                     q = q_tab(atmType1,atmType2)
+                    rPair(globIndx1, globIndx2)%p%usePair = .true.
+                    if(abs(q) .gt. 1E-16_dp) then
+                      rPair(globIndx1, globIndx2)%p%storeRValue = .true.
+                    endif
                     if(ep .eq. 0E0_dp) then
                       if(q .eq. 0E0_dp) then
                         rPair(globIndx1, globIndx2)%p%usePair = .false.
+
                       endif
                     endif 
                   enddo

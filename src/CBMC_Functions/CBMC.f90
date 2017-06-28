@@ -13,7 +13,8 @@
       use Forcefield
       use DistanceCriteria      
       use IndexingFunctions
-      use PairStorage, only: UpdateDistArray
+      use PairStorage, only: UpdateDistArray, useDistStore
+      use Pressure_LJ_Electro, only: Shift_PressCalc_Inter
       use UmbrellaSamplingNew, only: useUmbrella, GetUmbrellaBias_Disp
       implicit none
       
@@ -184,7 +185,13 @@
         endif
       endif
 
-      if(rosenRatio*exp(-beta*E_Inter + biasDiff) .gt. grnd()) then
+!      if(rosenRatio*exp(-beta*E_Inter + biasDiff) .gt. grnd()) then
+      if(log(rosenRatio) -beta*E_Inter + biasDiff .gt. log(grnd()) ) then
+        if(calcPressure) then
+          call Shift_PressCalc_Inter(P_Diff, disp)
+          pressure = pressure + P_Diff
+!          write(*,*) pressure, P_Diff
+        endif
         do iAtom = 1, nDisp      
           disp(iAtom)%x_old = disp(iAtom)%x_new
           disp(iAtom)%y_old = disp(iAtom)%y_new
@@ -193,7 +200,9 @@
         E_T = E_T + E_Inter + E_Intra
         ETable = ETable + dETable
         acc_x = acc_x + 1d0
-        call UpdateDistArray
+        if(useDistStore) then
+          call UpdateDistArray
+        endif
         if(distCriteria) then
 !          call NeighborUpdate_Distance(PairList, nIndx)        
           call NeighborUpdate_Distance(PairList, nIndx)  

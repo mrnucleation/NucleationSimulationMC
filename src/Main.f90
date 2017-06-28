@@ -55,6 +55,7 @@
 
       real(dp) :: E_Inter_Final, E_Bend_Final, E_Torsion_Final
       real(dp) :: E_Stretch_Final, E_NBond_Final, P_Final
+      integer :: pressLimit, curIndx, maxIndx
       real(dp), allocatable :: P_avg_Sum(:), NHist_Sum(:)
       
       character(len=100) :: format_string,fl_name, out1
@@ -191,13 +192,18 @@
       call Detailed_ECalc(E_T, errRtn)
       if(calcPressure) then
         call Detailed_PressCalc_Inter(pressure)
-        allocate( NHist(1:maxMol) ) 
-        allocate( NHist_Sum(1:maxMol) ) 
-        allocate( P_Avg(1:maxMol) ) 
-        allocate( P_avg_Sum(1:maxMol) ) 
-
+        pressLimit = 1
+        do i = 1, nMolTypes
+          pressLimit = pressLimit * (NMAX(i) + 1)
+        enddo
+        allocate( NHist(1:pressLimit) )
+        allocate( NHist_Sum(1:pressLimit) )
+        allocate( P_Avg(1:pressLimit) )
+        allocate( P_avg_Sum(1:pressLimit) )
         NHist = 0E0_dp
+        NHist_Sum = 0E0_dp
         P_Avg = 0E0_dp
+        P_Avg_Sum = 0E0_dp
       endif
 
       if(errRtn) then
@@ -328,22 +334,27 @@
 
 
            if(calcPressure) then 
-             NHist(NTotal) = NHist(NTotal) + 1E0_dp
-             P_Avg(NTotal) = P_Avg(NTotal) + pressure 
+             curIndx = NPart(nMolTypes)
+             maxIndx = NMAX(nMolTypes) + 1 
+             do i = 1, nMolTypes-1
+               curIndx = curIndx + maxIndx*NPart(nMolTypes-i)
+               maxIndx = maxIndx * (NMAX(nMolTypes-i) + 1)
+             enddo
+             NHist(curIndx) = NHist(curIndx) + 1E0_dp
+             P_Avg(curIndx) = P_Avg(curIndx) + pressure 
            endif
 
-           if(useAnalysis) then
+           if(useAnalysis) then !Property Calculation Variables
              call PostMoveAnalysis
-           endif  
-           if(useWham) then
+           endif
+
+           if(useWham) then !Free Energy Biasing Block
              if(mod(iCycle, intervalWham) .gt. equilInterval) then
-!               call NHistAdd(E_T) 
                if(useUmbrella) then
                  call UmbrellaHistAdd(E_T)
                endif
              endif
            else
-!             call NHistAdd(E_T)
              if(useUmbrella) then
                call UmbrellaHistAdd(E_T) 
              endif
@@ -553,14 +564,15 @@
 
 
       if(calcPressure) then 
-        call MPI_REDUCE(NHist, NHist_Sum, maxMol, &
+        call MPI_REDUCE(NHist, NHist_Sum, pressLimit+1, &
                        MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
-        call MPI_REDUCE(P_Avg, P_Avg_Sum, maxMol, &
+        call MPI_REDUCE(P_Avg, P_Avg_Sum, pressLimit+1, &
                        MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
         if(myid .eq. 0) then
           open(unit = 50, file = "ClusterPressure.dat")
-          do i = 1, maxMol
-            if(NHist(i) .ne. 0E0_dp) then
+          do i = 1, pressLimit
+            write(*,*) i, P_Avg(i), NHist(i)
+            if(NHist_Sum(i) .ne. 0E0_dp) then
               write(50,*) i, P_Avg_Sum(i)/(3d0*NHist_Sum(i))
             endif
           enddo 
