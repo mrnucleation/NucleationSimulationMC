@@ -9,7 +9,7 @@
       subroutine Detailed_EnergyCalc_Tersoff(E_T, rejMove)
       use InterEnergy_Tersoff
       use EnergyCriteria
-      use DistanceCriteria      
+      use DistanceCriteria_PairStore    
       use SimParameters
       use PairStorage, only: CalcAllDistPairs, SetStorageFlags, PrintDistArray
       implicit none
@@ -55,7 +55,7 @@
       use SimParameters, only: distCriteria, beta, softcutoff, NTotal
       use CBMC_Variables   
       use Coords      
-      use DistanceCriteria            
+      use DistanceCriteria_PairStore      
       use EnergyCriteria
       use EnergyTables      
       use InterEnergy_Tersoff

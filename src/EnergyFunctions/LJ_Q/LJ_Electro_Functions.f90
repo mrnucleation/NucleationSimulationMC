@@ -15,6 +15,12 @@
 !           Exchange - Combines the Mol and New Mol routines for moves that simultaniously add and remove a particle at the same time.
 !*********************************************************************************************************************
       module InterEnergy_LJ_Electro
+      use VarPrecision
+      real(dp), parameter :: lj_Cut = 8.0
+      real(dp), parameter :: lj_Cut_sq = lj_Cut**2
+
+      real(dp), parameter :: q_Cut = 8.5
+      real(dp), parameter :: q_Cut_sq = q_Cut**2
       contains
 !======================================================================================      
       subroutine Detailed_ECalc_Inter(E_T, PairList)
@@ -190,6 +196,7 @@
                  rejMove = .true.
                  return
               endif    
+              jIndx = MolArray(jType)%mol(jMol)%indx
               if(distCriteria) then
                 if(iAtom .eq. 1) then
                   if(jAtom .eq. 1) then
@@ -204,7 +211,7 @@
               rz = disp(iDisp)%z_old - MolArray(jType)%mol(jMol)%z(jAtom)
               r_old = rx*rx + ry*ry + rz*rz              
 
-              jIndx = MolArray(jType)%mol(jMol)%indx
+
 !             Check to see if there is a non-zero Lennard-Jones parmaeter. If so calculate
 !             the Lennard-Jones energy           
               if(ep .ne. 0E0) then

@@ -208,7 +208,7 @@
          if(distCriteria) then
 !           call NeighborUpdate_Distance(PairList,nIndx)  
 !           call NeighborUpdate_Distance(nIndx)      
-           call NeighborUpdate_SwapIn_Distance(nType)        
+           call NeighborUpdate_SwapIn_Distance(PairList, nType)        
          else
            call NeighborUpdate(PairList, nIndx)
          endif  

@@ -1,35 +1,20 @@
 !****************************************************************************************
 
 !****************************************************************************************
-      module E_Interface_LJ_Q
+      module E_Interface_LJ_Q_Diststore
       use CoordinateTypes
-!=============================================================================      
-      ! interface
-         ! subroutine TotalE(E_T)
-           ! real(dp), intent(inout) :: E_T
-         ! end subroutine
-
-         ! subroutine ShiftE(E_Trial,disp)
-           ! real(dp), intent(inout) :: E_Trial
-           ! type(Displacement), intent(in) :: disp(:)
-         ! end subroutine          
-      ! end interface  
-        
-       
-      ! procedure(TotalE), pointer :: TotalECalc => NULL()
-      ! procedure(TotalE), pointer :: TotalECalc => NULL()      
 !=============================================================================
       contains
 !=============================================================================      
-      subroutine Detailed_EnergyCalc_LJ_Q(E_T,rejMove)
-      use InterEnergy_LJ_Electro, only: Detailed_ECalc_Inter
+      subroutine Detailed_EnergyCalc_LJ_Q_DStore(E_T,rejMove)
+      use InterEnergy_LJ_Electro_DistStore, only: Detailed_ECalc_Inter
       use IntraEnergy_LJ_Electro, only: Detailed_ECalc_IntraNonBonded
       use BondStretchFunctions, only: Detailed_ECalc_BondStretch
       use BendingFunctions, only: Detailed_ECalc_Bending
       use TorsionalFunctions, only: Detailed_ECalc_Torsional
       use ImproperAngleFunctions
       use EnergyCriteria, only: Detailed_EnergyCriteria
-      use DistanceCriteria, only: Detailed_DistanceCriteria    
+      use DistanceCriteria_PairStore, only: Detailed_DistanceCriteria    
       use SimParameters, only: maxMol, distCriteria
       use PairStorage, only: CalcAllDistPairs
       implicit none
@@ -77,18 +62,18 @@
 !     Inter-molecular components.  This function can be used for for moves that any number of
 !     atoms in a given molecule, but it can not be used if more than one molecule changes
 !     in a given move.  
-      subroutine Shift_EnergyCalc_LJ_Q(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove, useInter)
+      subroutine Shift_EnergyCalc_LJ_Q_DStore(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove, useInter)
       use SimParameters, only: distCriteria, beta, softcutoff, NTotal
       use BendingFunctions, only: Shift_ECalc_Bending
       use BondStretchFunctions, only: Shift_ECalc_BondStretch
       use CBMC_Variables, only: regrowType
       use Coords, only: Displacement, MolArray
-      use DistanceCriteria, only: Shift_DistanceCriteria   
+      use DistanceCriteria_PairStore, only: Shift_DistanceCriteria   
       use EnergyCriteria, only: Shift_EnergyCriteria
 !      use EnergyCriteria_new
       use EnergyTables, only: E_NBond_Diff, E_Strch_Diff, E_Bend_Diff, E_Tors_Diff, E_Inter_Diff    
       use ImproperAngleFunctions      
-      use InterEnergy_LJ_Electro, only: Shift_ECalc_Inter
+      use InterEnergy_LJ_Electro_DistStore, only: Shift_ECalc_Inter
       use IntraEnergy_LJ_Electro, only: Shift_ECalc_IntraNonBonded
       use TorsionalFunctions, only: Shift_ECalc_Torsional
       use PairStorage, only: CalcNewDistPairs, newDist
@@ -203,8 +188,8 @@
       
       end subroutine
 !=============================================================================      
-      subroutine SwapIn_EnergyCalc_LJ_Q(E_Inter, E_Intra, PairList, dETable, rejMove, useInter)
-      use InterEnergy_LJ_Electro, only: NewMol_ECalc_Inter
+      subroutine SwapIn_EnergyCalc_LJ_Q_DStore(E_Inter, E_Intra, PairList, dETable, rejMove, useInter)
+      use InterEnergy_LJ_Electro_DistStore, only: NewMol_ECalc_Inter
       use IntraEnergy_LJ_Electro, only: NewMol_ECalc_IntraNonBonded
       use BondStretchFunctions, only: NewMol_ECalc_BondStretch
       use BendingFunctions, only: NewMol_ECalc_Bending
@@ -282,13 +267,13 @@
 !=============================================================================
 !     This function contains the energy calculations that are used when a molecule
 !     has been selected for removal.  
-      subroutine SwapOut_EnergyCalc_LJ_Q(E_Inter, E_Intra, nType, nMol, dETable, useInter)
+      subroutine SwapOut_EnergyCalc_LJ_Q_DStore(E_Inter, E_Intra, nType, nMol, dETable, useInter)
       use Coords
       use CBMC_Variables, only: regrowType
 !      use EnergyCriteria
       use EnergyTables, only: ETable, E_Strch_Diff, E_NBond_Diff, E_Tors_Diff, E_Bend_Diff, E_Inter_Diff
 
-      use InterEnergy_LJ_Electro, only: Mol_ECalc_Inter
+      use InterEnergy_LJ_Electro_DistStore, only: Mol_ECalc_Inter
       use IntraEnergy_LJ_Electro, only: Mol_ECalc_IntraNonBonded
       use BondStretchFunctions, only: Mol_ECalc_BondStretch
       use BendingFunctions, only: Mol_ECalc_Bending

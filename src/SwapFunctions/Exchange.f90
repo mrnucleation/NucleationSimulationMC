@@ -171,7 +171,7 @@
          ETable = ETable + dETable  
          if(distCriteria) then
 !           call NeighborUpdate_Distance(PairList, nIndx2)        
-           call NeighborUpdate_Distance(nIndx2) 
+           call NeighborUpdate_Distance(PairList, nIndx2) 
          else
            call NeighborUpdate(PairList, nIndx2)
          endif 

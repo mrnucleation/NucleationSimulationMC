@@ -196,7 +196,7 @@
         call UpdateDistArray
         if(distCriteria) then
 !          call NeighborUpdate_Distance(PairList, nIndx)        
-          call NeighborUpdate_Distance(nIndx)  
+          call NeighborUpdate_Distance(PairList, nIndx)  
         else
           call NeighborUpdate(PairList, nIndx)
         endif  

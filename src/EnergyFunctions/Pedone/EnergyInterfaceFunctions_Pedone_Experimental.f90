@@ -22,7 +22,7 @@
       contains
 !=============================================================================      
       subroutine Detailed_EnergyCalc_Pedone(E_T, rejMove)
-      use DistanceCriteria
+      use DistanceCriteria_PairStore
       use EnergyCriteria
       use InterEnergy_Pedone
       use PairStorage, only: CalcAllDistPairs, SetStorageFlags
@@ -70,7 +70,7 @@
       use SimParameters, only: distCriteria, beta, softcutoff, NTotal
       use CBMC_Variables   
       use Coords      
-      use DistanceCriteria            
+      use DistanceCriteria_PairStore
       use EnergyCriteria
       use EnergyTables      
       use InterEnergy_Pedone

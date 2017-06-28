@@ -86,7 +86,7 @@
         if(distCriteria) then
           if(disp(1)%atmIndx .eq. 1) then
 !            call NeighborUpdate_Distance(PairList,nIndx)    
-            call NeighborUpdate_Distance(nIndx)       
+            call NeighborUpdate_Distance(PairList, nIndx)       
           endif
         else
           call NeighborUpdate(PairList, nIndx)
@@ -110,7 +110,7 @@
         if(distCriteria) then
           if(disp(1)%atmIndx .eq. 1) then
 !            call NeighborUpdate_Distance(PairList,nIndx)    
-            call NeighborUpdate_Distance(nIndx)         
+            call NeighborUpdate_Distance(PairList, nIndx)         
           endif
         else
           call NeighborUpdate(PairList, nIndx)
@@ -612,7 +612,7 @@
       endif
       if( distCriteria ) then
 !        call NeighborUpdate_Distance(PairList,nIndx)    
-        call NeighborUpdate_Distance(nIndx)            
+        call NeighborUpdate_Distance(PairList, nIndx)            
       else
         call NeighborUpdate(PairList, nIndx)
       endif  

@@ -9,19 +9,19 @@ FC := mpif90
 #FC := gfortran
 CC := mpicc
 OPTIMIZE_FLAGS := -O3
-#OPTIMIZE_FLAGS += -xHost
+OPTIMIZE_FLAGS += -xHost
 #OPTIMIZE_FLAGS += -ipo
-#OPTIMIZE_FLAGS += -no-prec-div
+OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling
 DETAILEDDEBUG:= -fbacktrace -fcheck=all -g -ffree-line-length-0 -Og
 #DETAILEDDEBUG:= -check all -traceback -g -fpe0
-DEBUGFLAGS:= -fbacktrace -fcheck=all -g
+#DEBUGFLAGS:= -fbacktrace -fcheck=all -g
 #DEBUGFLAGS += -heap-arrays 1024
 #DEBUGFLAGS += $(DETAILEDDEBUG)
 #DEBUGFLAGS += -check all -traceback -g
-#DEBUGFLAGS += -pg 
-DEBUGFLAGS += -ffpe-trap=invalid
+DEBUGFLAGS += -pg 
+#DEBUGFLAGS += -ffpe-trap=invalid
 #DEBUGFLAGS += -Wunused-parameter 
 #DEBUGFLAGS := -fimplicit-none  -Wline-truncation -Wcharacter-truncation -Wsurprising -Waliasing -fwhole-file -fcheck=all -fbacktrace
 COMPFLAGS := $(DEBUGFLAGS) $(OPTIMIZE_FLAGS)
@@ -68,12 +68,14 @@ MOD_SRC := $(SRC)/VariablePrecision.f90\
  		$(SRC)/DistanceStorage.f90
 SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
             $(LJ_Q)/BondStretch_Functions.f90 \
+            $(LJ_Q)/LJ_Electro_Functions.f90 \
             $(LJ_Q)/LJ_Electro_Functions_DistStore.f90 \
             $(LJ_Q)/Pressure_LJ_Electro_Functions.f90 \
             $(LJ_Q)/Intra_LJ_Electro_Functions.f90\
             $(LJ_Q)/Torsional_Functions.f90 \
             $(LJ_Q)/Improper_Functions.f90 \
             $(LJ_Q)/Rosen_Boltz_Functions.f90\
+            $(LJ_Q)/EnergyInterfaceFunctions_LJ.f90\
             $(LJ_Q)/EnergyInterfaceFunctions_LJ_DistStore.f90\
             $(PEDONE)/Pedone_Functions_Experimental.f90\
             $(PEDONE)/Rosen_Pedone_Functions.f90\
@@ -83,7 +85,8 @@ SRC_ENERGY := $(LJ_Q)/Bending_Functions.f90 \
             $(TERSOFF)/EnergyInterface_Tersoff.f90\
             $(ESUB)/EnergyPointers.f90
 SRC_CRIT:=  $(SRC)/ClusterCriteria_Energy.f90\
-            $(SRC)/ClusterCriteria_Distance.f90
+            $(SRC)/ClusterCriteria_Distance.f90\
+            $(SRC)/ClusterCriteria_Distance_PairStore.f90
 #SRC_BOUNDARY := $(BOUNDARY)/ClusterCriteria_Energy_New.f90
 #SRC_BOUNDARY := $(SRC)/ClusterCriteria_Energy.f90
 SRC_BIAS := $(SRC)/UmbrellaSampling_Version2.f90\
@@ -310,6 +313,7 @@ $(OBJ)/Exchange.o: $(OBJ)/ETableFunctions.o
 $(OBJ)/CBMC.o: $(OBJ)/Common.o $(OBJ_ENERGY) $(OBJ)/UmbrellaSampling_Version2.o  $(OBJ)/CBMC_Utility.o
 $(OBJ)/CBMC_ConfigGen.o: $(OBJ)/CoordinateFunctions.o
 
+$(OBJ)/ClusterCriteria_Distance.o: $(OBJ)/Common.o $(OBJ)/ForceFieldFunctions.o $(OBJ)/ClusterCriteria_Distance_PairStore.o
 $(OBJ)/ClusterCriteria_Energy.o: $(OBJ)/Common.o $(OBJ)/ForceFieldFunctions.o
 
 $(OBJ)/CoordinateFunctions.o: $(OBJ)/Common.o $(OBJ)/RandomTools.o $(OBJ)/CBMC_Utility.o
@@ -323,7 +327,7 @@ $(OBJ)/EnergyPointers.o: $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o $
 $(OBJ)/SimplePairDistance.o: $(OBJ)/DistanceStorage.o $(OBJ)/MiscelaniousVariables.o 
 
 
-$(OBJ)/EnergyInterfaceFunctions_LJ_Experimental.o: $(OBJ)/LJ_Electro_Functions_DistStore.o $(OBJ)/Rosen_Boltz_Functions.o $(OBJ)/Bending_Functions.o $(OBJ)/BondStretch_Functions.o $(OBJ)/Torsional_Functions.o $(OBJ)/Intra_LJ_Electro_Functions.o $(OBJ)/Improper_Functions.o $(OBJ)/Rosen_Tersoff_Functions.o
+$(OBJ)/EnergyInterfaceFunctions_LJ.o: $(OBJ)/LJ_Electro_Functions_DistStore.o $(OBJ)/Rosen_Boltz_Functions.o $(OBJ)/Bending_Functions.o $(OBJ)/BondStretch_Functions.o $(OBJ)/Torsional_Functions.o $(OBJ)/Intra_LJ_Electro_Functions.o $(OBJ)/Improper_Functions.o $(OBJ)/Rosen_Tersoff_Functions.o $(OBJ)/EnergyInterfaceFunctions_LJ_DistStore.o
 $(OBJ)/EnergyInterfaceFunctions_Pedone_Experimental.o: $(OBJ)/Pedone_Functions_Experimental.o $(OBJ)/Rosen_Pedone_Functions.o
 $(OBJ)/Pedone_Functions_Experimental.o: $(OBJ)/DistanceStorage.o
 $(OBJ)/Tersoff_Functions.o: $(OBJ)/DistanceStorage.o

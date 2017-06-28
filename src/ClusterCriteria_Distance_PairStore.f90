@@ -1,5 +1,5 @@
 !=================================================================================
-      module DistanceCriteria
+      module DistanceCriteria_PairStore
 
       logical, allocatable :: ClusterMember(:), flipped(:) 
       contains
@@ -326,7 +326,7 @@
       end subroutine
 !=================================================================================     
 !     This function updates the neighborlist if a move is accepted.
-      subroutine NeighborUpdate_Distance(nIndx)
+      subroutine NeighborUpdate_Distance_PairStore(nIndx)
       use Coords      
       use IndexingFunctions      
       use PairStorage
@@ -385,7 +385,7 @@
       end subroutine
 !=================================================================================     
 !     This function updates the neighborlist if a move is accepted.
-      subroutine NeighborUpdate_SwapIn_Distance(nType)
+      subroutine NeighborUpdate_SwapIn_Distance_PairStore(nType)
       use Coords      
       use IndexingFunctions      
       use PairStorage

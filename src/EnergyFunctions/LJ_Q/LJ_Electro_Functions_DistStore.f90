@@ -14,14 +14,10 @@
 !                      Intended for use in Rosenbluth Sampling, Swap In, etc.
 !           Exchange - Combines the Mol and New Mol routines for moves that simultaniously add and remove a particle at the same time.
 !*********************************************************************************************************************
-      module InterEnergy_LJ_Electro
+      module InterEnergy_LJ_Electro_DistStore
       use VarPrecision
+      use InterEnergy_LJ_Electro, only: lj_cut, lj_cut_sq, q_cut, q_cut_sq
 
-      real(dp), parameter :: lj_Cut = 8.0
-      real(dp), parameter :: lj_Cut_sq = lj_Cut**2
-
-      real(dp), parameter :: q_Cut = 8.5
-      real(dp), parameter :: q_Cut_sq = q_Cut**2
       contains
 !======================================================================================      
       pure function LJ_Func(r_sq, ep, sig) result(LJ)

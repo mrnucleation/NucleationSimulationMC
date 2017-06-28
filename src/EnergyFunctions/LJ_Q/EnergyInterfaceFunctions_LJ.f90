@@ -7,21 +7,31 @@
       contains
 !=============================================================================      
       subroutine Detailed_EnergyCalc_LJ_Q(E_T,rejMove)
-      use InterEnergy_LJ_Electro
-      use IntraEnergy_LJ_Electro
-      use BondStretchFunctions
-      use BendingFunctions
-      use TorsionalFunctions
+      use InterEnergy_LJ_Electro, only: Detailed_ECalc_Inter
+      use IntraEnergy_LJ_Electro, only: Detailed_ECalc_IntraNonBonded
+      use BondStretchFunctions, only: Detailed_ECalc_BondStretch
+      use BendingFunctions, only: Detailed_ECalc_Bending
+      use TorsionalFunctions, only: Detailed_ECalc_Torsional
       use ImproperAngleFunctions
-      use EnergyCriteria
-      use DistanceCriteria      
-      use SimParameters
+
+      use DistanceCriteria, only: Detailed_DistanceCriteria    
+      use EnergyCriteria, only: Detailed_EnergyCriteria
+
+      use SimParameters, only: maxMol, distCriteria     
+      use E_Interface_LJ_Q_Diststore, only: Detailed_EnergyCalc_LJ_Q_DStore
+      use PairStorage, only: useDistStore
+     
       implicit none
       
       logical , intent(inout) :: rejMove
       real(dp), intent(inout) :: E_T
       integer :: i,j
       real(dp) :: PairList(1:maxMol,1:maxMol)
+
+      if(useDistStore) then
+        call Detailed_EnergyCalc_LJ_Q_DStore(E_T, rejMove)
+        return
+      endif
       
       E_T = 0E0
       call Detailed_ECalc_Inter(E_T,PairList)
@@ -32,18 +42,7 @@
         call Detailed_EnergyCriteria(PairList,rejMove)      
       endif
       
-      write(35,*) "Pairlist:"
-      do i = 1, maxMol
-        if(isActive(i)) then
-          do j = 1, maxMol
-            if(isActive(j)) then
-              write(35,*) i, j, PairList(i,j)            
-            endif
-          enddo
-        endif
-      enddo
-      write(35,*)
-      
+     
       call Detailed_ECalc_IntraNonBonded(E_T)
       call Detailed_ECalc_BondStretch(E_T)
       call Detailed_ECalc_Bending(E_T)
@@ -71,6 +70,9 @@
       use InterEnergy_LJ_Electro
       use IntraEnergy_LJ_Electro
       use TorsionalFunctions
+
+      use E_Interface_LJ_Q_Diststore, only: Shift_EnergyCalc_LJ_Q_DStore
+      use PairStorage, only: useDistStore
       implicit none
       
       logical, intent(in), optional :: useInter
@@ -85,6 +87,13 @@
       integer :: nIndx, nDisp
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
+
+
+      if(useDistStore) then
+        call Shift_EnergyCalc_LJ_Q_DStore(E_Inter, E_Intra, disp, PairList, dETable, useIntra, rejMove, useInter)
+        return
+      endif
+
 
       nDisp = size(disp)
       rejMove = .false.
@@ -183,6 +192,9 @@
       use EnergyTables         
       use Coords
       use CBMC_Variables      
+
+      use E_Interface_LJ_Q_Diststore, only: SwapIn_EnergyCalc_LJ_Q_DStore
+      use PairStorage, only: useDistStore
       implicit none
       
       logical, intent(out) :: rejMove
@@ -193,6 +205,12 @@
       logical :: interSwitch
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
+
+      if(useDistStore) then
+        call SwapIn_EnergyCalc_LJ_Q_DStore(E_Inter, E_Intra, PairList, dETable, rejMove, useInter)
+        return
+      endif
+
 
       
       rejMove = .false.      
@@ -259,6 +277,9 @@
       use EnergyTables         
       use Coords
       use CBMC_Variables
+
+      use E_Interface_LJ_Q_Diststore, only: SwapOut_EnergyCalc_LJ_Q_DStore
+      use PairStorage, only: useDistStore
       implicit none
       
       logical, intent(in), optional :: useInter
@@ -269,6 +290,12 @@
       logical :: interSwitch      
       real(dp) :: E_NonBond, E_Stretch, E_Bend
       real(dp) :: E_Torsion, E_Improper
+
+
+      if(useDistStore) then
+        call SwapOut_EnergyCalc_LJ_Q_DStore(E_Inter, E_Intra, nType, nMol, dETable, useInter)
+        return
+      endif
       
       E_Inter = 0E0
       E_Intra = 0E0

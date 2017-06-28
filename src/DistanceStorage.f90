@@ -39,7 +39,7 @@
       type(DistArrayNew), pointer :: p 
     end type
 
-    logical :: useDistStore = .false.
+    logical :: useDistStore = .true.
     logical :: coordShift = .false.
     integer :: nMaxPairs, nTotalAtoms, nNewDist
     integer, allocatable, target :: oldIndxArray(:)

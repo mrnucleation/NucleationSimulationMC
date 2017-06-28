@@ -950,7 +950,7 @@
       use Coords
       use ForceField
       use ForceFieldPara_LJ_Q
-      use PairStorage, only: SetStorageFlags, distStorage, rPair
+      use PairStorage, only: SetStorageFlags, distStorage, rPair, useDistStore
       implicit none
       integer :: iType, iMol, iAtom
       integer :: jType, jMol, jAtom
@@ -958,32 +958,33 @@
       real(dp) :: q, ep
   
       call IntegrateBendAngleProb
-      call SetStorageFlags(q_tab) 
 
-      do iType = 1, nMolTypes
-        do iMol = 1, NMAX(iType)
-          do iAtom = 1, nAtoms(iType)
-            atmType1 = atomArray(iType,iAtom)
-            globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)            
-            do jType = 1, nMolTypes
-              do jMol = 1, NMAX(jType)
-                do jAtom = 1, nAtoms(jType)
-                  atmType2 = atomArray(jType, jAtom)
-                  globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
-                  ep = ep_tab(atmType1,atmType2) 
-                  q = q_tab(atmType1,atmType2)
-                  if(ep .eq. 0E0_dp) then
-                    if(q .eq. 0E0_dp) then
-                      rPair(globIndx1, globIndx2)%p%usePair = .false.
-                    endif
-                  endif 
+      if(useDistStore) then
+       call SetStorageFlags(q_tab) 
+         do iType = 1, nMolTypes
+           do iMol = 1, NMAX(iType)
+             do iAtom = 1, nAtoms(iType)
+              atmType1 = atomArray(iType,iAtom)
+              globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)            
+              do jType = 1, nMolTypes
+                do jMol = 1, NMAX(jType)
+                  do jAtom = 1, nAtoms(jType)
+                    atmType2 = atomArray(jType, jAtom)
+                    globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+                    ep = ep_tab(atmType1,atmType2) 
+                    q = q_tab(atmType1,atmType2)
+                    if(ep .eq. 0E0_dp) then
+                      if(q .eq. 0E0_dp) then
+                        rPair(globIndx1, globIndx2)%p%usePair = .false.
+                      endif
+                    endif 
+                  enddo
                 enddo
               enddo
             enddo
           enddo
         enddo
-      enddo
-
+      endif
 
       end subroutine
 !===================================================================================
@@ -991,10 +992,12 @@
       use SimParameters
       use ForceField
       use ForceFieldPara_Pedone
-      use PairStorage, only: SetStorageFlags
+      use PairStorage, only: SetStorageFlags, useDistStore
       implicit none
 
-      call SetStorageFlags(q_tab) 
+      if(useDistStore) then
+        call SetStorageFlags(q_tab) 
+      endif
 
       end subroutine
 
@@ -1003,10 +1006,12 @@
       use SimParameters
       use ForceField
       use ForceFieldPara_Pedone
-      use PairStorage, only: TurnOnAllStorageFlags
+      use PairStorage, only: TurnOnAllStorageFlags, useDistStore
       implicit none
 
-      call TurnOnAllStorageFlags
+      if(useDistStore) then
+        call TurnOnAllStorageFlags
+      endif
 
       end subroutine
 !===================================================================================

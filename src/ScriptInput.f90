@@ -172,6 +172,7 @@
       use WHAM_Module
       use AcceptRates
       use Units
+      use PairStorage, only: useDistStore
       implicit none
       character(len=maxLineLen), intent(in) :: line      
       logical, intent(out) :: screenEcho
@@ -203,6 +204,9 @@
         case("distancecriteria")     
           read(line,*) dummy, command, logicValue
           distCriteria = logicValue 
+        case("distancestorage")
+          read(line,*) dummy, command, logicValue
+          useDistStore = logicValue 
         case("gasdensity")        
           if(.not. allocated(gas_dens)) then
             write(*,*) "INPUT ERROR! GasDensity is called before the number of molecule types has been assigned"
