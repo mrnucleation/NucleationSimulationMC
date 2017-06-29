@@ -409,6 +409,7 @@
       enddo
      
       E_Trial = E_LJ + E_Ele
+
       
       
       end subroutine

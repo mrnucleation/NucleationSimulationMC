@@ -564,14 +564,14 @@
 
 
       if(calcPressure) then 
-        call MPI_REDUCE(NHist, NHist_Sum, pressLimit+1, &
+        call MPI_REDUCE(NHist, NHist_Sum, pressLimit, &
                        MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
-        call MPI_REDUCE(P_Avg, P_Avg_Sum, pressLimit+1, &
+        call MPI_REDUCE(P_Avg, P_Avg_Sum, pressLimit, &
                        MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror) 
         if(myid .eq. 0) then
           open(unit = 50, file = "ClusterPressure.dat")
           do i = 1, pressLimit
-            write(*,*) i, P_Avg(i), NHist(i)
+!            write(*,*) i, P_Avg(i), NHist(i)
             if(NHist_Sum(i) .ne. 0E0_dp) then
               write(50,*) i, P_Avg_Sum(i)/(3d0*NHist_Sum(i))
             endif

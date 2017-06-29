@@ -336,16 +336,16 @@
          enddo
       enddo
 
-      write(35,*) "------------------------------------------------------------------"
-      do iType = 1, nMolTypes
-        write(35,*) "iType:", iType
-        write(35,*) "Number of Paths:", pathArray(iType)%nPaths
-        do iPath = 1, pathArray(iType)%nPaths
-          write(35,*) pathArray(iType)%path(iPath,1:pathArray(iType)%pathMax(iPath)) 
-        enddo
-        write(35,*)
-      enddo
-      write(35,*) "------------------------------------------------------------------"
+!      write(35,*) "------------------------------------------------------------------"
+!      do iType = 1, nMolTypes
+!        write(35,*) "iType:", iType
+!        write(35,*) "Number of Paths:", pathArray(iType)%nPaths
+!        do iPath = 1, pathArray(iType)%nPaths
+!          write(35,*) pathArray(iType)%path(iPath,1:pathArray(iType)%pathMax(iPath)) 
+!        enddo
+!        write(35,*)
+!      enddo
+!      write(35,*) "------------------------------------------------------------------"
 
       end subroutine
 !=========================================================

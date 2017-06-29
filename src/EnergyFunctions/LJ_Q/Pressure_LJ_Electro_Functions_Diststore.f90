@@ -54,7 +54,7 @@
       integer :: iType,jType,iMol,jMol,iAtom,jAtom
       integer(kind=atomIntType) :: atmType1,atmType2      
       integer :: iIndx, jIndx, globIndx1, globIndx2, jMolMin
-      real(dp) :: r_sq, r,  rx, ry, rz
+      real(dp) :: r_sq, r
       real(dp) :: ep, sig_sq, q
       real(dp) :: LJ, Ele
       real(dp) :: P_Ele, P_LJ    
@@ -77,15 +77,17 @@
              jIndx = MolArray(jType)%mol(jMol)%indx  
              do iAtom = 1,nAtoms(iType)
                atmType1 = atomArray(iType,iAtom)
+               globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom)
                do jAtom = 1,nAtoms(jType)        
                  atmType2 = atomArray(jType,jAtom)
                  ep = ep_tab(atmType1,atmType2)
                  q = q_tab(atmType1,atmType2)
                  sig_sq = sig_tab(atmType1,atmType2)          
-                 rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-                 ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-                 rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom) 
-                 r_sq = rx**2 + ry**2 + rz**2
+                 globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+                 r_sq = rPair(globIndx1, globIndx2)%p%r_sq
+!                 if(r_sq .gt. lj_Cut_sq) then
+!                   cycle
+!                 endif 
                  if(r_sq .lt. lj_cut_sq) then
                    LJ = LJ_Func(r_sq, ep, sig_sq)             
                    P_LJ = P_LJ + LJ
@@ -110,7 +112,7 @@
       use Coords, only: Displacement,  atomIndicies, molArray
       use ForceField, only: nAtoms, atomArray
       use ForceFieldPara_LJ_Q, only: ep_tab, q_tab, sig_tab
-      use SimParameters, only: distCriteria, nMolTypes, NPART
+      use SimParameters, only: distCriteria
       use PairStorage, only: distStorage, rPair, rPairNew, newDist, DistArrayNew, nNewDist, oldIndxArray
       implicit none
       
@@ -119,10 +121,10 @@
       
       integer :: iType, jType, iMol, jMol, iAtom, jAtom, iPair
       integer(kind=atomIntType) :: atmType1, atmType2, iIndx, jIndx
-      integer :: sizeDisp, iDisp
+      integer :: sizeDisp
 !      integer, pointer :: oldIndx 
       integer :: globIndx1, globIndx2
-      real(dp) :: r_new, r_old, rx, ry, rz
+      real(dp) :: r_new, r_new_sq, r, r_sq
       real(dp) :: ep, sig_sq, q
       real(dp) :: LJ, Ele, P_New, P_PairOld, P_Old
       real(dp) :: P_Ele, P_LJ
@@ -135,68 +137,52 @@
       iType = disp(1)%molType
       iMol = disp(1)%molIndx
       iIndx = MolArray(iType)%mol(iMol)%indx
-      sizeDisp = size(disp)
+      
 !      !This section calculates the Intermolecular interaction between the atoms that
 !      !have been modified in this trial move with the atoms that have remained stationary
 
+      do iPair = 1, nNewDist
 
-      do iDisp=1,sizeDisp
-        iAtom = disp(iDisp)%atmIndx
+        globIndx1 = newDist(iPair)%indx1
+        globIndx2 = newDist(iPair)%indx2
+        if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
+          cycle
+        endif
+        jType = atomIndicies(globIndx2)%nType
+        jMol  = atomIndicies(globIndx2)%nMol
+        jIndx = MolArray(jType)%mol(jMol)%indx
+        jAtom = atomIndicies(globIndx2)%nAtom
+        iAtom = atomIndicies(globIndx1)%nAtom
+       
         atmType1 = atomArray(iType,iAtom)
-        do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
-            atmType2 = atomArray(jType,jAtom)
-            ep = ep_tab(atmType2, atmType1)
-            q = q_tab(atmType2, atmType1)
-            sig_sq = sig_tab(atmType2,atmType1)
-            do jMol=1,NPART(jType)
-              if(iType .eq. jType) then
-                if(iMol .eq. jMol) then
-                  cycle
-                endif
-              endif  
+        atmType2 = atomArray(jType,jAtom)
 
-!             Distance for the New position
-              rx = disp(iDisp)%x_new - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = disp(iDisp)%y_new - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = disp(iDisp)%z_new - MolArray(jType)%mol(jMol)%z(jAtom)
-              r_new = rx*rx + ry*ry + rz*rz
-
-!             Distance for the Old position
-              rx = disp(iDisp)%x_old - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = disp(iDisp)%y_old - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = disp(iDisp)%z_old - MolArray(jType)%mol(jMol)%z(jAtom)
-              r_old = rx*rx + ry*ry + rz*rz              
-
-
-!             Check to see if there is a non-zero Lennard-Jones parmaeter. If so calculate
-!             the Lennard-Jones energy           
-              LJ = 0E0_dp
-              if(ep .ne. 0E0_dp) then
-                if(r_new .lt. lj_cut_sq) then
-                  LJ = LJ_Func(r_new, ep, sig_sq)                 
-                endif
-                
-                if(r_old .lt. lj_cut_sq) then
-                  LJ = LJ - LJ_Func(r_old, ep, sig_sq)                 
-                endif
-              endif
-!             Check to see if there is a non-zero Electrostatic parmaeter. If so calculate
-!             the electrostatic energy              
-              Ele = 0E0_dp
-              if(q .ne. 0E0_dp) then
-                r_new = sqrt(r_new)
-                Ele = q / r_new
-                
-                r_old = sqrt(r_old)
-                Ele = Ele - q / r_old
-              endif
-              P_Trial = P_Trial + Ele + LJ
-            enddo
-          enddo
-        enddo
-      enddo
-
+        ep = ep_tab(atmType2, atmType1)
+        q  = q_tab(atmType2, atmType1)
+        LJ = 0E0_dp
+        if(ep .ne. 0E0_dp) then
+          sig_sq = sig_tab(atmType2,atmType1)
+          r_new_sq = rPairNew(globIndx1, globIndx2)%p%r_sq
+          if(r_new_sq .lt. lj_cut_sq) then
+            LJ = LJ + LJ_Func(r_new_sq, ep, sig_sq)   
+          endif
+          r_sq = rPair(globIndx1, globIndx2)%p%r_sq  
+          if(r_sq .lt. lj_cut_sq) then
+            LJ = LJ - LJ_Func(r_sq, ep, sig_sq)     
+          endif         
+        endif
+        Ele = 0E0_dp
+        if(q .ne. 0E0_dp) then
+          r_new = rPairNew(globIndx1, globIndx2)%p%r
+          Ele = q/r_new              
+          r = rPair(globIndx1, globIndx2)%p%r
+          Ele = Ele - q/r             
+        endif
+        P_Trial = P_Trial + Ele + LJ
+        if(abs(P_Trial) > 1E6) then
+          write(*,*) r_new, r, r_sq, LJ, Ele, q, ep, sig_sq, rPair(globIndx1, globIndx2)%p%storeRValue
+        endif
+      enddo    
       
       end subroutine
 !======================================================================================      
@@ -215,39 +201,41 @@
       integer  :: atmType1, atmType2
       real(dp) :: ep, sig_sq, q
       real(dp) :: Ele, LJ, P
-      real(dp) :: r_sq, r,  rx, ry, rz
+      real(dp) :: r_sq, r
 
       P_Trial = 0E0_dp
       iIndx = MolArray(iType)%mol(iMol)%indx
 
       do iAtom = 1,nAtoms(iType)
         atmType1 = atomArray(iType, iAtom)
+        globIndx1 = MolArray(iType)%mol(iMol)%globalIndx(iAtom) 
         do jType = 1, nMolTypes
-          do jAtom = 1,nAtoms(jType)        
-            atmType2 = atomArray(jType,jAtom)
-            sig_sq = sig_tab(atmType2, atmType1)
-            ep = ep_tab(atmType2, atmType1)
-            q  = q_tab(atmType2, atmType1)
-            do jMol=1, NPART(jType)
-              jIndx = MolArray(jType)%mol(jMol)%indx  
-              if(iIndx .eq. jIndx) then
+          do jMol=1, NPART(jType)
+            jIndx = MolArray(jType)%mol(jMol)%indx  
+            if(iIndx .eq. jIndx) then
+              cycle
+            endif
+            do jAtom = 1,nAtoms(jType)        
+              globIndx2 = MolArray(jType)%mol(jMol)%globalIndx(jAtom)
+              if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
                 cycle
-              endif
-
-              rx = MolArray(iType)%mol(iMol)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = MolArray(iType)%mol(iMol)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = MolArray(iType)%mol(iMol)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
-              r_sq = rx*rx + ry*ry + rz*rz
+              endif 
+              atmType2 = atomArray(jType,jAtom)
+              ep = ep_tab(atmType2, atmType1)
+              q  = q_tab(atmType2, atmType1)
               LJ = 0E0_dp
+!              r_sq = rPair(globIndx1, globIndx2)%p%r_sq
               if(ep .ne. 0E0_dp) then
+                r_sq = rPair(globIndx1, globIndx2)%p%r_sq
                 if(r_sq .lt. lj_Cut_sq) then
+                  sig_sq = sig_tab(atmType2, atmType1)
                   LJ = LJ_Func(r_sq, ep, sig_sq)             
                 endif
               endif
 
               Ele = 0E0_dp
               if(q .ne. 0E0_dp) then
-                r = sqrt(r_sq)
+                r = rPair(globIndx1, globIndx2)%p%r
                 Ele = q/r            
               endif
               P_Trial = P_Trial + Ele + LJ
@@ -273,7 +261,7 @@
       integer :: iType, iMol, iAtom, iIndx, jType, jIndx, jMol, jAtom
       integer(kind=atomIntType) :: atmType1,atmType2
       integer :: globIndx1, globIndx2
-      real(dp) :: r_sq, r,  rx, ry, rz
+      real(dp) :: r_sq, r
       real(dp) :: ep, sig_sq, q
       real(dp) :: LJ, Ele
 
@@ -286,34 +274,39 @@
       iType = newMol%molType
       iMol = NPART(iType)+1
       iIndx = molArray(iType)%mol(iMol)%indx
-      do iAtom = 1, nAtoms(newMol%molType)
-        atmType1 = atomArray(newMol%molType,iAtom)
-        do jType = 1, nMolTypes
-          do jAtom = 1, nAtoms(jType)        
-            atmType2 = atomArray(jType,jAtom)
-            ep = ep_tab(atmType2,atmType1)
-            q = q_tab(atmType2,atmType1)
-            sig_sq = sig_tab(atmType2,atmType1)
-            do jMol = 1, NPART(jType)
-              rx = newMol%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
-              ry = newMol%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
-              rz = newMol%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
-              r_sq = rx*rx + ry*ry + rz*rz
+      do iPair = 1, nNewDist
+        globIndx1 = newDist(iPair)%indx1
+        globIndx2 = newDist(iPair)%indx2
+        if(.not. rPair(globIndx1, globIndx2)%p%usePair) then
+          cycle
+        endif
+        jType = atomIndicies(globIndx2)%nType
+        jMol = atomIndicies(globIndx2)%nMol
+        jIndx = MolArray(jType)%mol(jMol)%indx
+        if(iIndx .ne. jIndx) then
+          iAtom = atomIndicies(globIndx1)%nAtom
+          jAtom = atomIndicies(globIndx2)%nAtom
 
-              if(ep .ne. 0E0) then
-                if(r_sq .lt. lj_Cut_sq) then
-                  LJ = LJ_Func(r_sq, ep, sig_sq)  
-                  P_LJ = P_LJ + LJ
-                endif
-              endif
-              if(q .ne. 0E0) then
-                r = sqrt(r_sq)
-                Ele = q / r
-                P_Ele = P_Ele + Ele
-              endif
-            enddo
-          enddo
-        enddo
+          atmType1 = atomArray(iType, iAtom)
+          atmType2 = atomArray(jType, jAtom)
+
+          ep = ep_tab(atmType2, atmType1)
+          q = q_tab(atmType2, atmType1)
+          if(ep .ne. 0E0_dp) then
+            r_sq = newDist(iPair)%r_sq
+            if(r_sq .lt. lj_Cut_sq) then
+              sig_sq = sig_tab(atmType2,atmType1)
+              LJ = LJ_Func(r_sq, ep, sig_sq)
+              P_LJ = P_LJ + LJ
+            endif
+          endif
+
+          if(q .ne. 0E0_dp) then
+            r = newDist(iPair)%r
+            Ele = q/r
+            P_Ele = P_Ele + Ele
+          endif
+        endif
       enddo
 
       P_Trial = P_LJ + P_Ele

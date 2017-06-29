@@ -176,7 +176,7 @@
 !     Determine the reverse probability of this move.
       if(distCriteria) then
 !        call Insert_NewNeiETable_Distance(nType, dETable, newNeiETable)  
-        call Insert_NewNeiETable_Distance_V2(nType, dETable, newNeiETable)  
+        call Insert_NewNeiETable_Distance_V2(nType, PairList, dETable, newNeiETable)  
       else
         call Insert_NewNeiETable(nType, PairList, dETable, newNeiETable)      
       endif

@@ -1,6 +1,6 @@
       module Rosenbluth_Functions_LJ_Q
       use VarPrecision
-      real(dp), parameter :: rCut_sq = 7.5d0**2
+      use InterEnergy_LJ_Electro, only: lj_cut_sq, q_cut_sq
       contains
 !======================================================================================================
 !      This subrotuine is intended to calculate the Rosenbluth weight for a single trial
@@ -35,14 +35,18 @@
       do iAtom = 1,nAtoms(nType)
         atmType1 = atomArray(nType, iAtom)
         do jType = 1, nMolTypes
-          do jMol = 1,NPART(jType)
-            jIndx = molArray(jType)%mol(jMol)%indx              
-            if(included(jIndx) .eqv. .false.) then
-              cycle
-            endif              
-            do jAtom = 1,nAtoms(jType)        
-              atmType2 = atomArray(jType, jAtom)
-              rmin_ij = r_min_tab(atmType2, atmType1)
+          do jAtom = 1,nAtoms(jType)        
+            atmType2 = atomArray(jType, jAtom)
+            ep = ep_tab(atmType2, atmType1)
+            q = q_tab(atmType2, atmType1)
+            sig_sq = sig_tab(atmType2, atmType1)
+            rmin_ij = r_min_tab(atmType2, atmType1)
+            do jMol = 1,NPART(jType)
+              jIndx = molArray(jType)%mol(jMol)%indx              
+              if(included(jIndx) .eqv. .false.) then
+                cycle
+              endif              
+
               rx = rosenTrial(nRosen)%x(iAtom) - MolArray(jType)%mol(jMol)%x(jAtom)
               ry = rosenTrial(nRosen)%y(iAtom) - MolArray(jType)%mol(jMol)%y(jAtom)
               rz = rosenTrial(nRosen)%z(iAtom) - MolArray(jType)%mol(jMol)%z(jAtom)
@@ -52,19 +56,14 @@
                 overlap = .true.
                 return
               endif
-              if(r .gt. rCut_sq) then
-                cycle
-              endif
-              ep = ep_tab(atmType2, atmType1)
-              q = q_tab(atmType2, atmType1)
-              sig_sq = sig_tab(atmType2, atmType1)
+
               if(ep .ne. 0E0) then
-!                LJ = 0E0
-                LJ = (sig_sq / r)
-                LJ = LJ * LJ * LJ              
-!                LJ = (sig_sq / r)**3
-                LJ = ep * LJ * (LJ - 1E0)                
-                E_LJ = E_LJ + LJ
+                if(r .lt. lj_cut_sq) then
+                  LJ = (sig_sq / r)
+                  LJ = LJ * LJ * LJ              
+                  LJ = ep * LJ * (LJ - 1E0)                
+                  E_LJ = E_LJ + LJ
+                endif
               endif
               if(q .ne. 0E0) then
 !                Ele = 0E0
@@ -114,13 +113,6 @@
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
             rmin_ij = r_min_tab(atmType2, atmType1)
-!            if(rmin_ij .eq. 0.0E0) then     
-!              if(q .eq. 0.0E0) then              
-!                if(ep .eq. 0.0E0) then              
-!                  cycle
-!                endif
-!              endif
-!            endif
             sig_sq = sig_tab(atmType2, atmType1)
 
             do jMol = 1,NPART(jType)
@@ -136,15 +128,13 @@
                 E_Trial = huge(dp)
                 return
               endif
-              if(r .gt. rCut_sq) then
-                cycle
-              endif
               if(ep .ne. 0E0) then
-!                LJ = 0E0
-                LJ = (sig_sq / r)
-                LJ = LJ * LJ * LJ              
-                LJ = ep * LJ * (LJ - 1E0)                
-                E_LJ = E_LJ + LJ
+                if(r .lt. lj_cut_sq) then
+                  LJ = (sig_sq / r)
+                  LJ = LJ * LJ * LJ              
+                  LJ = ep * LJ * (LJ - 1E0)                
+                  E_LJ = E_LJ + LJ
+                endif
               endif
               if(q .ne. 0E0) then
 !                Ele = 0E0
@@ -210,18 +200,16 @@
               overlap = .true.
               return
             endif
-            if(r .gt. rCut_sq) then
-              cycle
-            endif
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
             sig_sq = sig_tab(atmType2, atmType1)   
             if(ep .ne. 0E0) then
-!              LJ = 0E0
-              LJ = (sig_sq / r)
-              LJ = LJ * LJ * LJ              
-              LJ = ep * LJ * (LJ - 1E0)                
-              E_LJ = E_LJ + LJ
+              if(r .lt. lj_cut_sq) then
+                LJ = (sig_sq / r)
+                LJ = LJ * LJ * LJ              
+                LJ = ep * LJ * (LJ - 1E0)                
+                E_LJ = E_LJ + LJ
+              endif
             endif
             if(q .ne. 0E0) then
 !              Ele = 0E0
@@ -279,18 +267,17 @@
               E_Trial = huge(dp)
               return
             endif
-            if(r .gt. rCut_sq) then
-              cycle
-            endif
             ep = ep_tab(atmType2, atmType1)
             q = q_tab(atmType2, atmType1)
-            sig_sq = sig_tab(atmType2, atmType1)
+
             if(ep .ne. 0E0) then
-!              LJ = 0E0
-              LJ = (sig_sq / r)
-              LJ = LJ * LJ * LJ              
-              LJ = ep * LJ * (LJ - 1E0)                
-              E_LJ = E_LJ + LJ
+              if(r .lt. lj_cut_sq) then
+                sig_sq = sig_tab(atmType2, atmType1)
+                LJ = (sig_sq / r)
+                LJ = LJ * LJ * LJ              
+                LJ = ep * LJ * (LJ - 1E0)                
+                E_LJ = E_LJ + LJ
+              endif
             endif
             if(q .ne. 0E0) then
 !              Ele = 0E0
@@ -360,14 +347,13 @@
         ry = trialPos%y - newMol%y(jAtom)
         rz = trialPos%z - newMol%z(jAtom) 
         r = rx*rx + ry*ry + rz*rz
-        if(r .gt. rCut_sq) then
-          cycle
-        endif
         if(ep .ne. 0E0) then
-          LJ = (sig_sq/r)
-          LJ = LJ * LJ * LJ
-          LJ = ep * LJ * (LJ-1E0)
-          E_LJ = E_LJ + LJ
+          if(r .lt. lj_cut_sq) then
+            LJ = (sig_sq/r)
+            LJ = LJ * LJ * LJ
+            LJ = ep * LJ * (LJ-1E0)
+            E_LJ = E_LJ + LJ 
+          endif
         endif
         if(q .ne. 0E0) then            
           r = sqrt(r)
@@ -423,21 +409,21 @@
         atmType1 = atomArray(nType, iAtom)
         atmType2 = atomArray(nType, jAtom)
         ep = ep_tab(atmType1,atmType2)
-        sig_sq = sig_tab(atmType1,atmType2)
         q = q_tab(atmType1,atmType2)
         
         rx = MolArray(nType)%mol(nMol)%x(iAtom) - MolArray(nType)%mol(nMol)%x(jAtom)
         ry = MolArray(nType)%mol(nMol)%y(iAtom) - MolArray(nType)%mol(nMol)%y(jAtom)
         rz = MolArray(nType)%mol(nMol)%z(iAtom) - MolArray(nType)%mol(nMol)%z(jAtom)
         r = rx*rx + ry*ry + rz*rz
-        if(r .gt. rCut_sq) then
-          cycle
-        endif
+
         if(ep .ne. 0E0) then
-          LJ = (sig_sq/r)
-          LJ = LJ * LJ * LJ
-          LJ = ep * LJ * (LJ-1E0)
-          E_LJ = E_LJ + LJ
+          if(r .lt. lj_cut_sq) then
+            sig_sq = sig_tab(atmType1,atmType2)
+            LJ = (sig_sq/r)
+            LJ = LJ * LJ * LJ
+            LJ = ep * LJ * (LJ-1E0)
+            E_LJ = E_LJ + LJ
+          endif
         endif
         if(q .ne. 0E0) then            
           r = sqrt(r)
