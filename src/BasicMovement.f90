@@ -120,7 +120,7 @@
         call Update_SubEnergies   
       endif
 
-      	  
+     
       end subroutine
 !===========================================================================================
       subroutine Translation(E_T, acc_x, atmp_x)
@@ -170,7 +170,7 @@
       dz = max_dist(nType) * (2E0*grnd() - 1E0)
 
 !     Construct the Displacement Vectors for each atom in the molecule that was chosen.
-      do iAtom=1,nAtoms(nType)
+      do iAtom = 1, nAtoms(nType)
         disp(iAtom)%molType = int(nType, atomIntType)
         disp(iAtom)%molIndx = int(nMol, atomIntType)
         disp(iAtom)%atmIndx = int(iAtom, atomIntType)
@@ -208,11 +208,11 @@
 !     Calculate Acceptance and determine if the move is accepted or not     
       if(biasEnergy .le. 0E0) then
         acptTrans(nType) = acptTrans(nType) + 1E0
-        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+        call Update_Shift(disp(1:nAtoms(nType)), nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
 !      elseif(exp(-biasEnergy) .gt. grnd()) then
       elseif(-biasEnergy .gt. log(grnd())) then
         acptTrans(nType) = acptTrans(nType) + 1E0
-        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+        call Update_Shift(disp(1:nAtoms(nType)), nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
       endif
 
       	  
@@ -342,11 +342,11 @@
 !      Calculate Acceptance and determine if the move is accepted or not       
       if(biasEnergy .le. 0E0) then
         acptRot(nType) = acptRot(nType) + 1E0
-        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
+        call Update_Shift(disp(1:nAtoms(nType)), nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
 !      elseif(exp(-biasEnergy) .gt. grnd()) then
       elseif(-biasEnergy .gt. log(grnd())) then
         acptRot(nType) = acptRot(nType) + 1E0
-        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+        call Update_Shift(disp(1:nAtoms(nType)), nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
       endif
       end subroutine
 !=======================================================      
@@ -452,11 +452,11 @@
 !      Calculate Acceptance and determine if the move is accepted or not       
       if(biasEnergy .le. 0E0) then
         acptRot(nType) = acptRot(nType) + 1E0
-        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
+        call Update_Shift(disp(1:nAtoms(nType)), nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
 !      elseif(exp(-biasEnergy) .gt. grnd()) then
       elseif(-biasEnergy .gt. log(grnd())) then
         acptRot(nType) = acptRot(nType) + 1E0
-        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+        call Update_Shift(disp(1:nAtoms(nType)), nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
       endif
 
       end subroutine
@@ -560,11 +560,11 @@
 !      Calculate Acceptance and determine if the move is accepted or not       
       if(biasEnergy .le. 0E0) then
         acptRot(nType) = acptRot(nType) + 1E0
-        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
+        call Update_Shift(disp(1:nAtoms(nType)), nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)      
 !      elseif(exp(-biasEnergy) .gt. grnd()) then
       elseif(-biasEnergy .gt. log(grnd())) then
         acptRot(nType) = acptRot(nType) + 1E0
-        call Update_Shift(disp, nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
+        call Update_Shift(disp(1:nAtoms(nType)), nType, nIndx, E_T, E_Inter, acc_x, atmp_x, PairList, dETable)
       endif
       end subroutine
 
@@ -595,7 +595,7 @@
     
 
       if(calcPressure) then
-        call Shift_PressCalc_Inter(P_Diff, disp)
+        call Shift_PressCalc_Inter(P_Diff, disp(1:nAtoms(nType) ) )
         pressure = pressure + P_Diff
       endif
 

@@ -133,7 +133,7 @@
         write(*,*) "ERROR! CBMC is not implimented for this regrowth type! :", regrowType(nType)
         stop
       end select
-      
+!"      
       nDisp = 0
       do iAtom = 1,nAtoms(nType)
         if(.not. regrown(iAtom)) then
@@ -188,7 +188,7 @@
 !      if(rosenRatio*exp(-beta*E_Inter + biasDiff) .gt. grnd()) then
       if(log(rosenRatio) -beta*E_Inter + biasDiff .gt. log(grnd()) ) then
         if(calcPressure) then
-          call Shift_PressCalc_Inter(P_Diff, disp)
+          call Shift_PressCalc_Inter(P_Diff, disp(1:nDisp))
           pressure = pressure + P_Diff
 !          write(*,*) pressure, P_Diff
         endif

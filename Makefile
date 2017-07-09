@@ -10,7 +10,7 @@ FC := mpif90
 CC := mpicc
 OPTIMIZE_FLAGS := -O3
 OPTIMIZE_FLAGS += -xHost
-#OPTIMIZE_FLAGS += -ipo
+OPTIMIZE_FLAGS += -ipo
 OPTIMIZE_FLAGS += -no-prec-div
 #OPTIMIZE_FLAGS += -prof-gen -prof-dir=$(CUR_DIR)/profiling
 #OPTIMIZE_FLAGS += -prof-use -prof-dir=$(CUR_DIR)/profiling

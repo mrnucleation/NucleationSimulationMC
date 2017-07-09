@@ -139,10 +139,12 @@
 !      !This section calculates the Intermolecular interaction between the atoms that
 !      !have been modified in this trial move with the atoms that have remained stationary
 
-
-      do iDisp=1,sizeDisp
+!      write(*,*) iType
+      do iDisp = 1, sizeDisp
         iAtom = disp(iDisp)%atmIndx
+!        write(*,*) iAtom, iDisp
         atmType1 = atomArray(iType,iAtom)
+!        write(*,*) iAtom, atmType1
         do jType = 1, nMolTypes
           do jAtom = 1,nAtoms(jType)        
             atmType2 = atomArray(jType,jAtom)
