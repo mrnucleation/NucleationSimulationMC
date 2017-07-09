@@ -13,6 +13,7 @@
       use Forcefield
       use IndexingFunctions
       use PairStorage, only: UpdateDistArray, useDistStore
+      use Pressure_LJ_Electro, only: Shift_PressCalc_Inter
       use SimParameters
       implicit none
       
@@ -48,9 +49,9 @@
       
 
 !     Generate a random translational displacement             
-      dx = max_distx * (2E0*grnd() - 1E0)
-      dy = max_distx * (2E0*grnd() - 1E0)
-      dz = max_distx * (2E0*grnd() - 1E0)
+      dx = max_dist_single(nType) * (2E0*grnd() - 1E0)
+      dy = max_dist_single(nType) * (2E0*grnd() - 1E0)
+      dz = max_dist_single(nType) * (2E0*grnd() - 1E0)
 
 !     Construct the Displacement Vectors for each atom in the molecule that was chosen.'
       disp(1)%molType = int(nType,atomIntType)
@@ -77,27 +78,32 @@
 
 !     Calculate Acceptance and determine if the move is accepted or not     
       if(E_Diff .le. 0E0) then
+        if(calcPressure) then
+          call Shift_PressCalc_Inter(P_Diff, disp(1:1))
+          pressure = pressure + P_Diff
+        endif
         disp(1)%x_old = disp(1)%x_new
         disp(1)%y_old = disp(1)%y_new
         disp(1)%z_old = disp(1)%z_new
         E_T = E_T + E_Diff
         ETable = ETable + dETable
         acc_x = acc_x + 1E0
-        if(distCriteria) then
-          if(disp(1)%atmIndx .eq. 1) then
-!            call NeighborUpdate_Distance(PairList,nIndx)    
-            call NeighborUpdate_Distance(PairList, nIndx)       
-          endif
-        else
-          call NeighborUpdate(PairList, nIndx)
-        endif  
-!        call Create_NeiETable
         if(useDistStore) then
           call UpdateDistArray
         endif
-        call Update_SubEnergies
-!      elseif(exp(-beta*E_Diff) .gt. grnd()) then
+        if( distCriteria ) then
+!          call NeighborUpdate_Distance(PairList,nIndx)    
+          call NeighborUpdate_Distance(PairList, nIndx)            
+        else
+          call NeighborUpdate(PairList, nIndx)
+        endif  
+        call Update_SubEnergies        
+        prevMoveAccepted = .true.
       elseif(-beta*E_Diff .gt. log(grnd())) then
+        if(calcPressure) then
+          call Shift_PressCalc_Inter(P_Diff, disp(1:1))
+          pressure = pressure + P_Diff
+        endif
         disp(1)%x_old = disp(1)%x_new
         disp(1)%y_old = disp(1)%y_new
         disp(1)%z_old = disp(1)%z_new
@@ -107,17 +113,14 @@
         if(useDistStore) then
           call UpdateDistArray
         endif
-        if(distCriteria) then
-          if(disp(1)%atmIndx .eq. 1) then
-!            call NeighborUpdate_Distance(PairList,nIndx)    
-            call NeighborUpdate_Distance(PairList, nIndx)         
-          endif
+        if( distCriteria ) then
+!          call NeighborUpdate_Distance(PairList,nIndx)    
+          call NeighborUpdate_Distance(PairList, nIndx)            
         else
           call NeighborUpdate(PairList, nIndx)
         endif  
-!        call Create_NeiETable
-        call UpdateDistArray
-        call Update_SubEnergies   
+        call Update_SubEnergies        
+        prevMoveAccepted = .true.
       endif
 
      
