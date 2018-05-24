@@ -20,6 +20,7 @@
 !      real(dp), parameter :: ep = 4d0*634.62810518d0
 !      real(dp), parameter :: ep = 4d0*78d0
       real(dp), parameter :: ep = 0d0
+      real(dp), parameter :: dimer = 1d0
       
       real(dp), parameter :: sig = 3.174116d0**2
 !====================================================================================== 
@@ -207,7 +208,8 @@
           if(Zeta .ne. 0E0_dp) then
             b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b1 = 1E0_dp
+!            b1 = 1E0_dp
+            b1 = dimer
           endif      
     
           V1 = 0E0_dp
@@ -404,12 +406,14 @@
           if(Zeta .ne. 0E0_dp) then
             b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b1 = 1E0_dp
+!            b1 = 1E0_dp
+            b1 = dimer
           endif
           if(Zeta2 .ne. 0E0_dp) then
             b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b2 = 1E0_dp
+!            b2 = 1E0_dp
+            b2 = dimer
           endif
 !          write(2,*) b1
 !          write(2,*) b2
@@ -473,12 +477,14 @@
           if(Zeta .ne. 0E0_dp) then
             b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b1 = 1E0_dp
+!            b1 = 1E0_dp
+            b1 = dimer
           endif
           if(Zeta2 .ne. 0E0_dp) then
             b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b2 = 1E0_dp
+!            b2 = 1E0_dp
+            b2 = dimer
           endif
           V1 = Fc_Func(rij, R_eq, D2) * (2E0_dp*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij))
           Short = Short - V1
@@ -581,12 +587,14 @@
           if(Zeta .ne. 0E0_dp) then
             b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b1 = 1E0_dp
+!            b1 = 1E0_dp
+            b1 = dimer
           endif
           if(Zeta2 .ne. 0E0_dp) then
             b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b2 = 1E0_dp
+!            b2 = 1E0_dp
+            b2 = dimer
           endif
 
           V1 = Fc_Func(rij, R_eq, D2) * (B*exp(-lam2*rij))*(b2 - b1)
@@ -742,12 +750,14 @@
         if(Zeta .ne. 0E0_dp) then
           b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
         else
-          b1 = 1E0_dp
+!          b1 = 1E0_dp
+          b1 = dimer
         endif
         if(Zeta2 .ne. 0E0_dp) then
           b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
         else
-          b2 = 1E0_dp
+!          b2 = 1E0_dp
+          b2 = dimer
         endif
         V1 = 0.5E0_dp*Fc_Func(rij, R_eq, D2) * (2d0*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij))
         Short = Short + V1
@@ -833,12 +843,14 @@
           if(Zeta .ne. 0E0_dp) then
             b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b1 = 1E0_dp
+!            b1 = 1E0_dp
+            b1 = dimer
           endif
           if(Zeta2 .ne. 0E0_dp) then
             b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b2 = 1E0_dp
+!            b2 = 1E0_dp
+            b2 = dimer
           endif
 
           V1 = 0.5E0_dp * Fc_Func(rij, R_eq, D2) * (B*exp(-lam2*rij))*(b1 - b2)
@@ -990,12 +1002,14 @@
           if(Zeta .ne. 0E0_dp) then
             b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b1 = 1E0_dp
+!            b1 = 1E0_dp
+            b1 = dimer
           endif
           if(Zeta2 .ne. 0E0_dp) then
             b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b2 = 1E0_dp
+!            b2 = 1E0_dp
+            b2 = dimer
           endif
 !          write(*,*) b1, b2
           V1 = 0.5E0_dp * Fc_Func(rij, R_eq, D2) * (2E0_dp*A*exp(-lam1*rij) - (b1+b2)*B*exp(-lam2*rij))
@@ -1079,12 +1093,14 @@
           if(Zeta .ne. 0E0_dp) then
             b1 = (1E0_dp + (BetaPar*Zeta)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b1 = 1E0_dp
+!            b1 = 1E0_dp
+            b1 = dimer
           endif
           if(Zeta2 .ne. 0E0_dp) then
             b2 = (1E0_dp + (BetaPar*Zeta2)**n)**(-1E0_dp/(2E0_dp*n))
           else
-            b2 = 1E0_dp
+!            b2 = 1E0_dp
+            b2 = dimer
           endif
 
           V1 = -0.5E0_dp * Fc_Func(rij, R_eq, D2) * (B*exp(-lam2*rij))*(b1 - b2)
