@@ -317,6 +317,9 @@
       atm4plus1 = atm4Pos + 1
       atm4minus1 = atm4Pos - 1
 
+      write(35,*) atm4plus1, atm4minus1
+      write(35,*) "regrown:", regrown(:)
+
       if(atm4minus1 .lt. 1) then
         Atm3 = pathArray(nType)%path(pathNum,atm4Pos+1)
         Atm2 = pathArray(nType)%path(pathNum,atm4Pos+2)
@@ -339,7 +342,7 @@
       endif
 
 
-      if(.not. regrown(pathArray(nType)%path(pathNum,atm4minus1))) then
+      if( regrown(pathArray(nType)%path(pathNum,atm4minus1)) ) then
         Atm3 = pathArray(nType)%path(pathNum,atm4Pos-1)
         Atm2 = pathArray(nType)%path(pathNum,atm4Pos-2)
         Atm1 = pathArray(nType)%path(pathNum,atm4Pos-3)

@@ -550,6 +550,7 @@
               exit
             endif
           enddo
+          write(35,*) pathArray(iType)%path(1,:)
 
           cnt = 1
           if(dble(Atom1Loc) .ge. dble(pathArray(iType)%pathMax(1)+1)/2d0) then
